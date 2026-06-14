@@ -24,12 +24,12 @@ body {
 
 .stage-wrap {
   position: relative;
-  min-height: calc(100vh - 67px);
+  min-height: 0;
 }
 
 #stage {
   width: 100%;
-  height: calc(100vh - 67px);
+  height: 100%;
 }
 
 .panel {
