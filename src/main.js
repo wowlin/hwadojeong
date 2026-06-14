@@ -13,7 +13,6 @@ app.innerHTML = `
         <button id="viewFirst" type="button">1층<span class="btn-sub">아세만빌드</span><span class="btn-sub btn-sub-xs">1588-5152</span></button>
         <button id="viewSecond" type="button">+다락</button>
         <button id="viewAll" type="button">+지붕<span class="btn-sub">태연남</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
-        <div class="row-break"></div>
         <button id="toggleDeck" type="button" class="toggle">데크<span class="btn-sub">우드24</span><span class="btn-sub btn-sub-xs">1644-6472</span></button>
         <button id="togglePergola" type="button" class="toggle">파고라<span class="btn-sub">치악지붕건축</span><span class="btn-sub btn-sub-xs">0507-1332-8754</span></button>
         <button id="toggleWall" type="button" class="toggle">외벽<span class="btn-sub">주식회사 단우</span><span class="btn-sub btn-sub-xs">1811-8179</span><span class="btn-sub btn-sub-xs">010-5382-8179</span></button>
