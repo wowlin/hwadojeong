@@ -113,11 +113,3 @@ button:disabled {
 button:disabled:hover {
   background: #ffffff;
 }
-
-@media (max-width: 860px) {
-  .stage-wrap,
-  #stage {
-    min-height: 68vh;
-    height: 68vh;
-  }
-}

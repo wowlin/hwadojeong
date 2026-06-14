@@ -12,7 +12,7 @@ app.innerHTML = `
       <div class="controls">
         <button id="viewFirst" type="button">1층<span class="btn-sub">아세만빌드</span><span class="btn-sub btn-sub-xs">1588-5152</span></button>
         <button id="viewSecond" type="button">+다락</button>
-        <button id="viewAll" type="button">+지붕<span class="btn-sub">태연남</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
+        <button id="viewAll" type="button">+지붕<span class="btn-sub">태연남(태양광)</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
         <button id="toggleDeck" type="button" class="toggle">데크<span class="btn-sub">우드24</span><span class="btn-sub btn-sub-xs">1644-6472</span></button>
         <button id="togglePergola" type="button" class="toggle">파고라<span class="btn-sub">치악지붕건축</span><span class="btn-sub btn-sub-xs">0507-1332-8754</span></button>
         <button id="toggleWall" type="button" class="toggle">외벽<span class="btn-sub">주식회사 단우</span><span class="btn-sub btn-sub-xs">1811-8179</span><span class="btn-sub btn-sub-xs">010-5382-8179</span></button>
@@ -41,7 +41,7 @@ controls.enableDamping = true;
 controls.target.set(4.55, 2.55, 0.65);
 controls.maxPolarAngle = Math.PI * 0.48;
 controls.minDistance = 4;
-controls.maxDistance = 24;
+controls.maxDistance = 32;
 
 const secondFloorObjects = [];
 const roofObjects = [];
@@ -735,10 +735,10 @@ const foundationHeight = 0.5;
 const firstFloorY = groundTopY + foundationHeight;
 const foundationTopY = firstFloorY;
 
-box({ x: -1.1, z: buildingFrontZ - 4.3, w: 11.8, d: buildingD + 6.1, h: 0.08, mat: materials.site, cast: false });
-box({ x: -1.1, z: buildingFrontZ - 4.3, w: 10.4, d: 4.3, h: 0.09, mat: materials.gravel, cast: false });
-box({ x: 8.75, z: buildingFrontZ - 1.15, w: 1.1, d: buildingD + 2.4, h: 0.1, mat: materials.road, cast: false });
-box({ x: -1.1, z: buildingBackZ + 0.35, w: 10.95, d: 1.0, h: 0.1, mat: materials.road, cast: false });
+box({ x: -1.1, z: buildingFrontZ - 4.3, w: 11.8, d: buildingD + 6.1, h: 0.08, mat: materials.site, cast: false, name: 'ground' });
+box({ x: -1.1, z: buildingFrontZ - 4.3, w: 10.4, d: 4.3, h: 0.09, mat: materials.gravel, cast: false, name: 'ground' });
+box({ x: 8.75, z: buildingFrontZ - 1.15, w: 1.1, d: buildingD + 2.4, h: 0.1, mat: materials.road, cast: false, name: 'ground' });
+box({ x: -1.1, z: buildingBackZ + 0.35, w: 10.95, d: 1.0, h: 0.1, mat: materials.road, cast: false, name: 'ground' });
 box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: foundationHeight, mat: materials.foundation });
 box({ x: 0, z: buildingBackZ + 0.18, w: buildingW, d: 0.035, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
 box({ x: 0, z: buildingBackZ + 0.08, w: 0.035, d: 0.27, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
@@ -1874,10 +1874,32 @@ captureSecond(() => {
   roofObjects.push(label('태양광 3KW', arrayCenterX, surfaceY(arrayCenterZ) + 0.55, arrayCenterZ, 0.3));
 }
 
-function setView(pos, target) {
+// 보이는 구조물을 화면(버튼 영역 제외 캔버스) 중앙에 꽉 차게 프레이밍한다.
+// pos는 '보는 방향'으로만 쓰고 거리는 자동 계산하며, 줌 중심(target)을 경계구 중심에
+// 둬서 확대해도 위/아래가 고르게 보이도록 한다.
+const _fitBox = new THREE.Box3();
+const _fitSphere = new THREE.Sphere();
+const _fitDir = new THREE.Vector3();
+function setView(pos) {
+  scene.updateMatrixWorld(true);
+  _fitBox.makeEmpty();
+  scene.traverse((o) => {
+    if (!o.isMesh || !o.visible) return;
+    if (o.name === 'ground') return;                                 // 부지·자갈·도로 평면은 프레이밍에서 제외
+    for (let p = o.parent; p; p = p.parent) if (!p.visible) return;  // 조상이 숨겨진 객체 제외
+    _fitBox.expandByObject(o);
+  });
+  if (_fitBox.isEmpty()) return;
+  _fitBox.getBoundingSphere(_fitSphere);
+  const fov = THREE.MathUtils.degToRad(camera.fov);
+  const fitH = _fitSphere.radius / Math.sin(fov / 2);                 // 세로 기준 맞춤 거리
+  const hfov = 2 * Math.atan(Math.tan(fov / 2) * camera.aspect);
+  const fitW = _fitSphere.radius / Math.sin(hfov / 2);               // 가로 기준 맞춤 거리
+  const dist = 1.06 * Math.max(fitH, fitW);
+  _fitDir.set(pos[0], pos[1], pos[2]).sub(_fitSphere.center).normalize();
   camera.up.set(0, 1, 0);
-  camera.position.set(...pos);
-  controls.target.set(...target);
+  camera.position.copy(_fitSphere.center).addScaledVector(_fitDir, dist);
+  controls.target.copy(_fitSphere.center);
   controls.update();
 }
 
@@ -1887,7 +1909,7 @@ function setView(pos, target) {
 //    - 파고라는 데크가 켜진 경우에만 가능(파고라는 데크 위에 얹힘)
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 파고라가 켜진 경우에만 가능(외벽은 파고라에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
-const viewState = { building: 'all', deckOn: true, pergolaOn: true, wallOn: true, accessoryOn: true };
+const viewState = { building: 'first', deckOn: false, pergolaOn: false, wallOn: false, accessoryOn: false };
 
 function applyVisibility() {
   const { building, deckOn, pergolaOn, wallOn, accessoryOn } = viewState;
@@ -1918,19 +1940,19 @@ function applyVisibility() {
 document.querySelector('#viewFirst').addEventListener('click', () => {
   viewState.building = 'first';
   applyVisibility();
-  setView([4.25, 11.2, -5.0], [4.25, firstFloorY, 0.72]);
+  setView([4.25, 11.2, -5.0]);
 });
 
 document.querySelector('#viewSecond').addEventListener('click', () => {
   viewState.building = 'second';
   applyVisibility();
-  setView([4.25, 12.2, -5.0], [4.25, secondY + secondFloorThickness, 0.72]);
+  setView([4.25, 12.2, -5.0]);
 });
 
 document.querySelector('#viewAll').addEventListener('click', () => {
   viewState.building = 'all';               // +지붕 = 집 지붕까지(데크·파고라·악세사리는 각 토글 상태 유지)
   applyVisibility();
-  setView([10.8, 6.8, -8.8], [4.55, 2.55, 0.65]);
+  setView([10.8, 6.8, -8.8]);
 });
 
 document.querySelector('#toggleDeck').addEventListener('click', () => {
@@ -1957,6 +1979,7 @@ document.querySelector('#toggleAccessory').addEventListener('click', () => {
 });
 
 applyVisibility();
+setView([4.25, 11.2, -5.0]);   // 초기 1층 뷰를 중앙 정렬로 프레이밍
 
 function resize() {
   const width = stage.clientWidth;
