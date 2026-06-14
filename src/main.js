@@ -1275,30 +1275,38 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
     }
   }
 
-  // 캐노피 외벽 — 지붕보다 연한 갈색 반투명 우레탄 창으로 3면(전면·양측) 연결.
-  // 데크 상단(집 바닥 높이)에서 시작해 상부 보 밑면까지 채우고, 양측은 지붕 물매를 따라 상부가 경사진다.
+  // 캐노피 외벽 — 다누몰 포시즌 자바라(폴리카보네이트 접이식 폴딩 창)로 3면(전면·양측) 시공.
+  // 좁은 세로 패널들이 접이 경첩(세로 분할살)으로 나뉜 형태이므로, 반투명 폴리카보네이트 면을
+  // 일정 간격의 세로 자바라 살로 분할해 표현한다. 데크 상단(집 바닥)에서 상부 보 밑면까지.
   const wallTopAtZ = (z) => glassYatZ(z) - beamDrop - beamH;   // 상부 보 밑면
   if (withWalls) {
-    const urethaneGlass = new THREE.MeshLambertMaterial({
-      color: 0xb29a72, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false
+    const polyPanel = new THREE.MeshLambertMaterial({           // 다누몰 폴리카보네이트(반투명 우윳빛 갈색)
+      color: 0xc7b48c, transparent: true, opacity: 0.30, side: THREE.DoubleSide, depthWrite: false
     });
-    const urethaneFrame = new THREE.MeshLambertMaterial({ color: 0x7a5a3a });
+    const jabaraFrame = new THREE.MeshLambertMaterial({ color: 0x6f5234 });   // 자바라 알루미늄 프레임(브론즈)
     const glaze = 0.04;
-    const sillH = 0.12;
+    const sillH = 0.1;
     const wallBaseY = firstFloorY;                              // 창벽 하단 = 데크 상단
+    const mullW = 0.035;                                        // 세로 자바라 살 두께
+    const panelTarget = 0.34;                                   // 접이 패널 1장 목표 폭
 
     // 전면 창벽(수평 상부)
     const frontTopY = wallTopAtZ(fFrontZ);
-    box({ x: fX0, z: fFrontZ - glaze / 2, w: fX1 - fX0, d: glaze, y: wallBaseY + sillH, h: frontTopY - wallBaseY - sillH, mat: urethaneGlass, cast: false });
-    box({ x: fX0, z: fFrontZ - 0.05, w: fX1 - fX0, d: 0.1, y: wallBaseY, h: sillH, mat: urethaneFrame });                         // 하부 문턱(데크 상단)
-    box({ x: fX0, z: fFrontZ - 0.05, w: fX1 - fX0, d: 0.1, y: (wallBaseY + frontTopY) / 2 - 0.03, h: 0.06, mat: urethaneFrame }); // 중간 가로살
+    box({ x: fX0, z: fFrontZ - glaze / 2, w: fX1 - fX0, d: glaze, y: wallBaseY + sillH, h: frontTopY - wallBaseY - sillH, mat: polyPanel, cast: false });
+    box({ x: fX0, z: fFrontZ - 0.05, w: fX1 - fX0, d: 0.1, y: wallBaseY, h: sillH, mat: jabaraFrame });               // 하부 레일(문턱)
+    box({ x: fX0, z: fFrontZ - 0.05, w: fX1 - fX0, d: 0.1, y: frontTopY - 0.06, h: 0.06, mat: jabaraFrame });          // 상부 레일
+    const frontPanels = Math.max(2, Math.round((fX1 - fX0) / panelTarget));
+    for (let i = 0; i <= frontPanels; i += 1) {                 // 세로 자바라 접이살
+      const mx = fX0 + (fX1 - fX0) * (i / frontPanels);
+      box({ x: mx - mullW / 2, z: fFrontZ - 0.06, w: mullW, d: 0.12, y: wallBaseY + sillH, h: frontTopY - wallBaseY - sillH, mat: jabaraFrame, cast: false });
+    }
 
     // 양측 창벽(경사 상부, 사다리꼴)
     for (const sideX of [fX0, fX1]) {
       yzWallPrism({
         x: sideX - glaze / 2,
         thickness: glaze,
-        mat: urethaneGlass,
+        mat: polyPanel,
         points: [
           [fWallZ, wallBaseY + sillH],
           [fFrontZ, wallBaseY + sillH],
@@ -1306,7 +1314,13 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
           [fWallZ, wallTopAtZ(fWallZ)]
         ]
       });
-      box({ x: sideX - 0.05, z: fFrontZ, w: 0.1, d: fWallZ - fFrontZ, y: wallBaseY, h: sillH, mat: urethaneFrame }); // 하부 문턱(데크 상단)
+      box({ x: sideX - 0.05, z: fFrontZ, w: 0.1, d: fWallZ - fFrontZ, y: wallBaseY, h: sillH, mat: jabaraFrame });      // 하부 레일(문턱)
+      const sidePanels = Math.max(2, Math.round((fWallZ - fFrontZ) / panelTarget));
+      for (let i = 0; i <= sidePanels; i += 1) {               // 세로 자바라 접이살(상부는 지붕 물매를 따라감)
+        const mz = fFrontZ + (fWallZ - fFrontZ) * (i / sidePanels);
+        const topY = wallTopAtZ(mz);
+        box({ x: sideX - 0.06, z: mz - mullW / 2, w: 0.12, d: mullW, y: wallBaseY + sillH, h: topY - wallBaseY - sillH, mat: jabaraFrame, cast: false });
+      }
     }
   }
 
@@ -1429,7 +1443,8 @@ function whitePlanter({ cx, cz, diameter = 0.5, height = 0.5, baseY = firstFloor
   const potMat = new THREE.MeshLambertMaterial({ color: 0xf2efe7 });   // 흰색 나무
   const rimMat = new THREE.MeshLambertMaterial({ color: 0xe4dfd3 });
   const soilMat = new THREE.MeshLambertMaterial({ color: 0x3a2c20 });
-  const leafMat = new THREE.MeshLambertMaterial({ color: 0x4f7d3a });
+  const leafMat = new THREE.MeshLambertMaterial({ color: 0x24502b });   // 주목 — 짙은 상록 녹색
+  const trunkMat = new THREE.MeshLambertMaterial({ color: 0x6b4a32 });   // 주목 줄기(적갈색)
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(R, R * 0.9, height, 22), potMat);
   pot.position.set(cx, baseY + height / 2, cz); pot.castShadow = true; scene.add(pot);
   addGeometryEdges(pot, 0xcfc9bb);
@@ -1437,9 +1452,15 @@ function whitePlanter({ cx, cz, diameter = 0.5, height = 0.5, baseY = firstFloor
   rim.position.set(cx, baseY + height - 0.02, cz); scene.add(rim);
   const soil = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.88, R * 0.88, 0.04, 22), soilMat);
   soil.position.set(cx, baseY + height - 0.005, cz); scene.add(soil);
-  const foliage = new THREE.Mesh(new THREE.SphereGeometry(R * 0.95, 16, 12), leafMat);
-  foliage.scale.set(1, 0.85, 1);
-  foliage.position.set(cx, baseY + height + R * 0.6, cz); foliage.castShadow = true; scene.add(foliage);
+  // 주목: 짧은 줄기 + 원뿔형으로 다듬은 짙은 녹색 수형(2단 콘으로 풍성하게)
+  const soilTopY = baseY + height;
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.12, R * 0.16, R * 0.5, 10), trunkMat);
+  trunk.position.set(cx, soilTopY + R * 0.25, cz); trunk.castShadow = true; scene.add(trunk);
+  const coneBaseY = soilTopY + R * 0.4;
+  const lower = new THREE.Mesh(new THREE.ConeGeometry(R * 1.0, R * 1.8, 18), leafMat);
+  lower.position.set(cx, coneBaseY + R * 0.9, cz); lower.castShadow = true; scene.add(lower);
+  const upper = new THREE.Mesh(new THREE.ConeGeometry(R * 0.7, R * 1.6, 18), leafMat);
+  upper.position.set(cx, coneBaseY + R * 1.9, cz); upper.castShadow = true; scene.add(upper);
 }
 
 // 두 개의 파고라를 같은 형식으로 설치
