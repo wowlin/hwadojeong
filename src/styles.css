@@ -51,6 +51,12 @@ body {
   margin: 0 auto;
 }
 
+/* 1행: 건물 뷰(1층/+다락/+지붕), 2행: 토글(데크/파고라/악세사리) */
+.row-break {
+  flex-basis: 100%;
+  height: 0;
+}
+
 button {
   flex: 1 1 88px;
   min-height: 42px;
@@ -71,6 +77,31 @@ button.active {
   background: #111827;
   border-color: #111827;
   color: #ffffff;
+}
+
+/* 다줄 버튼(1층/+지붕/데크/파고라/외벽): 1줄 제목 / 2줄 업체명 / 이후 연락처 */
+#viewFirst,
+#viewAll,
+#toggleDeck,
+#togglePergola,
+#toggleWall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1.2;
+  padding: 4px 6px;
+}
+
+.btn-sub {
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.btn-sub-xs {
+  font-weight: 500;
+  opacity: 0.85;
 }
 
 /* 데크·파고라는 on/off 토글 — 켜짐은 초록으로 건물 뷰 선택과 구분 */

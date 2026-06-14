@@ -10,11 +10,13 @@ app.innerHTML = `
     </section>
     <aside class="panel">
       <div class="controls">
-        <button id="viewFirst" type="button">1층</button>
+        <button id="viewFirst" type="button">1층<span class="btn-sub">아세만빌드</span><span class="btn-sub btn-sub-xs">1588-5152</span></button>
         <button id="viewSecond" type="button">+다락</button>
-        <button id="viewAll" type="button">+지붕</button>
-        <button id="toggleDeck" type="button" class="toggle">데크</button>
-        <button id="togglePergola" type="button" class="toggle">파고라</button>
+        <button id="viewAll" type="button">+지붕<span class="btn-sub">태연남</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
+        <div class="row-break"></div>
+        <button id="toggleDeck" type="button" class="toggle">데크<span class="btn-sub">우드24</span><span class="btn-sub btn-sub-xs">1644-6472</span></button>
+        <button id="togglePergola" type="button" class="toggle">파고라<span class="btn-sub">치악지붕건축</span><span class="btn-sub btn-sub-xs">0507-1332-8754</span></button>
+        <button id="toggleWall" type="button" class="toggle">외벽<span class="btn-sub">주식회사 단우</span><span class="btn-sub btn-sub-xs">1811-8179</span><span class="btn-sub btn-sub-xs">010-5382-8179</span></button>
         <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
       </div>
     </aside>
@@ -44,9 +46,9 @@ controls.maxDistance = 24;
 
 const secondFloorObjects = [];
 const roofObjects = [];
-const alwaysVisibleObjects = [];
 const deckObjects = [];      // 데크 바닥·계단(데크 토글)
-const pergolaObjects = [];   // 파고라 구조물: 지붕·기둥·프레임·벽·팬·조명·치수(파고라 토글)
+const pergolaObjects = [];   // 파고라 구조물: 지붕·기둥·프레임·팬·조명·치수(파고라 토글)
+const wallObjects = [];      // 파고라 외벽: 다누몰 자바라 폴딩창(외벽 토글 — 시공 업체 별도)
 const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 표시)
 
 const materials = {
@@ -253,40 +255,6 @@ function addStairRailingSegment(startBase, endBase, {
     const base = lerpPoint(start, end, t);
     railCylinder([base[0], base[1] + 0.08, base[2]], [base[0], base[1] + height - 0.08, base[2]], 0.012);
   }
-}
-
-function gableEndWall({ x, z, d, y, rise, thickness = 0.08, mat }) {
-  const x0 = x;
-  const x1 = x + thickness;
-  const z0 = z;
-  const z1 = z + d;
-  const zMid = z + d / 2;
-  const y0 = y;
-  const y1 = y + rise;
-  const vertices = new Float32Array([
-    x0, y0, z0, x0, y0, z1, x0, y1, zMid,
-    x1, y0, z0, x1, y1, zMid, x1, y0, z1,
-    x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1,
-    x0, y0, z0, x0, y1, zMid, x1, y1, zMid, x1, y0, z0,
-    x0, y0, z1, x1, y0, z1, x1, y1, zMid, x0, y1, zMid
-  ]);
-  const indices = [
-    0, 1, 2,
-    3, 4, 5,
-    6, 7, 8, 6, 8, 9,
-    10, 11, 12, 10, 12, 13,
-    14, 15, 16, 14, 16, 17
-  ];
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-  geometry.setIndex(indices);
-  geometry.computeVertexNormals();
-  const mesh = new THREE.Mesh(geometry, mat);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  scene.add(mesh);
-  gableEndWallThicknessCap({ x0, x1, z0, zMid, z1, y0, y1, mat: materials.wallTop });
-  return mesh;
 }
 
 function yzWallPrism({ x, points, thickness = 0.08, mat }) {
@@ -611,10 +579,6 @@ function flatPoly({ points, y, h = 0.08, mat, name, cast = true, receive = true 
   return mesh;
 }
 
-function markSecond(...items) {
-  secondFloorObjects.push(...items.filter(Boolean));
-}
-
 function label(text, x, y, z, size = 0.32) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -623,15 +587,19 @@ function label(text, x, y, z, size = 0.32) {
   ctx.fillStyle = 'rgba(255,255,255,0.88)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#111827';
+  const lines = String(text).split('\n');                      // '\n'으로 여러 줄 지원
   let fontSize = 62;
+  const widest = () => Math.max(...lines.map((l) => ctx.measureText(l).width));
   ctx.font = `800 ${fontSize}px Apple SD Gothic Neo, Noto Sans KR, Arial`;
-  while (ctx.measureText(text).width > canvas.width * 0.9 && fontSize > 36) {
+  while ((widest() > canvas.width * 0.9 || fontSize * 1.18 * lines.length > canvas.height * 0.92) && fontSize > 30) {
     fontSize -= 2;
     ctx.font = `800 ${fontSize}px Apple SD Gothic Neo, Noto Sans KR, Arial`;
   }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  const lineH = fontSize * 1.18;
+  const startY = canvas.height / 2 - lineH * (lines.length - 1) / 2;
+  lines.forEach((l, i) => ctx.fillText(l, canvas.width / 2, startY + i * lineH));
   const texture = new THREE.CanvasTexture(canvas);
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
   const readableSize = Math.max(size, 0.28);
@@ -685,11 +653,6 @@ function roomText(name, w, d) {
 function interiorDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH) {
   box({ x, z: z - 0.03, w, d: 0.06, y, h, mat: materials.interiorDoor });
   box({ x: x + w - 0.18, z: z - 0.06, w: 0.05, d: 0.035, y: y + Math.min(1.02, h * 0.58), h: 0.05, mat: materials.handle });
-}
-
-function interiorDoorVertical(x, z, y, h = interiorDoorH) {
-  box({ x: x - 0.03, z, w: 0.06, d: interiorDoorW, y, h, mat: materials.interiorDoor });
-  box({ x: x - 0.06, z: z + interiorDoorW - 0.18, w: 0.035, d: 0.05, y: y + Math.min(1.02, h * 0.58), h: 0.05, mat: materials.handle });
 }
 
 function pocketDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH, slideDir = 1) {
@@ -822,7 +785,6 @@ const firstFamilyX = planLeftFamilyX;
 const entryDoorLeafW = 0.9;
 const entryFrameOuterW = 1.0;
 const entryGapStart = stairClearX + (stairClearW - entryFrameOuterW) / 2;
-const entryDoorH = 2.1;
 const entryFrameH = 2.18;
 const entryGapEnd = entryGapStart + entryFrameOuterW;
 const interiorDoorW = 0.9;
@@ -846,7 +808,6 @@ const winderTreadCount = 3;
 const upperStraightTreadCount = stairRiserCount - 1 - lowerStraightTreadCount - winderTreadCount;
 const stairTreadDepth = 0.27;
 const stairTurnD = stairRunW;
-const stairGuardWallH = 1.1;
 const stairTurnStart = insideZ1 - stairTurnD;
 const stairFirstRunStart = stairTurnStart - stairTreadDepth * lowerStraightTreadCount;
 const stairOpeningStart = stairTurnStart - stairTreadDepth * upperStraightTreadCount;
@@ -901,7 +862,6 @@ const secondAtticWallZ = secondCorridorZ + secondCorridorD;
 const secondAtticZ = secondAtticWallZ + interiorWall;
 const secondAtticD = insideZ1 - secondAtticZ;
 const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
-const secondAtticSideWallMaxH = secondWallHeight + gableRise;
 const secondAtticDoorH = 1.8;
 const secondRoom1DoorX = planRightLivingX + (sideRoomW - interiorDoorW) / 2;
 const secondRoom2DoorX = secondRoom2X + (secondRoom2W - interiorDoorW) / 2;
@@ -940,10 +900,10 @@ box({ x: kitchenSinkX + 0.62, z: kitchenSinkZ + 0.16, w: 0.72, d: 0.32, y: first
 box({ x: kitchenSinkX + 1.03, z: kitchenSinkZ + 0.08, w: 0.08, d: 0.08, y: firstFloorY + kitchenSinkH + 0.09, h: 0.24, mat: materials.entryFrame });
 label(`싱크대 ${Number(kitchenSinkW.toFixed(2))}x${Number(kitchenSinkD.toFixed(2))}m`, kitchenSinkX + kitchenSinkW / 2, firstFloorY + 1.2, kitchenSinkZ + kitchenSinkD / 2, 0.26);
 box({ x: stairClearX, z: insideZ0, w: stairClearW, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
-label(`계단 앞 ${Number(stairClearW.toFixed(2))}x${Number(stairBottomLandingD.toFixed(2))}m`, stairClearX + stairClearW / 2, firstFloorY + 1.45, insideZ0 + stairBottomLandingD * 0.72, 0.3);
+label(`계단 앞 ${Number(stairClearW.toFixed(2))}x${Number(stairBottomLandingD.toFixed(2))}m`, stairClearX + stairClearW / 2, firstFloorY + floorOverlayLift + 0.18, insideZ0 + stairBottomLandingD * 0.72, 0.3);
 box({ x: stairLowXWallX, z: insideZ0, w: interiorWall, d: insideD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 room({ x: stairBathX, z: stairBathZ, w: stairBathW, d: stairBathD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bath, text: roomText('계단하부 WC', stairBathW, stairBathD), surfaceH: 0.018 });
-label(roomText('계단하부 WC', stairBathW, stairBathD), stairBathX + stairBathW / 2, firstFloorY + 1.35, stairBathZ + stairBathD * 0.42, 0.26);
+label(roomText('계단하부 WC', stairBathW, stairBathD), stairBathDoorX + stairBathDoorW / 2, firstFloorY + stairBathDoorH / 2, stairBathZ - 0.12, 0.26);
 box({ x: stairBathX + 0.1, z: stairBathZ + 0.18, w: 0.32, d: 0.34, y: firstFloorY, h: 0.72, mat: materials.vanity });
 box({ x: stairBathX + 0.14, z: stairBathZ + 0.23, w: 0.24, d: 0.22, y: firstFloorY + 0.72, h: 0.04, mat: materials.sinkBasin });
 box({ x: stairBathX + 0.64, z: stairBathZ + 0.14, w: 0.28, d: 0.5, y: firstFloorY, h: 0.035, mat: materials.shower });
@@ -1113,6 +1073,11 @@ captureSecond(() => {
       mat: materials.roof
     })
   );
+  // 지붕 경사 각도 표기 — 전면 경사면 중턱 위에 띄움(+지붕 뷰에서만)
+  const eaveZ = buildingFrontZ - roofEaveOverhang;
+  const slopeMidZ = (eaveZ + ridgeZ) / 2;
+  const slopeMidY = (outerEaveY + ridgeY) / 2;
+  roofObjects.push(label('지붕 경사 32~33°\n(태양광 전선 연결)', buildingW / 2, slopeMidY + 0.4, slopeMidZ, 0.34));
 }
 
 // 캠핑 가구 재질 & 헬퍼 — 스노우피크 IGT 테이블, 반고 햄프턴 DLX 캠핑의자
@@ -1225,6 +1190,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   // 데크 바닥/소품(가구)만 따로 표시한 뒤 나머지는 파고라 구조물로 분류한다.
   const _addStart = scene.children.length;
   const deckLocal = [];      // 데크 바닥·바닥 치수 라벨
+  const wallLocal = [];      // 캐노피 외벽(다누몰 자바라) — 별도 토글
   const extrasLocal = [];    // 캠핑 가구(의자 등)
 
   // 렉산 지붕면(앞으로 물매)
@@ -1291,6 +1257,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   // 좁은 세로 패널들이 접이 경첩(세로 분할살)으로 나뉜 형태이므로, 반투명 폴리카보네이트 면을
   // 일정 간격의 세로 자바라 살로 분할해 표현한다. 데크 상단(집 바닥)에서 상부 보 밑면까지.
   const wallTopAtZ = (z) => glassYatZ(z) - beamDrop - beamH;   // 상부 보 밑면
+  const _wallStart = scene.children.length;
   if (withWalls) {
     const polyPanel = new THREE.MeshLambertMaterial({           // 다누몰 폴리카보네이트(반투명 우윳빛 갈색)
       color: 0xc7b48c, transparent: true, opacity: 0.30, side: THREE.DoubleSide, depthWrite: false
@@ -1335,6 +1302,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
       }
     }
   }
+  wallLocal.push(...scene.children.slice(_wallStart));   // 외벽(자바라) 객체를 별도 토글 그룹으로 수집
 
   // 캐노피 썬룸 바닥 — 합성목(WPC) 데크. 상단을 집 1층 바닥 높이에 맞춘 레이즈드 데크(지면부터 채움).
   const deckTopY = firstFloorY;                  // 데크 상단 = 집 바닥 높이(실내와 단차 없이 평탄)
@@ -1430,9 +1398,11 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
 
   // 추가물 분류: 데크 바닥/가구로 표시된 것 외 나머지는 모두 파고라 구조물.
   const _deckSet = new Set(deckLocal);
+  const _wallSet = new Set(wallLocal);
   const _extrasSet = new Set(extrasLocal);
   for (const o of scene.children.slice(_addStart)) {
     if (_deckSet.has(o)) deckObjects.push(o);
+    else if (_wallSet.has(o)) wallObjects.push(o);
     else if (_extrasSet.has(o)) extrasObjects.push(o);
     else pergolaObjects.push(o);
   }
@@ -1912,45 +1882,25 @@ function setView(pos, target) {
   controls.update();
 }
 
-function animateRoute(keyframes, duration = 2200) {
-  const startedAt = performance.now();
-  const smooth = (t) => t * t * (3 - 2 * t);
-
-  function frame(now) {
-    const elapsed = Math.min((now - startedAt) / duration, 1);
-    const scaled = elapsed * (keyframes.length - 1);
-    const index = Math.min(Math.floor(scaled), keyframes.length - 2);
-    const local = smooth(scaled - index);
-    const from = keyframes[index];
-    const to = keyframes[index + 1];
-
-    camera.position.lerpVectors(new THREE.Vector3(...from.pos), new THREE.Vector3(...to.pos), local);
-    controls.target.lerpVectors(new THREE.Vector3(...from.target), new THREE.Vector3(...to.target), local);
-    controls.update();
-
-    if (elapsed < 1) requestAnimationFrame(frame);
-  }
-
-  requestAnimationFrame(frame);
-}
-
 // 가시성 상태
 //  · building: '1층' / '+다락' / '+지붕' 중 하나만 선택되는 건물 누적 뷰(집만 제어)
-//  · deckOn / pergolaOn / accessoryOn: 데크·파고라·악세사리 독립 on/off 토글
+//  · deckOn / pergolaOn / wallOn / accessoryOn: 데크·파고라·외벽·악세사리 독립 on/off 토글
 //    - 파고라는 데크가 켜진 경우에만 가능(파고라는 데크 위에 얹힘)
+//    - 외벽(다누몰 자바라, 시공 업체 별도)은 파고라가 켜진 경우에만 가능(외벽은 파고라에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
-const viewState = { building: 'all', deckOn: true, pergolaOn: true, accessoryOn: true };
+const viewState = { building: 'all', deckOn: true, pergolaOn: true, wallOn: true, accessoryOn: true };
 
 function applyVisibility() {
-  const { building, deckOn, pergolaOn, accessoryOn } = viewState;
+  const { building, deckOn, pergolaOn, wallOn, accessoryOn } = viewState;
   const showAttic = building !== 'first';   // +다락·+지붕에서 다락 표시
   const showRoof = building === 'all';      // 집 지붕은 +지붕에서만
 
   for (const item of secondFloorObjects) item.visible = showAttic;
   for (const item of roofObjects) item.visible = showRoof;
   for (const item of deckObjects) item.visible = deckOn;
-  for (const item of pergolaObjects) item.visible = deckOn && pergolaOn;   // 파고라는 데크 위에만
-  for (const item of extrasObjects) item.visible = accessoryOn;            // 악세사리: 독립 토글
+  for (const item of pergolaObjects) item.visible = deckOn && pergolaOn;            // 파고라는 데크 위에만
+  for (const item of wallObjects) item.visible = deckOn && pergolaOn && wallOn;     // 외벽은 파고라 위에만
+  for (const item of extrasObjects) item.visible = accessoryOn;                     // 악세사리: 독립 토글
 
   // 버튼 상태 반영
   document.querySelector('#viewFirst').classList.toggle('active', building === 'first');
@@ -1960,6 +1910,9 @@ function applyVisibility() {
   const pergolaBtn = document.querySelector('#togglePergola');
   pergolaBtn.classList.toggle('active', deckOn && pergolaOn);
   pergolaBtn.disabled = !deckOn;            // 데크가 꺼져 있으면 파고라 토글 불가
+  const wallBtn = document.querySelector('#toggleWall');
+  wallBtn.classList.toggle('active', deckOn && pergolaOn && wallOn);
+  wallBtn.disabled = !(deckOn && pergolaOn);  // 파고라가 꺼져 있으면 외벽 토글 불가
   document.querySelector('#toggleAccessory').classList.toggle('active', accessoryOn);
 }
 
@@ -1990,6 +1943,12 @@ document.querySelector('#toggleDeck').addEventListener('click', () => {
 document.querySelector('#togglePergola').addEventListener('click', () => {
   if (!viewState.deckOn) return;            // 데크가 꺼져 있으면 파고라 토글 불가
   viewState.pergolaOn = !viewState.pergolaOn;
+  applyVisibility();
+});
+
+document.querySelector('#toggleWall').addEventListener('click', () => {
+  if (!viewState.deckOn || !viewState.pergolaOn) return;   // 파고라가 꺼져 있으면 외벽 토글 불가
+  viewState.wallOn = !viewState.wallOn;
   applyVisibility();
 });
 
