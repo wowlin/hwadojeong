@@ -11,8 +11,11 @@ app.innerHTML = `
     <aside class="panel">
       <div class="controls">
         <button id="viewFirst" type="button">1층</button>
-        <button id="viewSecond" type="button">다락</button>
-        <button id="viewAll" type="button">전체</button>
+        <button id="viewSecond" type="button">+다락</button>
+        <button id="viewAll" type="button">+지붕</button>
+        <button id="toggleDeck" type="button" class="toggle">데크</button>
+        <button id="togglePergola" type="button" class="toggle">파고라</button>
+        <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
       </div>
     </aside>
   </main>
@@ -42,6 +45,9 @@ controls.maxDistance = 24;
 const secondFloorObjects = [];
 const roofObjects = [];
 const alwaysVisibleObjects = [];
+const deckObjects = [];      // 데크 바닥·계단(데크 토글)
+const pergolaObjects = [];   // 파고라 구조물: 지붕·기둥·프레임·벽·팬·조명·치수(파고라 토글)
+const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 표시)
 
 const materials = {
   site: new THREE.MeshLambertMaterial({ color: 0xe9efe0 }),
@@ -1215,6 +1221,12 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   });
   const canopyFrame = materials.entryFrame;
 
+  // 가시성 그룹 분류용: 이 함수가 scene에 추가하는 모든 객체를 기록해 두고,
+  // 데크 바닥/소품(가구)만 따로 표시한 뒤 나머지는 파고라 구조물로 분류한다.
+  const _addStart = scene.children.length;
+  const deckLocal = [];      // 데크 바닥·바닥 치수 라벨
+  const extrasLocal = [];    // 캠핑 가구(의자 등)
+
   // 렉산 지붕면(앞으로 물매)
   const panelLen = Math.hypot(frontZ - wallZ, yAtFront - yAtWall);
   const panel = new THREE.Mesh(new THREE.BoxGeometry(roofW, 0.04, panelLen), lexan);
@@ -1340,7 +1352,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   deck.position.set((dX0 + dX1) / 2, deckTopY - deckThickness / 2, (dFrontZ + dWallZ) / 2);
   deck.receiveShadow = true;
   scene.add(deck);
-  addGeometryEdges(deck, 0x4a3724);
+  deckLocal.push(deck, addGeometryEdges(deck, 0x4a3724));
 
   // 캐노피 지붕/바닥 사이즈 표시 — 지붕은 경사면 길이, 바닥은 물매 반영한 수평투영(증축 신고 면적 기준)
   const roofMidZ = (wallZ + frontZ) / 2;
@@ -1349,7 +1361,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   const floorL = (deckDepth != null) ? deckDepth : (fWallZ - fFrontZ); // 데크 깊이(부분 데크면 그 값)
   const floorArea = floorW * floorL;
   const floorLabelZ = (deckDepth != null) ? fWallZ - deckDepth / 2 : (fWallZ + fFrontZ) / 2;
-  label(`캐노피 바닥(수평투영) ${Number(floorW.toFixed(2))}×${Number(floorL.toFixed(2))}m = ${floorArea.toFixed(1)}㎡`, (fX0 + fX1) / 2, firstFloorY + 0.06, floorLabelZ, 0.28);
+  deckLocal.push(label(`캐노피 바닥(수평투영) ${Number(floorW.toFixed(2))}×${Number(floorL.toFixed(2))}m = ${floorArea.toFixed(1)}㎡`, (fX0 + fX1) / 2, firstFloorY + 0.06, floorLabelZ, 0.28));
 
   // 기둥 높이 치수(앞단·집 벽쪽) — 두 파고라가 같은 규격이라 한쪽에만 표기
   if (withPostDims) {
@@ -1403,6 +1415,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   }
 
   // 캐노피 캠핑 가구 — 스노우피크 IGT 4칸/3칸(한쪽 사이드테이블) + 반고 햄프턴 DLX 의자
+  const _furnStart = scene.children.length;
   if (withFurniture) {
     const tableZ = porchCenterZ - 0.05;
     igtTable({ cx: porchCenterX - 1.05, cz: tableZ, bays: 4, sideTableSide: -1, baseY: firstFloorY });
@@ -1412,6 +1425,16 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
     campingChair({ cx: porchCenterX + 1.25, cz: tableZ - 0.72, faceAngle: 0, baseY: firstFloorY });
     campingChair({ cx: porchCenterX + 1.25, cz: tableZ + 0.72, faceAngle: Math.PI, baseY: firstFloorY });
     label('스노우피크 IGT(4·3칸) + 반고 햄프턴 DLX', porchCenterX, firstFloorY + 1.15, tableZ + 0.05, 0.26);
+  }
+  extrasLocal.push(...scene.children.slice(_furnStart));
+
+  // 추가물 분류: 데크 바닥/가구로 표시된 것 외 나머지는 모두 파고라 구조물.
+  const _deckSet = new Set(deckLocal);
+  const _extrasSet = new Set(extrasLocal);
+  for (const o of scene.children.slice(_addStart)) {
+    if (_deckSet.has(o)) deckObjects.push(o);
+    else if (_extrasSet.has(o)) extrasObjects.push(o);
+    else pergolaObjects.push(o);
   }
 
   return { dX0, dX1, dFrontZ, dWallZ, deckTopY };   // 데크 사각형(계단 배치에 사용)
@@ -1471,7 +1494,8 @@ const livingPergola = pergola({ roofLowX: -0.2, roofW: 5.6, withFurniture: true,
 //   오른쪽 프레임/데크는 별도로 두지 않고 거실 파고라 좌측 프레임선(fX1=5.2)에 이어 붙인다.
 const familyPergola = pergola({ roofLowX: 5.4, roofW: 3.3, withFurniture: false, withPostDims: false, withWalls: false, deckDepth: 1.0, postsToGround: true, connectRightX: 5.2, withFan: false, withShortPostDim: true });
 
-// 데크 계단 3곳(각 3계단)
+// 데크 계단 3곳(각 3계단) — 데크 그룹에 포함
+const _stairStart = scene.children.length;
 // · 거실 데크 앞쪽(전면, -z로 내려감)
 deckStairs({ axis: 'x', span0: livingPergola.dX0, span1: livingPergola.dX1, edge: livingPergola.dFrontZ, outward: -1 });
 // · 가족방 데크 앞쪽(전면, -z로 내려감)
@@ -1480,14 +1504,19 @@ deckStairs({ axis: 'x', span0: familyPergola.dX0, span1: familyPergola.dX1, edge
 deckStairs({ axis: 'z', span0: livingPergola.dFrontZ, span1: familyPergola.dFrontZ, edge: livingPergola.dX1, outward: 1 });
 // · 가족방 데크의 왼쪽(높은 X) 옆면 → 왼쪽 야외 부동수전 쪽으로 내려가는 계단(+x로 내려감)
 deckStairs({ axis: 'z', span0: familyPergola.dFrontZ, span1: familyPergola.dWallZ, edge: familyPergola.dX1, outward: 1 });
+deckObjects.push(...scene.children.slice(_stairStart));
 
 // 계단이 90도로 갈라지는 코너 안쪽(두 계단 사이 오목한 포켓, 마당 바닥)에 흰색 원통 나무 화분 — 모서리 충돌 방지.
+// 화분은 소품 그룹(전체일 때만 표시)
+const _planterStart = scene.children.length;
 // 1) 거실 데크: 전면 계단(−z)과 가족방쪽 옆면 계단(+x)이 갈라지는 코너 안쪽
 whitePlanter({ cx: livingPergola.dX1 + 0.3, cz: livingPergola.dFrontZ - 0.3, baseY: groundTopY });
 // 2) 가족방 데크: 전면 계단(−z)과 야외수전 쪽 옆면 계단(+x)이 갈라지는 코너 안쪽
 whitePlanter({ cx: familyPergola.dX1 + 0.3, cz: familyPergola.dFrontZ - 0.3, baseY: groundTopY });
+extrasObjects.push(...scene.children.slice(_planterStart));
 
-// 가족방 파고라 아래 자갈 마당에 웨버 켈틀 그릴(지름 50cm)
+// 가족방 파고라 아래 자갈 마당에 웨버 켈틀 그릴(지름 50cm) — 소품 그룹(전체일 때만 표시)
+const _grillStart = scene.children.length;
 {
   const gx = 7.0;                          // 가족방 파고라 폭(5.6~8.5) 중앙
   const gz = -3.3;                         // 1m 데크 앞쪽 개방 자갈 구역(지붕 아래)
@@ -1538,6 +1567,7 @@ whitePlanter({ cx: familyPergola.dX1 + 0.3, cz: familyPergola.dFrontZ - 0.3, bas
   }
   label('웨버 그릴 Ø50cm', gx, lidTopY + 0.4, gz, 0.26);
 }
+extrasObjects.push(...scene.children.slice(_grillStart));
 
 // 출입문과 거실 샷시 사이 전면 외벽에 외부(방수) 콘센트
 {
@@ -1904,43 +1934,71 @@ function animateRoute(keyframes, duration = 2200) {
   requestAnimationFrame(frame);
 }
 
-function showSecondFloor(show) {
-  for (const item of secondFloorObjects) item.visible = show;
-}
+// 가시성 상태
+//  · building: '1층' / '+다락' / '+지붕' 중 하나만 선택되는 건물 누적 뷰(집만 제어)
+//  · deckOn / pergolaOn / accessoryOn: 데크·파고라·악세사리 독립 on/off 토글
+//    - 파고라는 데크가 켜진 경우에만 가능(파고라는 데크 위에 얹힘)
+//    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
+const viewState = { building: 'all', deckOn: true, pergolaOn: true, accessoryOn: true };
 
-function showRoof(show) {
-  for (const item of roofObjects) item.visible = show;
-}
+function applyVisibility() {
+  const { building, deckOn, pergolaOn, accessoryOn } = viewState;
+  const showAttic = building !== 'first';   // +다락·+지붕에서 다락 표시
+  const showRoof = building === 'all';      // 집 지붕은 +지붕에서만
 
-function setActiveButton(id) {
-  for (const button of document.querySelectorAll('.controls button')) {
-    button.classList.toggle('active', button.id === id);
-  }
+  for (const item of secondFloorObjects) item.visible = showAttic;
+  for (const item of roofObjects) item.visible = showRoof;
+  for (const item of deckObjects) item.visible = deckOn;
+  for (const item of pergolaObjects) item.visible = deckOn && pergolaOn;   // 파고라는 데크 위에만
+  for (const item of extrasObjects) item.visible = accessoryOn;            // 악세사리: 독립 토글
+
+  // 버튼 상태 반영
+  document.querySelector('#viewFirst').classList.toggle('active', building === 'first');
+  document.querySelector('#viewSecond').classList.toggle('active', building === 'second');
+  document.querySelector('#viewAll').classList.toggle('active', building === 'all');
+  document.querySelector('#toggleDeck').classList.toggle('active', deckOn);
+  const pergolaBtn = document.querySelector('#togglePergola');
+  pergolaBtn.classList.toggle('active', deckOn && pergolaOn);
+  pergolaBtn.disabled = !deckOn;            // 데크가 꺼져 있으면 파고라 토글 불가
+  document.querySelector('#toggleAccessory').classList.toggle('active', accessoryOn);
 }
 
 document.querySelector('#viewFirst').addEventListener('click', () => {
-  showSecondFloor(false);
-  showRoof(false);
-  setActiveButton('viewFirst');
+  viewState.building = 'first';
+  applyVisibility();
   setView([4.25, 11.2, -5.0], [4.25, firstFloorY, 0.72]);
 });
 
 document.querySelector('#viewSecond').addEventListener('click', () => {
-  showSecondFloor(true);
-  showRoof(false);
-  setActiveButton('viewSecond');
+  viewState.building = 'second';
+  applyVisibility();
   setView([4.25, 12.2, -5.0], [4.25, secondY + secondFloorThickness, 0.72]);
 });
 
 document.querySelector('#viewAll').addEventListener('click', () => {
-  showSecondFloor(true);
-  showRoof(true);
-  setActiveButton('viewAll');
+  viewState.building = 'all';               // +지붕 = 집 지붕까지(데크·파고라·악세사리는 각 토글 상태 유지)
+  applyVisibility();
   setView([10.8, 6.8, -8.8], [4.55, 2.55, 0.65]);
 });
 
-showRoof(true);
-setActiveButton('viewAll');
+document.querySelector('#toggleDeck').addEventListener('click', () => {
+  viewState.deckOn = !viewState.deckOn;
+  if (!viewState.deckOn) viewState.pergolaOn = false;   // 데크를 끄면 파고라도 함께 off
+  applyVisibility();
+});
+
+document.querySelector('#togglePergola').addEventListener('click', () => {
+  if (!viewState.deckOn) return;            // 데크가 꺼져 있으면 파고라 토글 불가
+  viewState.pergolaOn = !viewState.pergolaOn;
+  applyVisibility();
+});
+
+document.querySelector('#toggleAccessory').addEventListener('click', () => {
+  viewState.accessoryOn = !viewState.accessoryOn;
+  applyVisibility();
+});
+
+applyVisibility();
 
 function resize() {
   const width = stage.clientWidth;
