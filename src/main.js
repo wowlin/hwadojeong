@@ -1,3 +1,41 @@
+// ════════════════════════════════════════════════════════════════════════════
+// 화도정 3D 개념 모형 — 편집 가이드 (자주 바뀌는 도면이라 수정 포인트를 여기 정리)
+// ════════════════════════════════════════════════════════════════════════════
+// ▌좌표계 (단위 m)
+//   X = 동서 :  +X = 동(도로측) / −X = 서      (평면도에선 동이 화면 왼쪽 = 미러)
+//   Z = 남북 :  +Z = 남(집 뒤)  / −Z = 북(정면·현관·캐노피)
+//   Y = 상하 :  지면 상단 groundTopY=0.08, 1층 바닥 firstFloorY=0.78
+//   집 발자국 : X 0~8.5, Z −0.7~3.3 (8.5×4.0m). 정면(−Z=북)에 데크/캐노피.
+//
+// ▌치수는 어디서 바꾸나
+//   · 건물·층고·기초·바닥재 : "주요 제원" 블록 (buildingW, foundationHeight, firstWallHeight …)
+//   · 다락·지붕 각도/두께   : secondWallHeight, roofSlopeDeg, roofThickness
+//   · 대지(부지) 형상       : lotNW/lotNE/lotSE/lotSW 코너 (도로·측백·치수 자동 추종)
+//   · 창호/문 크기·위치     : 1층 섹션의 yardSash*, familyWindow*, sideDoor*, livingRearWindow*, entryDoor*
+//   · 캐노피(파고라)        : pergola() 내부 targetFrontPostH / targetWallPostH / roofSlopeLength
+//   · 데크 계단             : deckStairs({...}) 호출부
+//   · 색·재질               : 상단 materials = { … } 객체
+//   · 버튼 라벨/업체         : 상단 app.innerHTML 의 <button>
+//
+// ▌객체 추가/제거 — 토글 그룹 시스템
+//   표시는 "그룹 배열 + applyVisibility()" 로 제어. 객체는 한 그룹에 속함:
+//     firstFloorObjects/secondFloorObjects/roofObjects/deckObjects/pergolaObjects/
+//     wallObjects/foldingObjects/outletObjects/boundaryObjects/foundationObjects/planObjects/extrasObjects
+//   · 추가 : 해당 위치에서 box({…})/label(…) → 캡처범위에 자동 분류, 또는 group.push(box({…}))(콘센트·담장식).
+//            캡처 패턴: const _s = scene.children.length; … ; group.push(...scene.children.slice(_s));
+//            (1층=_firstFloorStart, 다락=captureSecond(), 파고라=pergola() 내부)
+//   · 제거 : 그 box()/label() 줄 삭제(딸린 치수·라벨도 함께).
+//   · 토글 추가: ① app.innerHTML <button id="toggleX"> ② 그룹배열 const ③ applyVisibility() 규칙 ④ 하단 addEventListener.
+//
+// ▌헬퍼 (전부 전역, x·z는 최소 모서리, 단위 m)
+//   box({x,z,w,d,y,h,mat,name,cast}) · label(text,x,y,z,size) · flatPoly({points:[[x,z]…],y,h,mat,name})
+//   room/frontSash/sideSash/sideDoor/germanSlidingDoor/entryDoor/pocketDoor* · foundationHeightDim/planDim · setView/applyVisibility
+//
+// ▌주의 (ES모듈·strict)
+//   · 같은 이름 function/const 재정의 금지 → 앱 전체가 깨짐. 새 헬퍼는 새 이름으로.
+//   · const는 쓰기 전에 정의(파생값은 원본 뒤). "수치만" 변경은 안전, "줄 이동"은 의존성 확인.
+//   · 수정 후 콘솔 에러 0 + 해당 뷰 스크린샷으로 검증.
+// ════════════════════════════════════════════════════════════════════════════
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import './styles.css';
@@ -11,13 +49,14 @@ app.innerHTML = `
     <aside class="panel">
       <div class="controls">
         <button id="viewPlan" type="button">바닥<span class="btn-sub">배치도</span></button>
-        <button id="viewFoundation" type="button">기초<span class="btn-sub">플랜트리</span></button>
-        <button id="viewFirst" type="button">+1층<span class="btn-sub">아세만빌드</span><span class="btn-sub btn-sub-xs">1588-5152</span></button>
+        <button id="viewFoundation" type="button">기초</button>
+        <button id="viewFirst" type="button">+1층</button>
         <button id="viewSecond" type="button">+다락</button>
         <button id="viewAll" type="button">+지붕<span class="btn-sub">태연남(태양광)</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
         <button id="toggleDeck" type="button" class="toggle">데크<span class="btn-sub">포세린</span><span class="btn-sub btn-sub-xs">1644-6472</span></button>
-        <button id="togglePergola" type="button" class="toggle">파고라<span class="btn-sub">치악지붕건축</span><span class="btn-sub btn-sub-xs">0507-1332-8754</span></button>
+        <button id="togglePergola" type="button" class="toggle">파고라</button>
         <button id="toggleWall" type="button" class="toggle">외벽<span class="btn-sub">주식회사 단우</span><span class="btn-sub btn-sub-xs">1811-8179</span><span class="btn-sub btn-sub-xs">010-5382-8179</span></button>
+        <button id="toggleFolding" type="button" class="toggle">폴딩도어<span class="btn-sub">JJ시스템</span><span class="btn-sub btn-sub-xs">1899-9043</span></button>
         <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
         <button id="toggleOutlet" type="button" class="toggle">콘센트</button>
         <button id="toggleBoundary" type="button" class="toggle">담장<span class="btn-sub">3면 경계</span></button>
@@ -56,11 +95,13 @@ const roofObjects = [];
 const deckObjects = [];      // 데크 바닥·계단(데크 토글)
 const pergolaObjects = [];   // 파고라 구조물: 지붕·기둥·프레임·팬·조명·치수(파고라 토글)
 const wallObjects = [];      // 파고라 외벽: 다누몰 자바라 폴딩창(외벽 토글 — 시공 업체 별도)
+const foldingObjects = [];   // 거실 데크 3면 폴딩도어(폴딩도어 토글 — 외벽과 상호배타)
 const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 표시)
 const outletObjects = [];       // 전기 콘센트(1층) — 콘센트 토글
 const atticOutletObjects = [];  // 전기 콘센트(다락) — 콘센트 토글 + 다락 표시 시
 const boundaryObjects = [];     // 3면 경계(우측 콘크리트 담장 + 뒤·좌측 측백나무 생울타리) — 담장 토글
 const foundationObjects = [];   // 입체 기초(집+데크 슬래브, 높이 치수) — 바닥(평면도)에선 숨김
+const foundationDimObjects = []; // 기초 가로/세로·대지 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 const planObjects = [];         // 바닥(평면도): 납작한 기초 발자국 + 평면 치수 — 바닥에서만
 const planBoundaryObjects = []; // 바닥(평면도): 납작한 담장·생울타리 발자국 — 바닥 + 담장 토글 시
 
@@ -70,6 +111,7 @@ const materials = {
   road: new THREE.MeshLambertMaterial({ color: 0xcfd8e3 }),
   hedge: new THREE.MeshLambertMaterial({ color: 0x2f7d45 }),
   foundation: new THREE.MeshLambertMaterial({ color: 0xb8b8ad }),
+  floorFinish: new THREE.MeshLambertMaterial({ color: 0xcdb892 }),   // 바닥재(바닥 시공 20cm) — 기초 위, 1층 마감 아래
   dimension: new THREE.MeshLambertMaterial({ color: 0x111827 }),
   wall: new THREE.MeshLambertMaterial({ color: 0xffffff }),
   wallSide: new THREE.MeshLambertMaterial({ color: 0x9f917f }),
@@ -100,9 +142,10 @@ const materials = {
   handle: new THREE.MeshLambertMaterial({ color: 0xd4af37 }),
   glass: new THREE.MeshLambertMaterial({ color: 0x9ed0e8, transparent: true, opacity: 0.55 }),
   interiorGlassWall: new THREE.MeshLambertMaterial({ color: 0xd7e6e3, transparent: true, opacity: 0.32, depthWrite: false }),
+  soundWall: new THREE.MeshLambertMaterial({ color: 0xcfc6b4 }),   // 방음벽(솔리드): 스틸스터드+암면+석고2겹
   openingEdge: new THREE.MeshLambertMaterial({ color: 0x8f6f35 }),
   gable: new THREE.MeshLambertMaterial({ color: 0xf8fafc, side: THREE.DoubleSide }),
-  roof: new THREE.MeshLambertMaterial({ color: 0x6f7782, side: THREE.DoubleSide }),
+  roof: new THREE.MeshLambertMaterial({ color: 0x565c64, side: THREE.DoubleSide }),   // 징크(그래파이트 그레이) 지붕 260T
   roofEdge: new THREE.MeshLambertMaterial({ color: 0x515966, side: THREE.DoubleSide })
 };
 
@@ -663,12 +706,12 @@ function lowWall(x, z, w, d, y = 0.08, h = 0.7, mat = materials.wall) {
 }
 
 // 세로(높이) 치수 — 한 모서리에 수직선 + 상·하 틱(X방향) + 라벨. name:'ground'로 프레이밍 제외.
-function foundationHeightDim(x, z, y0, y1, text) {
+function foundationHeightDim(x, z, y0, y1, text, labelDx = -0.55) {
   const lw = 0.03;
   box({ x: x - lw / 2, z: z - lw / 2, w: lw, d: lw, y: y0, h: y1 - y0, mat: materials.dimension, cast: false, name: 'ground' });
   box({ x: x - 0.13, z: z - lw / 2, w: 0.26, d: lw, y: y0, h: lw, mat: materials.dimension, cast: false, name: 'ground' });
   box({ x: x - 0.13, z: z - lw / 2, w: 0.26, d: lw, y: y1 - lw, h: lw, mat: materials.dimension, cast: false, name: 'ground' });
-  label(text, x - 0.55, (y0 + y1) / 2, z, 0.26);
+  label(text, x + labelDx, (y0 + y1) / 2, z, 0.26);   // labelDx: 라벨을 어느 쪽으로 뺄지(+면 바깥)
 }
 
 // 평면(바닥 도면) 치수 — 지면 높이에 납작하게. axis 'z'(고정 x, Z방향) / 'x'(고정 z, X방향).
@@ -774,6 +817,26 @@ function frontSash(x, z, w, sillY, h) {
   box({ x: x + frame, z: glassZ, w: w - frame * 2, d: 0.04, y: sillY + frame, h: h - frame * 2, mat: materials.glass });
 }
 
+// 거실 전면: 독일식 수평밀착 슬라이딩 시스템도어(출입 가능) — VATON(제이제이시스템) AL PS 타입.
+// 굵은 80mm 프로파일 + 2짝 미닫이 만남대(인터록) + 하부 레일 + 세로 손잡이로 일반창과 구분.
+function germanSlidingDoor(x, z, w, sillY, h) {
+  const frame = 0.08;            // 80mm 독일식 알루미늄 프로파일
+  const fd = 0.13;               // 프레임 깊이
+  const fz = z - 0.05;
+  const glassZ = z - 0.04;
+  const F = materials.entryFrame;
+  box({ x, z: fz, w: frame, d: fd, y: sillY, h, mat: F });                            // 좌 세로 프레임
+  box({ x: x + w - frame, z: fz, w: frame, d: fd, y: sillY, h, mat: F });             // 우 세로 프레임
+  box({ x, z: fz, w, d: fd, y: sillY + h - frame, h: frame, mat: F });                // 상부
+  box({ x, z: fz, w, d: fd, y: sillY, h: frame * 1.4, mat: F });                      // 하부 레일(출입 문턱)
+  const cx = x + w / 2;
+  box({ x: cx - frame, z: glassZ + 0.015, w: frame, d: 0.05, y: sillY + frame, h: h - frame * 2, mat: F });  // 앞짝 만남대
+  box({ x: cx, z: glassZ - 0.025, w: frame, d: 0.05, y: sillY + frame, h: h - frame * 2, mat: F });          // 뒷짝 만남대
+  box({ x: x + frame, z: glassZ + 0.015, w: w / 2 - frame * 1.5, d: 0.045, y: sillY + frame, h: h - frame * 2, mat: materials.glass });  // 좌(앞짝) 유리
+  box({ x: cx + frame, z: glassZ - 0.025, w: w / 2 - frame * 1.5, d: 0.045, y: sillY + frame, h: h - frame * 2, mat: materials.glass });  // 우(뒷짝) 유리
+  box({ x: cx - frame - 0.04, z: glassZ + 0.07, w: 0.04, d: 0.04, y: sillY + h * 0.4, h: h * 0.22, mat: materials.handle });             // 세로 손잡이
+}
+
 function sideSash(x, z, d, sillY, h) {
   const frame = 0.05;
   const frameX = x - 0.04;
@@ -784,6 +847,20 @@ function sideSash(x, z, d, sillY, h) {
   box({ x: frameX, z, w: 0.1, d, y: sillY + h - frame, h: frame, mat: materials.entryFrame });
   box({ x: frameX, z: z + d / 2 - frame / 2, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });
   box({ x: glassX, z: z + frame, w: 0.04, d: d - frame * 2, y: sillY + frame, h: h - frame * 2, mat: materials.glass });
+}
+
+// 안방 측면(도로측, 고X 벽) 작은 출입문 — JJ시스템(VATON) AL 시스템도어 SD 여닫이형. 바닥까지 내려오는 유리 leaf + 하부 문턱 + 손잡이.
+function sideDoor(x, z, d, baseY, h) {
+  const frame = 0.06;
+  const frameX = x - 0.04;
+  const glassX = x - 0.035;
+  const F = materials.entryFrame;
+  box({ x: frameX, z, w: 0.1, d: frame, y: baseY, h, mat: F });                       // 앞(저Z) 세로 프레임
+  box({ x: frameX, z: z + d - frame, w: 0.1, d: frame, y: baseY, h, mat: F });        // 뒤(고Z) 세로 프레임
+  box({ x: frameX, z, w: 0.1, d, y: baseY + h - frame, h: frame, mat: F });           // 상부
+  box({ x: frameX, z, w: 0.1, d, y: baseY, h: frame, mat: F });                       // 하부 문턱
+  box({ x: glassX, z: z + frame, w: 0.04, d: d - frame * 2, y: baseY + frame, h: h - frame * 2, mat: materials.glass });   // 유리 leaf
+  box({ x: glassX - 0.02, z: z + d - 0.2, w: 0.05, d: 0.04, y: baseY + h * 0.42, h: h * 0.16, mat: materials.handle });    // 세로 손잡이
 }
 
 function openingEdge(x, z, w, d, y) {
@@ -802,15 +879,22 @@ function captureSecond(fn) {
 // Plan-left = family room. Plan-right = living+kitchen.
 // Bottom = front/yard/entrance. Top = rear wall/stair-back wall.
 // Do not reinterpret plan-left/plan-right by camera angle or viewer position.
-const buildingW = 8.5;
-const buildingFrontZ = -0.7;
-const buildingBackZ = 3.3;
-const buildingD = buildingBackZ - buildingFrontZ;
-const groundTopY = 0.08;
-const foundationHeight = 0.5;
-const firstFloorY = groundTopY + foundationHeight;
-const foundationTopY = firstFloorY;
+
+// ═══════════ 주요 제원 (여기서 치수 수정 — 단위 m) ═══════════
+//   건물 외형
+const buildingW = 8.5;                 // 집 가로(동서)
+const buildingFrontZ = -0.7;           // 정면(북) 외벽 Z
+const buildingBackZ = 3.3;             // 후면(남) 외벽 Z
+const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
+//   기초·바닥
+const groundTopY = 0.08;               // 지면 상단
+const foundationHeight = 0.5;          // 집 기초 높이
+const foundationTopY = groundTopY + foundationHeight;   // 기초 슬래브 상단(0.58)
+const floorFinishH = 0.20;                              // 바닥재(바닥 시공) 두께 20cm
+const firstFloorY = foundationTopY + floorFinishH;      // 1층 바닥 마감 상단(0.78) — 벽·계단·가구가 여기서 시작
 const deckFinishT = 0.04;   // 포세린 마감 두께(데크 기초 슬래브 위에 얹힘 — 건식)
+const deckFoundationH = 0.5;    // 데크 기초 높이 50cm(집 기초와 동일, 단차 없음)
+const deckTopY0 = groundTopY + deckFoundationH;   // 데크 기초 상단(집보다 5cm 아래)
 
 // 부지(흙색 지면): 집 너비 방향(X) 9.95m × 정면 방향(Z) 9m. 집을 X로 중앙 배치, 뒤로 1m 여유.
 const lotW = 9.95;
@@ -847,9 +931,13 @@ captureInto(foundationObjects, () => {
   box({ x: lotDimX - 0.15, z: lotZ1 - 0.04, w: 0.34, d: 0.04, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
   label(`대지 세로 ${lotD}m`, lotDimX - 0.55, 0.34, (lotZ0 + lotZ1) / 2, 0.36);
 });
-// 입체 집 기초 + 치수 — foundationObjects로 캡처(바닥/평면도에선 숨기고 납작한 발자국으로 대체)
+// 입체 집 기초(슬래브) + 높이 치수 — foundationObjects(1층·다락·지붕에도 표시, 바닥에선 발자국으로 대체)
 captureInto(foundationObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: foundationHeight, mat: materials.foundation });
+  foundationHeightDim(buildingW + 0.2, buildingBackZ - 0.4, groundTopY, foundationTopY, '집기초 0.5m', 0.6);
+});
+// 기초 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
+captureInto(foundationDimObjects, () => {
   box({ x: 0, z: buildingBackZ + 0.18, w: buildingW, d: 0.035, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
   box({ x: 0, z: buildingBackZ + 0.08, w: 0.035, d: 0.27, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
   box({ x: buildingW - 0.035, z: buildingBackZ + 0.08, w: 0.035, d: 0.27, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
@@ -858,17 +946,20 @@ captureInto(foundationObjects, () => {
   box({ x: buildingW + 0.08, z: buildingFrontZ, w: 0.27, d: 0.035, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
   box({ x: buildingW + 0.08, z: buildingBackZ - 0.035, w: 0.27, d: 0.035, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
   label('기초 세로 4.0m', buildingW + 0.58, foundationTopY + 0.3, buildingFrontZ + buildingD / 2, 0.34);
-  // 집 기초 높이 치수(가족방 쪽 모서리) — 데크 기초와 동일 0.5m
-  foundationHeightDim(buildingW + 0.2, buildingBackZ - 0.4, groundTopY, firstFloorY, '집기초 0.5m');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
 
+// 바닥재(바닥 시공 20cm) — 기초 슬래브 위에 얹히는 마감층. 1층 벽·계단·가구는 이 위(firstFloorY)에서 시작.
+box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY, h: floorFinishH, mat: materials.floorFinish });
+foundationHeightDim(-0.2, buildingFrontZ + 0.5, foundationTopY, firstFloorY, '바닥재 0.2m');
+
 // 1F measured plan. Dimensions are in meters within an 8.5m x 4.0m footprint.
+//   1층 층고·벽 두께 (제원)
 const firstWallY = firstFloorY;
-const firstWallHeight = 2.6;
-const exteriorWall = 0.2;
-const interiorWall = 0.1;
+const firstWallHeight = 2.6;            // 1층 벽 높이
+const exteriorWall = 0.2;               // 외벽 두께
+const interiorWall = 0.1;               // 내벽 두께
 const insideX0 = exteriorWall;
 const insideZ0 = buildingFrontZ + exteriorWall;
 const insideX1 = buildingW - exteriorWall;
@@ -896,8 +987,8 @@ const firstFamilyW = sideRoomW;
 const firstFamilyD = sideRoomD;
 const firstLivingX = planRightLivingX;
 const firstFamilyX = planLeftFamilyX;
-const entryDoorLeafW = 0.9;
-const entryFrameOuterW = 1.0;
+const entryDoorLeafW = 1.0;     // 현관 문짝 유효폭 1000mm
+const entryFrameOuterW = 1.1;   // 문틀 외곽(좌우 프레임 50mm씩 포함)
 const entryGapStart = stairClearX + (stairClearW - entryFrameOuterW) / 2;
 const entryFrameH = 2.18;
 const entryGapEnd = entryGapStart + entryFrameOuterW;
@@ -910,12 +1001,13 @@ const yardDeckH = 0.08;
 const yardSashSillY = firstFloorY + yardDeckH;
 const sideWindowSillY = firstFloorY + 0.9;
 const sideWindowH = 1.2;
-const secondFloorThickness = 0.15;
-const secondWallHeight = 1.15;
-const roofSlopeDeg = 33;
+//   다락·지붕 (제원)
+const secondFloorThickness = 0.15;     // 다락 바닥 슬래브 두께
+const secondWallHeight = 1.10;         // 다락 무릎벽 높이(가중평균 ~1.75m로 다락 1.8m 한도 안전마진)
+const roofSlopeDeg = 33;               // 지붕 물매(도)
 const roofSlopeTan = Math.tan(THREE.MathUtils.degToRad(roofSlopeDeg));
 const gableRise = roofSlopeTan * (buildingD / 2);
-const roofThickness = 0.26;
+const roofThickness = 0.26;            // 지붕(단열 260T+징크) 두께
 const stairRiserCount = 16;
 const lowerStraightTreadCount = 6;
 const winderTreadCount = 3;
@@ -930,7 +1022,7 @@ const stairFirstRunEnd = stairTurnStart;
 const stairBathX = stairHighXRunX;
 const stairBathZ = stairFirstRunStart;
 const stairBathW = stairRunW;
-const stairBathD = stairFirstRunEnd - stairFirstRunStart;
+const stairBathD = insideZ1 - stairBathZ;   // WC를 계단 턴 아래까지 늘려 뒤쪽 외벽에 맞붙임(2.62m)
 const stairBathDoorW = interiorDoorW;
 const stairBathDoorX = stairBathX + (stairBathW - stairBathDoorW) / 2;
 const stairBathDoorEndX = stairBathDoorX + stairBathDoorW;
@@ -941,24 +1033,38 @@ const floorOverlayLift = 0.002;
 const livingYardSashX = firstLivingX + (firstLivingW - yardSashW) / 2;
 const familyYardSashX = firstFamilyX + (firstFamilyW - yardSashW) / 2;
 const yardSashTopY = yardSashSillY + yardSashH;
+// 안방 전면은 출입창이 아니라 일반 창문 — 통상 규격: 폭 1800, 창대(sill) 바닥+900, 상단은 현관·거실 도어와 동일선
+const familyWindowW = 1.8;
+const familyWindowX = firstFamilyX + (firstFamilyW - familyWindowW) / 2;
+const familyWindowSillY = firstFloorY + 0.9;
+const familyWindowTopY = yardSashTopY;
+const familyWindowH = familyWindowTopY - familyWindowSillY;   // ≈1.28m
 const entryDoorBaseY = firstWallY + yardDeckH;
-const livingRearWindowW = 2.35;
-const livingRearWindowX = firstLivingX + (firstLivingW - livingRearWindowW) / 2;
-const livingRearWindowSillY = firstFloorY + 1.15;
-const livingRearWindowH = 0.75;
-const livingRearWindowTopY = livingRearWindowSillY + livingRearWindowH;
-const familyRearWindowW = 1.8;
-const familyRearWindowX = firstFamilyX + (firstFamilyW - familyRearWindowW) / 2;
-const familyRearWindowSillY = firstFloorY + 0.9;
-const familyRearWindowH = 1.2;
-const familyRearWindowTopY = familyRearWindowSillY + familyRearWindowH;
 const kitchenSinkW = 2.2;
 const kitchenSinkD = 0.6;
 const kitchenSinkH = 0.85;
 const kitchenSinkX = insideX0;   // 오른쪽(저X) 외벽에 붙임
-const kitchenSinkZ = insideZ1 - kitchenSinkD;   // 싱크대는 뒤쪽 벽으로(앞 입구 확보), 창문은 전면 유지
+const kitchenSinkZ = insideZ1 - kitchenSinkD;   // 싱크대는 뒤쪽 벽으로(앞 입구 확보)
+const kitchenCounterY = firstFloorY + kitchenSinkH + 0.05;   // 싱크대 상판 높이(≈바닥+0.90)
+// 싱크대 창: 상판+백스플래시 위에서 시작, 윗선은 전면 도어와 동일선(2.18), 싱크대 위로 센터링
+const livingRearWindowW = 2.0;
+const livingRearWindowX = kitchenSinkX + (kitchenSinkW - livingRearWindowW) / 2;
+const livingRearWindowSillY = kitchenCounterY + 0.15;
+const livingRearWindowTopY = yardSashTopY;
+const livingRearWindowH = livingRearWindowTopY - livingRearWindowSillY;
+const familyRearWindowW = 1.8;                       // 안방 전면창과 동일 폭
+const familyRearWindowX = firstFamilyX + (firstFamilyW - familyRearWindowW) / 2;   // 안방 중앙
+const familyRearWindowSillY = firstFloorY + 0.9;     // 일반 창대(전면창과 동일)
+const familyRearWindowTopY = yardSashTopY;           // 윗선을 거실 싱크대 창·전면 개구부와 동일선(2.18)
+const familyRearWindowH = familyRearWindowTopY - familyRearWindowSillY;   // ≈1.28m
 const familyRoadWindowW = 1.8;
-const familyRoadWindowZ = insideZ0 + (firstFamilyD - familyRoadWindowW) / 2;
+// 안방 측면(도로측) 전면쪽 작은 출입문 — 800×2100 여닫이. 바깥 작은 공간으로 출입.
+const sideDoorW = 0.8;
+const sideDoorZ = insideZ0 + 0.2;                        // 전면쪽(코너에서 0.2m 띄움)
+const sideDoorBaseY = firstFloorY;                       // 바닥에서 시작(출입)
+const sideDoorH = 2.1;
+const sideDoorTopY = sideDoorBaseY + sideDoorH;
+const familyRoadWindowZ = sideDoorZ + sideDoorW + 0.3;   // 문 뒤로 0.3m 벽기둥 두고 도로측 창
 const sideWindowTopY = sideWindowSillY + sideWindowH;
 const secondRoom2X = stairHighXClearX;
 const secondRoom2W = insideX1 - secondRoom2X;
@@ -996,10 +1102,11 @@ const sideGableWindowW = 1.0;
 const sideGableWindowH = 0.5;
 const sideGableWindowSillOffset = 0.35;
 
-box({ x: frontCornerDimX, z: frontCornerDimZ, w: 0.035, d: 0.035, y: firstWallY, h: firstWallHeight, mat: materials.dimension });
-box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: firstWallY, h: 0.035, mat: materials.dimension });
+// 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 2.8m
+box({ x: frontCornerDimX, z: frontCornerDimZ, w: 0.035, d: 0.035, y: foundationTopY, h: firstWallHeight + floorFinishH, mat: materials.dimension });
+box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: foundationTopY, h: 0.035, mat: materials.dimension });
 box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: firstWallY + firstWallHeight - 0.035, h: 0.035, mat: materials.dimension });
-label('1층 높이 2.6m', frontCornerDimLabelX, firstWallY + firstWallHeight / 2, frontCornerDimLabelZ, 0.32);
+label('1층 높이 2.8m', frontCornerDimLabelX, (foundationTopY + firstWallY + firstWallHeight) / 2, frontCornerDimLabelZ, 0.32);
 
 room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: firstFloorY + floorOverlayLift, mat: materials.living, text: roomText('거실+주방', firstLivingW, firstLivingD) });
 box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY, h: kitchenSinkH, mat: materials.sinkCabinet });
@@ -1018,18 +1125,30 @@ box({ x: stairBathX + 0.64, z: stairBathZ + 0.14, w: 0.28, d: 0.5, y: firstFloor
 box({ x: stairBathX + 0.76, z: stairBathZ + 0.21, w: 0.05, d: 0.05, y: firstFloorY + 1.15, h: 0.05, mat: materials.entryFrame });
 box({ x: stairBathX + 0.28, z: stairBathZ + stairBathD - 0.62, w: 0.44, d: 0.5, y: firstFloorY, h: 0.34, mat: materials.toilet });
 box({ x: stairBathX + 0.25, z: stairBathZ + stairBathD - 0.14, w: 0.5, d: 0.1, y: firstFloorY, h: 0.58, mat: materials.toilet });
+// 계단하부 WC는 외벽에 안 접한 무창 화장실 → 기계환기 필수: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기
+{
+  const ventX = stairBathX + stairBathW / 2;
+  // WC 천장은 계단 밑 경사면 → 뒤쪽 실사용 천장선은 바닥+약 1.3m(벽 절반). 배기팬은 그 천장선 바로 아래(WC 실내 공기 안)여야 실제로 배기됨.
+  const capY = firstFloorY + 1.08;
+  box({ x: ventX - 0.12, z: insideZ1 - 0.06, w: 0.24, d: 0.06, y: capY, h: 0.22, mat: materials.guard });           // 실내 벽붙이 배기팬 그릴(천장선 바로 아래)
+  box({ x: ventX - 0.05, z: insideZ1 - 0.11, w: 0.1, d: 0.06, y: capY + 0.06, h: 0.1, mat: materials.guard });      // 팬 흡입구
+  box({ x: ventX - 0.13, z: buildingBackZ, w: 0.26, d: 0.05, y: capY, h: 0.22, mat: materials.entryFrame });          // 뒤 외벽 외부 환기캡(방수 후드)
+  box({ x: ventX - 0.14, z: buildingBackZ + 0.03, w: 0.28, d: 0.06, y: capY - 0.03, h: 0.05, mat: materials.entryFrame });  // 하단 빗물막이 립
+  label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 0.24);
+}
 box({ x: stairClearX, z: stairOpeningStart, w: stairClearW, d: insideZ1 - stairOpeningStart, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stair, cast: false });
-room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed, text: roomText('가족방', firstFamilyW, firstFamilyD) });
+room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed, text: roomText('안방', firstFamilyW, firstFamilyD) });
 
 // 1F walls
 horizontalWallWithGaps(0, buildingFrontZ, 8.5, firstWallY, [
   [livingYardSashX, livingYardSashX + yardSashW],
-  [familyYardSashX, familyYardSashX + yardSashW],
+  [familyWindowX, familyWindowX + familyWindowW],
   [entryGapStart, entryGapEnd]
 ], firstWallHeight, exteriorWall, materials.exteriorWall);
 // 거실 전면: 가족방과 동일한 출입 가능 샷시(데크로 통하는 전면 도어창) — 상부 인방만
 lowWall(livingYardSashX, buildingFrontZ, yardSashW, exteriorWall, yardSashTopY, firstWallY + firstWallHeight - yardSashTopY, materials.exteriorWall);
-lowWall(familyYardSashX, buildingFrontZ, yardSashW, exteriorWall, yardSashTopY, firstWallY + firstWallHeight - yardSashTopY, materials.exteriorWall);
+lowWall(familyWindowX, buildingFrontZ, familyWindowW, exteriorWall, firstWallY, familyWindowSillY - firstWallY, materials.exteriorWall);          // 안방 창 아래(창대벽 900)
+lowWall(familyWindowX, buildingFrontZ, familyWindowW, exteriorWall, familyWindowTopY, firstWallY + firstWallHeight - familyWindowTopY, materials.exteriorWall);   // 안방 창 위(인방)
 lowWall(entryGapStart, buildingFrontZ, entryFrameOuterW, exteriorWall, entryDoorBaseY + entryFrameH, firstWallY + firstWallHeight - entryDoorBaseY - entryFrameH, materials.exteriorWall);
 // 후면 벽: 거실은 싱크대용 창(전면에서 이동), 가족방 후면 창
 horizontalWallWithGaps(0, insideZ1, buildingW, firstWallY, [
@@ -1042,29 +1161,32 @@ lowWall(familyRearWindowX, insideZ1, familyRearWindowW, exteriorWall, firstWallY
 lowWall(familyRearWindowX, insideZ1, familyRearWindowW, exteriorWall, familyRearWindowTopY, firstWallY + firstWallHeight - familyRearWindowTopY, materials.exteriorWall);
 lowWall(0, buildingFrontZ, exteriorWall, buildingD, firstWallY, firstWallHeight, materials.exteriorWall);
 verticalWallWithGaps(insideX1, buildingFrontZ, buildingD, firstWallY, [
-  [familyRoadWindowZ, familyRoadWindowZ + familyRoadWindowW]
+  [sideDoorZ, sideDoorZ + sideDoorW]
 ], firstWallHeight, exteriorWall, materials.exteriorWall);
-lowWall(insideX1, familyRoadWindowZ, exteriorWall, familyRoadWindowW, firstWallY, sideWindowSillY - firstWallY, materials.exteriorWall);
-lowWall(insideX1, familyRoadWindowZ, exteriorWall, familyRoadWindowW, sideWindowTopY, firstWallY + firstWallHeight - sideWindowTopY, materials.exteriorWall);
-// 가족방 내벽 — 반투명(불투명 유리 파티션)으로 화장실 내부가 비쳐 보이게 함
+lowWall(insideX1, sideDoorZ, exteriorWall, sideDoorW, sideDoorTopY, firstWallY + firstWallHeight - sideDoorTopY, materials.exteriorWall);   // 측면 출입문 위(인방)
+// 안방-화장실/계단 사이 내벽 — 방음벽(솔리드): 스틸스터드+암면 충진+양면 석고 2겹. 두께 0.16(일반 내벽 0.10보다 두껍게).
+const soundWall = 0.16;
 verticalWallWithGaps(stairHighXWallX, insideZ0, insideD, firstWallY, [
   [familyDoorZ, familyDoorZ + interiorDoorW]
-], firstWallHeight, interiorWall, materials.interiorGlassWall);
-lowWall(stairHighXWallX, familyDoorZ, interiorWall, interiorDoorW, firstWallY + interiorDoorH, firstWallHeight - interiorDoorH, materials.interiorGlassWall);
+], firstWallHeight, soundWall, materials.soundWall);
+lowWall(stairHighXWallX, familyDoorZ, soundWall, interiorDoorW, firstWallY + interiorDoorH, firstWallHeight - interiorDoorH, materials.soundWall);
+label('안방·화장실 방음벽\n(암면+석고2겹)', stairHighXWallX + 0.1, firstFloorY + 1.95, 1.8, 0.24);
 horizontalWallWithGaps(stairBathX, stairBathZ, stairBathW, firstWallY, [
   [stairBathDoorX, stairBathDoorEndX]
 ], stairBathWallH, interiorWall, materials.stairWall);
 lowWall(stairBathDoorX, stairBathZ, stairBathDoorW, interiorWall, firstWallY + stairBathDoorH, stairBathWallH - stairBathDoorH, materials.stairWall);
-frontSash(livingYardSashX, buildingFrontZ - 0.04, yardSashW, yardSashSillY, yardSashH); // 거실 전면 출입창(가족방과 동일)
+germanSlidingDoor(livingYardSashX, buildingFrontZ - 0.04, yardSashW, yardSashSillY, yardSashH); // 거실 전면 독일식 시스템도어(출입·현관 높이 2.1m)
+label('거실 독일식 시스템도어 VATON PS', livingYardSashX + yardSashW / 2, yardSashTopY + 0.14, buildingFrontZ - 0.35, 0.24);
 entryDoor(entryGapStart, buildingFrontZ - 0.04, entryFrameOuterW, entryDoorLeafW, entryDoorBaseY);
-frontSash(familyYardSashX, buildingFrontZ - 0.04, yardSashW, yardSashSillY, yardSashH);
+frontSash(familyWindowX, buildingFrontZ - 0.04, familyWindowW, familyWindowSillY, familyWindowH);   // 안방 전면 창문(1800×1280, 창대 900)
 frontSash(livingRearWindowX, insideZ1 + 0.04, livingRearWindowW, livingRearWindowSillY, livingRearWindowH); // 싱크대용 창(후면)
 frontSash(familyRearWindowX, insideZ1 + 0.04, familyRearWindowW, familyRearWindowSillY, familyRearWindowH);
-sideSash(insideX1 + 0.04, familyRoadWindowZ, familyRoadWindowW, sideWindowSillY, sideWindowH);
+sideDoor(insideX1 + 0.04, sideDoorZ, sideDoorW, sideDoorBaseY, sideDoorH);   // 안방 측면 출입문(전면쪽, 도로측 창 대신)
+label('안방 측면 출입문', insideX1 + 0.5, sideDoorTopY + 0.05, sideDoorZ + sideDoorW / 2, 0.24);
 interiorDoorHorizontal(stairBathDoorX, stairBathZ, firstFloorY, stairBathDoorW, stairBathDoorH);
 pocketDoorVertical(stairHighXWallX, familyDoorZ, firstFloorY, interiorDoorH, 1);
 
-// 가족방 침대 2.0 x 2.0m — 뒤쪽 벽(높은 Z) + 왼쪽 벽(도로측, 높은 X) 코너에 붙임. 머리맡=뒤쪽 벽.
+// 안방 침대 2.0 x 2.0m — 뒤쪽 벽(높은 Z) + 동쪽(도로측, 높은 X) 코너. 머리맡=동쪽(높은 X) 벽.
 {
   const bedW = 2.0;
   const bedD = 2.0;
@@ -1076,12 +1198,12 @@ pocketDoorVertical(stairHighXWallX, familyDoorZ, firstFloorY, interiorDoorH, 1);
   const pillowMat = new THREE.MeshLambertMaterial({ color: 0xffffff });   // 베개
   const frameH = 0.3;
   const mattressH = 0.2;
-  box({ x: bedX, z: bedZ, w: bedW, d: bedD, y: firstFloorY, h: frameH, mat: frameMat });                       // 프레임
-  box({ x: bedX, z: insideZ1 - 0.08, w: bedW, d: 0.08, y: firstFloorY, h: frameH + 0.45, mat: frameMat });      // 헤드보드(뒤쪽)
-  box({ x: bedX + 0.05, z: bedZ + 0.05, w: bedW - 0.1, d: bedD - 0.13, y: firstFloorY + frameH, h: mattressH, mat: mattressMat });
-  box({ x: bedX + 0.05, z: bedZ + 0.05, w: bedW - 0.1, d: (bedD - 0.13) * 0.6, y: firstFloorY + frameH + mattressH, h: 0.06, mat: duvetMat });  // 이불(발치~중간)
-  for (const px of [bedX + 0.18, bedX + bedW - 0.18 - 0.7]) {              // 베개 2개(머리맡)
-    box({ x: px, z: insideZ1 - 0.6, w: 0.7, d: 0.4, y: firstFloorY + frameH + mattressH, h: 0.12, mat: pillowMat });
+  box({ x: bedX, z: bedZ, w: bedW, d: bedD, y: firstFloorY, h: frameH, mat: frameMat });                            // 프레임
+  box({ x: insideX1 - 0.08, z: bedZ, w: 0.08, d: bedD, y: firstFloorY, h: frameH + 0.45, mat: frameMat });          // 헤드보드(동쪽=높은 X 벽)
+  box({ x: bedX + 0.05, z: bedZ + 0.05, w: bedW - 0.13, d: bedD - 0.1, y: firstFloorY + frameH, h: mattressH, mat: mattressMat });
+  box({ x: bedX + 0.05, z: bedZ + 0.05, w: (bedW - 0.13) * 0.6, d: bedD - 0.1, y: firstFloorY + frameH + mattressH, h: 0.06, mat: duvetMat });  // 이불(발치=서쪽~중간)
+  for (const pz of [bedZ + 0.18, bedZ + bedD - 0.18 - 0.7]) {              // 베개 2개(머리맡=동쪽/높은 X)
+    box({ x: insideX1 - 0.5, z: pz, w: 0.4, d: 0.7, y: firstFloorY + frameH + mattressH, h: 0.12, mat: pillowMat });
   }
   label('침대 2.0x2.0m', bedX + bedW / 2, firstFloorY + 1.0, bedZ + bedD / 2, 0.28);
 }
@@ -1100,10 +1222,9 @@ function curtainRail({ x, z, len, headY, axis = 'x', sign = 1 }) {
   }
 }
 curtainRail({ x: livingYardSashX, z: insideZ0, len: yardSashW, headY: yardSashTopY, axis: 'x', sign: 1 });           // 거실 전면 출입창
-curtainRail({ x: familyYardSashX, z: insideZ0, len: yardSashW, headY: yardSashTopY, axis: 'x', sign: 1 });          // 가족방 전면 출입창
+curtainRail({ x: familyWindowX, z: insideZ0, len: familyWindowW, headY: familyWindowTopY, axis: 'x', sign: 1 });          // 안방 전면 창문
 curtainRail({ x: livingRearWindowX, z: insideZ1, len: livingRearWindowW, headY: livingRearWindowTopY, axis: 'x', sign: -1 }); // 거실 후면창
 curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: familyRearWindowTopY, axis: 'x', sign: -1 }); // 가족방 후면창
-curtainRail({ x: insideX1, z: familyRoadWindowZ, len: familyRoadWindowW, headY: sideWindowTopY, axis: 'z', sign: -1 });       // 가족방 도로측 창
 
 firstFloorObjects.push(...scene.children.slice(_firstFloorStart));   // 1층 골조·실내 그룹 확정(다락 빌드 전)
 
@@ -1124,7 +1245,21 @@ captureSecond(() => {
   box({ x: frontCornerDimX, z: frontCornerDimZ, w: 0.035, d: 0.035, y: secondWallY, h: secondWallHeight, mat: materials.dimension });
   box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: secondWallY, h: 0.035, mat: materials.dimension });
   box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: secondWallY + secondWallHeight - 0.035, h: 0.035, mat: materials.dimension });
-  label('다락 높이 1.15m', frontCornerDimLabelX, secondWallY + secondWallHeight / 2, frontCornerDimLabelZ, 0.28);
+  label(`다락 벽높이 ${secondWallHeight.toFixed(2)}m`, frontCornerDimLabelX, secondWallY + secondWallHeight / 2, frontCornerDimLabelZ, 0.28);
+
+  // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
+  const atticRidgeZ = buildingFrontZ + buildingD / 2;
+  const atticPeakH = secondWallHeight + gableRise;
+  box({ x: frontCornerDimX, z: atticRidgeZ, w: 0.035, d: 0.035, y: secondWallY, h: atticPeakH, mat: materials.dimension });
+  box({ x: frontCornerDimTickX, z: atticRidgeZ, w: 0.35, d: 0.035, y: secondWallY, h: 0.035, mat: materials.dimension });
+  box({ x: frontCornerDimTickX, z: atticRidgeZ, w: 0.35, d: 0.035, y: secondWallY + atticPeakH - 0.035, h: 0.035, mat: materials.dimension });
+  label(`용마루 ${atticPeakH.toFixed(2)}m`, frontCornerDimLabelX, secondWallY + atticPeakH / 2, atticRidgeZ, 0.28);
+
+  // 다락방 문이 있는 벽 높이 — 칸막이(secondAtticWallZ) 위치, 왼쪽 벽
+  box({ x: frontCornerDimX, z: secondAtticWallZ, w: 0.035, d: 0.035, y: secondWallY, h: secondAtticFrontWallH, mat: materials.dimension });
+  box({ x: frontCornerDimTickX, z: secondAtticWallZ, w: 0.35, d: 0.035, y: secondWallY, h: 0.035, mat: materials.dimension });
+  box({ x: frontCornerDimTickX, z: secondAtticWallZ, w: 0.35, d: 0.035, y: secondWallY + secondAtticFrontWallH - 0.035, h: 0.035, mat: materials.dimension });
+  label(`다락방 벽 ${secondAtticFrontWallH.toFixed(2)}m`, frontCornerDimLabelX, secondWallY + secondAtticFrontWallH / 2, secondAtticWallZ, 0.28);
 
   // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
   horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [
@@ -1203,31 +1338,57 @@ captureSecond(() => {
   const ridgeY = secondWallTop + gableRise;
   const outerEaveY = secondWallTop - roofSlopeTan * roofEaveOverhang;
   const ridgeZ = buildingFrontZ + buildingD / 2;
+  // 다락 위 지붕 구성: 단열 260T(다락 천장 단열층) + 그 위 징크 마감
+  materials.roofInsul = new THREE.MeshLambertMaterial({ color: 0xe6d9b8, side: THREE.DoubleSide });   // 단열재 260T
+  const zincFin = 0.05;   // 징크 마감 두께
+  const eaveZF = buildingFrontZ - roofEaveOverhang;
+  const eaveZB = buildingBackZ + roofEaveOverhang;
   roofObjects.push(
-    roofSlab({
-      eaveZ: buildingFrontZ - roofEaveOverhang,
-      ridgeZ,
-      eaveY: outerEaveY,
-      ridgeY,
-      sideOverhang: roofSideOverhang,
-      thickness: roofThickness,
-      mat: materials.roof
-    }),
-    roofSlab({
-      eaveZ: buildingBackZ + roofEaveOverhang,
-      ridgeZ,
-      eaveY: outerEaveY,
-      ridgeY,
-      sideOverhang: roofSideOverhang,
-      thickness: roofThickness,
-      mat: materials.roof
-    })
+    // 단열재 260T
+    roofSlab({ eaveZ: eaveZF, ridgeZ, eaveY: outerEaveY, ridgeY, sideOverhang: roofSideOverhang, thickness: roofThickness, mat: materials.roofInsul }),
+    roofSlab({ eaveZ: eaveZB, ridgeZ, eaveY: outerEaveY, ridgeY, sideOverhang: roofSideOverhang, thickness: roofThickness, mat: materials.roofInsul }),
+    // 징크 마감(단열 위)
+    roofSlab({ eaveZ: eaveZF, ridgeZ, eaveY: outerEaveY + zincFin, ridgeY: ridgeY + zincFin, sideOverhang: roofSideOverhang, thickness: zincFin, mat: materials.roof }),
+    roofSlab({ eaveZ: eaveZB, ridgeZ, eaveY: outerEaveY + zincFin, ridgeY: ridgeY + zincFin, sideOverhang: roofSideOverhang, thickness: zincFin, mat: materials.roof })
   );
   // 지붕 경사 각도 표기 — 전면 경사면 중턱 위에 띄움(+지붕 뷰에서만)
   const eaveZ = buildingFrontZ - roofEaveOverhang;
   const slopeMidZ = (eaveZ + ridgeZ) / 2;
   const slopeMidY = (outerEaveY + ridgeY) / 2;
-  roofObjects.push(label('지붕 경사 32~33°\n(태양광 전선 연결)', buildingW / 2, slopeMidY + 0.4, slopeMidZ, 0.34));
+  roofObjects.push(label('지붕: 단열 260T + 징크 마감 · 경사 33°', buildingW / 2, slopeMidY + 0.55, slopeMidZ, 0.34));
+  // 태양광 패널은 뒤쪽(남측) 지붕 별도 블록에서 그림 — 여기선 눈막이용 헬퍼만 둠.
+  materials.snowGuard = new THREE.MeshLambertMaterial({ color: 0xaeb7bf });    // 눈막이 금속
+  const backEaveZ = buildingBackZ + roofEaveOverhang;
+  const onSlope = (ez, t) => ({ z: ez + t * (ridgeZ - ez), y: outerEaveY + t * (ridgeY - outerEaveY) });   // t=0 처마 → 1 용마루
+
+  // ── 눈막이(스노우가드) 가로바 — 처마 근처, 양 슬로프 각 2줄(쌓인 눈이 한꺼번에 미끄러지지 않게) ──
+  const snowGuard = (ez, t) => {
+    const p = onSlope(ez, t);
+    roofObjects.push(box({ x: -roofSideOverhang, z: p.z - 0.025, w: buildingW + roofSideOverhang * 2, d: 0.05, y: p.y + 0.11, h: 0.05, mat: materials.snowGuard, cast: false }));   // 가로 파이프바
+    const n = 7;
+    for (let i = 0; i <= n; i += 1) {
+      const bx = -roofSideOverhang + (buildingW + roofSideOverhang * 2) * (i / n);
+      roofObjects.push(box({ x: bx - 0.02, z: p.z - 0.02, w: 0.04, d: 0.04, y: p.y + 0.02, h: 0.11, mat: materials.snowGuard, cast: false }));   // 브래킷
+    }
+  };
+  snowGuard(backEaveZ, 0.12); snowGuard(backEaveZ, 0.22);   // 남측(집 뒤) — 태양광 아래(z≈3.1) ~ 처마쪽
+  snowGuard(eaveZ, 0.12); snowGuard(eaveZ, 0.22);           // 북측(정면) — 처마쪽 2줄
+
+  // ── 처마 물받이(홈통) + 도로측(고-X) 우수관 ──
+  materials.gutter = new THREE.MeshLambertMaterial({ color: 0x9aa1a8 });
+  const eaveTopY = outerEaveY + zincFin;
+  [eaveZ, backEaveZ].forEach((ez) => {
+    const out = ez < ridgeZ ? -1 : 1;            // 처마 바깥 방향(Z)
+    const gz = ez + out * 0.06;
+    const gutterY = eaveTopY - 0.17;
+    roofObjects.push(box({ x: -roofSideOverhang - 0.05, z: gz - 0.065, w: buildingW + roofSideOverhang * 2 + 0.1, d: 0.13, y: gutterY, h: 0.12, mat: materials.gutter, cast: false }));   // 처마홈통(가로)
+    // 우수관: 고-X(도로측) 벽 모서리를 타고 수직으로. 처마홈통 → 벽 모서리 연결관 → 지면까지.
+    const cornerZ = ez < ridgeZ ? buildingFrontZ : buildingBackZ;   // 고-X 벽의 앞/뒤 모서리
+    const dx = buildingW + 0.04;                                    // 고-X 벽 바깥면(8.54)
+    roofObjects.push(box({ x: dx, z: Math.min(gz, cornerZ) - 0.04, w: 0.08, d: Math.abs(cornerZ - gz) + 0.08, y: gutterY - 0.05, h: 0.08, mat: materials.gutter, cast: false }));   // 처마→벽모서리 연결관
+    roofObjects.push(box({ x: dx, z: cornerZ - 0.04, w: 0.08, d: 0.08, y: groundTopY, h: (gutterY - 0.03) - groundTopY, mat: materials.gutter, cast: false }));   // 수직 우수관(벽 모서리)
+  });
+  roofObjects.push(label('우수관(도로측 벽 모서리)', buildingW + 0.5, 1.9, buildingBackZ, 0.28));
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -1428,17 +1589,17 @@ function campingChair({ cx, cz, faceAngle = 0, color = 0x47535f, baseY = groundT
   scene.add(group);
 }
 
-// 1층 현관 앞 렉산(폴리카보네이트) 캐노피/파고라 — 지붕 길이(전면 돌출) 4m, 반투명 브론즈.
+// 1층 거실 앞 캐노피/파고라 — 지붕 길이(전면 돌출) 4m. 지붕 = 리얼징크(불투명).
 //  · 데크 상단(집 바닥 높이)에서 시작, 앞단(최저) 기둥 2.4m, 건물쪽은 1층 높이에 부착
 //  · 프레임/기둥은 지붕 가장자리에서 20cm 안쪽(3면 세로벽이 이 선에 설치)
 //  roofLowX/roofW로 X 범위를 지정해 거실 앞·가족방 앞에 같은 형식으로 각각 설치한다.
-function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, withWalls = true, deckDepth = null, postsToGround = false, connectRightX = null, withFan = true, withShortPostDim = false, withFlatFrame = true }) {
+function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, withWalls = true, deckDepth = null, postsToGround = false, connectRightX = null, withFan = true, withShortPostDim = false, withFlatFrame = true, withGutter = false, withDownspout = false }) {
   const frameInset = 0.2;                      // 가장자리에서 20cm 안쪽
   const beamH = 0.12;
   const beamDrop = 0.04;
   const wallZ = buildingFrontZ;
   const roofSlopeLength = 4.0;                     // 지붕 경사면 길이(실제 지붕면)
-  const targetFrontPostH = 2.4;                     // 앞단(최저) 기둥 높이 목표(데크 상단 기준)
+  const targetFrontPostH = 2.6;                     // 앞단(최저) 기둥 높이 목표(데크 상단 기준)
   const targetWallPostH = 2.8;                      // 집 벽쪽(건물 부착부) 높이 목표(데크 상단 기준)
   const yAtWall = firstFloorY + targetWallPostH + beamDrop + beamH;  // 건물 부착 높이 = 데크 + 벽쪽높이 + 보
   // 앞단 보 밑면 = 데크 상단 + 기둥높이가 되도록 앞단 지붕높이(yAtFront)를 역산(반복 수렴).
@@ -1456,9 +1617,8 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   const roofCenterX = (roofLowX + roofHighX) / 2;
   const glassYatZ = (z) => yAtWall + (yAtFront - yAtWall) * ((z - wallZ) / (frontZ - wallZ));
   const tilt = Math.atan2(Math.abs(yAtFront - yAtWall), Math.abs(frontZ - wallZ));
-  const lexan = new THREE.MeshLambertMaterial({
-    color: 0x6e4a28, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false
-  });
+  // 파고라 지붕 = 리얼징크(불투명, 본 지붕과 동일 그래파이트 그레이). 50년·적설·본 지붕 통일로 확정.
+  const canopyRoofMat = new THREE.MeshLambertMaterial({ color: 0x565c64, side: THREE.DoubleSide });
   const canopyFrame = materials.entryFrame;
 
   // 가시성 그룹 분류용: 이 함수가 scene에 추가하는 모든 객체를 기록해 두고,
@@ -1466,14 +1626,14 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   const _addStart = scene.children.length;
   const deckLocal = [];      // 데크 바닥·바닥 치수 라벨
   const wallLocal = [];      // 캐노피 외벽(다누몰 자바라) — 별도 토글
+  const foldingLocal = [];   // 거실 데크 3면 폴딩도어 — 외벽 대안(상호배타)
   const extrasLocal = [];    // 캠핑 가구(의자 등)
 
-  // 렉산 지붕면(앞으로 물매)
+  // 리얼징크 지붕면(앞으로 물매) — 불투명 금속
   const panelLen = Math.hypot(frontZ - wallZ, yAtFront - yAtWall);
-  const panel = new THREE.Mesh(new THREE.BoxGeometry(roofW, 0.04, panelLen), lexan);
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(roofW, 0.04, panelLen), canopyRoofMat);
   panel.position.set(roofCenterX, (yAtWall + yAtFront) / 2, (wallZ + frontZ) / 2);
   panel.rotation.x = -tilt;
-  panel.renderOrder = 1;
   scene.add(panel);
 
   // 프레임(지붕 가장자리 20cm 안쪽): 벽측 보 + 앞단 보 + 양측 경사 보
@@ -1504,10 +1664,24 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   const postPlaces = (connectRightX != null)
     ? [[(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX1, sideMidZ]]
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ]];
-  const postBaseY = postsToGround ? groundTopY : firstFloorY;   // 부분 데크/무벽이면 지면에 세움
+  const postBaseY = postsToGround ? groundTopY : deckTopY0;   // 부분 데크/무벽이면 지면, 아니면 (낮춘) 데크 상단
   for (const [px, pz] of postPlaces) {
     const topY = glassYatZ(pz) - beamDrop - beamH;
     box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: canopyFrame });
+  }
+
+  // ── 파고라 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
+  if (withGutter) {
+    const gutterMat = materials.gutter || new THREE.MeshLambertMaterial({ color: 0x9aa1a8 });
+    const gx0 = (connectRightX != null) ? connectRightX : fX0;
+    const gutterY = yAtFront - 0.13;                          // 앞단(최저) 지붕 가장자리 바로 아래
+    box({ x: gx0, z: frontZ - 0.11, w: fX1 - gx0, d: 0.12, y: gutterY, h: 0.10, mat: gutterMat });   // 앞단 처마 홈통(가로)
+    if (withDownspout) {
+      const dpx = fX1 - 0.035;                               // 왼쪽(고-X) 모서리 기둥
+      box({ x: dpx, z: frontZ - 0.06, w: 0.07, d: frameInset + 0.08, y: gutterY - 0.04, h: 0.06, mat: gutterMat });   // 홈통 → 모서리 기둥 연결관
+      box({ x: dpx, z: fFrontZ - 0.08, w: 0.07, d: 0.07, y: groundTopY, h: (gutterY - 0.04) - groundTopY, mat: gutterMat });   // 모서리 기둥 따라 지면까지 수직 우수관
+      label('파고라 우수관(왼쪽 모서리)', fX1 + 0.5, (gutterY + groundTopY) / 2 + 0.3, fFrontZ, 0.26);
+    }
   }
 
   // 평평한 프레임 — 앞단(가장 낮은) 보 높이의 수평면에 사각 틀 + 내부 격자(lattice).
@@ -1540,7 +1714,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
     const jabaraFrame = new THREE.MeshLambertMaterial({ color: 0x6f5234 });   // 자바라 알루미늄 프레임(브론즈)
     const glaze = 0.04;
     const sillH = 0.1;
-    const wallBaseY = firstFloorY;                              // 창벽 하단 = 데크 상단
+    const wallBaseY = deckTopY0;                                // 창벽 하단 = (낮춘) 데크 상단
     const mullW = 0.035;                                        // 세로 자바라 살 두께
     const panelTarget = 0.34;                                   // 접이 패널 1장 목표 폭
 
@@ -1579,8 +1753,43 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   }
   wallLocal.push(...scene.children.slice(_wallStart));   // 외벽(자바라) 객체를 별도 토글 그룹으로 수집
 
+  // 폴딩도어(외벽 대안) — 거실 캐노피 3면. 맑은 유리 + 넓은 폴딩 패널(0.65m) + 다크 프레임 + 출입 손잡이.
+  const _foldingStart = scene.children.length;
+  if (withWalls) {
+    const fdGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });
+    const fdFrame = new THREE.MeshLambertMaterial({ color: 0x3a3f45 });   // 폴딩 알루미늄 프레임(다크그레이)
+    const glaze = 0.05, sillH = 0.1, mullW = 0.05, fdPanel = 0.65;        // 폴딩 패널 1짝 폭 0.65m
+    const wallBaseY = deckTopY0;
+    // 전면
+    const frontTopY = wallTopAtZ(fFrontZ);
+    box({ x: fX0, z: fFrontZ - glaze / 2, w: fX1 - fX0, d: glaze, y: wallBaseY + sillH, h: frontTopY - wallBaseY - sillH, mat: fdGlass, cast: false });
+    box({ x: fX0, z: fFrontZ - 0.05, w: fX1 - fX0, d: 0.1, y: wallBaseY, h: sillH, mat: fdFrame });
+    box({ x: fX0, z: fFrontZ - 0.05, w: fX1 - fX0, d: 0.1, y: frontTopY - 0.06, h: 0.06, mat: fdFrame });
+    const fP = Math.max(2, Math.round((fX1 - fX0) / fdPanel));
+    for (let i = 0; i <= fP; i += 1) {
+      const mx = fX0 + (fX1 - fX0) * (i / fP);
+      box({ x: mx - mullW / 2, z: fFrontZ - 0.07, w: mullW, d: 0.14, y: wallBaseY + sillH, h: frontTopY - wallBaseY - sillH, mat: fdFrame, cast: false });
+    }
+    // 양측
+    for (const sideX of [fX0, fX1]) {
+      yzWallPrism({ x: sideX - glaze / 2, thickness: glaze, mat: fdGlass, points: [
+        [fWallZ, wallBaseY + sillH], [fFrontZ, wallBaseY + sillH], [fFrontZ, wallTopAtZ(fFrontZ)], [fWallZ, wallTopAtZ(fWallZ)]
+      ] });
+      box({ x: sideX - 0.05, z: fFrontZ, w: 0.1, d: fWallZ - fFrontZ, y: wallBaseY, h: sillH, mat: fdFrame });
+      const sP = Math.max(2, Math.round((fWallZ - fFrontZ) / fdPanel));
+      for (let i = 0; i <= sP; i += 1) {
+        const mz = fFrontZ + (fWallZ - fFrontZ) * (i / sP);
+        box({ x: sideX - 0.07, z: mz - mullW / 2, w: 0.14, d: mullW, y: wallBaseY + sillH, h: wallTopAtZ(mz) - wallBaseY - sillH, mat: fdFrame, cast: false });
+      }
+    }
+    // 출입문 손잡이 — 정면 + 가족방측(fX1)
+    box({ x: fX0 + (fX1 - fX0) * 0.62, z: fFrontZ - 0.13, w: 0.045, d: 0.045, y: wallBaseY + 0.95, h: 0.28, mat: materials.handle });
+    box({ x: fX1 - 0.13, z: fFrontZ + (fWallZ - fFrontZ) * 0.4, w: 0.045, d: 0.045, y: wallBaseY + 0.95, h: 0.28, mat: materials.handle });
+  }
+  foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
+
   // 캐노피 썬룸 바닥 — 포세린 타일 마감(건식). 데크 기초(집 기초와 동일 0.5m) 위에 마감층이 얹힌다.
-  const deckTopY = firstFloorY + deckFinishT;    // 데크 상단 = 기초 상단(바닥) + 마감 두께(건식, 살짝 돋움)
+  const deckTopY = deckTopY0 + deckFinishT;       // 데크 상단 = (낮춘) 기초 상단 + 마감 두께(집 바닥보다 45cm 낮음)
   const deckThickness = deckFinishT;             // 마감층만(하부 기초는 함수 밖에서 별도 생성)
   const deckEdge = postW / 2;                    // 기둥(프레임 선)이 데크 위에 완전히 얹히도록 기둥 바깥면까지 확장
   const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge; // 오른쪽: 연결 시 이웃 데크까지 이어 붙임
@@ -1674,10 +1883,12 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
   // 추가물 분류: 데크 바닥/가구로 표시된 것 외 나머지는 모두 파고라 구조물.
   const _deckSet = new Set(deckLocal);
   const _wallSet = new Set(wallLocal);
+  const _foldingSet = new Set(foldingLocal);
   const _extrasSet = new Set(extrasLocal);
   for (const o of scene.children.slice(_addStart)) {
     if (_deckSet.has(o)) deckObjects.push(o);
     else if (_wallSet.has(o)) wallObjects.push(o);
+    else if (_foldingSet.has(o)) foldingObjects.push(o);
     else if (_extrasSet.has(o)) extrasObjects.push(o);
     else pergolaObjects.push(o);
   }
@@ -1688,7 +1899,7 @@ function pergola({ roofLowX, roofW, withFurniture = true, withPostDims = true, w
 // 데크 계단 — 데크 상단에서 지면까지 3계단(합성목). 가장자리 한 변을 따라 바깥으로 내려간다.
 //  axis: 계단이 늘어선 축('x' 또는 'z'). span0~span1: 그 축 범위. edge: 수직축의 데크 가장자리.
 //  outward: 가장자리에서 계단이 뻗는 방향(±1). steps: 계단 수.
-function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = firstFloorY + deckFinishT, baseY = groundTopY, tread = 0.3, mat = materials.porcelainDeck }) {
+function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3, mat = materials.porcelainDeck }) {
   const rise = (topY - baseY) / steps;              // 3계단 = 3개의 단높이(데크가 맨 위 단)
   for (let i = 0; i < steps - 1; i += 1) {          // 중간 디딤판 steps-1개(맨 위는 데크). i=0: 데크에 가장 가까운 단
     const h = (topY - (i + 1) * rise) - baseY;      // 지면~단 상단
@@ -1733,11 +1944,11 @@ function whitePlanter({ cx, cz, diameter = 0.5, height = 0.5, baseY = firstFloor
 
 // 두 개의 파고라를 같은 형식으로 설치
 // · 거실 앞(우측): 우측 외벽끝(x=0) 고정, 폭 5.6m → 좌측 끝 x=5.4
-const livingPergola = pergola({ roofLowX: -0.2, roofW: 5.6, withFurniture: true, withPostDims: true });
+const livingPergola = pergola({ roofLowX: -0.2, roofW: 5.6, withFurniture: true, withPostDims: true, withGutter: true });
 // · 가족방 앞(좌측, 남은 부분): 거실 파고라 좌측 끝(5.4)에서 좌측 외벽끝 바깥(8.7)까지, 폭 3.3m
 //   벽 없는 개방형 파고라 + 데크는 건물에서 앞으로 1m까지만(나머지는 개방), 기둥은 지면에 세움
 //   오른쪽 프레임/데크는 별도로 두지 않고 거실 파고라 좌측 프레임선(fX1=5.2)에 이어 붙인다.
-const familyPergola = pergola({ roofLowX: 5.4, roofW: 3.3, withFurniture: false, withPostDims: false, withWalls: false, deckDepth: 1.0, postsToGround: true, connectRightX: 5.2, withFan: false, withShortPostDim: true });
+const familyPergola = pergola({ roofLowX: 5.4, roofW: 3.3, withFurniture: false, withPostDims: false, withWalls: false, deckDepth: 1.0, postsToGround: true, connectRightX: 5.2, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true });
 
 // 데크 기초 슬래브 — 집 기초와 동일 높이(지면~바닥, 0.5m). 포세린 마감은 이 위에 건식으로 얹힌다.
 // 건식 데크라도 페데스탈 점하중을 받는 바닥(무근 슬래브)이 필요하므로 데크 발자국만큼 기초를 깐다.
@@ -1751,11 +1962,11 @@ for (const p of [livingPergola, familyPergola]) {
 }
 // 거실(앞) 데크 우측 끝을 가족방 데크 좌측 끝에 맞춰 겹침 제거 → 폭 합 = 8.5
 deckFootprints[0].w = deckFootprints[1].x - deckFootprints[0].x;
-// 입체 데크 기초 슬래브 + 높이 치수(바닥에선 숨김)
+// 입체 데크 기초 슬래브 — 높이 45cm(집 기초 50cm보다 5cm 낮은 단차). 바닥에선 숨김.
 for (const f of deckFootprints) {
   captureInto(foundationObjects, () => {
-    box({ x: f.x, z: f.z, w: f.w, d: f.d, y: groundTopY, h: foundationTopH, mat: materials.foundation, cast: false });
-    foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, firstFloorY, '데크기초 0.5m');
+    box({ x: f.x, z: f.z, w: f.w, d: f.d, y: groundTopY, h: deckTopY0 - groundTopY, mat: materials.foundation, cast: false });
+    foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, deckTopY0, '데크기초 0.5m');
   });
 }
 
@@ -1774,21 +1985,21 @@ planBoundaryObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: pla
 captureInto(planObjects, () => {
   const D = 0.55;   // 모든 평면 치수 라벨 동일 크기
   const dL = deckFootprints[0], dF = deckFootprints[1];   // ㄱ자 데크 기초: 거실(깊은)/가족방(얕은 1m)
-  // 가로 — 위쪽: 거실 이격 0.5 / 기초 8.5 / 가족방 이격 합 0.95(분할은 아래쪽 가장자리로)
-  planDim('x', lotZ1 + 0.4, lotX0, 0, '0.5m', 1, D, 0.6);
+  // 가로 — 위쪽: 기초 8.5 / 가족방 측백 0.5 (거실 0.5는 아래쪽으로 이동)
   planDim('x', lotZ1 + 0.4, 0, buildingW, '8.5m', 1, D, 0.6);
-  planDim('x', lotZ1 + 0.4, buildingW, lotX1, '0.95m', 1, D, 0.6);                      // 가족방 이격 합
+  planDim('x', lotZ1 + 0.4, lotX1 - 0.5, lotX1, '측백 0.5m', 1, D, 0.6);                // 가족방 측백 0.5(좌상단) — 합계 0.95는 미표시
   // 세로 — 가족방(왼쪽) 건물 깊이 4 / 거실(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
   planDim('z', lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4m', 1, D, 0.6);          // 가족방 건물 깊이
   planDim('z', lotX1 + 0.35, lotZ1 - 0.5, lotZ1, '측백 0.5m', 1, D, 0.6);              // 뒤(가로) 측백 0.5 — 좌상단(합계 1m은 우상단)
+  planDim('z', lotX1 + 0.35, dF.z, buildingFrontZ, `${dF.d.toFixed(1)}m`, 1, D, 0.6);   // 가족방 데크 깊이(왼쪽 가장자리)
+  planDim('z', lotX1 + 0.35, dL.z, dF.z, `${(dF.z - dL.z).toFixed(1)}m`, 1, D, 0.6);     // 그 아래 — 가족방 데크 앞 → 거실 데크 앞 가이드라인까지(땅 끝 아님)
   planDim('z', lotX0 - 0.4, buildingBackZ, lotZ1, '1m', -1, D, 0.6);                    // 뒤 이격 합 1m(우상단)
   planDim('z', lotX0 - 0.4, buildingFrontZ, buildingBackZ, '4m', -1, D, 0.6);          // 거실 건물 깊이
   planDim('z', lotX0 - 0.4, dL.z, buildingFrontZ, `${dL.d.toFixed(1)}m`, -1, D, 0.6);   // 거실 데크 깊이(오른쪽 가장자리)
   // 아래쪽 가장자리: 거실 데크 폭 5.2 / 가족방 데크 폭 3.3 / 가족방 이격 분할(여유 0.45 + 측백 0.5)
   planDim('x', dL.z - 0.45, 0, dL.x + dL.w, `${dL.w.toFixed(1)}m`, -1, D, 0.6);        // 거실 데크 폭 5.2
-  planDim('z', 7.2, dF.z, buildingFrontZ, `${dF.d.toFixed(1)}m`, 1, D, 0.6);            // 가족방 데크 깊이 1m
   planDim('x', dL.z - 0.45, dF.x, dF.x + dF.w, `${dF.w.toFixed(1)}m`, -1, D, 0.6);      // 가족방 데크 폭 3.3
-  planDim('x', dL.z - 0.45, lotX1 - 0.5, lotX1, '측백 0.5m', 1, D, 0.6);               // 가족방 측백 0.5(아래쪽 가장자리)
+  planDim('x', dL.z - 0.45, lotX0, 0, '0.5m', -1, D, 0.6);                             // 거실 이격 0.5(위쪽 → 아래쪽 이동)
   // 모눈 가이드라인 — 각 치수 끝점(X/Z)을 지나 전체로 얇게(드래프팅 보조선처럼)
   const gridMat = new THREE.MeshBasicMaterial({ color: 0x5b7185 });   // 회청색 보조선(무광 — 조명 영향 없이 또렷)
   const gw = 0.02, gy = 0.135, gh = 0.01;
@@ -1801,16 +2012,17 @@ captureInto(planObjects, () => {
   }
 });
 
-// 데크 계단 3곳(각 3계단) — 데크 그룹에 포함
+// 데크 계단 — 폴딩도어 출입문(정면·가족방측) 앞 + 안방 측면 출입문 앞에만(각 0.8m 폭, 3계단)
 const _stairStart = scene.children.length;
-// · 거실 데크 앞쪽(전면, -z로 내려감)
-deckStairs({ axis: 'x', span0: livingPergola.dX0, span1: livingPergola.dX1, edge: livingPergola.dFrontZ, outward: -1 });
-// · 가족방 데크 앞쪽(전면, -z로 내려감)
-deckStairs({ axis: 'x', span0: familyPergola.dX0, span1: familyPergola.dX1, edge: familyPergola.dFrontZ, outward: -1 });
-// · 거실 데크의 가족방쪽(높은 X) 옆면 — 가족방 데크가 시작되기 전 노출된 앞부분만(+x로 내려감)
-deckStairs({ axis: 'z', span0: livingPergola.dFrontZ, span1: familyPergola.dFrontZ, edge: livingPergola.dX1, outward: 1 });
-// · 가족방 데크의 왼쪽(높은 X) 옆면 → 왼쪽 야외 부동수전 쪽으로 내려가는 계단(+x로 내려감)
-deckStairs({ axis: 'z', span0: familyPergola.dFrontZ, span1: familyPergola.dWallZ, edge: familyPergola.dX1, outward: 1 });
+const stairW = sideDoorW;   // 0.8m — 안방 옆 계단과 같은 너비
+// · 폴딩도어 정면 출입문 앞(거실 데크 전면, -z로 내려감) — 손잡이 위치(62%) 기준
+const foldFrontX = livingPergola.dX0 + (livingPergola.dX1 - livingPergola.dX0) * 0.62;
+deckStairs({ axis: 'x', span0: foldFrontX - stairW / 2, span1: foldFrontX + stairW / 2, edge: livingPergola.dFrontZ, outward: -1 });
+// · 폴딩도어 가족방측 출입문 앞(거실 데크 고-X 옆면, +x로 내려감) — 손잡이 위치(40%) 기준
+const foldSideZ = livingPergola.dFrontZ + (livingPergola.dWallZ - livingPergola.dFrontZ) * 0.4;
+deckStairs({ axis: 'z', span0: foldSideZ - stairW / 2, span1: foldSideZ + stairW / 2, edge: livingPergola.dX1, outward: 1 });
+// · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
+deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
 deckObjects.push(...scene.children.slice(_stairStart));
 
 // 계단이 90도로 갈라지는 코너 안쪽(두 계단 사이 오목한 포켓, 마당 바닥)에 흰색 원통 나무 화분 — 모서리 충돌 방지.
@@ -1878,21 +2090,24 @@ extrasObjects.push(...scene.children.slice(_grillStart));
 
 const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동수전·실내 계단 → 1층 그룹
 
-// 출입문과 거실 샷시 사이 전면 외벽에 외부(방수) 콘센트
+// 거실 시스템도어 양옆 전면 외벽에 외부(방수) 콘센트 2개
 {
-  const livingSashEndX = livingYardSashX + yardSashW;   // 거실 샷시 높은 X쪽 끝(2.825)
-  const outletX = (livingSashEndX + entryGapStart) / 2;  // 샷시~현관문 중간
+  const livingSashEndX = livingYardSashX + yardSashW;   // 거실 도어 높은 X쪽 끝(2.825)
   const wallFaceZ = buildingFrontZ;                      // 전면 외벽 바깥면
   const outletY = firstFloorY + 0.32;
-  box({ x: outletX - 0.065, z: wallFaceZ - 0.035, w: 0.13, d: 0.035, y: outletY, h: 0.15, mat: materials.counter });      // 커버 플레이트
-  box({ x: outletX - 0.045, z: wallFaceZ - 0.05, w: 0.09, d: 0.02, y: outletY + 0.03, h: 0.09, mat: materials.entryFrame }); // 소켓 면
-  label('외부 콘센트', outletX, outletY + 0.42, wallFaceZ - 0.2, 0.24);
+  const extOutlet = (ox) => {
+    box({ x: ox - 0.065, z: wallFaceZ - 0.035, w: 0.13, d: 0.035, y: outletY, h: 0.15, mat: materials.counter });      // 커버 플레이트
+    box({ x: ox - 0.045, z: wallFaceZ - 0.05, w: 0.09, d: 0.02, y: outletY + 0.03, h: 0.09, mat: materials.entryFrame }); // 소켓 면
+  };
+  extOutlet(livingYardSashX - 0.2);    // 도어 좌측(코너쪽)
+  extOutlet(livingSashEndX + 0.2);     // 도어 우측(현관쪽)
+  label('외부 콘센트', livingSashEndX + 0.2, outletY + 0.42, wallFaceZ - 0.2, 0.24);
 }
 
 // 가족방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형)
 {
   const faucetX = buildingW;             // 외벽 바깥면(x=8.5)
-  const faucetZ = 0.0;                    // 도로측 창(0.4~2.2) 앞쪽 코너 부근
+  const faucetZ = 1.1;                    // 측면 출입문(z −0.3~0.5)에서 충분히 떨어진 솔리드 벽
   const brass = materials.handle;         // 황동색
   const bodyX = faucetX + 0.06;           // 벽에서 약간 떨어진 수직 몸체 중심
   const spoutY = 0.42;                    // 하단 토수구
@@ -2178,25 +2393,25 @@ captureSecond(() => {
   ceilingFan({ x: stairwellFanX, z: stairwellFanZ, ceilingY: stairwellCeilingY, drop: 0.45 });
 });
 
-// 뒤쪽 지붕(용마루~뒤처마) · 다락방2(높은 X) 쪽에 태양광 패널 3KW
+// 뒤쪽(남측) 지붕에 태양광 3kW — 실물 모듈 8장(2열×4, 1.66×1.0m 가로형 ≈400W), 지붕 폭 중앙 정렬
 {
   const solarMat = new THREE.MeshLambertMaterial({ color: 0x16264a });
   const roofSlopeRad = THREE.MathUtils.degToRad(roofSlopeDeg);
   const cosS = Math.cos(roofSlopeRad);
   const sinS = Math.sin(roofSlopeRad);
   const surfaceY = (z) => atticRidgeY - roofSlopeTan * (z - atticRidgeZ);
-  const panelW = 0.62;   // X 폭
+  const panelW = 1.66;   // X 폭(실물 모듈 가로)
   const panelL = 1.0;    // 경사 방향 길이
   const panelThk = 0.05;
   const gapX = 0.04;
   const gapZ = 0.04;
   const cols = 4;
-  const rows = 2;        // 4 x 2 = 8장 ≈ 3KW
+  const rows = 2;        // 4 x 2 = 8장 × 약 400W ≈ 3.2kW
   const arrayW = cols * panelW + (cols - 1) * gapX;
-  const arrayCenterX = (secondRoom2X + insideX1) / 2;
+  const arrayCenterX = buildingW / 2;   // 지붕 폭 중앙
   const startX = arrayCenterX - arrayW / 2 + panelW / 2;
   const rowStepZ = (panelL + gapZ) * cosS;
-  const arrayCenterZ = 2.4;
+  const arrayCenterZ = 2.25;            // 용마루 아래~뒤 벽선 사이
   const startZ = arrayCenterZ - ((rows - 1) / 2) * rowStepZ;
   const liftN = panelThk / 2 + 0.03;
   const panelGeo = new THREE.BoxGeometry(panelW, panelThk, panelL);
@@ -2215,7 +2430,7 @@ captureSecond(() => {
       roofObjects.push(addGeometryEdges(panel, 0x9aa0a8));
     }
   }
-  roofObjects.push(label('태양광 3KW', arrayCenterX, surfaceY(arrayCenterZ) + 0.55, arrayCenterZ, 0.3));
+  roofObjects.push(label('태양광 3kW (8장)', arrayCenterX, surfaceY(arrayCenterZ) + 0.55, arrayCenterZ, 0.3));
 }
 
 // 전기 콘센트 위치 표시 — 벽면에 흰 플레이트 + 콘센트 구멍(어두운 사각)을 붙인다.
@@ -2273,10 +2488,9 @@ outletMarker({ x: stairHighXWallX, z: stairBathZ + 0.35, y: firstFloorY + 1.05, 
 // 1층 — 전동커튼용 콘센트(각 창 상부 측면, 모터 전원)
 const curtainOutletY = firstFloorY + 1.95;
 outletMarker({ x: livingYardSashX - 0.12, z: insideZ0, y: curtainOutletY, axis: 'z', sign: 1, gang: 1, note: '전동커튼' });   // 거실 전면 출입창
-outletMarker({ x: familyYardSashX - 0.12, z: insideZ0, y: curtainOutletY, axis: 'z', sign: 1, gang: 1 });                    // 가족방 전면 출입창
+outletMarker({ x: familyWindowX - 0.12, z: insideZ0, y: curtainOutletY, axis: 'z', sign: 1, gang: 1 });                    // 안방 전면 창문
 outletMarker({ x: livingRearWindowX - 0.12, z: insideZ1, y: curtainOutletY, axis: 'z', sign: -1, gang: 1 });                 // 거실 후면창
 outletMarker({ x: familyRearWindowX - 0.12, z: insideZ1, y: curtainOutletY, axis: 'z', sign: -1, gang: 1 });                 // 가족방 후면창
-outletMarker({ x: insideX1, z: familyRoadWindowZ - 0.12, y: curtainOutletY, axis: 'x', sign: -1, gang: 1 });                 // 가족방 도로측 창
 
 // 1층 — 벽걸이 에어컨용 콘센트(거실 좌측 외벽 상부). 송풍을 +X로 보내 계단실 앞을 지나 가족방까지.
 outletMarker({ x: insideX0, z: insideZ0 + 0.55, y: firstFloorY + 1.95, axis: 'x', sign: 1, note: '벽걸이 에어컨\n(가족방 송풍)' });
@@ -2329,10 +2543,10 @@ function setView(pos) {
 //    - 파고라는 데크가 켜진 경우에만 가능(파고라는 데크 위에 얹힘)
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 파고라가 켜진 경우에만 가능(외벽은 파고라에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
-const viewState = { building: 'plan', deckOn: false, pergolaOn: false, wallOn: false, accessoryOn: false, outletsOn: false, boundaryOn: true, firstFrameOn: false, atticFrameOn: false, roofFrameOn: false };
+const viewState = { building: 'plan', deckOn: false, pergolaOn: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, boundaryOn: true, firstFrameOn: false, atticFrameOn: false, roofFrameOn: false };
 
 function applyVisibility() {
-  const { building, deckOn, pergolaOn, wallOn, accessoryOn, outletsOn, boundaryOn, firstFrameOn, atticFrameOn, roofFrameOn } = viewState;
+  const { building, deckOn, pergolaOn, wallOn, foldingOn, accessoryOn, outletsOn, boundaryOn, firstFrameOn, atticFrameOn, roofFrameOn } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
   const showFirst = building === 'first' || building === 'second' || building === 'all'; // 1층 표시(바닥·기초에선 숨김)
   const showAttic = building === 'second' || building === 'all'; // +다락·+지붕에서 다락 표시
@@ -2344,8 +2558,10 @@ function applyVisibility() {
   for (const item of deckObjects) item.visible = deckOn && !isPlan;                  // 데크 마감: 바닥(배치도)에선 숨김
   for (const item of pergolaObjects) item.visible = deckOn && pergolaOn && !isPlan;  // 파고라는 데크 위에만
   for (const item of wallObjects) item.visible = deckOn && pergolaOn && wallOn && !isPlan; // 외벽은 파고라 위에만
+  for (const item of foldingObjects) item.visible = deckOn && pergolaOn && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
   for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
   for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
+  for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
   for (const item of planObjects) item.visible = isPlan;                             // 납작한 기초 발자국·평면 치수: 바닥에서만
   for (const item of planBoundaryObjects) item.visible = isPlan && boundaryOn;        // 납작한 담장 발자국: 바닥 + 담장 토글
   for (const item of boundaryObjects) item.visible = boundaryOn && !isPlan;          // 입체 담장·생울타리: 바닥에선 납작 버전으로 대체
@@ -2368,6 +2584,9 @@ function applyVisibility() {
   const wallBtn = document.querySelector('#toggleWall');
   wallBtn.classList.toggle('active', deckOn && pergolaOn && wallOn);
   wallBtn.disabled = !(deckOn && pergolaOn);  // 파고라가 꺼져 있으면 외벽 토글 불가
+  const foldingBtn = document.querySelector('#toggleFolding');
+  foldingBtn.classList.toggle('active', deckOn && pergolaOn && foldingOn);
+  foldingBtn.disabled = !(deckOn && pergolaOn);  // 파고라가 꺼져 있으면 폴딩도어 토글 불가
   document.querySelector('#toggleAccessory').classList.toggle('active', accessoryOn);
   document.querySelector('#toggleOutlet').classList.toggle('active', outletsOn);
   document.querySelector('#toggleBoundary').classList.toggle('active', boundaryOn);
@@ -2400,6 +2619,7 @@ document.querySelector('#viewFoundation').addEventListener('click', () => {
 
 document.querySelector('#viewFirst').addEventListener('click', () => {
   viewState.building = 'first';
+  viewState.boundaryOn = false;   // 1층을 보면 담장 자동 해제
   applyVisibility();
   setView([4.25, 11.2, -5.0]);
 });
@@ -2431,6 +2651,14 @@ document.querySelector('#togglePergola').addEventListener('click', () => {
 document.querySelector('#toggleWall').addEventListener('click', () => {
   if (!viewState.deckOn || !viewState.pergolaOn) return;   // 파고라가 꺼져 있으면 외벽 토글 불가
   viewState.wallOn = !viewState.wallOn;
+  if (viewState.wallOn) viewState.foldingOn = false;       // 외벽 켜면 폴딩도어 자동 끔(상호배타)
+  applyVisibility();
+});
+
+document.querySelector('#toggleFolding').addEventListener('click', () => {
+  if (!viewState.deckOn || !viewState.pergolaOn) return;   // 파고라가 꺼져 있으면 폴딩도어 토글 불가
+  viewState.foldingOn = !viewState.foldingOn;
+  if (viewState.foldingOn) viewState.wallOn = false;       // 폴딩도어 켜면 외벽 자동 끔(상호배타)
   applyVisibility();
 });
 
