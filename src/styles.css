@@ -96,7 +96,7 @@ button.active {
   opacity: 0.85;
 }
 
-/* 데크·파고라는 on/off 토글 — 켜짐은 초록으로 건물 뷰 선택과 구분 */
+/* 데크·썬룸은 on/off 토글 — 켜짐은 초록으로 건물 뷰 선택과 구분 */
 button.toggle.active {
   background: #15803d;
   border-color: #15803d;
