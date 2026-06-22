@@ -52,7 +52,7 @@ app.innerHTML = `
     <aside class="panel">
       <div class="controls">
         <button id="viewPlan" type="button">바닥<span class="btn-sub">배치도</span></button>
-        <button id="viewFoundation" type="button">기초</button>
+        <button id="viewFoundation" type="button">기초<span class="btn-sub">KC금강컨테이너</span><span class="btn-sub btn-sub-xs">시스템말뚝기초 주택용</span></button>
         <button id="viewFirst" type="button">+1층</button>
         <button id="viewSecond" type="button">+다락</button>
         <button id="viewAll" type="button">+지붕<span class="btn-sub">태연남(태양광)</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
@@ -63,9 +63,7 @@ app.innerHTML = `
         <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
         <button id="toggleOutlet" type="button" class="toggle">콘센트</button>
         <button id="toggleBoundary" type="button" class="toggle">담장<span class="btn-sub">3면 경계</span></button>
-        <button id="toggleFirstFrame" type="button" class="toggle">1층골조<span class="btn-sub">세움스틸</span></button>
-        <button id="toggleAtticFrame" type="button" class="toggle">다락골조<span class="btn-sub">세움스틸</span></button>
-        <button id="toggleRoofFrame" type="button" class="toggle">지붕골조<span class="btn-sub">세움스틸</span></button>
+        <button id="toggleFrame" type="button" class="toggle">골조<span class="btn-sub">메타포라(주)</span><span class="btn-sub btn-sub-xs">1544-9431</span><span class="btn-sub btn-sub-xs">010-5121-8338</span></button>
       </div>
     </aside>
   </main>
@@ -1434,7 +1432,7 @@ captureSecond(() => {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// 스틸 골조(세움스틸하우스) — 1층/다락/지붕 경량형강(C형강) 골조. 각각 별도 토글.
+// 스틸 골조(메타포라(주), H빔) — 1층/다락/지붕 골조. "골조" 단일 토글로 일괄 제어.
 // 부재는 아연도금 경량형강 느낌의 얇은 회색 박스로 표현(스터드·트랙·장선·서까래·용마루).
 // ───────────────────────────────────────────────────────────────────────────
 materials.steelFrame = new THREE.MeshLambertMaterial({ color: 0x9fb1bd });
@@ -2657,10 +2655,10 @@ function setView(pos) {
 //    - 썬룸는 데크가 켜진 경우에만 가능(썬룸는 데크 위에 얹힘)
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 썬룸가 켜진 경우에만 가능(외벽은 썬룸에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
-const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, boundaryOn: true, firstFrameOn: false, atticFrameOn: false, roofFrameOn: false };
+const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, boundaryOn: true, frameOn: false };
 
 function applyVisibility() {
-  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, boundaryOn, firstFrameOn, atticFrameOn, roofFrameOn } = viewState;
+  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, boundaryOn, frameOn } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
   const showFirst = building === 'first' || building === 'second' || building === 'all'; // 1층 표시(바닥·기초에선 숨김)
   const showAttic = building === 'second' || building === 'all'; // +다락·+지붕에서 다락 표시
@@ -2681,9 +2679,9 @@ function applyVisibility() {
   for (const item of boundaryObjects) item.visible = boundaryOn && !isPlan;          // 입체 담장·생울타리: 바닥에선 납작 버전으로 대체
   for (const item of outletObjects) item.visible = outletsOn && showFirst;          // 1층 콘센트: 독립 토글(기초만일 땐 숨김)
   for (const item of atticOutletObjects) item.visible = outletsOn && showAttic;     // 다락 콘센트: 다락 표시 시
-  for (const item of firstFrameObjects) item.visible = firstFrameOn && !isPlan;      // 1층 스틸 골조: 독립 토글
-  for (const item of atticFrameObjects) item.visible = atticFrameOn && !isPlan;      // 다락 스틸 골조: 독립 토글
-  for (const item of roofFrameObjects) item.visible = roofFrameOn && !isPlan;        // 지붕 스틸 골조: 독립 토글
+  for (const item of firstFrameObjects) item.visible = frameOn && !isPlan;      // 골조(메타포라): 1층·다락·지붕 단일 토글로 일괄 제어
+  for (const item of atticFrameObjects) item.visible = frameOn && !isPlan;
+  for (const item of roofFrameObjects) item.visible = frameOn && !isPlan;
 
   // 버튼 상태 반영
   document.querySelector('#viewPlan').classList.toggle('active', building === 'plan');
@@ -2704,9 +2702,7 @@ function applyVisibility() {
   document.querySelector('#toggleAccessory').classList.toggle('active', accessoryOn);
   document.querySelector('#toggleOutlet').classList.toggle('active', outletsOn);
   document.querySelector('#toggleBoundary').classList.toggle('active', boundaryOn);
-  document.querySelector('#toggleFirstFrame').classList.toggle('active', firstFrameOn);
-  document.querySelector('#toggleAtticFrame').classList.toggle('active', atticFrameOn);
-  document.querySelector('#toggleRoofFrame').classList.toggle('active', roofFrameOn);
+  document.querySelector('#toggleFrame').classList.toggle('active', frameOn);
 }
 
 // 바닥(배치도) 전용 카메라 — 대지 전체를 상부에서 내려다본다(도로·토지·담장·기초 바닥 한눈에).
@@ -2791,18 +2787,8 @@ document.querySelector('#toggleBoundary').addEventListener('click', () => {
   applyVisibility();
 });
 
-document.querySelector('#toggleFirstFrame').addEventListener('click', () => {
-  viewState.firstFrameOn = !viewState.firstFrameOn;
-  applyVisibility();
-});
-
-document.querySelector('#toggleAtticFrame').addEventListener('click', () => {
-  viewState.atticFrameOn = !viewState.atticFrameOn;
-  applyVisibility();
-});
-
-document.querySelector('#toggleRoofFrame').addEventListener('click', () => {
-  viewState.roofFrameOn = !viewState.roofFrameOn;
+document.querySelector('#toggleFrame').addEventListener('click', () => {
+  viewState.frameOn = !viewState.frameOn;
   applyVisibility();
 });
 
