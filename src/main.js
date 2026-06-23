@@ -113,8 +113,8 @@ const materials = {
   road: new THREE.MeshLambertMaterial({ color: 0xcfd8e3 }),
   hedge: new THREE.MeshLambertMaterial({ color: 0x2f7d45 }),
   foundation: new THREE.MeshLambertMaterial({ color: 0xb8b8ad }),
-  pile: new THREE.MeshLambertMaterial({ color: 0x7d8186 }),          // 강관 말뚝·두부 보강판(아연도금)
-  baseFrame: new THREE.MeshLambertMaterial({ color: 0x9aaab6 }),     // 베이스 프레임 받침보(아연도금 형강)
+  pile: new THREE.MeshLambertMaterial({ color: 0x7d8186 }),          // 강관 말뚝(아연도금)
+  pileHead: new THREE.MeshLambertMaterial({ color: 0x2c3036 }),      // 두부 헤드 브래킷(검정) — 스틸 골조가 볼트 체결되는 부분
   floorFinish: new THREE.MeshLambertMaterial({ color: 0xcdb892 }),   // 바닥재(바닥 시공 20cm) — 기초 위, 1층 마감 아래
   dimension: new THREE.MeshLambertMaterial({ color: 0x111827 }),
   wall: new THREE.MeshLambertMaterial({ color: 0xffffff }),
@@ -719,9 +719,9 @@ function foundationHeightDim(x, z, y0, y1, text, labelDx = -0.55) {
 }
 
 // ── 시스템 말뚝기초(독립기초) — KC금강컨테이너 주택용 ──────────────────────────
-// 통슬래브(매트) 대신 강관 말뚝을 격자로 박고, 두부 보강판 위에 아연도금 베이스 프레임을
-// 사다리꼴(가로보 각 행 + 양 끝 세로보)로 얹어 그 위에 바닥(집)·포세린(데크)이 올라간다.
-// 말뚝/프레임은 그림자 생략(가벼움).
+// 통슬래브(매트) 대신 강관 말뚝을 격자로 박고, 두부 헤드 브래킷 위에 스틸 골조가 바로 얹혀
+// 볼트로 체결된다(별도 받침 각관 없음). 그 위에 바닥(집)·포세린(데크)이 올라간다.
+// 말뚝/두부는 그림자 생략(가벼움).
 function pileGridCoords(x0, z0, w, d, spacingX, spacingZ) {
   const nx = Math.max(1, Math.round(w / spacingX));
   const nz = Math.max(1, Math.round(d / spacingZ));
@@ -732,28 +732,22 @@ function pileGridCoords(x0, z0, w, d, spacingX, spacingZ) {
   return { xs, zs };
 }
 
-// 말뚝 1본(중심 cx,cz) — 강관(지면~두부) + 두부 보강판. 두부 상단 = capTopY.
-function systemPile(cx, cz, capTopY, cast = false) {
-  const capBotY = capTopY - pileCapH;
+// 말뚝 1본(중심 cx,cz) — 강관(지면~두부) + 검정 두부 헤드 브래킷. 두부 상단 = headTopY(여기에 골조 볼트 체결).
+function systemPile(cx, cz, headTopY, cast = false) {
+  const capBotY = headTopY - pileCapH;
   const shaftH = capBotY - groundTopY;
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(pileR, pileR, shaftH, 16), materials.pile);
   shaft.position.set(cx, groundTopY + shaftH / 2, cz);
   shaft.castShadow = cast;
   shaft.receiveShadow = false;
   scene.add(shaft);
-  box({ x: cx - pileCapW / 2, z: cz - pileCapW / 2, w: pileCapW, d: pileCapW, y: capBotY, h: pileCapH, mat: materials.pile, cast, receive: false });
+  box({ x: cx - pileCapW / 2, z: cz - pileCapW / 2, w: pileCapW, d: pileCapW, y: capBotY, h: pileCapH, mat: materials.pileHead, cast, receive: false });   // 두부 헤드 브래킷(골조 볼트 체결)
 }
 
-// 말뚝 격자 + 사다리꼴 베이스 프레임. frameTopY = 받침보 상단(= 바닥/데크 마감 하단).
-function pileBaseFrame(x0, z0, w, d, frameTopY, { spacingX = 1.7, spacingZ = 1.9, cast = false } = {}) {
-  const beamBotY = frameTopY - baseBeamH;
+// 말뚝 격자(시스템말뚝기초). headTopY = 두부 상단(= 그 위에 스틸 골조/바닥이 직접 얹혀 볼트 체결).
+function pileFoundation(x0, z0, w, d, headTopY, { spacingX = 1.7, spacingZ = 1.9, cast = false } = {}) {
   const { xs, zs } = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
-  for (const x of xs) for (const z of zs) systemPile(x, z, beamBotY, cast);
-  const x1 = x0 + w;
-  for (const z of zs)   // 가로 받침보(각 말뚝 행)
-    box({ x: x0 - baseBeamW / 2, z: z - baseBeamW / 2, w: w + baseBeamW, d: baseBeamW, y: beamBotY, h: baseBeamH, mat: materials.baseFrame, cast, receive: false });
-  for (const x of [x0, x1])   // 세로 받침보(양 끝단 — 가로보 연결)
-    box({ x: x - baseBeamW / 2, z: z0 - baseBeamW / 2, w: baseBeamW, d: d + baseBeamW, y: beamBotY, h: baseBeamH, mat: materials.baseFrame, cast, receive: false });
+  for (const x of xs) for (const z of zs) systemPile(x, z, headTopY, cast);
 }
 
 // 평면(바닥 도면) 치수 — 지면 높이에 납작하게. axis 'z'(고정 x, Z방향) / 'x'(고정 z, X방향).
@@ -932,12 +926,10 @@ const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
 const groundTopY = 0.08;               // 지면 상단
 const foundationHeight = 0.5;          // 집 기초 높이(지면~받침보 상단)
 const foundationTopY = groundTopY + foundationHeight;   // 베이스 프레임 상단(0.58) = 바닥재 하단
-//   시스템 말뚝기초(독립기초, KC금강컨테이너 주택용) — 강관 말뚝 격자 + 두부판 + 베이스 프레임
+//   시스템 말뚝기초(독립기초, KC금강컨테이너 주택용) — 강관 말뚝 + 두부 헤드 브래킷(골조 볼트 체결)
 const pileR = 0.075;                    // 강관 말뚝 외경 Ø150 (반지름)
-const pileCapW = 0.22;                  // 두부 보강판(헤드 브래킷) 한 변
-const pileCapH = 0.03;                  // 두부 보강판 두께
-const baseBeamH = 0.14;                 // 베이스 프레임 받침보 춤(높이)
-const baseBeamW = 0.09;                 // 받침보 폭
+const pileCapW = 0.2;                   // 두부 헤드 브래킷 한 변
+const pileCapH = 0.12;                  // 두부 헤드 브래킷 높이(스틸 골조 볼트 체결부)
 const floorFinishH = 0.20;                              // 바닥재(바닥 시공) 두께 20cm
 const firstFloorY = foundationTopY + floorFinishH;      // 1층 바닥 마감 상단(0.78) — 벽·계단·가구가 여기서 시작
 const deckFinishT = 0.04;   // 포세린 마감 두께(데크 기초 슬래브 위에 얹힘 — 건식)
@@ -983,7 +975,7 @@ captureInto(foundationObjects, () => {
 captureInto(foundationObjects, () => {
   // 말뚝 격자는 외주 벽 중심선(가장자리에서 0.1=외벽/2 안쪽)에 정렬.
   const m = 0.1;
-  pileBaseFrame(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingX: 1.7, spacingZ: 1.9 });
+  pileFoundation(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingX: 1.7, spacingZ: 1.9 });
   foundationHeightDim(buildingW + 0.2, buildingBackZ - 0.4, groundTopY, foundationTopY, '말뚝기초 0.5m', 0.6);
 });
 // 기초 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
@@ -2107,7 +2099,7 @@ for (const p of [living썬룸]) {
 for (const f of deckFootprints) {
   captureInto(foundationObjects, () => {
     const m = 0.25;   // 데크 가장자리에서 안쪽으로 말뚝 정렬
-    pileBaseFrame(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, deckTopY0, { spacingX: 1.6, spacingZ: 1.7 });
+    pileFoundation(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, deckTopY0, { spacingX: 1.6, spacingZ: 1.7 });
     foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, deckTopY0, '데크 말뚝 0.5m');
   });
 }
@@ -2121,8 +2113,8 @@ for (const f of deckFootprints) {
 }
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
 const planMarkW = 0.22;
-function planPileMark(px, pz) {   // 말뚝 1본 위치 마커
-  planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat: materials.pile, cast: false, name: 'ground' }));
+function planPileMark(px, pz) {   // 말뚝 두부 위치 마커(검정 — 영상의 두부 브래킷처럼)
+  planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat: materials.pileHead, cast: false, name: 'ground' }));
 }
 function planPileMarks(x0, z0, w, d, spacingX, spacingZ) {
   const { xs, zs } = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
