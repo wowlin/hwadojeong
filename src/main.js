@@ -1716,6 +1716,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const wallLocal = [];      // 썬룸 외벽(다누몰 자바라) — 별도 토글
   const foldingLocal = [];   // 거실 데크 3면 폴딩도어 — 외벽 대안(상호배타)
   const extrasLocal = [];    // 캠핑 가구(의자 등)
+  const foundationLocal = []; // 땅 기둥 시스템말뚝(+두부·라벨) — 기초 그룹으로 분류(썬룸 토글 무관, 기초 뷰에도 표시)
 
   // 리얼징크 지붕면(앞으로 물매) — 불투명 금속. 단일 지붕으로 합칠 때 폭/중심을 override해 하나의 패널로.
   const panelLen = Math.hypot(frontZ - wallZ, yAtFront - yAtWall);
@@ -1764,9 +1765,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   postPlaces.forEach(([px, pz], i) => {
     const topY = glassYatZ(pz) - beamDrop - beamH;
     if (postsToGround) {
-      systemPile(px, pz, postBaseY);   // 강관 말뚝 + 두부 보강판(집·데크 기초와 동일 종류)
+      // 말뚝·두부·라벨은 기초 그룹으로 분류 → 기초 뷰에서도 집·데크와 동일하게 보임(썬룸 토글 무관)
+      captureInto(foundationLocal, () => {
+        systemPile(px, pz, postBaseY);   // 강관 말뚝 + 두부 보강판(집·데크 기초와 동일 종류)
+        if (i === 0) label('기둥 시스템말뚝기초', px, postBaseY + 0.3, pz - 0.4, 0.24);
+      });
       groundPosts.push([px, pz]);
-      if (i === 0) label('기둥 시스템말뚝기초', px, postBaseY + 0.3, pz - 0.4, 0.24);
     }
     box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame });
   });
@@ -2021,11 +2025,13 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const _wallSet = new Set(wallLocal);
   const _foldingSet = new Set(foldingLocal);
   const _extrasSet = new Set(extrasLocal);
+  const _foundationSet = new Set(foundationLocal);
   for (const o of scene.children.slice(_addStart)) {
     if (_deckSet.has(o)) deckObjects.push(o);
     else if (_wallSet.has(o)) wallObjects.push(o);
     else if (_foldingSet.has(o)) foldingObjects.push(o);
     else if (_extrasSet.has(o)) extrasObjects.push(o);
+    else if (_foundationSet.has(o)) foundationObjects.push(o);
     else 썬룸Objects.push(o);
   }
 
