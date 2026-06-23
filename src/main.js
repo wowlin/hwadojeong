@@ -2060,34 +2060,37 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
   }
 }
 
-// 임의 방향 경사 빔 1개((x0,y0,z0)→(x1,y1,z1)) — 계단 스트링거용. 단면 w×d(정사각 근사면 회전 무관).
-function inclinedBeam(x0, y0, z0, x1, y1, z1, w, d, mat) {
-  const dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
-  const len = Math.hypot(dx, dy, dz);
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, d, len), mat);
-  m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
-  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(dx, dy, dz).normalize());
-  m.castShadow = false;
-  m.receiveShadow = false;
-  scene.add(m);
-  return m;
-}
-
-// 썬룸 계단 프레임(스틸 스트링거 + 발치 가로보) — deckStairs와 동일 파라미터/높이.
-// 기초가 낮아지면 topY(=deckTopY0+deckFinishT)가 자동 반영되어 계단 높이와 늘 일치한다. 썬룸 골조 그룹.
+// 썬룸 계단 프레임(스틸) — 경사로가 아니라 계단 단면(디딤판+챌판) 지그재그 스트링거 + 단별 폭방향 디딤보.
+// deckStairs와 동일 파라미터/높이(steps 챌판 + steps-1 디딤). 기초가 낮아지면 topY가 자동 반영돼 늘 일치. 썬룸 골조 그룹.
 function deckStairFrame({ axis, span0, span1, edge, outward, steps = 3, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3 }) {
-  const run = (steps - 1) * tread;        // 수평 투영 길이(데크 가장자리~계단 발치)
-  const hToe = edge + outward * run;      // 수직축 하단(계단 발치)
-  const ss = 0.08;                        // 스트링거 단면(정사각 근사)
-  const nS = Math.max(1, Math.round((span1 - span0) / 1.2));   // 폭 방향 ~1.2m 간격, 양 끝 포함
-  for (let i = 0; i <= nS; i += 1) {
-    const s = span0 + (span1 - span0) * (i / nS);
-    if (axis === 'x') 썬룸FrameObjects.push(inclinedBeam(s, topY, edge, s, baseY, hToe, ss, ss, materials.entryFrame));
-    else 썬룸FrameObjects.push(inclinedBeam(edge, topY, s, hToe, baseY, s, ss, ss, materials.entryFrame));
+  const rise = (topY - baseY) / steps;
+  const bw = 0.07;                        // 프레임 부재 단면
+  const mat = materials.entryFrame;
+  // 한 스트링거(s 위치)의 수평 디딤 부재(수직축 v0~v1, 높이 y)
+  const horiz = (s, v0, v1, y) => {
+    const lo = Math.min(v0, v1), len = Math.abs(v1 - v0) + bw;
+    if (axis === 'x') 썬룸FrameObjects.push(box({ x: s - bw / 2, z: lo - bw / 2, w: bw, d: len, y, h: bw, mat, cast: false }));
+    else 썬룸FrameObjects.push(box({ x: lo - bw / 2, z: s - bw / 2, w: len, d: bw, y, h: bw, mat, cast: false }));
+  };
+  // 수직 챌판 부재(수직축 위치 v, 높이 y0~y1)
+  const vert = (s, v, y0, y1) => {
+    if (axis === 'x') 썬룸FrameObjects.push(box({ x: s - bw / 2, z: v - bw / 2, w: bw, d: bw, y: y0, h: y1 - y0, mat, cast: false }));
+    else 썬룸FrameObjects.push(box({ x: v - bw / 2, z: s - bw / 2, w: bw, d: bw, y: y0, h: y1 - y0, mat, cast: false }));
+  };
+  // 폭(span) 방향 가로 디딤보(양 스트링거 연결, 수직축 위치 v, 높이 y)
+  const widthBar = (v, y) => {
+    if (axis === 'x') 썬룸FrameObjects.push(box({ x: span0, z: v - bw / 2, w: span1 - span0, d: bw, y, h: bw, mat, cast: false }));
+    else 썬룸FrameObjects.push(box({ x: v - bw / 2, z: span0, w: bw, d: span1 - span0, y, h: bw, mat, cast: false }));
+  };
+  // 지그재그 스트링거(양 끝 + 중간 ~1.5m 간격)
+  const nS = Math.max(1, Math.round((span1 - span0) / 1.5));
+  for (let k = 0; k <= nS; k += 1) {
+    const s = span0 + (span1 - span0) * (k / nS);
+    for (let i = 0; i < steps; i += 1) vert(s, edge + outward * i * tread, topY - (i + 1) * rise, topY - i * rise);            // 챌판 steps개(데크~지면)
+    for (let i = 0; i < steps - 1; i += 1) horiz(s, edge + outward * i * tread, edge + outward * (i + 1) * tread, topY - (i + 1) * rise); // 디딤 steps-1개
   }
-  // 발치 가로보 — 스트링거 하단을 지면 위에서 잇는다.
-  if (axis === 'x') 썬룸FrameObjects.push(box({ x: span0, z: hToe - ss / 2, w: span1 - span0, d: ss, y: baseY, h: ss, mat: materials.entryFrame, cast: false }));
-  else 썬룸FrameObjects.push(box({ x: hToe - ss / 2, z: span0, w: ss, d: span1 - span0, y: baseY, h: ss, mat: materials.entryFrame, cast: false }));
+  for (let i = 0; i < steps - 1; i += 1) widthBar(edge + outward * (i + 1) * tread, topY - (i + 1) * rise);   // 단별 노징 디딤보
+  widthBar(edge + outward * (steps - 1) * tread, baseY);   // 발치 디딤보
 }
 
 // 원통형 흰색 나무 화분(지름×높이 기본 50×50cm) + 둥근 관목
