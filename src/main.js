@@ -1758,7 +1758,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   //  · 거실: 전면 3 + 양측 중앙 2 + 폴딩도어 집벽쪽 양 끝 2 = 7개.
   const postW = 0.12;
   const postPlaces = (connectRightX != null)
-    ? [[fX1, fFrontZ], [fX1, sideMidZ], [fX1, fWallZ]]
+    ? [[fX1, fFrontZ], [fX1, sideMidZ], [fX1 - postW / 2, fWallZ - postW / 2]]   // 집벽 모서리: 외측 면을 기준선(건물 외곽·앞벽)에 맞춰 안쪽으로 붙임(벽 침범 방지)
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ], [fX0, fWallZ], [fX1, fWallZ]];
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
