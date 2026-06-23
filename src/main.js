@@ -103,7 +103,7 @@ const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 
 const outletObjects = [];       // 전기 콘센트(1층) — 콘센트 토글
 const atticOutletObjects = [];  // 전기 콘센트(다락) — 콘센트 토글 + 다락 표시 시
 const boundaryObjects = [];     // 3면 경계(우측 콘크리트 담장 + 뒤·좌측 측백나무 생울타리) — 담장 토글
-const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·베이스 프레임, 높이 치수) — 바닥(평면도)에선 숨김
+const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·두부, 높이 치수) — 바닥(평면도)에선 숨김
 const foundationDimObjects = []; // 기초 가로/세로·대지 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 const planObjects = [];         // 바닥(평면도): 납작한 기초 발자국 + 평면 치수 — 바닥에서만
 const planBoundaryObjects = []; // 바닥(평면도): 납작한 담장·생울타리 발자국 — 바닥 + 담장 토글 시
@@ -926,16 +926,16 @@ const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
 //   기초·바닥
 const groundTopY = 0.08;               // 지면 상단
 const foundationHeight = 0.5;          // 집 기초 높이(지면~받침보 상단)
-const foundationTopY = groundTopY + foundationHeight;   // 베이스 프레임 상단(0.58) = 바닥재 하단
+const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단(0.58) = 바닥재 하단
 //   시스템 말뚝기초(독립기초, KC금강컨테이너 주택용) — 강관 말뚝 + 두부 헤드 브래킷(골조 볼트 체결)
 const pileR = 0.075;                    // 강관 말뚝 외경 Ø150 (반지름)
 const pileCapW = 0.2;                   // 두부 헤드 브래킷 한 변
 const pileCapH = 0.12;                  // 두부 헤드 브래킷 높이(스틸 골조 볼트 체결부)
 const floorFinishH = 0.20;                              // 바닥재(바닥 시공) 두께 20cm
 const firstFloorY = foundationTopY + floorFinishH;      // 1층 바닥 마감 상단(0.78) — 벽·계단·가구가 여기서 시작
-const deckFinishT = 0.04;   // 포세린 마감 두께(데크 기초 슬래브 위에 얹힘 — 건식)
-const deckFoundationH = 0.5;    // 데크 기초 높이 50cm(집 기초와 동일, 단차 없음)
-const deckTopY0 = groundTopY + deckFoundationH;   // 데크 기초 상단(집보다 5cm 아래)
+const deckFinishT = 0.04;   // 포세린 마감 두께(데크 기초 위에 얹힘 — 건식)
+const deckFoundationH = 0.4;    // 데크/썬룸 기초 높이 40cm(집 50cm보다 10cm 낮게 — 단차). 말뚝기초라 높이 자유.
+const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단(0.48) = 집 기초 상단(0.58)보다 0.1m 낮음
 
 // 부지(흙색 지면): 집 너비 방향(X) 9.95m × 정면 방향(Z) 9m. 집을 X로 중앙 배치, 뒤로 1m 여유.
 const lotW = 9.95;
@@ -972,7 +972,7 @@ captureInto(foundationObjects, () => {
   box({ x: lotDimX - 0.15, z: lotZ1 - 0.04, w: 0.34, d: 0.04, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
   label(`대지 세로 ${lotD}m`, lotDimX - 0.55, 0.34, (lotZ0 + lotZ1) / 2, 0.36);
 });
-// 입체 집 기초(시스템말뚝 + 베이스 프레임) — foundationObjects(1층·다락·지붕에도 표시, 바닥에선 발자국으로 대체)
+// 입체 집 기초(시스템말뚝 + 두부) — foundationObjects(1층·다락·지붕에도 표시, 바닥에선 발자국으로 대체)
 captureInto(foundationObjects, () => {
   // 말뚝 격자는 외주 벽 중심선(가장자리에서 0.1=외벽/2 안쪽)에 정렬.
   const m = 0.1;
@@ -1760,8 +1760,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ]];
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
-  const pileHeadH = 0.3;       // 말뚝 두부(노출) 높이 — 기둥이 그 위에 얹힘
-  const postBaseY = postsToGround ? groundTopY + pileHeadH : deckTopY0;   // 땅 기둥이면 말뚝 두부 위, 아니면 (낮춘) 데크 상단
+  const postBaseY = deckTopY0;   // 썬룸 기초 상단(0.4m·집보다 0.1m 낮음) — 땅 기둥/데크 기둥 동일 높이로 통일
   const groundPosts = [];      // 땅 기둥 위치(바닥 도면 말뚝 표시에 사용)
   postPlaces.forEach(([px, pz], i) => {
     const topY = glassYatZ(pz) - beamDrop - beamH;
@@ -1923,8 +1922,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
 
-  // 썬룸 바닥 — 포세린 타일 마감(건식). 데크 기초(집 기초와 동일 0.5m) 위에 마감층이 얹힌다.
-  const deckTopY = deckTopY0 + deckFinishT;       // 데크 상단 = (낮춘) 기초 상단 + 마감 두께(집 바닥보다 45cm 낮음)
+  // 썬룸 바닥 — 포세린 타일 마감(건식). 데크 기초(0.4m·집보다 0.1m 낮음)+토대보 위에 마감층이 얹힌다.
+  const deckTopY = deckTopY0 + deckFinishT;       // 데크 상단 = (낮춘) 기초 상단 + 마감 두께(집 바닥보다 26cm 낮음)
   const deckThickness = deckFinishT;             // 마감층만(하부 기초는 함수 밖에서 별도 생성)
   const deckEdge = postW / 2;                    // 기둥(프레임 선)이 데크 위에 완전히 얹히도록 기둥 바깥면까지 확장
   const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge; // 오른쪽: 연결 시 이웃 데크까지 이어 붙임
@@ -2093,7 +2092,7 @@ const living썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, w
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 거실 썬룸의 단일 패널이 이미 덮음.
 const 안방썬룸 = 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: 5.5, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
 
-// 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 베이스 프레임). 포세린 마감은 베이스 프레임 위에 건식으로 얹힌다.
+// 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 두부). 두부 위에 둘레 토대보(바닥 골조)가 얹히고, 그 위에 포세린·폴딩/외벽이 올라간다.
 // 데크 기초 발자국 — 집 너비(0~8.5) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 8.5가 되게.
 const deckFootprints = [];
 for (const p of [living썬룸]) {
@@ -2101,13 +2100,20 @@ for (const p of [living썬룸]) {
   const fx1 = Math.min(p.dX1, buildingW);  // 가족방쪽 끝: 집 너비(8.5) 안으로
   deckFootprints.push({ x: fx0, z: p.dFrontZ, w: fx1 - fx0, d: p.dWallZ - p.dFrontZ });
 }
-// 입체 데크 시스템말뚝기초 — 말뚝 + 베이스 프레임(상단 = deckTopY0). 바닥에선 숨김.
+// 입체 데크 시스템말뚝기초 — 말뚝(두부) + 그 위 둘레 토대보. 바닥에선 숨김.
+const sunroomSillH = 0.12;   // 썬룸 토대보(바닥 골조) 춤 — 폴딩도어·외벽이 떠 보이지 않게 받치는 둘레보
 for (const f of deckFootprints) {
   captureInto(foundationObjects, () => {
-    const m = 0.25;   // 데크 가장자리에서 안쪽으로 말뚝 정렬
-    pileFoundation(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, deckTopY0, { spacingX: 1.6, spacingZ: 1.7 });
-    foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, deckTopY0, '데크 말뚝 0.5m');
+    const m = 0.1;   // 둘레 토대보 밑에 말뚝이 오도록 가장자리 가까이 정렬
+    pileFoundation(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, deckTopY0 - sunroomSillH, { spacingX: 1.6, spacingZ: 1.7 });
+    foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, deckTopY0, '데크 기초 0.4m');
   });
+  // 바닥 골조(토대보) — 데크 둘레 사각보. 폴딩도어·외벽이 이 위에 얹혀 더는 말뚝 위에 떠 보이지 않음. 썬룸 골조 그룹(골조/썬룸 토글).
+  const sy = deckTopY0 - sunroomSillH;   // 토대보 하단(= 말뚝 두부 상단)
+  const bw = 0.1;                        // 토대보 폭
+  const fx1 = f.x + f.w, fz1 = f.z + f.d;
+  for (const z of [f.z, fz1]) 썬룸FrameObjects.push(box({ x: f.x, z: z - bw / 2, w: f.w, d: bw, y: sy, h: sunroomSillH, mat: materials.entryFrame, cast: false }));   // 앞·뒤(가로)
+  for (const x of [f.x, fx1]) 썬룸FrameObjects.push(box({ x: x - bw / 2, z: f.z, w: bw, d: f.d, y: sy, h: sunroomSillH, mat: materials.entryFrame, cast: false }));   // 좌·우(세로)
 }
 
 // ── 바닥(평면도): 납작한 발자국 + 평면 치수 ─────────────────────────────────
@@ -2127,7 +2133,7 @@ function planPileMarks(x0, z0, w, d, spacingX, spacingZ) {
   for (const px of xs) for (const pz of zs) planPileMark(px, pz);
 }
 planPileMarks(0.1, buildingFrontZ + 0.1, buildingW - 0.2, buildingD - 0.2, 1.7, 1.9);
-for (const f of deckFootprints) planPileMarks(f.x + 0.25, f.z + 0.25, f.w - 0.5, f.d - 0.5, 1.6, 1.7);
+for (const f of deckFootprints) planPileMarks(f.x + 0.1, f.z + 0.1, f.w - 0.2, f.d - 0.2, 1.6, 1.7);
 for (const [px, pz] of 안방썬룸.groundPosts) planPileMark(px, pz);   // 안방 앞 썬룸 기둥 시스템말뚝
 // 3면 담장 발자국 — 우측 콘크리트(회베이지) + 뒤·좌측 생울타리(녹색). 담장 토글 시.
 planBoundaryObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
