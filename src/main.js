@@ -2060,6 +2060,36 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
   }
 }
 
+// 임의 방향 경사 빔 1개((x0,y0,z0)→(x1,y1,z1)) — 계단 스트링거용. 단면 w×d(정사각 근사면 회전 무관).
+function inclinedBeam(x0, y0, z0, x1, y1, z1, w, d, mat) {
+  const dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
+  const len = Math.hypot(dx, dy, dz);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, d, len), mat);
+  m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(dx, dy, dz).normalize());
+  m.castShadow = false;
+  m.receiveShadow = false;
+  scene.add(m);
+  return m;
+}
+
+// 썬룸 계단 프레임(스틸 스트링거 + 발치 가로보) — deckStairs와 동일 파라미터/높이.
+// 기초가 낮아지면 topY(=deckTopY0+deckFinishT)가 자동 반영되어 계단 높이와 늘 일치한다. 썬룸 골조 그룹.
+function deckStairFrame({ axis, span0, span1, edge, outward, steps = 3, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3 }) {
+  const run = (steps - 1) * tread;        // 수평 투영 길이(데크 가장자리~계단 발치)
+  const hToe = edge + outward * run;      // 수직축 하단(계단 발치)
+  const ss = 0.08;                        // 스트링거 단면(정사각 근사)
+  const nS = Math.max(1, Math.round((span1 - span0) / 1.2));   // 폭 방향 ~1.2m 간격, 양 끝 포함
+  for (let i = 0; i <= nS; i += 1) {
+    const s = span0 + (span1 - span0) * (i / nS);
+    if (axis === 'x') 썬룸FrameObjects.push(inclinedBeam(s, topY, edge, s, baseY, hToe, ss, ss, materials.entryFrame));
+    else 썬룸FrameObjects.push(inclinedBeam(edge, topY, s, hToe, baseY, s, ss, ss, materials.entryFrame));
+  }
+  // 발치 가로보 — 스트링거 하단을 지면 위에서 잇는다.
+  if (axis === 'x') 썬룸FrameObjects.push(box({ x: span0, z: hToe - ss / 2, w: span1 - span0, d: ss, y: baseY, h: ss, mat: materials.entryFrame, cast: false }));
+  else 썬룸FrameObjects.push(box({ x: hToe - ss / 2, z: span0, w: ss, d: span1 - span0, y: baseY, h: ss, mat: materials.entryFrame, cast: false }));
+}
+
 // 원통형 흰색 나무 화분(지름×높이 기본 50×50cm) + 둥근 관목
 function whitePlanter({ cx, cz, diameter = 0.5, height = 0.5, baseY = firstFloorY }) {
   const R = diameter / 2;
@@ -2177,6 +2207,10 @@ deckStairs({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWallZ,
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
 deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
 deckObjects.push(...scene.children.slice(_stairStart));
+
+// 썬룸 계단 프레임(스틸 스트링거) — 거실 데크 전면·측면 계단. 데크 계단과 동일 높이(낮춘 기초 자동 반영). 썬룸 골조 그룹.
+deckStairFrame({ axis: 'x', span0: living썬룸.dX0, span1: living썬룸.dX1, edge: living썬룸.dFrontZ, outward: -1 });
+deckStairFrame({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWallZ, edge: living썬룸.dX1, outward: 1 });
 
 // (마당 흰색 화분 2개 제거됨 — whitePlanter 호출 삭제)
 
