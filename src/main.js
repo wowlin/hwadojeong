@@ -1756,11 +1756,19 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const postPlaces = (connectRightX != null)
     ? [[(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX1, sideMidZ]]
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ]];
-  const postBaseY = postsToGround ? groundTopY : deckTopY0;   // 부분 데크/무벽이면 지면, 아니면 (낮춘) 데크 상단
-  for (const [px, pz] of postPlaces) {
+  // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 독립기초(콘크리트 패드)를 깔고 그 위에 얹는다.
+  // 데크 위 기둥은 데크 기초가 받치므로 별도 독립기초 불필요.
+  const footH = 0.25;          // 독립기초 노출 높이
+  const footW = 0.45;          // 독립기초 한 변(기둥보다 충분히 넓게)
+  const postBaseY = postsToGround ? groundTopY + footH : deckTopY0;   // 땅 기둥이면 독립기초 위, 아니면 (낮춘) 데크 상단
+  postPlaces.forEach(([px, pz], i) => {
     const topY = glassYatZ(pz) - beamDrop - beamH;
+    if (postsToGround) {
+      box({ x: px - footW / 2, z: pz - footW / 2, w: footW, d: footW, y: groundTopY, h: footH, mat: materials.foundation });   // 독립기초
+      if (i === 0) label('기둥 독립기초', px, groundTopY + footH + 0.3, pz - 0.4, 0.24);
+    }
     box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame });
-  }
+  });
 
   // ── 썬룸 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
   if (withGutter) {
