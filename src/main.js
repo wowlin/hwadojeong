@@ -1756,16 +1756,17 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const postPlaces = (connectRightX != null)
     ? [[(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX1, sideMidZ]]
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ]];
-  // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 독립기초(콘크리트 패드)를 깔고 그 위에 얹는다.
-  // 데크 위 기둥은 데크 기초가 받치므로 별도 독립기초 불필요.
-  const footH = 0.25;          // 독립기초 노출 높이
-  const footW = 0.45;          // 독립기초 한 변(기둥보다 충분히 넓게)
-  const postBaseY = postsToGround ? groundTopY + footH : deckTopY0;   // 땅 기둥이면 독립기초 위, 아니면 (낮춘) 데크 상단
+  // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
+  // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
+  const pileHeadH = 0.3;       // 말뚝 두부(노출) 높이 — 기둥이 그 위에 얹힘
+  const postBaseY = postsToGround ? groundTopY + pileHeadH : deckTopY0;   // 땅 기둥이면 말뚝 두부 위, 아니면 (낮춘) 데크 상단
+  const groundPosts = [];      // 땅 기둥 위치(바닥 도면 말뚝 표시에 사용)
   postPlaces.forEach(([px, pz], i) => {
     const topY = glassYatZ(pz) - beamDrop - beamH;
     if (postsToGround) {
-      box({ x: px - footW / 2, z: pz - footW / 2, w: footW, d: footW, y: groundTopY, h: footH, mat: materials.foundation });   // 독립기초
-      if (i === 0) label('기둥 독립기초', px, groundTopY + footH + 0.3, pz - 0.4, 0.24);
+      systemPile(px, pz, postBaseY);   // 강관 말뚝 + 두부 보강판(집·데크 기초와 동일 종류)
+      groundPosts.push([px, pz]);
+      if (i === 0) label('기둥 시스템말뚝기초', px, postBaseY + 0.3, pz - 0.4, 0.24);
     }
     box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame });
   });
@@ -2028,7 +2029,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     else 썬룸Objects.push(o);
   }
 
-  return { dX0, dX1, dFrontZ, dWallZ, deckTopY };   // 데크 사각형(계단 배치에 사용)
+  return { dX0, dX1, dFrontZ, dWallZ, deckTopY, groundPosts };   // 데크 사각형(계단 배치) + 땅 기둥 말뚝 위치
 }
 
 // 데크 계단 — 데크 상단에서 지면까지 3계단(합성목). 가장자리 한 변을 따라 바깥으로 내려간다.
@@ -2081,7 +2082,7 @@ function whitePlanter({ cx, cz, diameter = 0.5, height = 0.5, baseY = firstFloor
 //   지붕면은 거실+안방을 덮는 단일 패널 하나로 그린다(전체 폭 8.9m, 중심 x=4.25 — −0.2~8.7).
 const living썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: 8.9, roofPanelCenterX: 4.25 });
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 거실 썬룸의 단일 패널이 이미 덮음.
-썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: 5.5, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
+const 안방썬룸 = 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: 5.5, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
 
 // 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 베이스 프레임). 포세린 마감은 베이스 프레임 위에 건식으로 얹힌다.
 // 데크 기초 발자국 — 집 너비(0~8.5) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 8.5가 되게.
@@ -2109,13 +2110,16 @@ for (const f of deckFootprints) {
 }
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
 const planMarkW = 0.22;
+function planPileMark(px, pz) {   // 말뚝 1본 위치 마커
+  planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat: materials.pile, cast: false, name: 'ground' }));
+}
 function planPileMarks(x0, z0, w, d, spacingX, spacingZ) {
   const { xs, zs } = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
-  for (const px of xs) for (const pz of zs)
-    planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat: materials.pile, cast: false, name: 'ground' }));
+  for (const px of xs) for (const pz of zs) planPileMark(px, pz);
 }
 planPileMarks(0.1, buildingFrontZ + 0.1, buildingW - 0.2, buildingD - 0.2, 1.7, 1.9);
 for (const f of deckFootprints) planPileMarks(f.x + 0.25, f.z + 0.25, f.w - 0.5, f.d - 0.5, 1.6, 1.7);
+for (const [px, pz] of 안방썬룸.groundPosts) planPileMark(px, pz);   // 안방 앞 썬룸 기둥 시스템말뚝
 // 3면 담장 발자국 — 우측 콘크리트(회베이지) + 뒤·좌측 생울타리(녹색). 담장 토글 시.
 planBoundaryObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
 planBoundaryObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
