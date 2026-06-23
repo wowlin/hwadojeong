@@ -63,7 +63,8 @@ app.innerHTML = `
         <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
         <button id="toggleOutlet" type="button" class="toggle">콘센트</button>
         <button id="toggleBoundary" type="button" class="toggle">담장<span class="btn-sub">3면 경계</span></button>
-        <button id="toggleFrame" type="button" class="toggle">골조<span class="btn-sub">(주)세움스틸하우스</span><span class="btn-sub btn-sub-xs">1544-2909</span></button>
+        <button id="toggleSteelFrame" type="button" class="toggle">스틸골조<span class="btn-sub">(주)세움스틸하우스</span><span class="btn-sub btn-sub-xs">1544-2909</span></button>
+        <button id="toggleWoodFrame" type="button" class="toggle">목골조<span class="btn-sub">중목·경량목구조</span><span class="btn-sub btn-sub-xs">업체 TBD</span></button>
       </div>
     </aside>
   </main>
@@ -1477,10 +1478,11 @@ captureSecond(() => {
 // 부재는 아연도금 경량형강 느낌의 얇은 회색 박스로 표현(스터드·트랙·장선·서까래·용마루).
 // ───────────────────────────────────────────────────────────────────────────
 materials.steelFrame = new THREE.MeshLambertMaterial({ color: 0x9fb1bd });
+materials.woodFrame = new THREE.MeshLambertMaterial({ color: 0xc69c6d });   // 목골조(중목·경량목) 목재 마감
 
-const firstFrameObjects = [];   // 1층 스틸 골조(1층골조 토글)
-const atticFrameObjects = [];   // 다락 스틸 골조(다락골조 토글)
-const roofFrameObjects = [];    // 지붕 스틸 골조(지붕골조 토글)
+const steelFrameObjects = [];   // 스틸 골조(스틸골조 토글) — 1층·다락·지붕 일괄
+const woodFrameObjects = [];    // 목골조(목골조 토글) — 동일 형상, 목재 마감
+let frameMat = materials.steelFrame;   // 현재 골조 빌드 재질(스틸/목재 두 벌로 빌드)
 
 const STUD_SPACING = 0.5;       // 스터드 간격(통상 45~60cm)
 const FRAME_WEB = 0.092;        // C형강 웨브(벽 두께 방향)
@@ -1498,13 +1500,13 @@ function frameStud(cx, cz, yBottom, height, axis) {
   if (height <= 0) return;
   const w = axis === 'x' ? FRAME_FLANGE : FRAME_WEB;
   const d = axis === 'x' ? FRAME_WEB : FRAME_FLANGE;
-  box({ x: cx - w / 2, z: cz - d / 2, w, d, y: yBottom, h: height, mat: materials.steelFrame, cast: false, receive: false });
+  box({ x: cx - w / 2, z: cz - d / 2, w, d, y: yBottom, h: height, mat: frameMat, cast: false, receive: false });
 }
 
 // 수평 트랙(러너). axis 'x'=고정 z를 따라 X로, 'z'=고정 x를 따라 Z로.
 function frameTrack(axis, fixed, start, end, y) {
-  if (axis === 'x') box({ x: start, z: fixed - FRAME_WEB / 2, w: end - start, d: FRAME_WEB, y, h: TRACK_H, mat: materials.steelFrame, cast: false, receive: false });
-  else box({ x: fixed - FRAME_WEB / 2, z: start, w: FRAME_WEB, d: end - start, y, h: TRACK_H, mat: materials.steelFrame, cast: false, receive: false });
+  if (axis === 'x') box({ x: start, z: fixed - FRAME_WEB / 2, w: end - start, d: FRAME_WEB, y, h: TRACK_H, mat: frameMat, cast: false, receive: false });
+  else box({ x: fixed - FRAME_WEB / 2, z: start, w: FRAME_WEB, d: end - start, y, h: TRACK_H, mat: frameMat, cast: false, receive: false });
 }
 
 // 스터드 벽(상·하 트랙 + 등간격 스터드).
@@ -1524,7 +1526,7 @@ function studWall(axis, fixed, start, end, yBottom, height) {
 function rafter(x, z0, y0, z1, y1, depth = 0.14) {
   const dz = z1 - z0, dy = y1 - y0;
   const len = Math.hypot(dz, dy);
-  const m = new THREE.Mesh(new THREE.BoxGeometry(FRAME_FLANGE, depth, len), materials.steelFrame);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(FRAME_FLANGE, depth, len), frameMat);
   m.position.set(x, (y0 + y1) / 2, (z0 + z1) / 2);
   m.rotation.x = Math.atan2(-dy, dz);
   m.castShadow = false;
@@ -1548,27 +1550,26 @@ const frEaveZFront = buildingFrontZ - frEaveOverhang;
 const frEaveZBack = buildingBackZ + frEaveOverhang;
 const gableTopY = (z) => frGableBaseY + gableRise - roofSlopeTan * Math.abs(z - frRidgeZ);
 
-// ── 1층 골조: 외주 스터드 벽 4면 + 계단 코어 내벽 2면 ──
-captureInto(firstFrameObjects, () => {
+// 집 골조 1벌 빌드(현재 frameMat 재질로) — 1층 외주벽+계단 내벽 / 다락 장선·무릎벽·박공 / 지붕 용마루·서까래.
+// 스틸·목재 두 벌로 각각 빌드해 상호배타 토글로 한 번에 하나만 표시.
+function buildHouseFrame(name) {
+  // ── 1층 골조: 외주 스터드 벽 4면 + 계단 코어 내벽 2면 ──
   studWall('x', frFrontZ, frLeftX, frRightX, firstWallY, firstWallHeight);   // 전면
   studWall('x', frBackZ, frLeftX, frRightX, firstWallY, firstWallHeight);    // 후면
   studWall('z', frLeftX, frFrontZ, frBackZ, firstWallY, firstWallHeight);    // 좌측 박공
   studWall('z', frRightX, frFrontZ, frBackZ, firstWallY, firstWallHeight);   // 우측 박공
   studWall('z', stairLowXWallX, insideZ0, insideZ1, firstWallY, firstWallHeight);   // 계단 내벽(우)
   studWall('z', stairHighXWallX, insideZ0, insideZ1, firstWallY, firstWallHeight);  // 계단 내벽(좌)
-});
-
-// ── 다락 골조: 바닥 장선 + 무릎벽(전·후) + 박공 단부 스터드(좌·우) ──
-captureInto(atticFrameObjects, () => {
+  // ── 다락 골조: 바닥 장선 + 무릎벽(전·후) + 박공 단부 스터드(좌·우) ──
   const joistY = secondY;
   const joistH = secondFloorThickness - 0.01;
   const nJoist = Math.max(1, Math.round((insideX1 - insideX0) / 0.45));     // 짧은 방향(Z)으로 스팬, X 등간격
   for (let i = 0; i <= nJoist; i += 1) {
     const jx = insideX0 + (insideX1 - insideX0) * (i / nJoist);
-    box({ x: jx - FRAME_FLANGE / 2, z: insideZ0, w: FRAME_FLANGE, d: insideD, y: joistY, h: joistH, mat: materials.steelFrame, cast: false, receive: false });
+    box({ x: jx - FRAME_FLANGE / 2, z: insideZ0, w: FRAME_FLANGE, d: insideD, y: joistY, h: joistH, mat: frameMat, cast: false, receive: false });
   }
-  box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: FRAME_FLANGE, y: joistY, h: joistH, mat: materials.steelFrame, cast: false, receive: false });            // 림장선(전)
-  box({ x: insideX0, z: insideZ1 - FRAME_FLANGE, w: insideX1 - insideX0, d: FRAME_FLANGE, y: joistY, h: joistH, mat: materials.steelFrame, cast: false, receive: false }); // 림장선(후)
+  box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: FRAME_FLANGE, y: joistY, h: joistH, mat: frameMat, cast: false, receive: false });            // 림장선(전)
+  box({ x: insideX0, z: insideZ1 - FRAME_FLANGE, w: insideX1 - insideX0, d: FRAME_FLANGE, y: joistY, h: joistH, mat: frameMat, cast: false, receive: false }); // 림장선(후)
   studWall('x', frFrontZ, frLeftX, frRightX, frSecondWallY, secondWallHeight);   // 전면 무릎벽 1.15m
   studWall('x', frBackZ, frLeftX, frRightX, frSecondWallY, secondWallHeight);    // 후면 무릎벽 1.15m
   for (const gx of [frLeftX, frRightX]) {                                        // 박공 단부 스터드(경사 상단까지)
@@ -1580,22 +1581,27 @@ captureInto(atticFrameObjects, () => {
       frameStud(gx, z, frSecondWallY + TRACK_H, gableTopY(z) - frSecondWallY - TRACK_H, 'z');
     }
   }
-});
-
-// ── 지붕 골조: 용마루 보 + 양면 서까래(오버행 포함) ──
-captureInto(roofFrameObjects, () => {
+  // ── 지붕 골조: 용마루 보 + 양면 서까래(오버행 포함) ──
   const ridgeX0 = frLeftX - frSideOverhang - 0.05;
   const ridgeX1 = frRightX + frSideOverhang + 0.05;
-  box({ x: ridgeX0, z: frRidgeZ - 0.04, w: ridgeX1 - ridgeX0, d: 0.08, y: frRidgeY - 0.16, h: 0.16, mat: materials.steelFrame, cast: false, receive: false }); // 용마루 보
-  const x0 = frLeftX - frSideOverhang;
-  const x1 = frRightX + frSideOverhang;
-  const n = Math.max(1, Math.round((x1 - x0) / 0.6));
-  for (let i = 0; i <= n; i += 1) {
-    const x = x0 + (x1 - x0) * (i / n);
+  box({ x: ridgeX0, z: frRidgeZ - 0.04, w: ridgeX1 - ridgeX0, d: 0.08, y: frRidgeY - 0.16, h: 0.16, mat: frameMat, cast: false, receive: false }); // 용마루 보
+  const rx0 = frLeftX - frSideOverhang;
+  const rx1 = frRightX + frSideOverhang;
+  const nr = Math.max(1, Math.round((rx1 - rx0) / 0.6));
+  for (let i = 0; i <= nr; i += 1) {
+    const x = rx0 + (rx1 - rx0) * (i / nr);
     rafter(x, frRidgeZ, frRidgeY, frEaveZFront, frOuterEaveY);   // 전면 슬로프
     rafter(x, frRidgeZ, frRidgeY, frEaveZBack, frOuterEaveY);    // 후면 슬로프
   }
-});
+  label(name, frRightX + 0.7, frGableBaseY + 0.2, frRidgeZ, 0.36);
+}
+
+// 두 모드(스틸/목재)로 각각 빌드 — 상호배타 토글로 한 번에 하나만 표시.
+frameMat = materials.steelFrame;
+captureInto(steelFrameObjects, () => buildHouseFrame('스틸 골조 (C형강 · 세움스틸)'));
+frameMat = materials.woodFrame;
+captureInto(woodFrameObjects, () => buildHouseFrame('목골조 (중목 · 경량목구조)'));
+frameMat = materials.steelFrame;
 
 // 캠핑 가구 재질 & 헬퍼 — 스노우피크 IGT 테이블, 반고 햄프턴 DLX 캠핑의자
 const igtMetalMat = new THREE.MeshLambertMaterial({ color: 0x8f969d });   // IGT 알루미늄 프레임/다리
@@ -2726,10 +2732,10 @@ function setView(pos) {
 //    - 썬룸는 데크가 켜진 경우에만 가능(썬룸는 데크 위에 얹힘)
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 썬룸가 켜진 경우에만 가능(외벽은 썬룸에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
-const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, boundaryOn: true, frameOn: false };
+const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, boundaryOn: true, frameMode: 'none' };  // frameMode: 'none' | 'steel' | 'wood' (상호배타)
 
 function applyVisibility() {
-  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, boundaryOn, frameOn } = viewState;
+  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, boundaryOn, frameMode } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
   const showFirst = building === 'first' || building === 'second' || building === 'all'; // 1층 표시(바닥·기초에선 숨김)
   const showAttic = building === 'second' || building === 'all'; // +다락·+지붕에서 다락 표시
@@ -2740,7 +2746,7 @@ function applyVisibility() {
   for (const item of roofObjects) item.visible = showRoof;
   for (const item of deckObjects) item.visible = deckOn && !isPlan;                  // 데크 마감: 바닥(배치도)에선 숨김
   for (const item of 썬룸Objects) item.visible = deckOn && 썬룸On && !isPlan;  // 썬룸는 데크 위에만
-  for (const item of 썬룸FrameObjects) item.visible = (frameOn || (deckOn && 썬룸On)) && !isPlan; // 썬룸 철골: 골조 토글 또는 썬룸 토글
+  for (const item of 썬룸FrameObjects) item.visible = (frameMode !== 'none' || (deckOn && 썬룸On)) && !isPlan; // 썬룸 철골(노출 스틸): 스틸/목골조 토글 또는 썬룸 토글
   for (const item of wallObjects) item.visible = deckOn && 썬룸On && wallOn && !isPlan; // 외벽은 썬룸 위에만
   for (const item of foldingObjects) item.visible = deckOn && 썬룸On && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
   for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
@@ -2751,9 +2757,8 @@ function applyVisibility() {
   for (const item of boundaryObjects) item.visible = boundaryOn && !isPlan;          // 입체 담장·생울타리: 바닥에선 납작 버전으로 대체
   for (const item of outletObjects) item.visible = outletsOn && showFirst;          // 1층 콘센트: 독립 토글(기초만일 땐 숨김)
   for (const item of atticOutletObjects) item.visible = outletsOn && showAttic;     // 다락 콘센트: 다락 표시 시
-  for (const item of firstFrameObjects) item.visible = frameOn && !isPlan;      // 골조(세움스틸): 1층·다락·지붕 단일 토글로 일괄 제어
-  for (const item of atticFrameObjects) item.visible = frameOn && !isPlan;
-  for (const item of roofFrameObjects) item.visible = frameOn && !isPlan;
+  for (const item of steelFrameObjects) item.visible = frameMode === 'steel' && !isPlan;  // 스틸골조(상호배타)
+  for (const item of woodFrameObjects) item.visible = frameMode === 'wood' && !isPlan;    // 목골조(상호배타)
 
   // 버튼 상태 반영
   document.querySelector('#viewPlan').classList.toggle('active', building === 'plan');
@@ -2774,7 +2779,8 @@ function applyVisibility() {
   document.querySelector('#toggleAccessory').classList.toggle('active', accessoryOn);
   document.querySelector('#toggleOutlet').classList.toggle('active', outletsOn);
   document.querySelector('#toggleBoundary').classList.toggle('active', boundaryOn);
-  document.querySelector('#toggleFrame').classList.toggle('active', frameOn);
+  document.querySelector('#toggleSteelFrame').classList.toggle('active', frameMode === 'steel');
+  document.querySelector('#toggleWoodFrame').classList.toggle('active', frameMode === 'wood');
 }
 
 // 바닥(배치도) 전용 카메라 — 대지 전체를 상부에서 내려다본다(도로·토지·담장·기초 바닥 한눈에).
@@ -2859,8 +2865,13 @@ document.querySelector('#toggleBoundary').addEventListener('click', () => {
   applyVisibility();
 });
 
-document.querySelector('#toggleFrame').addEventListener('click', () => {
-  viewState.frameOn = !viewState.frameOn;
+// 스틸골조/목골조 — 상호배타: 하나를 켜면 다른 하나는 자동 off(한 번에 한 구조만). 같은 버튼 재클릭 시 off.
+document.querySelector('#toggleSteelFrame').addEventListener('click', () => {
+  viewState.frameMode = viewState.frameMode === 'steel' ? 'none' : 'steel';
+  applyVisibility();
+});
+document.querySelector('#toggleWoodFrame').addEventListener('click', () => {
+  viewState.frameMode = viewState.frameMode === 'wood' ? 'none' : 'wood';
   applyVisibility();
 });
 
