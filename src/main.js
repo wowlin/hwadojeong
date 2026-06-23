@@ -63,7 +63,7 @@ app.innerHTML = `
         <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
         <button id="toggleOutlet" type="button" class="toggle">콘센트</button>
         <button id="toggleBoundary" type="button" class="toggle">담장<span class="btn-sub">3면 경계</span></button>
-        <button id="toggleFrame" type="button" class="toggle">골조<span class="btn-sub">메타포라(주)</span><span class="btn-sub btn-sub-xs">1544-9431</span><span class="btn-sub btn-sub-xs">010-5121-8338</span></button>
+        <button id="toggleFrame" type="button" class="toggle">골조<span class="btn-sub">(주)세움스틸하우스</span><span class="btn-sub btn-sub-xs">1544-2909</span></button>
       </div>
     </aside>
   </main>
@@ -1480,7 +1480,7 @@ captureSecond(() => {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-// 스틸 골조(메타포라(주), H빔) — 1층/다락/지붕 골조. "골조" 단일 토글로 일괄 제어.
+// 스틸 골조((주)세움스틸하우스) — 1층/다락/지붕 골조. "골조" 단일 토글로 일괄 제어.
 // 부재는 아연도금 경량형강 느낌의 얇은 회색 박스로 표현(스터드·트랙·장선·서까래·용마루).
 // ───────────────────────────────────────────────────────────────────────────
 materials.steelFrame = new THREE.MeshLambertMaterial({ color: 0x9fb1bd });
@@ -2753,7 +2753,7 @@ function applyVisibility() {
   for (const item of boundaryObjects) item.visible = boundaryOn && !isPlan;          // 입체 담장·생울타리: 바닥에선 납작 버전으로 대체
   for (const item of outletObjects) item.visible = outletsOn && showFirst;          // 1층 콘센트: 독립 토글(기초만일 땐 숨김)
   for (const item of atticOutletObjects) item.visible = outletsOn && showAttic;     // 다락 콘센트: 다락 표시 시
-  for (const item of firstFrameObjects) item.visible = frameOn && !isPlan;      // 골조(메타포라): 1층·다락·지붕 단일 토글로 일괄 제어
+  for (const item of firstFrameObjects) item.visible = frameOn && !isPlan;      // 골조(세움스틸): 1층·다락·지붕 단일 토글로 일괄 제어
   for (const item of atticFrameObjects) item.visible = frameOn && !isPlan;
   for (const item of roofFrameObjects) item.visible = frameOn && !isPlan;
 
