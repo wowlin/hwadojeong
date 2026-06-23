@@ -101,7 +101,7 @@ const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 
 const outletObjects = [];       // 전기 콘센트(1층) — 콘센트 토글
 const atticOutletObjects = [];  // 전기 콘센트(다락) — 콘센트 토글 + 다락 표시 시
 const boundaryObjects = [];     // 3면 경계(우측 콘크리트 담장 + 뒤·좌측 측백나무 생울타리) — 담장 토글
-const foundationObjects = [];   // 입체 기초(집+데크 슬래브, 높이 치수) — 바닥(평면도)에선 숨김
+const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·베이스 프레임, 높이 치수) — 바닥(평면도)에선 숨김
 const foundationDimObjects = []; // 기초 가로/세로·대지 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 const planObjects = [];         // 바닥(평면도): 납작한 기초 발자국 + 평면 치수 — 바닥에서만
 const planBoundaryObjects = []; // 바닥(평면도): 납작한 담장·생울타리 발자국 — 바닥 + 담장 토글 시
@@ -112,6 +112,8 @@ const materials = {
   road: new THREE.MeshLambertMaterial({ color: 0xcfd8e3 }),
   hedge: new THREE.MeshLambertMaterial({ color: 0x2f7d45 }),
   foundation: new THREE.MeshLambertMaterial({ color: 0xb8b8ad }),
+  pile: new THREE.MeshLambertMaterial({ color: 0x7d8186 }),          // 강관 말뚝·두부 보강판(아연도금)
+  baseFrame: new THREE.MeshLambertMaterial({ color: 0x9aaab6 }),     // 베이스 프레임 받침보(아연도금 형강)
   floorFinish: new THREE.MeshLambertMaterial({ color: 0xcdb892 }),   // 바닥재(바닥 시공 20cm) — 기초 위, 1층 마감 아래
   dimension: new THREE.MeshLambertMaterial({ color: 0x111827 }),
   wall: new THREE.MeshLambertMaterial({ color: 0xffffff }),
@@ -715,6 +717,44 @@ function foundationHeightDim(x, z, y0, y1, text, labelDx = -0.55) {
   label(text, x + labelDx, (y0 + y1) / 2, z, 0.26);   // labelDx: 라벨을 어느 쪽으로 뺄지(+면 바깥)
 }
 
+// ── 시스템 말뚝기초(독립기초) — KC금강컨테이너 주택용 ──────────────────────────
+// 통슬래브(매트) 대신 강관 말뚝을 격자로 박고, 두부 보강판 위에 아연도금 베이스 프레임을
+// 사다리꼴(가로보 각 행 + 양 끝 세로보)로 얹어 그 위에 바닥(집)·포세린(데크)이 올라간다.
+// 말뚝/프레임은 그림자 생략(가벼움).
+function pileGridCoords(x0, z0, w, d, spacingX, spacingZ) {
+  const nx = Math.max(1, Math.round(w / spacingX));
+  const nz = Math.max(1, Math.round(d / spacingZ));
+  const xs = [];
+  const zs = [];
+  for (let i = 0; i <= nx; i += 1) xs.push(x0 + (w * i) / nx);
+  for (let j = 0; j <= nz; j += 1) zs.push(z0 + (d * j) / nz);
+  return { xs, zs };
+}
+
+// 말뚝 1본(중심 cx,cz) — 강관(지면~두부) + 두부 보강판. 두부 상단 = capTopY.
+function systemPile(cx, cz, capTopY, cast = false) {
+  const capBotY = capTopY - pileCapH;
+  const shaftH = capBotY - groundTopY;
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(pileR, pileR, shaftH, 16), materials.pile);
+  shaft.position.set(cx, groundTopY + shaftH / 2, cz);
+  shaft.castShadow = cast;
+  shaft.receiveShadow = false;
+  scene.add(shaft);
+  box({ x: cx - pileCapW / 2, z: cz - pileCapW / 2, w: pileCapW, d: pileCapW, y: capBotY, h: pileCapH, mat: materials.pile, cast, receive: false });
+}
+
+// 말뚝 격자 + 사다리꼴 베이스 프레임. frameTopY = 받침보 상단(= 바닥/데크 마감 하단).
+function pileBaseFrame(x0, z0, w, d, frameTopY, { spacingX = 1.7, spacingZ = 1.9, cast = false } = {}) {
+  const beamBotY = frameTopY - baseBeamH;
+  const { xs, zs } = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
+  for (const x of xs) for (const z of zs) systemPile(x, z, beamBotY, cast);
+  const x1 = x0 + w;
+  for (const z of zs)   // 가로 받침보(각 말뚝 행)
+    box({ x: x0 - baseBeamW / 2, z: z - baseBeamW / 2, w: w + baseBeamW, d: baseBeamW, y: beamBotY, h: baseBeamH, mat: materials.baseFrame, cast, receive: false });
+  for (const x of [x0, x1])   // 세로 받침보(양 끝단 — 가로보 연결)
+    box({ x: x - baseBeamW / 2, z: z0 - baseBeamW / 2, w: baseBeamW, d: d + baseBeamW, y: beamBotY, h: baseBeamH, mat: materials.baseFrame, cast, receive: false });
+}
+
 // 평면(바닥 도면) 치수 — 지면 높이에 납작하게. axis 'z'(고정 x, Z방향) / 'x'(고정 z, X방향).
 // labelSide: 라벨을 선 기준 어느 쪽으로 띄울지(+1/-1).
 function planDim(axis, fixed, a, b, text, labelSide = -1, labelSize = 0.55, labelDist = 0.6) {
@@ -889,8 +929,14 @@ const buildingBackZ = 3.3;             // 후면(남) 외벽 Z
 const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
 //   기초·바닥
 const groundTopY = 0.08;               // 지면 상단
-const foundationHeight = 0.5;          // 집 기초 높이
-const foundationTopY = groundTopY + foundationHeight;   // 기초 슬래브 상단(0.58)
+const foundationHeight = 0.5;          // 집 기초 높이(지면~받침보 상단)
+const foundationTopY = groundTopY + foundationHeight;   // 베이스 프레임 상단(0.58) = 바닥재 하단
+//   시스템 말뚝기초(독립기초, KC금강컨테이너 주택용) — 강관 말뚝 격자 + 두부판 + 베이스 프레임
+const pileR = 0.075;                    // 강관 말뚝 외경 Ø150 (반지름)
+const pileCapW = 0.22;                  // 두부 보강판(헤드 브래킷) 한 변
+const pileCapH = 0.03;                  // 두부 보강판 두께
+const baseBeamH = 0.14;                 // 베이스 프레임 받침보 춤(높이)
+const baseBeamW = 0.09;                 // 받침보 폭
 const floorFinishH = 0.20;                              // 바닥재(바닥 시공) 두께 20cm
 const firstFloorY = foundationTopY + floorFinishH;      // 1층 바닥 마감 상단(0.78) — 벽·계단·가구가 여기서 시작
 const deckFinishT = 0.04;   // 포세린 마감 두께(데크 기초 슬래브 위에 얹힘 — 건식)
@@ -932,10 +978,12 @@ captureInto(foundationObjects, () => {
   box({ x: lotDimX - 0.15, z: lotZ1 - 0.04, w: 0.34, d: 0.04, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
   label(`대지 세로 ${lotD}m`, lotDimX - 0.55, 0.34, (lotZ0 + lotZ1) / 2, 0.36);
 });
-// 입체 집 기초(슬래브) + 높이 치수 — foundationObjects(1층·다락·지붕에도 표시, 바닥에선 발자국으로 대체)
+// 입체 집 기초(시스템말뚝 + 베이스 프레임) — foundationObjects(1층·다락·지붕에도 표시, 바닥에선 발자국으로 대체)
 captureInto(foundationObjects, () => {
-  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: foundationHeight, mat: materials.foundation });
-  foundationHeightDim(buildingW + 0.2, buildingBackZ - 0.4, groundTopY, foundationTopY, '집기초 0.5m', 0.6);
+  // 말뚝 격자는 외주 벽 중심선(가장자리에서 0.1=외벽/2 안쪽)에 정렬.
+  const m = 0.1;
+  pileBaseFrame(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingX: 1.7, spacingZ: 1.9 });
+  foundationHeightDim(buildingW + 0.2, buildingBackZ - 0.4, groundTopY, foundationTopY, '말뚝기초 0.5m', 0.6);
 });
 // 기초 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 captureInto(foundationDimObjects, () => {
@@ -2027,9 +2075,7 @@ const living썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, w
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 거실 썬룸의 단일 패널이 이미 덮음.
 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: 5.5, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
 
-// 데크 기초 슬래브 — 집 기초와 동일 높이(지면~바닥, 0.5m). 포세린 마감은 이 위에 건식으로 얹힌다.
-// 건식 데크라도 페데스탈 점하중을 받는 바닥(무근 슬래브)이 필요하므로 데크 발자국만큼 기초를 깐다.
-const foundationTopH = firstFloorY - groundTopY;   // 집·데크 공통 기초 높이(= foundationHeight 0.5m)
+// 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 베이스 프레임). 포세린 마감은 베이스 프레임 위에 건식으로 얹힌다.
 // 데크 기초 발자국 — 집 너비(0~8.5) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 8.5가 되게.
 const deckFootprints = [];
 for (const p of [living썬룸]) {
@@ -2037,11 +2083,12 @@ for (const p of [living썬룸]) {
   const fx1 = Math.min(p.dX1, buildingW);  // 가족방쪽 끝: 집 너비(8.5) 안으로
   deckFootprints.push({ x: fx0, z: p.dFrontZ, w: fx1 - fx0, d: p.dWallZ - p.dFrontZ });
 }
-// 입체 데크 기초 슬래브 — 높이 45cm(집 기초 50cm보다 5cm 낮은 단차). 바닥에선 숨김.
+// 입체 데크 시스템말뚝기초 — 말뚝 + 베이스 프레임(상단 = deckTopY0). 바닥에선 숨김.
 for (const f of deckFootprints) {
   captureInto(foundationObjects, () => {
-    box({ x: f.x, z: f.z, w: f.w, d: f.d, y: groundTopY, h: deckTopY0 - groundTopY, mat: materials.foundation, cast: false });
-    foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, deckTopY0, '데크기초 0.5m');
+    const m = 0.25;   // 데크 가장자리에서 안쪽으로 말뚝 정렬
+    pileBaseFrame(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, deckTopY0, { spacingX: 1.6, spacingZ: 1.7 });
+    foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, deckTopY0, '데크 말뚝 0.5m');
   });
 }
 
@@ -2052,6 +2099,15 @@ planObjects.push(box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: p
 for (const f of deckFootprints) {
   planObjects.push(box({ x: f.x, z: f.z, w: f.w, d: f.d, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
 }
+// 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
+const planMarkW = 0.22;
+function planPileMarks(x0, z0, w, d, spacingX, spacingZ) {
+  const { xs, zs } = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
+  for (const px of xs) for (const pz of zs)
+    planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat: materials.pile, cast: false, name: 'ground' }));
+}
+planPileMarks(0.1, buildingFrontZ + 0.1, buildingW - 0.2, buildingD - 0.2, 1.7, 1.9);
+for (const f of deckFootprints) planPileMarks(f.x + 0.25, f.z + 0.25, f.w - 0.5, f.d - 0.5, 1.6, 1.7);
 // 3면 담장 발자국 — 우측 콘크리트(회베이지) + 뒤·좌측 생울타리(녹색). 담장 토글 시.
 planBoundaryObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
 planBoundaryObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
