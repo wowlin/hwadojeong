@@ -1443,7 +1443,7 @@ captureSecond(() => {
   const eaveZ = buildingFrontZ - roofEaveOverhang;
   const slopeMidZ = (eaveZ + ridgeZ) / 2;
   const slopeMidY = (outerEaveY + ridgeY) / 2;
-  roofObjects.push(label('지붕: 단열 260T + 징크 마감 · 경사 33°', buildingW / 2, slopeMidY + 0.55, slopeMidZ, 0.34));
+  roofObjects.push(label('지붕: 단열 260T + 리얼징크(티타늄아연, 갈바륨 아님) · 경사 33°', buildingW / 2, slopeMidY + 0.55, slopeMidZ, 0.34));
   // 태양광 패널은 뒤쪽(남측) 지붕 별도 블록에서 그림 — 여기선 눈막이용 헬퍼만 둠.
   materials.snowGuard = new THREE.MeshLambertMaterial({ color: 0xaeb7bf });    // 눈막이 금속
   const backEaveZ = buildingBackZ + roofEaveOverhang;
