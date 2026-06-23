@@ -94,7 +94,8 @@ const firstFloorObjects = [];   // 1층 골조·실내(기초 토글 시 숨김)
 const secondFloorObjects = [];
 const roofObjects = [];
 const deckObjects = [];      // 데크 바닥·계단(데크 토글)
-const 썬룸Objects = [];   // 썬룸 구조물: 지붕·기둥·프레임·팬·조명·치수(썬룸 토글)
+const 썬룸Objects = [];   // 썬룸 구조물: 지붕·팬·조명·치수·외피(썬룸 토글)
+const 썬룸FrameObjects = []; // 썬룸 철골 골조: 기둥·보·평프레임(골조 토글 또는 썬룸 토글 중 하나라도 켜지면 표시)
 const wallObjects = [];      // 썬룸 외벽: 다누몰 자바라 폴딩창(외벽 토글 — 시공 업체 별도)
 const foldingObjects = [];   // 거실 데크 3면 폴딩도어(폴딩도어 토글 — 외벽과 상호배타)
 const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 표시)
@@ -1717,6 +1718,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const foldingLocal = [];   // 거실 데크 3면 폴딩도어 — 외벽 대안(상호배타)
   const extrasLocal = [];    // 캠핑 가구(의자 등)
   const foundationLocal = []; // 땅 기둥 시스템말뚝(+두부·라벨) — 기초 그룹으로 분류(썬룸 토글 무관, 기초 뷰에도 표시)
+  const frameLocal = [];      // 썬룸 철골 골조(기둥·보·평프레임) — 골조 그룹으로 분류(골조 토글에도 표시)
 
   // 리얼징크 지붕면(앞으로 물매) — 불투명 금속. 단일 지붕으로 합칠 때 폭/중심을 override해 하나의 패널로.
   const panelLen = Math.hypot(frontZ - wallZ, yAtFront - yAtWall);
@@ -1736,8 +1738,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const fWallZ = wallZ;                          // 벽측은 건물에 부착
   // connectRightX가 지정되면 오른쪽(낮은 X) 프레임을 별도로 두지 않고 이웃 썬룸 프레임선까지 보를 연장한다.
   const beamX0 = (connectRightX != null) ? connectRightX : fX0;
-  box({ x: beamX0, z: fWallZ - 0.04, w: fX1 - beamX0, d: 0.08, y: glassYatZ(fWallZ) - beamDrop - beamH, h: beamH, mat: 썬룸Frame });
-  box({ x: beamX0, z: fFrontZ - 0.04, w: fX1 - beamX0, d: 0.08, y: glassYatZ(fFrontZ) - beamDrop - beamH, h: beamH, mat: 썬룸Frame });
+  frameLocal.push(box({ x: beamX0, z: fWallZ - 0.04, w: fX1 - beamX0, d: 0.08, y: glassYatZ(fWallZ) - beamDrop - beamH, h: beamH, mat: 썬룸Frame }));
+  frameLocal.push(box({ x: beamX0, z: fFrontZ - 0.04, w: fX1 - beamX0, d: 0.08, y: glassYatZ(fFrontZ) - beamDrop - beamH, h: beamH, mat: 썬룸Frame }));
   const sideLen = Math.hypot(fFrontZ - fWallZ, glassYatZ(fFrontZ) - glassYatZ(fWallZ));
   const sideMidZ = (fWallZ + fFrontZ) / 2;
   const sideMidY = (glassYatZ(fWallZ) + glassYatZ(fFrontZ)) / 2 - beamDrop - beamH / 2;
@@ -1749,6 +1751,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     sideBeam.castShadow = true;
     sideBeam.receiveShadow = false;
     scene.add(sideBeam);
+    frameLocal.push(sideBeam);
   }
   // 렉산(경사 지붕) 프레임은 둘레(테두리) 보만 둔다 — 내부 격자는 두꺼워 내부가 안 보이므로 생략.
 
@@ -1772,7 +1775,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
       });
       groundPosts.push([px, pz]);
     }
-    box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame });
+    frameLocal.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));
   });
 
   // ── 썬룸 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
@@ -1800,10 +1803,10 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     const xMid = flatX0 + fw / 2, zMid = fFrontZ + fd / 2;
     // 사각 틀(둘레) + 가운데 십자(가로 1·세로 1)
     for (const z of [fFrontZ, fWallZ, zMid]) {              // 앞·뒤 + 십자 가로
-      box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame });
+      frameLocal.push(box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame }));
     }
     for (const x of [flatX0, fX1, xMid]) {                  // 좌·우 + 십자 세로
-      box({ x: x - barW / 2, z: fFrontZ, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame });
+      frameLocal.push(box({ x: x - barW / 2, z: fFrontZ, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame }));
     }
   }
 
@@ -2026,12 +2029,14 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const _foldingSet = new Set(foldingLocal);
   const _extrasSet = new Set(extrasLocal);
   const _foundationSet = new Set(foundationLocal);
+  const _frameSet = new Set(frameLocal);
   for (const o of scene.children.slice(_addStart)) {
     if (_deckSet.has(o)) deckObjects.push(o);
     else if (_wallSet.has(o)) wallObjects.push(o);
     else if (_foldingSet.has(o)) foldingObjects.push(o);
     else if (_extrasSet.has(o)) extrasObjects.push(o);
     else if (_foundationSet.has(o)) foundationObjects.push(o);
+    else if (_frameSet.has(o)) 썬룸FrameObjects.push(o);
     else 썬룸Objects.push(o);
   }
 
@@ -2743,6 +2748,7 @@ function applyVisibility() {
   for (const item of roofObjects) item.visible = showRoof;
   for (const item of deckObjects) item.visible = deckOn && !isPlan;                  // 데크 마감: 바닥(배치도)에선 숨김
   for (const item of 썬룸Objects) item.visible = deckOn && 썬룸On && !isPlan;  // 썬룸는 데크 위에만
+  for (const item of 썬룸FrameObjects) item.visible = (frameOn || (deckOn && 썬룸On)) && !isPlan; // 썬룸 철골: 골조 토글 또는 썬룸 토글
   for (const item of wallObjects) item.visible = deckOn && 썬룸On && wallOn && !isPlan; // 외벽은 썬룸 위에만
   for (const item of foldingObjects) item.visible = deckOn && 썬룸On && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
   for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
