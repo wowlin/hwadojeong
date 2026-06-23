@@ -1753,11 +1753,13 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   }
   // 렉산(경사 지붕) 프레임은 둘레(테두리) 보만 둔다 — 내부 격자는 두꺼워 내부가 안 보이므로 생략.
 
-  // 지지 기둥(프레임 선 위, 지면~보 밑면): 전면 3개 + 양측 중앙 2개 (오른쪽 연결 시 오른쪽 기둥 생략)
+  // 지지 기둥(프레임 선 위, 지면~보 밑면).
+  //  · 안방(connectRightX): 정면 가운데 기둥 제거 → 모서리 + 측면중앙 2개(정면 3m 무주, 보 상향 전제).
+  //  · 거실: 전면 3 + 양측 중앙 2 + 폴딩도어 집벽쪽 양 끝 2 = 7개.
   const postW = 0.12;
   const postPlaces = (connectRightX != null)
-    ? [[(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX1, sideMidZ]]
-    : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ]];
+    ? [[fX1, fFrontZ], [fX1, sideMidZ]]
+    : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ], [fX0, fWallZ], [fX1, fWallZ]];
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
   const postBaseY = deckTopY0;   // 썬룸 기초 상단(0.4m·집보다 0.1m 낮음) — 땅 기둥/데크 기둥 동일 높이로 통일
