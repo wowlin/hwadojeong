@@ -92,6 +92,23 @@ main.js **3195 → 2833줄**, 결합도 낮은 기반 4모듈 추출 완료:
 #### 3b — 레이아웃 의존 빌더 · 위험: 높음 ★★
 - 대상: 1·2단계 export만으로 충족되는 빌더부터 우선 이동.
 - 레이아웃·빌드 순서에 깊게 얽힌 함수는 **이동하지 않음**(억지 분리 금지).
+
+##### 진행 (builders.js)
+- **3b-1**(47db988): `pileGridCoords`·`systemPile`·`pileFoundation`·`floorFrame` 이동.
+  인자/import 상수만 의존. 테스트 ⑫는 floorFrame 정의 소스를 읽으므로 읽기 경로를 builders.js로 갱신함.
+- **3b-2**(009149f): `addStairRailingSegment`·`yzWallPrism`·`gableEndWallThicknessCap`·`slopedWallTopCap`·
+  `wallEndThicknessFace`·`roofSlab` 이동. 전부 레이아웃 클로저 없이 THREE/scene/materials/primitives+상수만 의존.
+- 검증: 매 묶음 `check`+`test`(12/12)+`check:views`(diff0)+`check:render` 통과 후 커밋.
+
+##### 남은 빌더와 차단 사유 (다음 세션용)
+- `roofRiseAtZ`·`gableLongWallX` → 모듈 클로저 **`roofSlopeTan`**(main.js 716, `gableRise` 717)에 의존.
+  선행: `roofSlopeTan`/`gableRise`(순수 파생값)를 layout.js로 빼야(THREE.MathUtils 대신 `deg*Math.PI/180`로
+  THREE 무의존 유지). roofSlopeTan은 main.js 8곳에서 참조 → import 전환 시 전수 확인 필요(블ast 中).
+- `gableEndWallWithWindow` → main.js 잔류 헬퍼 **`sideSash`**(창호 빌더 군) 호출. sideSash 군 선이동 필요.
+- 치수/라벨 군(`lengthDim`·`planDim`·`foundationHeightDim`·`heightDim`·`roomText`) → 전부 **`label`**(main.js)에 의존.
+  `label`은 모듈 const `LABEL_GROUPS`도 함께 옮겨야 동작(3a 미이동분). label은 거의 전 빌더가 호출 → 블ast 큼.
+- 깊게 얽힘(이동 보류): `captureSecond`/`captureInto`(scene.children 순서 캡처), `썬룸`/`drawGroundPost`,
+  `buildHouseFrame`·`studWall`·`rafter`(`gableTopY`·`fr*` 클로저), 계단 군(`_sfTop`·`stairFrameTopY`).
 - **테스트로 보호되는 것부터**: ⑤·⑦은 `PILE_POS`를, ⑪·⑫는 `buildHouseFrame`/`floorFrame`을 **실제 실행**한다
   → 이미 회귀가 즉시 잡히는 이 빌더들을 먼저 옮기면 안전 마진이 크다.
 - **순환 끊는 법**: 빌더가 클로저로 읽던 파생값(`deckTopY0` 등)은 모듈로 옮기면 TDZ/순환을 부른다.
