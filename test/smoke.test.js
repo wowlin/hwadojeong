@@ -115,3 +115,31 @@ test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글
   // (4) 새 세 상태는 blankStage로 빈 화면 처리
   assert.match(src, /blankStage = building === 'stageFirst' \|\| building === 'stageAttic' \|\| building === 'stageRoof';/, '새 1층/다락/지붕은 blankStage로 빈 화면');
 });
+
+test('⑫ 데크 테두리 폭 — floorFrame을 실제 실행해 부재 치수를 측정(테두리만 10cm, 가운데 가로보는 5cm 불변)', () => {
+  // 회귀: 데크 테두리(둘레 림장선) 폭을 rim 인자로 10cm로 올렸을 때, 같은 인자를 쓰던 '가운데 가로보'까지
+  //   덩달아 두꺼워진 적이 있다(요청은 "테두리만"). 정규식이 아니라 floorFrame을 직접 실행해
+  //   생성되는 box의 실제 치수를 재서, 굵어진 전폭 부재가 정확히 '앞·뒤 테두리 2개'뿐인지 확인한다.
+  const src = readFileSync(mainJs, 'utf8');
+  const m = src.match(/function floorFrame\([\s\S]*?\n\}/);
+  assert.ok(m, 'floorFrame 함수 소스를 찾지 못함');
+  const make = new Function('box', 'FLOOR_RIM_W', 'FLOOR_JOIST_H', 'FLOOR_JOIST_W', 'FLOOR_JOIST_SPACING', m[0] + '\nreturn floorFrame;');
+  const boxes = [];
+  const ff = make((o) => { boxes.push(o); return {}; }, 0.05, 0.2, 0.045, 0.45);
+  const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+  // 데크: w=5, d=4, rim 인자 0.10 → 전폭(w===5) 부재 = 앞 림·뒤 림·가운데 보 3개.
+  boxes.length = 0;
+  ff(0, 0, 5, 4, 0, 'deck', null, 0.10);
+  const deckFull = boxes.filter((b) => near(b.w, 5));
+  const thick = deckFull.filter((b) => near(b.d, 0.10));   // 굵은(10cm) 전폭 부재
+  const thin = deckFull.filter((b) => near(b.d, 0.05));    // 가는(5cm) 전폭 부재
+  assert.equal(thick.length, 2, `데크에서 10cm 전폭 부재는 앞·뒤 테두리 2개뿐이어야 함 — 현재 ${thick.length}개(가운데 보까지 굵어졌으면 3개)`);
+  assert.equal(thin.length, 1, `가운데 가로보는 테두리와 무관하게 5cm 1개여야 함 — 현재 ${thin.length}개`);
+
+  // 집: rim 인자 없음(기본 5cm) → 10cm 부재가 하나도 없어야 함.
+  boxes.length = 0;
+  ff(0, 0, 5, 4, 0, 'house');
+  const houseThick = boxes.filter((b) => near(b.w, 5) && near(b.d, 0.10));
+  assert.equal(houseThick.length, 0, `집 바닥틀은 테두리 10cm가 없어야(전부 5cm) — 현재 ${houseThick.length}개`);
+});

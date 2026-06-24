@@ -2196,16 +2196,18 @@ for (const f of deckFootprints) {
 //   골조 토글 전용 그룹(골조Objects). 집과 데크를 별도 재질로 구분해 따로 짠다.
 const FLOOR_JOIST_H = 0.2;          // 바닥 장선 춤(200mm)
 const FLOOR_JOIST_W = 0.045;        // 바닥 장선 폭
-const FLOOR_RIM_W = 0.05;           // 둘레 림장선 폭
+const FLOOR_RIM_W = 0.05;           // 둘레 림장선 폭(집 기본)
+const DECK_RIM_W = 0.10;            // 데크 테두리(둘레 림장선) 폭 — 데크만 두껍게. 굵기 바꾸려면 여기만.
 const FLOOR_JOIST_SPACING = 0.45;   // 바닥 장선 간격(o.c.)
 // 바닥 골조 1벌 — (x0,z0,w,d) 발자국 위, yBottom(기초 두부 상단)에 얹힌 장선틀. 짧은 변으로 스팬(데크용).
-function floorFrame(x0, z0, w, d, yBottom, mat, joistXs = null) {
-  const x1 = x0 + w, z1 = z0 + d, rim = FLOOR_RIM_W, jh = FLOOR_JOIST_H, jw = FLOOR_JOIST_W;
+//   rim = 둘레 테두리(앞·뒤·좌·우) 4변 폭만 지정. 가운데 가로보·내부 장선은 rim과 무관(항상 기본값).
+function floorFrame(x0, z0, w, d, yBottom, mat, joistXs = null, rim = FLOOR_RIM_W) {
+  const x1 = x0 + w, z1 = z0 + d, jh = FLOOR_JOIST_H, jw = FLOOR_JOIST_W;
   box({ x: x0, z: z0, w, d: rim, y: yBottom, h: jh, mat, cast: false, receive: false });        // 앞(−Z) 림장선
   box({ x: x0, z: z1 - rim, w, d: rim, y: yBottom, h: jh, mat, cast: false, receive: false });   // 뒤(+Z) 림장선
   box({ x: x0, z: z0, w: rim, d, y: yBottom, h: jh, mat, cast: false, receive: false });         // 저X측 림장선
   box({ x: x1 - rim, z: z0, w: rim, d, y: yBottom, h: jh, mat, cast: false, receive: false });    // 고X측 림장선
-  box({ x: x0, z: z0 + d / 2 - rim / 2, w, d: rim, y: yBottom, h: jh, mat, cast: false, receive: false });  // 중앙 가로보(X방향, Z중앙) — 장선과 직교
+  box({ x: x0, z: z0 + d / 2 - FLOOR_RIM_W / 2, w, d: FLOOR_RIM_W, y: yBottom, h: jh, mat, cast: false, receive: false });  // 중앙 가로보 — 테두리 아님, rim 무관·항상 기본 폭
   if (joistXs) {   // 세로(Z) 장선을 지정 X열(기초말뚝)에만 — 말뚝 안 지나는 등간격 장선 제거
     for (const jx of joistXs) {
       if (jx <= x0 + rim || jx >= x1 - rim) continue;   // 둘레 림장선과 겹치는 단부 열은 제외
@@ -2236,7 +2238,7 @@ captureInto(골조Objects, () => {
   for (const f of deckFootprints) {
     const pileXs = pileGridCoords(f.x + dm, f.z + dm, f.w - 2 * dm, f.d - 2 * dm, 1.6, 1.7).xs;   // 기초 배치와 동일 출처
     const innerXs = pileXs.slice(1, -1);   // 끝 말뚝열은 둘레 림장선이 받음 → 내부 말뚝열에만 세로 장선(집처럼)
-    floorFrame(f.x, f.z, f.w, f.d, deckTopY0, materials.deckFloorFrame, innerXs);
+    floorFrame(f.x, f.z, f.w, f.d, deckTopY0, materials.deckFloorFrame, innerXs, DECK_RIM_W);   // 데크 테두리만 DECK_RIM_W(10cm) — 가운데 보·장선 불변
   }
 });
 
