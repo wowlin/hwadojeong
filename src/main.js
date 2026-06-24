@@ -2341,7 +2341,7 @@ deckStairs({ axis: 'x', span0: living썬룸.dX0, span1: living썬룸.dX1, edge: 
 deckStairs({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWallZ, edge: living썬룸.dX1, outward: 1 });
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
 deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
-floorFinishObjects.push(...scene.children.slice(_stairStart));   // 계단 포세린 디딤판 — 데크 바닥 포세린과 동일하게 '바닥' 단계에서 계단틀 위에 표시
+deckObjects.push(...scene.children.slice(_stairStart));
 
 // 데크 계단틀(스트링거) — 데크 전면(−Z)·왼쪽(高X) 계단. 1단 높이 ≤17cm(steps 자동). 바닥틀 그룹(골조Objects).
 deckStairFrame({ axis: 'x', span0: living썬룸.dX0, span1: living썬룸.dX1, edge: living썬룸.dFrontZ, outward: -1, group: 골조Objects, mat: materials.deckFloorFrame });
@@ -2947,12 +2947,13 @@ function applyVisibility() {
   const showAttic = atLeast('second');                         // 다락
   const showRoof = atLeast('all');                             // 지붕
 
-  const blankStage = building === 'first' || building === 'second' || building === 'all';   // 1층·다락·지붕: 미검토 → 빈 화면(아무것도 표시 안 함)
+  // 새 버튼(1층·다락·지붕)은 미검토 → 빈 화면. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
+  const blankStage = building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof';
   const ALL_GROUPS = [골조Objects, floorFinishObjects, firstFloorObjects, secondFloorObjects, roofObjects, deckObjects, 썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects, foundationObjects, foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects, planOnlyDimObjects, hedgeObjects, fenceObjects, outletObjects, atticOutletObjects, steelFrameObjects, woodFrameObjects, siteBaseObjects];
-  for (const item of siteBaseObjects) item.visible = !blankStage;   // 바탕 대지·도로: 미검토 단계에선 숨김(그 외 항상 표시)
   if (blankStage) {
     for (const g of ALL_GROUPS) for (const item of g) item.visible = false;
   } else {
+  for (const item of siteBaseObjects) item.visible = true;          // 바탕 대지·도로: 모든 화면에 표시
   for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
@@ -2984,9 +2985,9 @@ function applyVisibility() {
   document.querySelector('#viewFoundation').classList.toggle('active', building === 'foundation');
   document.querySelector('#toggleFrame').classList.toggle('active', building === 'floorFrame');   // 바닥틀
   document.querySelector('#stageFloor').classList.toggle('active', building === 'floor');          // 바닥
-  document.querySelector('#stageFirst').classList.toggle('active', building === 'first');          // 1층
-  document.querySelector('#stageAttic').classList.toggle('active', building === 'second');         // 다락
-  document.querySelector('#stageRoof').classList.toggle('active', building === 'all');             // 지붕
+  document.querySelector('#stageFirst').classList.toggle('active', building === 'stageFirst');     // 1층(새, 빈 화면)
+  document.querySelector('#stageAttic').classList.toggle('active', building === 'stageAttic');     // 다락(새, 빈 화면)
+  document.querySelector('#stageRoof').classList.toggle('active', building === 'stageRoof');       // 지붕(새, 빈 화면)
   // 미검토(참고) 뷰 버튼 — 곧 삭제 예정
   document.querySelector('#viewFirst').classList.toggle('active', building === 'first');
   document.querySelector('#viewSecond').classList.toggle('active', building === 'second');
@@ -3045,24 +3046,24 @@ document.querySelector('#stageFloor').addEventListener('click', () => {
   setView([4.25, 10.7, -5.0]);
 });
 
-// 1층 — 벽·계단(검토 단계 버튼)
+// 1층(새 버튼) — 빈 화면(미검토). 기존 +1층과 별개 상태.
 document.querySelector('#stageFirst').addEventListener('click', () => {
-  viewState.building = 'first';
+  viewState.building = 'stageFirst';
   viewState.hedgeOn = false; viewState.fenceOn = false;
   applyVisibility();
   setView([4.25, 11.2, -5.0]);
 });
 
-// 다락 — 바닥·벽
+// 다락(새 버튼) — 빈 화면(미검토). 기존 +다락과 별개 상태.
 document.querySelector('#stageAttic').addEventListener('click', () => {
-  viewState.building = 'second';
+  viewState.building = 'stageAttic';
   applyVisibility();
   setView([4.25, 12.2, -5.0]);
 });
 
-// 지붕
+// 지붕(새 버튼) — 빈 화면(미검토). 기존 +지붕과 별개 상태.
 document.querySelector('#stageRoof').addEventListener('click', () => {
-  viewState.building = 'all';
+  viewState.building = 'stageRoof';
   applyVisibility();
   setView([10.8, 6.8, -8.8]);
 });
