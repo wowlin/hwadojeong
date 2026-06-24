@@ -31,26 +31,23 @@ await page.goto(url, { waitUntil: 'networkidle' });
 await page.click('#toggleFrame');                       // 바닥틀 뷰(계단틀이 보이는 단계)
 await page.waitForTimeout(800);
 
-const box = await page.locator('#stage canvas').boundingBox();
-const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+// 시점은 카메라 핸들(window.__cc)로 직접 잡는다 — 이 환경에선 마우스 드래그 회전이 안 먹어서.
+// 데크 앞 계단줄을 낮은 측면에서 본다(높이·단차가 옆모습으로 보이게).
+const setCam = (camPos, target) => page.evaluate(({ p, t }) => {
+  const { camera, controls } = window.__cc;
+  controls.target.set(t[0], t[1], t[2]);
+  camera.position.set(p[0], p[1], p[2]);
+  controls.update();
+}, { p: camPos, t: target });
 
-// 1) 시점을 측면으로 크게 기울임(위에서 본 평면 → 옆에서 봐 높이가 보이게)
-await page.mouse.move(cx, cy);
-await page.mouse.down();
-await page.mouse.move(cx, cy + 820, { steps: 40 });
-await page.mouse.up();
-await page.waitForTimeout(500);
+// 1) 데크 앞 계단 전체를 낮은 앞-측면에서(눈높이 ~지면 위 1.5m, 앞쪽 -Z 멀리서 데크/계단 정면을 옆으로)
+await setCam([8.5, 1.6, -9.5], [3.0, 0.6, -1.0]);
+await page.waitForTimeout(600);
 await page.screenshot({ path: root + '/shot-side.png' });
 
-// 2) 좌측 앞 코너(부채꼴 계단)로 팬 이동 + 줌인
-await page.mouse.move(cx, cy);
-await page.mouse.down({ button: 'right' });
-await page.mouse.move(cx - 200, cy - 220, { steps: 20 });
-await page.mouse.up({ button: 'right' });
-await page.waitForTimeout(300);
-await page.mouse.move(cx, cy);
-for (let i = 0; i < 6; i += 1) { await page.mouse.wheel(0, -120); await page.waitForTimeout(80); }
-await page.waitForTimeout(900);
+// 2) 좌측 앞 코너(부채꼴 계단)를 가까이 낮은 측면에서
+await setCam([6.6, 1.2, -5.2], [4.6, 0.4, -1.4]);
+await page.waitForTimeout(600);
 await page.screenshot({ path: root + '/shot-side-corner.png' });
 
 await browser.close();
