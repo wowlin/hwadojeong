@@ -353,23 +353,23 @@ function heightDim(z, y0, y1, text, { lineX, tickX, tickW = 0.35, lw = 0.035, la
 // 말뚝/두부는 그림자 생략(가벼움).
 // 수평 길이 치수(범용) — 선 + 양끝 틱 + 라벨을 ★한 세트★로 묶는다(라벨·선 분리 금지: 한 줄로 추가/삭제).
 // axis 'z'(고정 x, Z방향) / 'x'(고정 z, X방향). y로 평면(0.13)/입체(높이) 모두 표현.
-function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelDist = 0.6, lw = 0.04, tick = 0.3, labelLift = 0.2 } = {}) {
+function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelDist = 0.6, lw = 0.04, tick = 0.3, labelLift = 0.2, h = 0.04 } = {}) {
   if (axis === 'z') {
-    box({ x: fixed - lw / 2, z: a, w: lw, d: b - a, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-    box({ x: fixed - tick / 2, z: a, w: tick, d: lw, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-    box({ x: fixed - tick / 2, z: b - lw, w: tick, d: lw, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
+    box({ x: fixed - lw / 2, z: a, w: lw, d: b - a, y, h, mat: materials.dimension, cast: false, name: 'ground' });
+    box({ x: fixed - tick / 2, z: a, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });
+    box({ x: fixed - tick / 2, z: b - lw, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });
     label(text, fixed + side * labelDist, y + labelLift, (a + b) / 2, 'dim');
   } else {
-    box({ x: a, z: fixed - lw / 2, w: b - a, d: lw, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-    box({ x: a, z: fixed - tick / 2, w: lw, d: tick, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-    box({ x: b - lw, z: fixed - tick / 2, w: lw, d: tick, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
+    box({ x: a, z: fixed - lw / 2, w: b - a, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });
+    box({ x: a, z: fixed - tick / 2, w: lw, d: tick, y, h, mat: materials.dimension, cast: false, name: 'ground' });
+    box({ x: b - lw, z: fixed - tick / 2, w: lw, d: tick, y, h, mat: materials.dimension, cast: false, name: 'ground' });
     label(text, (a + b) / 2, y + labelLift, fixed + side * labelDist, 'dim');
   }
 }
 
 // 평면(바닥 도면) 치수 — lengthDim에 위임(y=0.13 납작). labelSide: 라벨을 선 기준 어느 쪽(+1/-1).
 function planDim(axis, fixed, a, b, text, labelSide = -1, labelDist = 0.6) {
-  lengthDim(axis, fixed, a, b, text, { side: labelSide, labelDist });
+  lengthDim(axis, fixed, a, b, text, { side: labelSide, labelDist, y: 0.012, h: 0.002 });   // 배치도 치수선 — 바닥에 붙임(기준선 위 1mm), 두께 2mm
 }
 
 function horizontalWallWithGaps(x, z, w, y, gaps = [], h = 0.7, thickness = 0.08, mat = materials.wall) {
@@ -1595,7 +1595,7 @@ captureInto(dimObjects, () => {
   planDim('x', dL.z - 0.45, lotX0, 0, '0.5m', -1, 0.6);                             // 거실 이격 0.5(위쪽 → 아래쪽 이동)
   // 모눈 가이드라인 — 각 치수 끝점(X/Z)을 지나 전체로 얇게(드래프팅 보조선처럼)
   const gridMat = new THREE.MeshBasicMaterial({ color: 0x5b7185 });   // 회청색 보조선(무광 — 조명 영향 없이 또렷)
-  const gw = 0.02, gy = 0.135, gh = 0.01;
+  const gw = 0.02, gy = 0.009, gh = 0.002;   // 기준선 — 바닥에 붙임(색면 위 1mm), 두께 2mm
   const gz0 = lotZ0 - 0.6, gz1 = lotZ1 + 0.6, gx0 = lotX0 - 0.6, gx1 = lotX1 + 0.6;
   for (const x of [lotX0, 0, dL.x + dL.w, buildingW, lotX1]) {   // dL.x+dL.w = 거실 데크 왼쪽(안방쪽) 끝 세로 기준선(복구)
     box({ x: x - gw / 2, z: gz0, w: gw, d: gz1 - gz0, y: gy, h: gh, mat: gridMat, cast: false, name: 'ground' });
