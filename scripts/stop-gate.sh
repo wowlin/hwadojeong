@@ -30,7 +30,7 @@ fi
 
 # 완료/일치 단정 + 기하 주제가 동시에 있으면 '눈으로 확인'을 단정한 것으로 본다.
 CLAIM=0; TOPIC=0
-if printf '%s' "$LAST" | grep -Eq '맞췄|맞춰|맞습니다|맞다|맞아|이어져|연결돼|연결되|완료|됐습니다|됐어|정상|문제 ?없|이미 (맞|동일|같|되|충족)|동일합니다|일치|제대로'; then CLAIM=1; fi
+if printf '%s' "$LAST" | grep -Eq '맞췄|맞춰|맞습니다|맞다|맞아|이어져|연결돼|연결되|완료|됐습니다|됐어|정상|문제 ?없|이미 (맞|동일|같|되|충족)|동일합니다|일치|제대로|확인했|확인 ?완료|확인됨|읽었|보였|보임'; then CLAIM=1; fi
 if printf '%s' "$LAST" | grep -Eq '계단|높이|폭|위치|정렬|부채꼴|치수|단높이|디딤|기하|좌표|간격|튀어|어긋'; then TOPIC=1; fi
 
 NEED_SIDE=0
@@ -51,7 +51,7 @@ if [ -f "$SIDE" ]; then
   AGE=$((NOW - MT))
 fi
 if [ "$AGE" -gt 240 ]; then
-  fails="$fails [측면 렌더 미확인 — 평면 shot으로는 높이가 안 보인다. 'npm run shot:side' 를 돌려 shot-side.png 와 shot-side-corner.png 를 Read 로 직접 열어 높이·폭이 직선 계단과 맞는지 눈으로 확인하고 보고하라]"
+  fails="$fails [측면 렌더 미확인 — 평면 shot으로는 높이가 안 보인다. 'npm run shot:side' 를 돌려 shot-side.png 와 shot-side-corner.png 를 Read 로 직접 열어 높이·폭이 직선 계단과 맞는지 눈으로 확인하고 보고하라. ★이미지를 '열기만' 한 건 확인이 아니다 — 라벨·치수·부재가 작아서 안 읽히면 카메라 핸들 window.__cc 로 줌인하거나 영역을 나눠 확대 캡처해서 실제로 읽어라. 못 읽은 채 '확인했다/잘됐다/맞다'고 하면 거짓 보고다. 못 읽었으면 '확인 못 했다'고 말하라]"
 fi
 
 # --- (1) src dirty 면 유닛테스트 + 런타임 렌더 게이트 ---
