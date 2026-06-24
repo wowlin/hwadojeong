@@ -1927,7 +1927,7 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
   label('외부 부동수전', faucetX + 0.5, topY + 0.85, faucetZ - 0.25, 'mep'); // 수전이 가려지지 않게 위쪽·옆으로
 }
 
-{
+captureInto(firstWallObjects, () => {
   // Winder U stair: equal risers. The last visible tread remains one riser
   // below the 2F floor.
   const stairTreadH = 0.08;
@@ -2121,9 +2121,9 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
     { height: openRailHeight, postSpacing: 0.5, balusterSpacing: 0.16 }
   );
 
-}
+});
 
-firstFloorObjects.push(...scene.children.slice(_firstFixturesStart));   // 외부설비·실내 계단을 1층 그룹에 추가
+firstFloorObjects.push(...scene.children.slice(_firstFixturesStart));   // 외부설비·실내 계단을 1층 그룹에 추가(계단은 위에서 firstWallObjects로 별도 캡처)
 
 function ceilingFan({ x, z, ceilingY, bladeCount = 5, bladeLength = 0.62, drop = 0.3 }) {
   const dropY = ceilingY - drop;
