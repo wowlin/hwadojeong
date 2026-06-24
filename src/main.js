@@ -1953,7 +1953,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
         label('왼쪽(동) 측면 앞 첫짝 = 800 출입문', sideX + 0.45, wallBaseY + 1.45, fFrontZ + 0.4, 'opening');
       } else {
         // 오른쪽(서, fX0) 측면 — 연통구(스토브 분할) 높이로 상·하 2등분: 아래 고정 / 위만 폴딩(밖으로 열림)
-        const splitY = wallBaseY + 0.20 + deckFinishT + 0.55;   // 스토브 불연패널 상단과 동일선(데크틀 0.20 위)
+        const splitY = wallBaseY + deckFinishT + 0.55;   // 스토브 불연패널 상단과 동일선
         const sillY = wallBaseY + sillH;
         box({ x: sideX - 0.06, z: fFrontZ, w: 0.12, d: fWallZ - fFrontZ, y: splitY - 0.025, h: 0.05, mat: fdFrame, cast: false });   // 수평 분할 레일(연통구 높이)
         const sP = Math.max(2, Math.round((fWallZ - fFrontZ) / fdPanel));
@@ -2085,7 +2085,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
 // 데크 계단 — 데크 상단에서 지면까지 3계단(합성목). 가장자리 한 변을 따라 바깥으로 내려간다.
 //  axis: 계단이 늘어선 축('x' 또는 'z'). span0~span1: 그 축 범위. edge: 수직축의 데크 가장자리.
 //  outward: 가장자리에서 계단이 뻗는 방향(±1). steps: 계단 수.
-function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckTopY0 + 0.20 + deckFinishT, baseY = groundTopY, tread = 0.3, mat = materials.porcelainDeck }) {
+function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3, mat = materials.porcelainDeck }) {
   const rise = (topY - baseY) / steps;              // 3계단 = 3개의 단높이(데크가 맨 위 단)
   for (let i = 0; i < steps - 1; i += 1) {          // 중간 디딤판 steps-1개(맨 위는 데크). i=0: 데크에 가장 가까운 단
     const h = (topY - (i + 1) * rise) - baseY;      // 지면~단 상단
@@ -2104,7 +2104,7 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
 
 // 썬룸 계단 프레임(스틸) — 경사로가 아니라 계단 단면(디딤판+챌판) 지그재그 스트링거 + 단별 폭방향 디딤보.
 // deckStairs와 동일 파라미터/높이(steps 챌판 + steps-1 디딤). 기초가 낮아지면 topY가 자동 반영돼 늘 일치. 썬룸 골조 그룹.
-function deckStairFrame({ axis, span0, span1, edge, outward, steps = null, topY = deckTopY0 + 0.20 + deckFinishT, baseY = groundTopY, tread = 0.3, group = 썬룸FrameObjects, mat = materials.entryFrame }) {
+function deckStairFrame({ axis, span0, span1, edge, outward, steps = null, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3, group = 썬룸FrameObjects, mat = materials.entryFrame }) {
   const nSteps = steps ?? Math.max(1, Math.ceil((topY - baseY) / 0.17));   // 1단 높이 ≤ 17cm 보장
   const rise = (topY - baseY) / nSteps;
   const bw = 0.07;                        // 프레임 부재 단면
@@ -2347,7 +2347,7 @@ deckStairFrame({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWa
 // 부채꼴 코너 계단 — 앞·왼쪽 계단이 만나는 코너(dX1,dFrontZ) 바깥 사분면(+X~−Z)을 방사형 단으로 연결.
 {
   const cx = living썬룸.dX1, cz = living썬룸.dFrontZ;            // 코너점(앞·왼쪽 만나는 곳)
-  const topY = deckTopY0 + 0.20 + deckFinishT, baseY = groundTopY, tread = 0.3, bw = 0.07;
+  const topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3, bw = 0.07;
   const nSteps = Math.max(1, Math.ceil((topY - baseY) / 0.17));  // 직선 계단과 동일 단수(≤17cm)
   const rise = (topY - baseY) / nSteps;
   const mat = materials.deckFloorFrame;   // 데크틀 색
@@ -2375,7 +2375,7 @@ deckStairFrame({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWa
 
 // 썬룸 화목난로(캠핑용) — 측면 폴딩 "앞에서 3번째 짝"의 하부만 불연패널(연통홀), 상부는 기존 폴딩 유리 유지.
 {
-  const deckTop = groundTopY + deckFoundationH + 0.20 + deckFinishT;
+  const deckTop = groundTopY + deckFoundationH + deckFinishT;
   const fWallZ = buildingFrontZ;                          // -0.7 (집 벽쪽 끝)
   const roofRun = Math.sqrt(4.0 * 4.0 - 0.2 * 0.2);       // 썬룸 수평투영(폴딩 내부값과 동일 ≈3.995)
   const fFrontZ = (buildingFrontZ - roofRun) + 0.2;       // 폴딩 앞단(≈-4.50)
