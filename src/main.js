@@ -1766,18 +1766,25 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
   const postBaseY = deckTopY0;   // 썬룸 기초 상단(0.4m·집보다 0.1m 낮음) — 땅 기둥/데크 기둥 동일 높이로 통일
-  const groundPosts = [];      // 땅 기둥 위치(바닥 도면 말뚝 표시에 사용)
-  postPlaces.forEach(([px, pz], i) => {
+  const groundPosts = [];      // 땅 기둥 위치(원위치) — 바닥 말뚝(PILE_POS.anbang)의 X·가운데 Z 출처
+  // ★단일 출처★ 땅 기둥의 말뚝(기초)·두부·라벨·기둥은 여기서 그리지 않는다.
+  // 위치를 PILE_POS로 확정한 뒤 main에서 drawGroundPost()로 그려, 바닥 마커와 입체 말뚝이
+  // 똑같은 좌표를 쓰게 한다(예전엔 바닥만 보정하고 입체는 원좌표라 도면마다 어긋났음 → 그 회귀 차단).
+  function drawGroundPost(px, pz, isFirst) {
+    captureInto(foundationObjects, () => {
+      systemPile(px, pz, postBaseY, false, materials.deckPileHead);   // 데크 높이(0.4m) 기초 — 두부 청회색(집 기초와 구분)
+      if (isFirst) label('기둥 시스템말뚝기초', px, postBaseY + 0.3, pz - 0.4, 0.24);
+    });
     const topY = glassYatZ(pz) - beamDrop - beamH;
+    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 기둥(골조) — 말뚝 위에 얹힘
+  }
+  postPlaces.forEach(([px, pz], i) => {
     if (postsToGround) {
-      // 말뚝·두부·라벨은 기초 그룹으로 분류 → 기초 뷰에서도 집·데크와 동일하게 보임(썬룸 토글 무관)
-      captureInto(foundationLocal, () => {
-        systemPile(px, pz, postBaseY, false, materials.deckPileHead);   // 데크 높이(0.4m) 기초 — 두부 청회색(집 기초와 구분)
-        if (i === 0) label('기둥 시스템말뚝기초', px, postBaseY + 0.3, pz - 0.4, 0.24);
-      });
-      groundPosts.push([px, pz]);
+      groundPosts.push([px, pz]);   // 위치만 기록 — 렌더는 PILE_POS 확정 후 main에서(단일 출처)
+    } else {
+      const topY = glassYatZ(pz) - beamDrop - beamH;
+      frameLocal.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 데크 위 기둥(거실) — 데크 기초가 받침
     }
-    frameLocal.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));
   });
 
   // ── 썬룸 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
@@ -2042,7 +2049,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     else 썬룸Objects.push(o);
   }
 
-  return { dX0, dX1, dFrontZ, dWallZ, deckTopY, groundPosts };   // 데크 사각형(계단 배치) + 땅 기둥 말뚝 위치
+  return { dX0, dX1, dFrontZ, dWallZ, deckTopY, groundPosts, drawGroundPost };   // 데크 사각형(계단 배치) + 땅 기둥 말뚝 위치 + 입체 땅기둥 렌더러(단일 출처)
 }
 
 // 데크 계단 — 데크 상단에서 지면까지 3계단(합성목). 가장자리 한 변을 따라 바깥으로 내려간다.
@@ -2188,6 +2195,8 @@ const _hp = PILE_POS.house;
 planPileMarks(_hp.x0, _hp.z0, _hp.w, _hp.d, _hp.sx, _hp.sz);                                           // 집 말뚝(0.5m) — 검정
 PILE_POS.decks.forEach((d) => planPileMarks(d.x0, d.z0, d.w, d.d, d.sx, d.sz, () => materials.deckPileHead));   // 데크 말뚝(0.4m) — 청색
 PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHead));                    // 안방 말뚝(0.4m) — 청색
+// 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
+PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
 // 3면 담장 발자국 — 우측 콘크리트(회베이지) + 뒤·좌측 생울타리(녹색). 담장 토글 시.
 planBoundaryObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
 planBoundaryObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));

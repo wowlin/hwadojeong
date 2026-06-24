@@ -52,3 +52,15 @@ test('⑥ 집 기초(0.5m)와 데크 기초(0.4m)는 모든 뷰에서 색이 다
   assert.match(src, /deckFootprints\)\s*\{[\s\S]{0,300}materials\.deckFoundation/, '바닥 데크 발자국은 deckFoundation 색이어야 함');
   assert.match(src, /pileFoundation\([^)]*headMat:\s*materials\.deckPileHead/, '입체 데크 말뚝 두부는 deckPileHead 색이어야 함');
 });
+
+test('⑦ 안방 말뚝 — 바닥 마커와 입체 말뚝이 같은 출처(PILE_POS.anbang)를 읽는다(도면 간 어긋남 방지)', () => {
+  // 과거 회귀의 근본 원인: 안방 말뚝 위치가 두 곳에 따로 있었다(바닥 마커만 보정, 입체 말뚝은 원좌표).
+  // → 위치 정의는 PILE_POS.anbang 한 곳뿐이고, 바닥(planPileMark)·입체(drawGroundPost)가 둘 다 그걸 읽어야 한다.
+  const src = readFileSync(mainJs, 'utf8');
+  // 바닥 안방 마커: PILE_POS.anbang에서.
+  assert.match(src, /PILE_POS\.anbang\.forEach\(\(\[px, pz\]\) => planPileMark\(px, pz, materials\.deckPileHead\)\)/, '바닥 안방 마커는 PILE_POS.anbang에서 읽어야 함');
+  // 입체 안방 말뚝·기둥: 같은 PILE_POS.anbang에서(단일 출처).
+  assert.match(src, /PILE_POS\.anbang\.forEach\(\(\[px, pz\], i\) => 안방썬룸\.drawGroundPost\(px, pz, i === 0\)\)/, '입체 안방 말뚝/기둥도 같은 PILE_POS.anbang에서 읽어야 함(단일 출처)');
+  // 썬룸 내부에서 땅 기둥 말뚝(systemPile)을 옛 방식(foundationLocal 루프)으로 직접 그리면 안 된다 — 좌표 이원화 부활 금지.
+  assert.doesNotMatch(src, /captureInto\(foundationLocal[\s\S]{0,120}systemPile\(/, '땅 기둥 말뚝을 PILE_POS 밖에서 직접 그리지 말 것(이원화 회귀)');
+});
