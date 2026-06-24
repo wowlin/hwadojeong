@@ -1753,6 +1753,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // 데크 바닥/소품(가구)만 따로 표시한 뒤 나머지는 썬룸 구조물로 분류한다.
   const _addStart = scene.children.length;
   const deckLocal = [];      // 데크 바닥·바닥 치수 라벨
+  const floorLocal = [];     // 포세린 바닥 → floorFinishObjects(바닥 단계에서 표시)
   const wallLocal = [];      // 썬룸 외벽(다누몰 자바라) — 별도 토글
   const foldingLocal = [];   // 거실 데크 3면 폴딩도어 — 외벽 대안(상호배타)
   const extrasLocal = [];    // 캠핑 가구(의자 등)
@@ -1989,7 +1990,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     deck.position.set((dX0 + dX1) / 2, deckTopY - deckThickness / 2, (dFrontZ + dWallZ) / 2);
     deck.receiveShadow = true;
     scene.add(deck);
-    deckLocal.push(deck, addGeometryEdges(deck, 0x9a9384));
+    floorLocal.push(deck, addGeometryEdges(deck, 0x9a9384));
   }
 
   // 썬룸 지붕/바닥 사이즈 표시 — 지붕은 경사면 길이, 바닥은 물매 반영한 수평투영(증축 신고 면적 기준)
@@ -2062,6 +2063,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   extrasLocal.push(...scene.children.slice(_furnStart));
 
   // 추가물 분류: 데크 바닥/가구로 표시된 것 외 나머지는 모두 썬룸 구조물.
+  const _floorSet = new Set(floorLocal);
   const _deckSet = new Set(deckLocal);
   const _wallSet = new Set(wallLocal);
   const _foldingSet = new Set(foldingLocal);
@@ -2069,7 +2071,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const _foundationSet = new Set(foundationLocal);
   const _frameSet = new Set(frameLocal);
   for (const o of scene.children.slice(_addStart)) {
-    if (_deckSet.has(o)) deckObjects.push(o);
+    if (_floorSet.has(o)) floorFinishObjects.push(o);
+    else if (_deckSet.has(o)) deckObjects.push(o);
     else if (_wallSet.has(o)) wallObjects.push(o);
     else if (_foldingSet.has(o)) foldingObjects.push(o);
     else if (_extrasSet.has(o)) extrasObjects.push(o);
@@ -2939,7 +2942,7 @@ function applyVisibility() {
   const atLeast = (s) => STAGES.indexOf(building) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
   const showFrame = atLeast('floorFrame') && !isPlan;          // 바닥틀(골조Objects): 바닥틀 단계 이상
   const showFloorFinish = atLeast('floor') && !isPlan;         // 바닥: 바닥 단계 이상(골조 위 10cm 마감층)
-  const showDeckFinish = (deckOn || atLeast('floor')) && !isPlan; // 데크 포세린: 바닥 단계 이상 자동 + 데크 토글
+  const showDeckFinish = (deckOn || atLeast('first')) && !isPlan; // 데크 바닥·계단: 1층 이상 자동 + 데크 토글
   const showFirst = atLeast('first');                          // 1층 벽·계단
   const showAttic = atLeast('second');                         // 다락
   const showRoof = atLeast('all');                             // 지붕
