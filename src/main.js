@@ -42,7 +42,7 @@
 import * as THREE from 'three';
 import { materials } from './materials.js';
 import { stage, scene, camera, renderer, controls } from './scene.js';
-import { box, addGeometryEdges, lerpPoint, flatPoly, fmtDim } from './primitives.js';
+import { box, addGeometryEdges, lerpPoint, flatPoly, fmtDim, stairWallTopCap, railCylinder } from './primitives.js';
 import {
   floorFinishObjects, firstFloorObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
@@ -71,35 +71,6 @@ sun.shadow.camera.bottom = -10;
 sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 24;
 scene.add(sun);
-
-function stairWallTopCap({ x, z, w, d, topY }) {
-  return box({
-    x,
-    z,
-    w,
-    d,
-    y: topY,
-    h: 0.018,
-    mat: materials.wallTop,
-    cast: false,
-    receive: true
-  });
-}
-
-function railCylinder(start, end, radius = 0.035, cast = false) {
-  const a = new THREE.Vector3(...start);
-  const b = new THREE.Vector3(...end);
-  const direction = new THREE.Vector3().subVectors(b, a);
-  const length = direction.length();
-  const geometry = new THREE.CylinderGeometry(radius, radius, length, 10);
-  const mesh = new THREE.Mesh(geometry, materials.guard);
-  mesh.position.copy(a).add(b).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-  mesh.castShadow = cast;
-  mesh.receiveShadow = false;
-  scene.add(mesh);
-  return mesh;
-}
 
 function addStairRailingSegment(startBase, endBase, {
   height = 0.95,

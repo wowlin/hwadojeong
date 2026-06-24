@@ -2,6 +2,7 @@
 // 의존: THREE, scene(싱글톤)만. 레이아웃 파생값·materials·constants 무참조 → 순수 이동(3a).
 import * as THREE from 'three';
 import { scene } from './scene.js';
+import { materials } from './materials.js';
 
 export function box({ x, z, w, d, h = 0.08, y = 0, mat, name, cast = true, receive = true }) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
@@ -60,4 +61,33 @@ export function flatPoly({ points, y, h = 0.08, mat, name, cast = true, receive 
 export function fmtDim(v) {
   const s = Number(v).toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
   return s.includes('.') ? s : `${s}.0`;
+}
+
+export function stairWallTopCap({ x, z, w, d, topY }) {
+  return box({
+    x,
+    z,
+    w,
+    d,
+    y: topY,
+    h: 0.018,
+    mat: materials.wallTop,
+    cast: false,
+    receive: true
+  });
+}
+
+export function railCylinder(start, end, radius = 0.035, cast = false) {
+  const a = new THREE.Vector3(...start);
+  const b = new THREE.Vector3(...end);
+  const direction = new THREE.Vector3().subVectors(b, a);
+  const length = direction.length();
+  const geometry = new THREE.CylinderGeometry(radius, radius, length, 10);
+  const mesh = new THREE.Mesh(geometry, materials.guard);
+  mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+  mesh.castShadow = cast;
+  mesh.receiveShadow = false;
+  scene.add(mesh);
+  return mesh;
 }
