@@ -33,7 +33,7 @@
 // ▌헬퍼 (x·z는 최소 모서리, 단위 m) — 무클로저 빌더는 모듈에서 import, 나머지는 main.js 전역
 //   primitives.js : box({x,z,w,d,y,h,mat,name,cast}) · flatPoly({points:[[x,z]…],y,h,mat,name}) · lerpPoint · fmtDim …
 //   builders.js   : floorFrame · systemPile/pileFoundation · yzWallPrism · roofSlab · slopedWallTopCap …
-//   main.js 전역  : label(text,x,y,z,size) · room/frontSash/sideSash/sideDoor/germanSlidingDoor/entryDoor/pocketDoor* · foundationHeightDim/planDim · setView/applyVisibility
+//   main.js 전역  : label(text,x,y,z,size) · room/frontSash/sideSash/sideDoor/germanSlidingDoor/entryDoor/pocketDoor* · foundationHeightDim/planHDim · setView/applyVisibility
 //
 // ▌주의 (ES모듈·strict)
 //   · 같은 이름 function/const 재정의 금지 → 앱 전체가 깨짐. 새 헬퍼는 새 이름으로.
@@ -353,12 +353,12 @@ function heightDim(z, y0, y1, text, { lineX, tickX, tickW = 0.35, lw = 0.035, la
 // 말뚝/두부는 그림자 생략(가벼움).
 // 수평 길이 치수(범용) — 선 + 양끝 틱 + 라벨을 ★한 세트★로 묶는다(라벨·선 분리 금지: 한 줄로 추가/삭제).
 // axis 'z'(고정 x, Z방향) / 'x'(고정 z, X방향). y로 평면(0.13)/입체(높이) 모두 표현.
-function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelDist = 0.6, lw = 0.04, tick = 0.3, labelLift = 0.2, h = 0.04, labelPos = 'center' } = {}) {
+function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelDist = 0.6, lw = 0.04, tick = 0.3, labelLift = 0.2, h = 0.04 } = {}) {
   if (axis === 'z') {
     box({ x: fixed - lw / 2, z: a, w: lw, d: b - a, y, h, mat: materials.dimension, cast: false, name: 'ground' });
     box({ x: fixed - tick / 2, z: a, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });
     box({ x: fixed - tick / 2, z: b - lw, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });
-    label(text, fixed + side * labelDist, y + labelLift, labelPos === 'end' ? Math.max(a, b) + 0.4 : (a + b) / 2, 'dim');   // 'end' = 세로선 위쪽 끝(+Z 머리 위)
+    label(text, fixed + side * labelDist, y + labelLift, (a + b) / 2, 'dim');
   } else {
     box({ x: a, z: fixed - lw / 2, w: b - a, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });
     box({ x: a, z: fixed - tick / 2, w: lw, d: tick, y, h, mat: materials.dimension, cast: false, name: 'ground' });
@@ -367,9 +367,17 @@ function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelDist = 0
   }
 }
 
-// 평면(바닥 도면) 치수 — lengthDim에 위임(y=0.13 납작). labelSide: 라벨을 선 기준 어느 쪽(+1/-1).
-function planDim(axis, fixed, a, b, text, labelSide = -1, labelDist = 0.6) {
-  lengthDim(axis, fixed, a, b, text, { side: labelSide, labelDist: 0, y: 0.012, h: 0.002, labelLift: 0.02, labelPos: axis === 'z' ? 'end' : 'center' });   // 배치도 치수선 — 바닥에 붙임, 두께 2mm. 라벨도 바닥 가까이(시차 제거). 가로=선 가운데 위, 세로=선 위쪽 끝.
+// 평면(배치도) 가로(x축) 치수 — 라벨은 선 길이 가운데 위. 바닥에 붙임(두께 2mm, 시차 줄이려 라벨도 바닥 가까이).
+function planHDim(fixed, a, b, text) {
+  lengthDim('x', fixed, a, b, text, { labelDist: 0, y: 0.012, h: 0.002, labelLift: 0.02 });
+}
+// 평면(배치도) 세로(z축) 치수 — 가로와 별개. 라벨은 선 위쪽 끝(+Z=화면 상단) 위에. 바닥에 붙임(두께 2mm).
+function planVDim(fixed, a, b, text) {
+  const y = 0.012, h = 0.002, lw = 0.04, tick = 0.3;
+  box({ x: fixed - lw / 2, z: a, w: lw, d: b - a, y, h, mat: materials.dimension, cast: false, name: 'ground' });   // 세로선
+  box({ x: fixed - tick / 2, z: a, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // 아래 틱(−Z)
+  box({ x: fixed - tick / 2, z: b - lw, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // 위 틱(+Z)
+  label(text, fixed, y + 0.02, Math.max(a, b) + 0.4, 'dim');   // 라벨 = 선 위쪽 끝 위(화면 상단), 시차 줄이려 바닥 가까이
 }
 
 function horizontalWallWithGaps(x, z, w, y, gaps = [], h = 0.7, thickness = 0.08, mat = materials.wall) {
@@ -1582,17 +1590,17 @@ footprintObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: planY,
 captureInto(dimObjects, () => {
   const dL = deckFootprints[0];   // 거실 데크 기초(안방 앞 데크 제거됨)
   // 가로 — 위쪽: 기초 8.5 / 가족방 측백 0.5 (거실 0.5는 아래쪽으로 이동)
-  planDim('x', lotZ1 + 0.4, 0, buildingW, '8.5m', 1, 0.6);
-  captureInto(planOnlyDimObjects, () => planDim('x', lotZ1 + 0.4, lotX1 - 0.5, lotX1, '측백 0.5m', 1, 0.6));   // 가족방 측백 0.5(좌상단) — 바닥 전용(기초 뷰 숨김)
+  planHDim(lotZ1 + 0.4, 0, buildingW, '8.5m');
+  captureInto(planOnlyDimObjects, () => planHDim(lotZ1 + 0.4, lotX1 - 0.5, lotX1, '측백 0.5m'));   // 가족방 측백 0.5(좌상단) — 바닥 전용(기초 뷰 숨김)
   // 세로 — 가족방(왼쪽) 건물 깊이 4 / 거실(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
-  planDim('z', lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m', 1, 0.6);          // 가족방 건물 깊이
-  captureInto(planOnlyDimObjects, () => planDim('z', lotX1 + 0.35, lotZ1 - 0.5, lotZ1, '측백 0.5m', 1, 0.6));   // 뒤(가로) 측백 0.5 — 바닥 전용(기초 뷰 숨김)
-  planDim('z', lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m', -1, 0.6);                    // 뒤 이격 합 1m(우상단)
-  planDim('z', lotX0 - 0.4, buildingFrontZ, buildingBackZ, '4.0m', -1, 0.6);          // 거실 건물 깊이
-  planDim('z', lotX0 - 0.4, dL.z, buildingFrontZ, `${fmtDim(dL.d)}m`, -1, 0.6);   // 거실 데크 깊이(오른쪽 가장자리)
+  planVDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m');          // 가족방 건물 깊이
+  captureInto(planOnlyDimObjects, () => planVDim(lotX1 + 0.35, lotZ1 - 0.5, lotZ1, '측백 0.5m'));   // 뒤(가로) 측백 0.5 — 바닥 전용(기초 뷰 숨김)
+  planVDim(lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m');                    // 뒤 이격 합 1m(우상단)
+  planVDim(lotX0 - 0.4, buildingFrontZ, buildingBackZ, '4.0m');          // 거실 건물 깊이
+  planVDim(lotX0 - 0.4, dL.z, buildingFrontZ, `${fmtDim(dL.d)}m`);   // 거실 데크 깊이(오른쪽 가장자리)
   // 아래쪽 가장자리: 거실 데크 폭 / 거실 이격 분할
-  planDim('x', dL.z - 0.45, 0, dL.x + dL.w, `${fmtDim(dL.w)}m`, -1, 0.6);        // 거실 데크 폭
-  planDim('x', dL.z - 0.45, lotX0, 0, '0.5m', -1, 0.6);                             // 거실 이격 0.5(위쪽 → 아래쪽 이동)
+  planHDim(dL.z - 0.45, 0, dL.x + dL.w, `${fmtDim(dL.w)}m`);        // 거실 데크 폭
+  planHDim(dL.z - 0.45, lotX0, 0, '0.5m');                             // 거실 이격 0.5(위쪽 → 아래쪽 이동)
   // 모눈 가이드라인 — 각 치수 끝점(X/Z)을 지나 전체로 얇게(드래프팅 보조선처럼)
   const gridMat = new THREE.MeshBasicMaterial({ color: 0x5b7185 });   // 회청색 보조선(무광 — 조명 영향 없이 또렷)
   const gw = 0.02, gy = 0.009, gh = 0.002;   // 기준선 — 바닥에 붙임(색면 위 1mm), 두께 2mm
@@ -1608,7 +1616,7 @@ captureInto(dimObjects, () => {
 captureInto(planOnlyDimObjects, () => {
   const dimZ = buildingBackZ + 0.25;   // 말뚝 뒤줄(3.2)에서 약간 뒤쪽 — 후면 여백에
   for (let i = 0; i < housePileXs.length - 1; i += 1) {
-    planDim('x', dimZ, housePileXs[i], housePileXs[i + 1], `${fmtDim(housePileXs[i + 1] - housePileXs[i])}m`, 1, 0.3);
+    planHDim(dimZ, housePileXs[i], housePileXs[i + 1], `${fmtDim(housePileXs[i + 1] - housePileXs[i])}m`);
   }
 });
 
