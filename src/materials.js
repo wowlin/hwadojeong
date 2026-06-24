@@ -60,3 +60,4 @@ materials.steelFrame = new THREE.MeshLambertMaterial({ color: 0x9fb1bd });
 materials.woodFrame = new THREE.MeshLambertMaterial({ color: 0xc69c6d });   // 목골조(중목·경량목) 목재 마감
 materials.houseFloorFrame = new THREE.MeshLambertMaterial({ color: 0x8f99a1 });  // 집 바닥 골조(장선) — 강회색
 materials.deckFloorFrame = new THREE.MeshLambertMaterial({ color: 0xb5793f });   // 데크 바닥 골조(장선) — 목재 갈색(집과 구분)
+materials.deckStairFrame = new THREE.MeshLambertMaterial({ color: 0x5b5f66 });   // 데크 계단 프레임(앞·왼쪽·부채꼴) — 짙은 회색(데크 둘레 틀과 구분)
