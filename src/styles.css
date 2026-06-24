@@ -44,15 +44,16 @@ body {
 
 .controls {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap;              /* 한 줄에 다 들어가고, 넘치면 다음 줄로 */
+  align-items: flex-start;      /* 세로 크기는 각 버튼 내용만큼(같은 줄이라도 늘이지 않음) */
   justify-content: center;
   gap: 10px;
-  max-width: 1100px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 button {
-  flex: 1 1 88px;
+  flex: 0 0 auto;              /* 라벨 내용만큼 가로 크기(늘이지·줄이지 않음) */
   min-height: 42px;
   border: 1px solid #9aa3af;
   border-radius: 6px;
@@ -73,7 +74,7 @@ button.active {
   color: #ffffff;
 }
 
-/* 모든 컨트롤 버튼: 1줄 제목 / 부제(업체명·연락처)를 세로로 쌓고, 최대 4줄 기준으로 높이를 균일하게 */
+/* 모든 컨트롤 버튼: 1줄 제목 / 부제(업체명·연락처)를 세로로 쌓는다. 높이는 내용(줄 수)만큼 — 균일 고정 안 함(최소 42px). */
 .controls button {
   display: flex;
   flex-direction: column;
@@ -81,8 +82,7 @@ button.active {
   justify-content: center;
   gap: 0;
   line-height: 1.18;
-  padding: 5px;
-  min-height: 78px;
+  padding: 6px 12px;
 }
 
 .btn-sub {
