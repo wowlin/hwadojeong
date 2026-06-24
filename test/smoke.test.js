@@ -91,29 +91,27 @@ test('⑩ 집 바닥틀 둘레 — 데크처럼 기초 footprint 끝까지(0~bui
   assert.match(src, /floorFrame\(0, buildingFrontZ, buildingW, buildingD, foundationTopY, materials\.houseFloorFrame/, '집 골조 둘레는 footprint 끝까지(floorFrame에 0·buildingW·앞뒤 Z 전달)');
 });
 
-test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 내용 표시 고정, 새 1층/다락/지붕은 빈 화면 고정', () => {
+test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글, 새 1층/다락/지붕은 빈 화면 고정', () => {
   // 사용자 절대 지시:
-  //   · 기존 황토색 버튼 +1층/+다락/+지붕(viewFirst/Second/All → building 'first'/'second'/'all')은 화면 내용을 보여준다. 건드리지 말 것.
+  //   · 기존 황토색 버튼 +1층/+다락/+지붕(viewFirst/Second/All)은 각각 독립 토글(firstOn/atticOn/roofOn) — 현재 화면 위 누적.
   //   · 새로 추가한 1층/다락/지붕(stageFirst/Attic/Roof → 'stageFirst'/'stageAttic'/'stageRoof')은 빈 화면.
-  //   과거 회귀: 두 버튼이 같은 building 값을 공유 + blankStage가 기존(first/second/all)을 비웠음. 둘 다 금지.
+  //   과거 회귀: 두 버튼이 같은 building 값을 공유 + blankStage가 기존을 비웠음. 둘 다 금지.
   const src = readFileSync(mainJs, 'utf8');
-  // (1) 기존 뷰 버튼 핸들러는 first/second/all을 세팅 — 새 상태값으로 바꾸지 말 것
-  assert.match(src, /#viewFirst'\)\.addEventListener[\s\S]{0,80}building = 'first';/, '+1층 핸들러는 building = \'first\'(기존 화면)');
-  assert.match(src, /#viewSecond'\)\.addEventListener[\s\S]{0,80}building = 'second';/, '+다락 핸들러는 building = \'second\'(기존 화면)');
-  assert.match(src, /#viewAll'\)\.addEventListener[\s\S]{0,80}building = 'all';/, '+지붕 핸들러는 building = \'all\'(기존 화면)');
-  // (2) 기존 화면 내용은 atLeast로 살아있어야 함
-  assert.match(src, /const showFirst = atLeast\('first'\);/, '기존 1층 내용은 atLeast(\'first\')로 표시');
-  assert.match(src, /const showAttic = atLeast\('second'\);/, '기존 다락 내용은 atLeast(\'second\')로 표시');
-  assert.match(src, /const showRoof = atLeast\('all'\);/, '기존 지붕 내용은 atLeast(\'all\')로 표시');
-  assert.match(src, /for \(const item of firstFloorObjects\) item\.visible = showFirst;/, '기존 1층 그룹은 showFirst로 표시');
-  // (3) first/second/all은 절대 빈 화면(blankStage)에 들어가면 안 됨
-  assert.doesNotMatch(src, /blankStage = [^;]*'first'/, '기존 first는 blankStage에 넣지 말 것');
-  assert.doesNotMatch(src, /blankStage = [^;]*'second'/, '기존 second는 blankStage에 넣지 말 것');
-  assert.doesNotMatch(src, /blankStage = [^;]*'all'/, '기존 all은 blankStage에 넣지 말 것');
-  // (4) 새 버튼 핸들러는 전용 빈 화면 상태값
+  // (1) 기존 뷰 버튼 핸들러는 각자 boolean을 토글 — building/카메라 안 건드림
+  assert.match(src, /#viewFirst'\)\.addEventListener[\s\S]{0,80}viewState\.firstOn = !viewState\.firstOn;/, '+1층 핸들러는 firstOn 토글');
+  assert.match(src, /#viewSecond'\)\.addEventListener[\s\S]{0,80}viewState\.atticOn = !viewState\.atticOn;/, '+다락 핸들러는 atticOn 토글');
+  assert.match(src, /#viewAll'\)\.addEventListener[\s\S]{0,80}viewState\.roofOn = !viewState\.roofOn;/, '+지붕 핸들러는 roofOn 토글');
+  // (2) 각 층 가시성은 독립 토글 boolean으로
+  assert.match(src, /const showFirst = firstOn;/, '+1층 내용은 firstOn 토글로 표시');
+  assert.match(src, /const showAttic = atticOn;/, '+다락 내용은 atticOn 토글로 표시');
+  assert.match(src, /const showRoof = roofOn;/, '+지붕 내용은 roofOn 토글로 표시');
+  assert.match(src, /for \(const item of firstFloorObjects\) item\.visible = showFirst;/, '1층 그룹은 showFirst(=firstOn)로 표시');
+  assert.match(src, /for \(const item of secondFloorObjects\) item\.visible = showAttic;/, '다락 그룹은 showAttic(=atticOn)으로 표시');
+  assert.match(src, /for \(const item of roofObjects\) item\.visible = showRoof;/, '지붕 그룹은 showRoof(=roofOn)로 표시');
+  // (3) 새 버튼 핸들러는 전용 빈 화면 상태값
   assert.match(src, /#stageFirst'\)\.addEventListener[\s\S]{0,120}building = 'stageFirst';/, '새 1층 핸들러는 building = \'stageFirst\'(빈 화면)');
   assert.match(src, /#stageAttic'\)\.addEventListener[\s\S]{0,120}building = 'stageAttic';/, '새 다락 핸들러는 building = \'stageAttic\'(빈 화면)');
   assert.match(src, /#stageRoof'\)\.addEventListener[\s\S]{0,120}building = 'stageRoof';/, '새 지붕 핸들러는 building = \'stageRoof\'(빈 화면)');
-  // (5) 새 세 상태는 blankStage로 빈 화면 처리
+  // (4) 새 세 상태는 blankStage로 빈 화면 처리
   assert.match(src, /blankStage = building === 'stageFirst' \|\| building === 'stageAttic' \|\| building === 'stageRoof';/, '새 1층/다락/지붕은 blankStage로 빈 화면');
 });

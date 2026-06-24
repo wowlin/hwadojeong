@@ -2933,19 +2933,19 @@ function setView(pos) {
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 썬룸가 켜진 경우에만 가능(외벽은 썬룸에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
 // building 시공 누적 단계: plan(배치도) → foundation(기초) → floorFrame(바닥틀) → floor(바닥재) → first(1층) → second(다락) → all(지붕)
-const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, hedgeOn: false, fenceOn: false, frameMode: 'none' };  // 측백담장(hedgeOn)·옆집담장(fenceOn) 기본 꺼짐 · frameMode: 'none'|'steel'|'wood'(미검토 골조 토글)
+const viewState = { building: 'plan', firstOn: false, atticOn: false, roofOn: false, deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, hedgeOn: false, fenceOn: false, frameMode: 'none' };  // +1층(firstOn)·+다락(atticOn)·+지붕(roofOn) 각각 독립 토글, 현재 화면 위 누적 · 측백담장(hedgeOn)·옆집담장(fenceOn) 기본 꺼짐 · frameMode: 'none'|'steel'|'wood'(미검토 골조 토글)
 
 function applyVisibility() {
-  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode } = viewState;
+  const { building, firstOn, atticOn, roofOn, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
   const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
   const atLeast = (s) => STAGES.indexOf(building) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
   const showFrame = atLeast('floorFrame') && !isPlan;          // 바닥틀(골조Objects): 바닥틀 단계 이상
   const showFloorFinish = atLeast('floor') && !isPlan;         // 바닥: 바닥 단계 이상(골조 위 10cm 마감층)
   const showDeckFinish = (deckOn || atLeast('first')) && !isPlan; // 데크 바닥·계단: 1층 이상 자동 + 데크 토글
-  const showFirst = atLeast('first');                          // 1층 벽·계단
-  const showAttic = atLeast('second');                         // 다락
-  const showRoof = atLeast('all');                             // 지붕
+  const showFirst = firstOn;                                   // +1층: 독립 토글(현재 화면 위 누적)
+  const showAttic = atticOn;                                   // +다락: 독립 토글
+  const showRoof = roofOn;                                     // +지붕: 독립 토글
 
   // 새 버튼(1층·다락·지붕)은 미검토 → 빈 화면. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
   const blankStage = building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof';
@@ -2988,10 +2988,10 @@ function applyVisibility() {
   document.querySelector('#stageFirst').classList.toggle('active', building === 'stageFirst');     // 1층(새, 빈 화면)
   document.querySelector('#stageAttic').classList.toggle('active', building === 'stageAttic');     // 다락(새, 빈 화면)
   document.querySelector('#stageRoof').classList.toggle('active', building === 'stageRoof');       // 지붕(새, 빈 화면)
-  // 미검토(참고) 뷰 버튼 — 곧 삭제 예정
-  document.querySelector('#viewFirst').classList.toggle('active', building === 'first');
-  document.querySelector('#viewSecond').classList.toggle('active', building === 'second');
-  document.querySelector('#viewAll').classList.toggle('active', building === 'all');
+  // 기존 +1층/+다락/+지붕 — 각각 독립 토글
+  document.querySelector('#viewFirst').classList.toggle('active', firstOn);
+  document.querySelector('#viewSecond').classList.toggle('active', atticOn);
+  document.querySelector('#viewAll').classList.toggle('active', roofOn);
   document.querySelector('#toggleDeck').classList.toggle('active', deckOn);
   const 썬룸Btn = document.querySelector('#toggle썬룸');
   썬룸Btn.classList.toggle('active', deckOn && 썬룸On);
@@ -3068,23 +3068,20 @@ document.querySelector('#stageRoof').addEventListener('click', () => {
   setView([10.8, 6.8, -8.8]);
 });
 
+// +1층/+다락/+지붕 — 각각 독립 토글. 현재 화면 위에 해당 층만 켜고/끈다(building·카메라 안 건드림).
 document.querySelector('#viewFirst').addEventListener('click', () => {
-  viewState.building = 'first';
-  viewState.hedgeOn = false; viewState.fenceOn = false;   // 1층을 보면 담장(측백·옆집) 자동 해제
+  viewState.firstOn = !viewState.firstOn;
   applyVisibility();
-  setView([4.25, 11.2, -5.0]);
 });
 
 document.querySelector('#viewSecond').addEventListener('click', () => {
-  viewState.building = 'second';
+  viewState.atticOn = !viewState.atticOn;
   applyVisibility();
-  setView([4.25, 12.2, -5.0]);
 });
 
 document.querySelector('#viewAll').addEventListener('click', () => {
-  viewState.building = 'all';               // +지붕 = 집 지붕까지(데크·썬룸·악세사리는 각 토글 상태 유지)
+  viewState.roofOn = !viewState.roofOn;
   applyVisibility();
-  setView([10.8, 6.8, -8.8]);
 });
 
 document.querySelector('#toggleDeck').addEventListener('click', () => {
