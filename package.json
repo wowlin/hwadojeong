@@ -9,11 +9,14 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "check": "node --check src/main.js"
+    "check": "node --check src/main.js",
+    "shot": "node scripts/shot.mjs"
   },
   "dependencies": {
     "three": "^0.179.1",
     "vite": "^7.2.7"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
 }
