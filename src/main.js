@@ -954,7 +954,7 @@ captureInto(foundationDimObjects, () => {
   const _fg = pileGridCoords(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, 1.7, 1.9);
   const _pileX = housePileXs[housePileXs.length - 2];
   const _pileZ = _fg.zs[_fg.zs.length - 2];
-  foundationHeightDim(_pileX + 0.45, _pileZ, groundTopY, foundationTopY, '말뚝기초 0.5m', 0.5);
+  foundationHeightDim(_pileX + 0.45, _pileZ, groundTopY, foundationTopY, '말뚝기초 0.35m', 0.5);
 });
 
 // 집 골조 1벌 빌드(현재 frameMat 재질로) — 1층 외주벽+계단 내벽 / 다락 장선·무릎벽·박공 / 지붕 용마루·서까래.
@@ -1497,7 +1497,7 @@ for (const f of deckFootprints) {
   captureInto(foundationDimObjects, () => {
     const m = 0.1;
     const _dg = pileGridCoords(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, 1.6, 1.7);
-    foundationHeightDim(_dg.xs[1] + 0.4, _dg.zs[1], groundTopY, deckTopY0, '데크 기초 0.4m', 0.5);
+    foundationHeightDim(_dg.xs[1] + 0.4, _dg.zs[1], groundTopY, deckTopY0, '데크 기초 0.25m', 0.5);
   });
   // 데크 둘레는 바닥틀(골조)의 림장선이 겸한다 — 집과 동일하게 한 겹(중복 토대보 제거).
 }
