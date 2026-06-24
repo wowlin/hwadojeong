@@ -109,7 +109,8 @@ const fenceObjects = [];        // 우측 콘크리트 담장(옆집 경계) —
 const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·두부, 높이 치수) — 바닥(평면도)에선 숨김
 const foundationDimObjects = []; // 기초 가로/세로·대지 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 const footprintObjects = [];    // 집·데크 납작 발자국 — ★단일 출처★ 모든 화면에 동일 표시(바닥에서 바꾸면 전 화면 반영)
-const planObjects = [];         // 바닥(평면도): 말뚝 마커 + 평면 치수 — 바닥에서만
+const planObjects = [];         // 바닥(평면도): 말뚝 마커 — 바닥에서만
+const dimObjects = [];          // 평면 치수·모눈(라벨+선 한 세트) — 바닥 + 기초에 동일 표시
 const planHedgeObjects = [];    // 바닥(평면도): 측백 생울타리 발자국 — 측백담장 토글
 const planFenceObjects = [];    // 바닥(평면도): 옆집 담장 발자국 — 옆집담장 토글
 
@@ -726,6 +727,14 @@ function foundationHeightDim(x, z, y0, y1, text, labelDx = -0.55) {
   label(text, x + labelDx, (y0 + y1) / 2, z, 0.26);   // labelDx: 라벨을 어느 쪽으로 뺄지(+면 바깥)
 }
 
+// 수직 높이 치수(범용) — 수직선 + 상·하 X방향 틱 + 라벨을 ★한 세트★로 묶는다(라벨·선 분리 금지: 한 줄로 추가/삭제).
+function heightDim(z, y0, y1, text, { lineX, tickX, tickW = 0.35, lw = 0.035, labelX, labelZ = z, labelSize = 0.28, name, cast = true } = {}) {
+  box({ x: lineX, z, w: lw, d: lw, y: y0, h: y1 - y0, mat: materials.dimension, cast, name });        // 수직 치수선
+  box({ x: tickX, z, w: tickW, d: lw, y: y0, h: lw, mat: materials.dimension, cast, name });           // 하단 틱
+  box({ x: tickX, z, w: tickW, d: lw, y: y1 - lw, h: lw, mat: materials.dimension, cast, name });      // 상단 틱
+  label(text, labelX, (y0 + y1) / 2, labelZ, labelSize);
+}
+
 // ── 시스템 말뚝기초(독립기초) — KC금강컨테이너 주택용 ──────────────────────────
 // 통슬래브(매트) 대신 강관 말뚝을 격자로 박고, 두부 헤드 브래킷 위에 스틸 골조가 바로 얹혀
 // 볼트로 체결된다(별도 받침 각관 없음). 그 위에 바닥(집)·포세린(데크)이 올라간다.
@@ -758,21 +767,25 @@ function pileFoundation(x0, z0, w, d, headTopY, { spacingX = 1.7, spacingZ = 1.9
   for (const x of xs) for (const z of zs) systemPile(x, z, headTopY, cast, headMat);
 }
 
-// 평면(바닥 도면) 치수 — 지면 높이에 납작하게. axis 'z'(고정 x, Z방향) / 'x'(고정 z, X방향).
-// labelSide: 라벨을 선 기준 어느 쪽으로 띄울지(+1/-1).
-function planDim(axis, fixed, a, b, text, labelSide = -1, labelSize = 0.55, labelDist = 0.6) {
-  const y = 0.13, lw = 0.04, tick = 0.3;
+// 수평 길이 치수(범용) — 선 + 양끝 틱 + 라벨을 ★한 세트★로 묶는다(라벨·선 분리 금지: 한 줄로 추가/삭제).
+// axis 'z'(고정 x, Z방향) / 'x'(고정 z, X방향). y로 평면(0.13)/입체(높이) 모두 표현.
+function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelSize = 0.55, labelDist = 0.6, lw = 0.04, tick = 0.3, labelLift = 0.2 } = {}) {
   if (axis === 'z') {
     box({ x: fixed - lw / 2, z: a, w: lw, d: b - a, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
     box({ x: fixed - tick / 2, z: a, w: tick, d: lw, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
     box({ x: fixed - tick / 2, z: b - lw, w: tick, d: lw, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-    label(text, fixed + labelSide * labelDist, y + 0.2, (a + b) / 2, labelSize);
+    label(text, fixed + side * labelDist, y + labelLift, (a + b) / 2, labelSize);
   } else {
     box({ x: a, z: fixed - lw / 2, w: b - a, d: lw, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
     box({ x: a, z: fixed - tick / 2, w: lw, d: tick, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
     box({ x: b - lw, z: fixed - tick / 2, w: lw, d: tick, y, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-    label(text, (a + b) / 2, y + 0.2, fixed + labelSide * labelDist, labelSize);
+    label(text, (a + b) / 2, y + labelLift, fixed + side * labelDist, labelSize);
   }
+}
+
+// 평면(바닥 도면) 치수 — lengthDim에 위임(y=0.13 납작). labelSide: 라벨을 선 기준 어느 쪽(+1/-1).
+function planDim(axis, fixed, a, b, text, labelSide = -1, labelSize = 0.55, labelDist = 0.6) {
+  lengthDim(axis, fixed, a, b, text, { side: labelSide, labelSize, labelDist });
 }
 
 function horizontalWallWithGaps(x, z, w, y, gaps = [], h = 0.7, thickness = 0.08, mat = materials.wall) {
@@ -2207,8 +2220,8 @@ PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i =
 planFenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
 planHedgeObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
 planHedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
-// 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인.
-captureInto(planObjects, () => {
+// 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인. 바닥+기초 공통(dimObjects).
+captureInto(dimObjects, () => {
   const D = 0.55;   // 모든 평면 치수 라벨 동일 크기
   const dL = deckFootprints[0];   // 거실 데크 기초(안방 앞 데크 제거됨)
   // 가로 — 위쪽: 기초 8.5 / 가족방 측백 0.5 (거실 0.5는 아래쪽으로 이동)
@@ -2831,7 +2844,8 @@ function applyVisibility() {
   for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
   for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
   for (const item of footprintObjects) item.visible = true;                          // 집·데크 발자국: 단일 출처, 모든 화면에 항상 표시
-  for (const item of planObjects) item.visible = isPlan;                             // 말뚝 마커·평면 치수: 바닥에서만
+  for (const item of planObjects) item.visible = isPlan;                             // 말뚝 마커: 바닥에서만
+  for (const item of dimObjects) item.visible = isPlan || building === 'foundation'; // 평면 치수·모눈: 바닥 + 기초에 동일 표시
   for (const item of planHedgeObjects) item.visible = isPlan && hedgeOn;             // 납작 측백 발자국: 바닥 + 측백담장 토글
   for (const item of planFenceObjects) item.visible = isPlan && fenceOn;             // 납작 옆집담장 발자국: 바닥 + 옆집담장 토글
   for (const item of hedgeObjects) item.visible = hedgeOn && !isPlan;                // 입체 측백 생울타리: 바닥에선 납작 버전으로 대체
