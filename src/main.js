@@ -984,7 +984,7 @@ const pileCapW = 0.2;                   // 두부 헤드 브래킷 한 변
 const pileCapH = 0.12;                  // 두부 헤드 브래킷 높이(스틸 골조 볼트 체결부)
 const floorFinishH = 0.10;                              // 바닥(바닥 시공) 두께 10cm — 골조 위 마감층
 const firstFloorY = foundationTopY + 0.20 + floorFinishH; // 기초 상단(0.58) + 장선(0.20) + 바닥(0.10) = 0.88
-const deckFinishT = 0.02;   // 포세린 마감 두께 2cm(데크틀 위에 얹힘 — 건식)
+const deckFinishT = 0.04;   // 포세린 마감 두께(데크 기초 위에 얹힘 — 건식)
 const deckFoundationH = 0.4;    // 데크/썬룸 기초 높이 40cm(집 50cm보다 10cm 낮게 — 단차). 말뚝기초라 높이 자유.
 const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단(0.48) = 집 기초 상단(0.58)보다 0.1m 낮음
 
@@ -1016,7 +1016,6 @@ hedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY
 // 바닥(바닥 시공 10cm) — 골조(장선) 위 마감층. '바닥' 단계 이상에서 표시(floorFinishObjects). 1층 벽·계단·가구는 이 위(firstFloorY)에서 시작.
 captureInto(floorFinishObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY + 0.20, h: floorFinishH, mat: materials.floorFinish });
-  foundationHeightDim(-0.2, buildingFrontZ + 0.5, foundationTopY + 0.20, firstFloorY, '바닥 0.1m');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
@@ -1974,8 +1973,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
 
   // 썬룸 바닥 — 포세린 타일 마감(건식). 데크 기초(0.4m·집보다 0.1m 낮음)+토대보 위에 마감층이 얹힌다.
-  const deckTopY = deckTopY0 + 0.20 + deckFinishT; // 데크 상단 = 기초(0.48) + 장선(0.20) + 포세린(0.02) = 0.70
-  const deckThickness = deckFinishT;             // 마감층만(하부 기초는 함수 밖에서 별도 생성)
+  const deckTopY = deckTopY0 + 0.20 + 0.02;        // 데크 상단 = 기초(0.48) + 장선(0.20) + 포세린(0.02) = 0.70
+  const deckThickness = 0.02;                    // 포세린 마감 두께 2cm
   const deckEdge = postW / 2;                    // 기둥(프레임 선)이 데크 위에 완전히 얹히도록 기둥 바깥면까지 확장
   const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge; // 오른쪽: 연결 시 이웃 데크까지 이어 붙임
   const dX1 = fX1;                               // 고-X(안방쪽)는 개방부라 돌출 없이 유리벽 선까지만(데크 폭 = 5.5)
