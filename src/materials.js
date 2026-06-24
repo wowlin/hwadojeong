@@ -1,0 +1,62 @@
+// 재질(머티리얼) 단일 출처 — THREE + 텍스처 생성기만 의존. 색 변경은 여기 한 곳에서.
+import * as THREE from 'three';
+import { makeGravelTexture, makeEarthTexture, makePorcelainDeckTexture } from './textures.js';
+
+export const materials = {
+  site: new THREE.MeshLambertMaterial({ color: 0xa3814f }),   // 흙색(부지 지면)
+  yard: new THREE.MeshLambertMaterial({ color: 0x76a96b }),
+  road: new THREE.MeshLambertMaterial({ color: 0xcfd8e3 }),
+  hedge: new THREE.MeshLambertMaterial({ color: 0x2f7d45 }),
+  foundation: new THREE.MeshLambertMaterial({ color: 0xb8b8ad }),         // 집 기초(0.5m) — 따뜻한 회색
+  deckFoundation: new THREE.MeshLambertMaterial({ color: 0xb3d3ef }),     // 데크 기초(0.4m) 배경 — 연한 하늘색(말뚝 두부 청색과 또렷이 구별되게 연하게)
+  pile: new THREE.MeshLambertMaterial({ color: 0x7d8186 }),          // 강관 말뚝(아연도금)
+  pileHead: new THREE.MeshLambertMaterial({ color: 0x2c3036 }),      // 두부 헤드 브래킷(검정) — 스틸 골조가 볼트 체결되는 부분
+  deckPileHead: new THREE.MeshLambertMaterial({ color: 0x4a86b0 }),  // 데크 기초 두부 — 또렷한 청색(집 검정 두부와 명확 구분)
+  floorFinish: new THREE.MeshLambertMaterial({ color: 0xa0785a }),   // 바닥(바닥 시공 10cm) — 골조 위, 1층 마감 아래
+  dimension: new THREE.MeshLambertMaterial({ color: 0x111827 }),
+  wall: new THREE.MeshLambertMaterial({ color: 0xffffff }),
+  wallSide: new THREE.MeshLambertMaterial({ color: 0x9f917f }),
+  exteriorWall: new THREE.MeshLambertMaterial({ color: 0xe4ded2, transparent: true, opacity: 0.58, depthWrite: false }),
+  wallTop: new THREE.MeshLambertMaterial({ color: 0x8f8374 }),
+  living: new THREE.MeshLambertMaterial({ color: 0xfff3c4 }),
+  bed: new THREE.MeshLambertMaterial({ color: 0xbed8ff }),
+  bath: new THREE.MeshLambertMaterial({ color: 0xbff3ef }),
+  toilet: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
+  vanity: new THREE.MeshLambertMaterial({ color: 0x99a13a }),
+  shower: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
+  stair: new THREE.MeshLambertMaterial({ color: 0xd9cffb }),
+  stairFront: new THREE.MeshLambertMaterial({ color: 0xdfeecf }),
+  hall: new THREE.MeshLambertMaterial({ color: 0xeeeeee }),
+  landing: new THREE.MeshLambertMaterial({ color: 0xffd166 }),
+  stairWall: new THREE.MeshLambertMaterial({ color: 0xf2f0e8 }),
+  guard: new THREE.MeshLambertMaterial({ color: 0x374151 }),
+  sinkCabinet: new THREE.MeshLambertMaterial({ color: 0xd8c7a4 }),
+  counter: new THREE.MeshLambertMaterial({ color: 0xf8fafc }),
+  sinkBasin: new THREE.MeshLambertMaterial({ color: 0xb7c7d7 }),
+  entry: new THREE.MeshLambertMaterial({ color: 0xffdfbd }),
+  deck: new THREE.MeshLambertMaterial({ color: 0xcaa46a }),
+  door: new THREE.MeshLambertMaterial({ color: 0x31a354 }),
+  interiorDoor: new THREE.MeshLambertMaterial({ color: 0x7a4f32 }),
+  pocketDoor: new THREE.MeshLambertMaterial({ color: 0x8b5f3d }),
+  entryDoor: new THREE.MeshLambertMaterial({ color: 0x4f3422 }),
+  entryFrame: new THREE.MeshLambertMaterial({ color: 0x2f343a }),
+  handle: new THREE.MeshLambertMaterial({ color: 0xd4af37 }),
+  glass: new THREE.MeshLambertMaterial({ color: 0x9ed0e8, transparent: true, opacity: 0.55 }),
+  interiorGlassWall: new THREE.MeshLambertMaterial({ color: 0xd7e6e3, transparent: true, opacity: 0.32, depthWrite: false }),
+  soundWall: new THREE.MeshLambertMaterial({ color: 0xcfc6b4 }),   // 방음벽(솔리드): 스틸스터드+암면+석고2겹
+  openingEdge: new THREE.MeshLambertMaterial({ color: 0x8f6f35 }),
+  gable: new THREE.MeshLambertMaterial({ color: 0xf8fafc, side: THREE.DoubleSide }),
+  roof: new THREE.MeshLambertMaterial({ color: 0x565c64, side: THREE.DoubleSide }),   // 징크(그래파이트 그레이) 지붕 260T
+  roofEdge: new THREE.MeshLambertMaterial({ color: 0x515966, side: THREE.DoubleSide })
+};
+
+// 텍스처 기반 재질
+materials.gravel = new THREE.MeshLambertMaterial({ map: makeGravelTexture() });          // 파쇄석(앞마당)
+materials.site = new THREE.MeshLambertMaterial({ map: makeEarthTexture() });             // 흙(부지)
+materials.porcelainDeck = new THREE.MeshLambertMaterial({ map: makePorcelainDeckTexture() });  // 포세린 타일 데크
+
+// 골조 재질(아연도금 경량형강·목재 톤)
+materials.steelFrame = new THREE.MeshLambertMaterial({ color: 0x9fb1bd });
+materials.woodFrame = new THREE.MeshLambertMaterial({ color: 0xc69c6d });   // 목골조(중목·경량목) 목재 마감
+materials.houseFloorFrame = new THREE.MeshLambertMaterial({ color: 0x8f99a1 });  // 집 바닥 골조(장선) — 강회색
+materials.deckFloorFrame = new THREE.MeshLambertMaterial({ color: 0xb5793f });   // 데크 바닥 골조(장선) — 목재 갈색(집과 구분)
