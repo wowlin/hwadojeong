@@ -107,7 +107,8 @@ const atticOutletObjects = [];  // 전기 콘센트(다락) — 콘센트 토글
 const hedgeObjects = [];        // 측백나무 생울타리(뒤·좌측) — 측백담장 토글
 const fenceObjects = [];        // 우측 콘크리트 담장(옆집 경계) — 옆집담장 토글
 const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·두부, 높이 치수) — 바닥(평면도)에선 숨김
-const foundationDimObjects = []; // 기초 가로/세로·대지 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
+const foundationDimObjects = []; // 기초 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
+const lotDimObjects = [];        // 대지(부지) 가로/세로 전체 치수 — 기초에선 제거, 그 외 입체(1층·다락·지붕)에 표시
 const footprintObjects = [];    // 집·데크·담장 납작 발자국 — ★단일 출처★ 모든 화면에 동일 표시(토글 무관, 바닥에서 바꾸면 전 화면 반영)
 const planObjects = [];         // 바닥(평면도): 말뚝 마커 — 바닥에서만
 const dimObjects = [];          // 평면 치수·모눈(라벨+선 한 세트) — 바닥 + 기초에 동일 표시
@@ -979,8 +980,8 @@ fenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: groundTopY
 hedgeObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
 hedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 왼쪽(가족방) 생울타리
 
-// 대지 가로/세로(전체) 치수 — 입체 뷰에서만. 바닥(평면도)에선 분할 치수를 쓰므로 숨김(foundationObjects).
-captureInto(foundationObjects, () => {
+// 대지 가로/세로(전체) 치수 — 기초 제외 입체(1층·다락·지붕). 바닥은 분할 치수, 기초에선 제거(lotDimObjects).
+captureInto(lotDimObjects, () => {
   const lotDimY = 0.12;
   const lotDimZ = lotZ0 - 0.35;   // 전면 바깥쪽 가로 치수선
   box({ x: lotX0, z: lotDimZ, w: lotW, d: 0.04, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
@@ -2843,6 +2844,7 @@ function applyVisibility() {
   for (const item of foldingObjects) item.visible = deckOn && 썬룸On && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
   for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
   for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
+  for (const item of lotDimObjects) item.visible = !isPlan && building !== 'foundation'; // 대지 가로/세로: 기초에선 제거, 그 외 입체엔 표시
   for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
   for (const item of footprintObjects) item.visible = true;                          // 집·데크 발자국: 단일 출처, 모든 화면에 항상 표시
   for (const item of planObjects) item.visible = isPlan;                             // 말뚝 마커: 바닥에서만
