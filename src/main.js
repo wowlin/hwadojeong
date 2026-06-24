@@ -1340,11 +1340,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // deckDepth가 지정되면 건물 벽에서 그 거리까지만 데크를 깐다(부분 데크).
   const dFrontZ = (deckDepth != null) ? dWallZ - deckDepth : fFrontZ - deckEdge;
   if (withDeck) {                                  // 데크 바닥 마감(없는 썬룸은 지붕·기둥만)
+    const pX0 = Math.max(dX0, 0), pX1 = Math.min(dX1, buildingW);   // 데크 발자국(0~buildingW) 안으로 clamp — 테두리 밖으로 안 튀어나오게
     const deck = new THREE.Mesh(
-      new THREE.BoxGeometry(dX1 - dX0, deckThickness, dWallZ - dFrontZ),
+      new THREE.BoxGeometry(pX1 - pX0, deckThickness, dWallZ - dFrontZ),
       materials.porcelainDeck
     );
-    deck.position.set((dX0 + dX1) / 2, deckTopY - deckThickness / 2, (dFrontZ + dWallZ) / 2);
+    deck.position.set((pX0 + pX1) / 2, deckTopY - deckThickness / 2, (dFrontZ + dWallZ) / 2);
     deck.receiveShadow = true;
     scene.add(deck);
     floorLocal.push(deck, addGeometryEdges(deck, 0x9a9384));
@@ -2324,7 +2325,7 @@ function applyVisibility() {
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
   const sunReady = deckOn && 썬룸On;                            // 썬룸·외벽·폴딩 공통 전제 — 한 곳에서만 계산(흩어진 재계산 방지)
   const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
-  const effBuilding = building === 'stageFirst' ? 'floor' : building;     // '1층' 화면은 '바닥' 상태를 그대로 표시(같은 그룹 → 바닥 변경이 함께 반영=연동)
+  const effBuilding = (building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof') ? 'floor' : building;   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(같은 그룹 → 바닥 변경이 함께 반영=연동)
   const atLeast = (s) => STAGES.indexOf(effBuilding) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
   const showFrame = atLeast('floorFrame') && !isPlan;          // 바닥틀(골조Objects): 바닥틀 단계 이상
   const showFloorFinish = atLeast('floor') && !isPlan;         // 바닥: 바닥 단계 이상(골조 위 10cm 마감층)
@@ -2333,12 +2334,7 @@ function applyVisibility() {
   const showAttic = atticOn;                                   // +다락: 독립 토글
   const showRoof = roofOn;                                     // +지붕: 독립 토글
 
-  // 새 버튼(다락·지붕)은 미검토 → 빈 화면. 1층은 '바닥' 상태를 그대로 표시(effBuilding). 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
-  const blankStage = building === 'stageAttic' || building === 'stageRoof';
-  const ALL_GROUPS = [골조Objects, floorFinishObjects, firstFloorObjects, secondFloorObjects, roofObjects, deckObjects, 썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects, foundationObjects, foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects, planOnlyDimObjects, hedgeObjects, fenceObjects, outletObjects, atticOutletObjects, steelFrameObjects, woodFrameObjects, siteBaseObjects];
-  if (blankStage) {
-    for (const g of ALL_GROUPS) for (const item of g) item.visible = false;
-  } else {
+  // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(effBuilding=floor) — 빈 화면 단계 없음. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
   for (const item of siteBaseObjects) item.visible = true;          // 바탕 대지·도로: 모든 화면에 표시
   for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
@@ -2364,7 +2360,6 @@ function applyVisibility() {
   for (const item of atticOutletObjects) item.visible = outletsOn && showAttic;     // 다락 콘센트: 다락 표시 시
   for (const item of steelFrameObjects) item.visible = frameMode === 'steel' && !isPlan;  // 스틸골조(상호배타)
   for (const item of woodFrameObjects) item.visible = frameMode === 'wood' && !isPlan;    // 목골조(상호배타)
-  }
 
   // 버튼 상태 반영 — STAGE/TOGGLE/FRAME 테이블에서 일괄 (단일 출처)
   for (const b of STAGE_BUTTONS) document.querySelector('#' + b.id).classList.toggle('active', building === b.building);

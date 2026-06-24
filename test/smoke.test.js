@@ -92,11 +92,10 @@ test('⑩ 집 바닥틀 둘레 — 데크처럼 기초 footprint 끝까지(0~bui
   assert.match(src, /floorFrame\(0, buildingFrontZ, buildingW, buildingD, foundationTopY, materials\.houseFloorFrame/, '집 골조 둘레는 footprint 끝까지(floorFrame에 0·buildingW·앞뒤 Z 전달)');
 });
 
-test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글, 새 1층은 바닥 연동·다락/지붕은 빈 화면', () => {
+test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글, 새 1층/다락/지붕은 바닥 연동', () => {
   // 사용자 절대 지시:
   //   · 기존 황토색 버튼 +1층/+다락/+지붕(viewFirst/Second/All)은 각각 독립 토글(firstOn/atticOn/roofOn) — 현재 화면 위 누적.
-  //   · 새 1층(stageFirst)은 '바닥' 상태를 그대로 표시(effBuilding='floor', 같은 그룹 → 바닥 변경 연동).
-  //   · 새 다락/지붕(stageAttic/Roof)은 빈 화면.
+  //   · 새 1층/다락/지붕(stageFirst/Attic/Roof)은 모두 '바닥' 상태를 그대로 표시(effBuilding='floor', 같은 그룹 → 바닥 변경 연동). 빈 화면 단계 없음.
   //   과거 회귀: 두 버튼이 같은 building 값을 공유 + blankStage가 기존을 비웠음. 둘 다 금지.
   const src = readFileSync(mainJs, 'utf8');
   // (1) +1층/+다락/+지붕은 각각 독립 boolean 토글(TOGGLE_BUTTONS 테이블) — building/카메라 안 건드림
@@ -116,11 +115,10 @@ test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글
   assert.match(src, /id: 'stageFirst',\s*building: 'stageFirst'/, '새 1층은 building \'stageFirst\'(STAGE_BUTTONS)');
   assert.match(src, /id: 'stageAttic',\s*building: 'stageAttic'/, '새 다락은 building \'stageAttic\'(STAGE_BUTTONS)');
   assert.match(src, /id: 'stageRoof',\s*building: 'stageRoof'/, '새 지붕은 building \'stageRoof\'(STAGE_BUTTONS)');
-  // (4) 새 다락/지붕만 blankStage로 빈 화면(1층은 제외 — 바닥 연동)
-  assert.match(src, /blankStage = building === 'stageAttic' \|\| building === 'stageRoof';/, '새 다락/지붕만 blankStage로 빈 화면');
-  assert.doesNotMatch(src, /blankStage = building === 'stageFirst'/, '1층은 blankStage에서 제외(바닥 연동)');
-  // (5) 1층(stageFirst)은 '바닥'(floor) 상태를 그대로 표시 — 같은 그룹 참조라 바닥 변경이 함께 반영됨
-  assert.match(src, /effBuilding = building === 'stageFirst' \? 'floor' : building/, '1층은 effBuilding=floor로 바닥 상태 연동');
+  // (4) 빈 화면 단계 없음 — blankStage 분기 제거됨
+  assert.doesNotMatch(src, /blankStage/, '빈 화면(blankStage) 분기는 제거(1층·다락·지붕 모두 바닥 연동)');
+  // (5) 1층·다락·지붕(stageFirst/Attic/Roof)은 모두 '바닥'(floor) 상태를 그대로 표시 — 같은 그룹 참조라 바닥 변경이 함께 반영됨
+  assert.match(src, /effBuilding = \(building === 'stageFirst' \|\| building === 'stageAttic' \|\| building === 'stageRoof'\) \? 'floor' : building/, '1층·다락·지붕은 effBuilding=floor로 바닥 상태 연동');
 });
 
 test('⑫ 데크 테두리 폭 — floorFrame을 실제 실행해 부재 치수를 측정(테두리만 10cm, 가운데 가로보는 5cm 불변)', () => {
