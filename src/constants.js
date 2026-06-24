@@ -4,7 +4,7 @@
 export const buildingW = 8.5;                 // 집 가로(동서)
 export const buildingFrontZ = -0.7;           // 정면(북) 외벽 Z
 export const buildingBackZ = 3.3;             // 후면(남) 외벽 Z
-export const groundTopY = 0.08;               // 지면 상단
+export const groundTopY = 0;                  // 지면 상단(0 기준 — 높이 계산 단순화)
 export const foundationHeight = 0.5;          // 집 기초 높이(지면~받침보 상단)
 export const pileR = 0.075;                    // 강관 말뚝 외경 Ø150 (반지름)
 export const pileCapW = 0.2;                   // 두부 헤드 브래킷 한 변
