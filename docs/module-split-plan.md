@@ -1,19 +1,12 @@
-# 모듈 분리 계획 (src/main.js)
+# 모듈 분리 현황 (src/main.js)
 
-## 목적
-3195줄 단일 파일 `src/main.js`를 역할별 ES 모듈로 분리해 유지보수성을 높인다.
-원칙: **한 모듈씩 추출 → 매번 검증 → 커밋**. 거동(특히 시각) 회귀 0.
+## 목표
+`src/main.js` 분리의 목적은 "모든 함수를 모듈로 쪼개는 것"이 **아니다**.
+목적은 두 가지뿐: **(1) 자주 고치는 값을 쉽게 찾아 고치고, (2) 수정 시 회귀를 줄이는 것.**
+이 두 목표에 기여하는 분리만 한다. 기여하지 않거나 위험을 새로 만드는 분리는 **하지 않는다**(억지 분리 금지).
 
-## 검증 프로토콜 (모든 단계 공통)
-1. `node --check src/main.js` — 문법
-2. `npm test` — 12개(빌드·임포트 무결성·기하 감사·잠금 테스트 포함)
-3. 버튼 on/off·의존·상호배타 + JS오류 0 검증 — **0단계에서 `scripts/`에 영구화 후 사용**
-   (현재 리포에 해당 스크립트 없음. 0단계 완료 전에는 이 항목 검증 불가 → 위험단계 착수 금지)
-4. 시각 회귀 — 0단계에서 캡처한 **baseline 스냅샷 세트와 픽셀 diff**(자동). 큰 변경은 눈으로도 재확인.
-→ 하나라도 실패하면 그 단계 되돌림. PASS만 커밋.
-
-## 현재 상태 (완료)
-main.js **3195 → 2833줄**, 결합도 낮은 기반 4모듈 추출 완료:
+## 완료 — 여기까지가 목표의 핵심
+`main.js` 3195 → **2379줄**. 편집 빈도가 높고 위험이 낮은 부분을 추출 완료:
 
 | 모듈 | 내용 | 의존 |
 |---|---|---|
@@ -21,124 +14,36 @@ main.js **3195 → 2833줄**, 결합도 낮은 기반 4모듈 추출 완료:
 | `materials.js` | 전 재질(색·텍스처재·골조재) | THREE, textures |
 | `scene.js` | DOM 셸(버튼 패널) + scene/camera/renderer/controls | THREE |
 | `groups.js` | 렌더 가시성 그룹 배열 25개(공유 참조) | (없음) |
+| `constants.js` | 순수 치수 상수(72개) | (없음) |
+| `layout.js` | 순수 파생 레이아웃 값 | constants |
+| `primitives.js` | 무레이아웃 프리미티브 빌더 | THREE, scene, materials |
+| `builders.js` | 레이아웃 클로저 없는 기하 빌더 10종 | 위 + 상수 |
 
-## 핵심 제약 (왜 나머지가 어려운가)
-빌더 함수(최상위 `function` 선언 **59개** — 중첩·화살표 포함 시 더 많음)와 명령형 씬 조립이 한 스코프에 얽혀 있다.
-- **레이아웃 값이 빌드 중간에 계산됨**: `foundationTopY`, `firstFloorY`, `deckTopY0`, `living썬룸`,
-  `frLeftX`, `PILE_POS`, `deckFootprints` 등은 상수가 아니라 빌드 순서 중 계산되는 파생값.
-- 빌더들이 이 값들을 클로저로 참조(예: `deckStairs`의 기본값 `topY = deckTopY0 + deckFinishT`).
-- 따라서 빌더를 그대로 `builders.js`로 옮기면 **순환 import / 미초기화(TDZ)** 위험.
-- 해결하려면 "레이아웃 계산"과 "기하 빌드"를 분리하는 재구성이 선행되어야 함(위험도 높음).
-- **진짜 핵심 결합은 파생값이 아니라 `scene.children.length` 캡처 패턴**: 가시성 그룹핑 전체
-  (`_firstFloorStart`, `captureSecond`, `captureInto`)가 "main.js가 **모든 `scene.add` 호출 순서를 통제**한다"는
-  전제 위에 선다.
-  - (안심) 빌더를 다른 모듈로 옮겨도 *여전히 `scene.add`를 호출하고 main.js가 호출 순서만 그대로 유지*하면
-    그룹핑 회귀는 0 — 빌더 이동 자체는 문서 톤보다 안전하다.
-  - (선택적 디리스킹) 이 전역 가변 순서 의존을 "빌더가 group 배열을 반환/주입받는" 방식으로 바꾸면
-    이후 모든 분리가 쉬워진다. 0단계와 별개의 **사전 리팩토링 후보**로 검토할 가치가 있음(필수는 아님).
+→ 색·치수·좌표(자주 고치는 것)는 `materials`·`constants`·`layout`에 모였다. **수정 편의의 본체는 달성됨.**
 
-## 남은 단계 (순서·위험도)
+## 나머지는 의도적 보류 — 분리하지 않는다
+`main.js`에 남은 빌더·씬 조립은 **두 목표에 기여하지 않거나 역행**하므로 그대로 둔다.
 
-> **권장 진행 순서: 0 → 3a → 1 → 2 → 3b.** 무레이아웃 프리미티브(3a)는 layout·constants에 무의존이라
-> 위험이 가장 낮다 → constants(1단계, 위험 中)보다 먼저 빼서 분리 파이프라인의 신뢰를 적립한 뒤 위험 단계로 진입.
+- **거의 안 만지는 코드다**: 남은 건 기하 빌드 로직. 색·치수가 아니라 편집 빈도가 낮아 분리해도 편의 이득이 거의 없다.
+- **분리하면 오히려 회귀를 새로 만든다**: 남은 빌더는 빌드 순서 중 계산되는 파생값(`deckTopY0`·`roofSlopeTan` 등)을
+  **클로저로 참조**하고, 가시성 그룹핑이 "main.js가 모든 `scene.add` 호출 순서를 통제한다"는 전제 위에 선다.
+  이를 끊으려면 클로저를 인자 주입으로 바꿔 호출부를 전수 수정해야 하는데, 누락 시 `undefined`가 전파되어
+  **조용한 시각 깨짐**을 부른다. "오류 감소"의 정반대다.
+- 결론: **지금이 자연스러운 종료 지점.** main.js는 "import + 빌드 시퀀스 호출 + UI 와이어링" 중심으로 남기고,
+  완전 분리가 불가능한 부분은 그대로 둔다.
 
-### 0단계 — 검증 인프라 영구화 · 위험: 낮음 (★선행 필수)
-위험단계(2·3)는 좌표·빌드 순서를 건드리므로, 회귀를 **자동으로 잡는 안전판**이 먼저 있어야 한다.
-- **0-a 버튼 검증 스크립트**: 버튼 on/off·의존·상호배타·JS오류 0을 도는 스크립트를
-  `scripts/`에 영구화(`npm` script로 등록). 현재는 리포에 없어 프로토콜 3번이 재현 불가.
-  - 손코딩 불필요: 토글 규칙이 이미 **선언적 배열**(`{ id, key, needs, exclusive, off }`, main.js ~2695줄)로
-    한 곳에 모여 있다 → 이 배열을 읽어 의존·상호배타 케이스를 자동 생성하면 됨.
-  - 버튼 클릭 구동도 새로 짤 것 없음: `shot.mjs`가 이미 playwright로 `page.click('#id')`를 한다 →
-    같은 하네스를 재활용.
-- **0-b baseline 스냅샷 세트**: 분리 착수 **전** 전 화면(배치도·기초·바닥틀·바닥·1층·다락·지붕)을
-  `npm run shot`으로 캡처해 기준으로 보관 + 픽셀 diff 비교 스크립트(프로토콜 4번 자동화).
-  - pixelmatch 등 신규 의존성 추가 불필요: `playwright`가 **이미 devDependency**이고 `shot.mjs`가 그
-    하네스를 쓴다 → **shot.mjs 확장 + playwright 내장 스크린샷 비교**(`expect(page).toHaveScreenshot()`)로 충분.
-  - ⚠ **선행 필수(0-b-pre): 텍스처 결정화.** `textures.js`의 자갈·흙·포세린 3종이 전부 `Math.random()`을
-    써서 **무변경에도 렌더가 매번 달라진다** → 픽셀 diff가 절대 0이 안 됨. baseline을 깔기 전에
-    `Math.random`을 시드 고정 PRNG(예: mulberry32 + 상수 시드)로 교체해 렌더를 결정화할 것.
-    (대안: diff에서 텍스처 영역 제외/큰 tolerance만 — 비추, 회귀 민감도 떨어짐.)
-- 검증: 두 스크립트 자체가 현재 main.js(무변경)에서 PASS·diff 0임을 확인(0-b-pre 적용 후라야 diff 0 성립).
+## 검증 프로토콜 (코드 이동 시 공통)
+1. `node --check src/main.js` — 문법
+2. `npm test` — 12개(빌드·임포트 무결성·기하 감사·잠금 테스트)
+3. `npm run shot` — 렌더 회귀 눈 확인
 
-### 1단계 — `constants.js` (순수 치수 상수) · 위험: 중
-- 대상: 리터럴 숫자 상수(예: `buildingW=8.5`, `exteriorWall=0.2`, `FLOOR_RIM_W` 등).
-  - 식/파생(`foundationTopY = groundTopY + …`)·다중선언(`planY, planH`)은 **제외**.
-  - 대상 개수: 엄격 패턴 `^const NAME = -?[0-9.]+;` 기준 **72개**(검증함). 느슨한 grep은 식·다중선언이
-    섞이니 반드시 이 패턴으로 재추출할 것.
-- 방법: 변환 스크립트로 일괄 추출 → import.
-  - ⚠ 추출 스크립트(`extract-constants.mjs`)는 과거 세션의 임시 scratchpad에만 있어 **휘발됨**.
-    재사용하려면 먼저 `scripts/`로 옮겨 버전관리할 것. 없으면 1회성으로 재작성.
-- 효과: 매직넘버 집약(이전 사용자 지적 대응) + 이후 단계의 선행조건.
-- 검증: 문법 + 12테스트 + 버튼검증(0-a) + baseline diff(0-b).
-
-### 2단계 — `layout.js` (레이아웃 계산 분리) · 위험: 높음 ★
-- 대상: 파생 레이아웃 값(좌표·치수·`PILE_POS`·`deckFootprints`·방 분할 등)을
-  "순수 계산"으로 묶어 export. THREE/scene/머티리얼에 의존하지 않는 부분만.
-- 난점: 현재 일부 레이아웃이 `scene.children.length` 스냅샷 등 빌드 부수효과와 섞여 있음 →
-  순수 계산만 골라내야 함. 섞인 건 남긴다.
-- 검증: 위 + 평면도/기초/1층 렌더 비교.
-
-### 3단계 — `builders.js` (기하 헬퍼) · 위험: 높음 ★★
-대상을 **의존성 버킷**으로 나눠 낮은 위험부터 이동한다(착수 시 함수 전수를 이 기준으로 분류):
-`THREE만` / `+scene` / `+materials` / `+layout 클로저`.
-
-#### 3a — 무레이아웃 프리미티브 · 위험: 낮음 (★constants보다 먼저 가능)
-- 대상: `box`(74), `flatPoly`(463), `lerpPoint`(124), `roofRiseAtZ`(304) 등 **layout 파생값 클로저가 아니라
-  `scene`+`materials`(둘 다 이미 import 가능)에만 의존**하는 빌더. 인자 주입조차 필요 없음.
-  - `box`는 본문이 `THREE` + `scene.add`뿐 → 그대로 옮겨도 안전.
-  - ⚠ `label`(493)은 모듈 const `LABEL_GROUPS`(535)도 같이 옮겨야 동작.
-- 이 묶음은 layout·constants에 무의존이라 **1단계 전에** 빼도 됨(권장 순서 0→3a→1).
-
-#### 3b — 레이아웃 의존 빌더 · 위험: 높음 ★★
-- 대상: 1·2단계 export만으로 충족되는 빌더부터 우선 이동.
-- 레이아웃·빌드 순서에 깊게 얽힌 함수는 **이동하지 않음**(억지 분리 금지).
-
-##### 진행 (builders.js)
-- **3b-1**(47db988): `pileGridCoords`·`systemPile`·`pileFoundation`·`floorFrame` 이동.
-  인자/import 상수만 의존. 테스트 ⑫는 floorFrame 정의 소스를 읽으므로 읽기 경로를 builders.js로 갱신함.
-- **3b-2**(009149f): `addStairRailingSegment`·`yzWallPrism`·`gableEndWallThicknessCap`·`slopedWallTopCap`·
-  `wallEndThicknessFace`·`roofSlab` 이동. 전부 레이아웃 클로저 없이 THREE/scene/materials/primitives+상수만 의존.
-- 검증: 매 묶음 `check`+`test`(12/12)+`check:views`(diff0)+`check:render` 통과 후 커밋.
-
-##### 남은 빌더와 차단 사유 (다음 세션용)
-- `roofRiseAtZ`·`gableLongWallX` → 모듈 클로저 **`roofSlopeTan`**(main.js 716, `gableRise` 717)에 의존.
-  선행: `roofSlopeTan`/`gableRise`(순수 파생값)를 layout.js로 빼야(THREE.MathUtils 대신 `deg*Math.PI/180`로
-  THREE 무의존 유지). roofSlopeTan은 main.js 8곳에서 참조 → import 전환 시 전수 확인 필요(블ast 中).
-- `gableEndWallWithWindow` → main.js 잔류 헬퍼 **`sideSash`**(창호 빌더 군) 호출. sideSash 군 선이동 필요.
-- 치수/라벨 군(`lengthDim`·`planDim`·`foundationHeightDim`·`heightDim`·`roomText`) → 전부 **`label`**(main.js)에 의존.
-  `label`은 모듈 const `LABEL_GROUPS`도 함께 옮겨야 동작(3a 미이동분). label은 거의 전 빌더가 호출 → 블ast 큼.
-- 깊게 얽힘(이동 보류): `captureSecond`/`captureInto`(scene.children 순서 캡처), `썬룸`/`drawGroundPost`,
-  `buildHouseFrame`·`studWall`·`rafter`(`gableTopY`·`fr*` 클로저), 계단 군(`_sfTop`·`stairFrameTopY`).
-- **테스트로 보호되는 것부터**: ⑤·⑦은 `PILE_POS`를, ⑪·⑫는 `buildHouseFrame`/`floorFrame`을 **실제 실행**한다
-  → 이미 회귀가 즉시 잡히는 이 빌더들을 먼저 옮기면 안전 마진이 크다.
-- **순환 끊는 법**: 빌더가 클로저로 읽던 파생값(`deckTopY0` 등)은 모듈로 옮기면 TDZ/순환을 부른다.
-  → 클로저 참조를 끊고 **인자 주입**으로 전환(예: `deckStairs(topY)`처럼 파생값을 호출 측에서 넘김).
-  main.js의 빌드 시퀀스가 계산한 값을 인자로 전달하면 builders.js는 레이아웃을 import하지 않아도 됨.
-  - ⚠ 기본값 클로저를 인자로 바꾸면 **호출부 전수 수정** 필요(누락 시 `undefined` 전파 → 조용한 시각 깨짐).
-    함수별로 ⑫처럼 "부재 치수 측정" 잠금 테스트를 먼저 깔아두면 이런 조용한 회귀를 잡는다.
-- 검증(3a·3b 공통): 전 화면 렌더 비교(배치도·기초·바닥틀·바닥·1층·다락·지붕) — baseline diff(0-b).
-
-### 4단계 — 정리
-- `main.js`는 "import + 빌드 시퀀스 호출 + UI 와이어링"만 남기는 게 목표.
-- 완전 분리가 불가능한 부분은 그대로 두고 문서에 사유 기록.
-
-## 테스트 결합 주의 (중요 — 코드 이동마다 반드시 점검)
-smoke 테스트 **③·⑤·⑥·⑦·⑧·⑨·⑩·⑪·⑫**는 **`readFileSync(mainJs)`로 main.js 소스를 정규식 매칭**한다
-(③ 썬룸 용어, ⑦ `PILE_POS`, ⑧ `footprintObjects` 포함 — 전수 확인함).
-함수·상수·재질이 다른 모듈로 이동하면 이 테스트들이 깨진다(이번 분리에서 ⑥이 실제로 깨져 읽기 경로를
-materials.js로 바꿨음). 이동할 때마다:
-- 이동한 대상을 검사하던 테스트의 `readFileSync` 경로/정규식을 새 모듈로 갱신할 것.
-- 특히 **⑫는 `floorFrame` 소스를 main.js에서 추출·`new Function`으로 실행**한다 → floorFrame이
-  builders.js로 가면 ⑫의 읽기 대상도 builders.js로 바꿔야 함.
-- **⑩은 `floorFrame(0, buildingFrontZ, buildingW, …)` 호출 시그니처를 통째로 정규식 고정**한다 →
-  3단계에서 floorFrame을 인자 주입으로 바꿔 시그니처가 달라지면 ⑩의 정규식도 함께 갱신해야 함.
-  (1단계처럼 식별자만 constants로 빼는 경우엔 호출부 텍스트가 그대로라 ⑩은 안전.)
-- 이동 후 깨진 테스트는 "삭제"가 아니라 "경로 갱신"으로 고친다(불변식은 유지).
-
-## 중단 기준
-- 어떤 단계가 시각 회귀를 내고 30분 내 원인 못 잡으면 그 단계 revert + 문서에 기록 후 중단.
-- "억지로 다 쪼개기"보다 **안전하게 쪼갤 수 있는 만큼만**.
+## 테스트 결합 주의 (코드 이동마다 점검)
+smoke 테스트 **③·⑤·⑥·⑦·⑧·⑨·⑩·⑪·⑫**는 `readFileSync`로 **소스를 정규식 매칭**한다
+(③ 썬룸 용어, ⑦ `PILE_POS`, ⑧ `footprintObjects`, ⑩ `floorFrame(...)` 호출 시그니처, ⑫ `floorFrame` 소스 실행).
+함수·상수·재질을 다른 모듈로 옮기면 이 테스트들이 깨진다(이번 분리에서 ⑥·⑫의 읽기 경로를 갱신했음).
+- 이동 시 해당 테스트의 `readFileSync` 경로·정규식을 새 모듈로 **갱신**한다(삭제 아님 — 불변식 유지).
 
 ## 비고
 - `.claude/`(verifier·skill)는 gitignore라 버전 관리 안 됨 — 하네스 변경은 디스크에만 반영.
-- 데크 계단 WIP는 `666fdbe`로 커밋 완료(별도).
+- 향후 회귀 안전판을 더 원하면, 추가 분리가 아니라 **baseline 픽셀 diff 자동화**(+`textures.js`의 `Math.random` 시드 고정)가
+  "오류 감소" 목표에 직접 부합한다.
