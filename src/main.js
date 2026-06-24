@@ -2960,12 +2960,24 @@ document.querySelector('#toggleWoodFrame').addEventListener('click', () => {
 applyVisibility();
 setPlanView();   // 초기 화면 = 바닥(배치도) 평면도
 
+// 모든 컨트롤 버튼 높이를 '가장 큰 버튼'에 맞춰 통일 — 라벨 줄이 늘어도, 몇 줄로 줄바꿈돼도 항상 동일.
+function equalizeButtonHeights() {
+  const btns = [...document.querySelectorAll('.controls button')];
+  if (!btns.length) return;
+  for (const b of btns) b.style.height = 'auto';                 // 내용 높이로 리셋 후 측정
+  const max = Math.max(...btns.map((b) => b.offsetHeight));
+  for (const b of btns) b.style.height = `${max}px`;             // 전체를 최댓값으로 통일
+}
+equalizeButtonHeights();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(equalizeButtonHeights);  // 폰트 로드 후 재측정
+
 function resize() {
   const width = stage.clientWidth;
   const height = stage.clientHeight;
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
+  equalizeButtonHeights();   // 줄바꿈 수가 바뀌어도 높이 통일 유지
 }
 window.addEventListener('resize', resize);
 
