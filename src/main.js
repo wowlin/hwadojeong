@@ -951,10 +951,6 @@ function sideDoor(x, z, d, baseY, h) {
   box({ x: glassX - 0.02, z: z + d - 0.2, w: 0.05, d: 0.04, y: baseY + h * 0.42, h: h * 0.16, mat: materials.handle });    // 세로 손잡이
 }
 
-function openingEdge(x, z, w, d, y) {
-  box({ x, z, w, d, y: y + 0.14, h: 0.035, mat: materials.openingEdge });
-}
-
 function captureSecond(fn) {
   const start = scene.children.length;
   const result = fn();
@@ -1065,8 +1061,6 @@ const yardSashW = 2.35;
 const yardSashH = 2.1;
 const yardDeckH = 0.08;
 const yardSashSillY = firstFloorY + yardDeckH;
-const sideWindowSillY = firstFloorY + 0.9;
-const sideWindowH = 1.2;
 //   다락·지붕 (제원)
 const secondFloorThickness = 0.15;     // 다락 바닥 슬래브 두께
 const secondWallHeight = 1.10;         // 다락 무릎벽 높이(가중평균 ~1.75m로 다락 1.8m 한도 안전마진)
@@ -1084,7 +1078,6 @@ const stairTurnStart = insideZ1 - stairTurnD;
 const stairFirstRunStart = stairTurnStart - stairTreadDepth * lowerStraightTreadCount;
 const stairOpeningStart = stairTurnStart - stairTreadDepth * upperStraightTreadCount;
 const stairBottomLandingD = stairOpeningStart - insideZ0;
-const stairFirstRunEnd = stairTurnStart;
 const stairBathX = stairHighXRunX;
 const stairBathZ = stairFirstRunStart;
 const stairBathW = stairRunW;
@@ -1097,7 +1090,6 @@ const stairBathWallH = firstWallHeight;
 const floorSurfaceH = 0.02;
 const floorOverlayLift = 0.002;
 const livingYardSashX = firstLivingX + (firstLivingW - yardSashW) / 2;
-const familyYardSashX = firstFamilyX + (firstFamilyW - yardSashW) / 2;
 const yardSashTopY = yardSashSillY + yardSashH;
 // 안방 전면은 출입창이 아니라 일반 창문 — 통상 규격: 폭 1800, 창대(sill) 바닥+900, 상단은 현관·거실 도어와 동일선
 const familyWindowW = 1.8;
@@ -1123,15 +1115,12 @@ const familyRearWindowX = firstFamilyX + (firstFamilyW - familyRearWindowW) / 2;
 const familyRearWindowSillY = firstFloorY + 0.9;     // 일반 창대(전면창과 동일)
 const familyRearWindowTopY = yardSashTopY;           // 윗선을 거실 싱크대 창·전면 개구부와 동일선(2.18)
 const familyRearWindowH = familyRearWindowTopY - familyRearWindowSillY;   // ≈1.28m
-const familyRoadWindowW = 1.8;
 // 안방 측면(도로측) 전면쪽 작은 출입문 — 800×2100 여닫이. 바깥 작은 공간으로 출입.
 const sideDoorW = 0.8;
 const sideDoorZ = insideZ0 + 0.2;                        // 전면쪽(코너에서 0.2m 띄움)
 const sideDoorBaseY = firstFloorY;                       // 바닥에서 시작(출입)
 const sideDoorH = 2.1;
 const sideDoorTopY = sideDoorBaseY + sideDoorH;
-const familyRoadWindowZ = sideDoorZ + sideDoorW + 0.3;   // 문 뒤로 0.3m 벽기둥 두고 도로측 창
-const sideWindowTopY = sideWindowSillY + sideWindowH;
 const secondRoom2X = stairHighXClearX;
 const secondRoom2W = insideX1 - secondRoom2X;
 const secondCorridorX = insideX0;
@@ -1145,7 +1134,6 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 const secondAtticDoorH = 1.8;
 const secondRoom1DoorX = planRightLivingX + (sideRoomW - interiorDoorW) / 2;
 const secondRoom2DoorX = secondRoom2X + (secondRoom2W - interiorDoorW) / 2;
-const secondCorridorWindowW = 1.8;
 const secondCorridorWindowH = 0.45;
 const secondCorridorWindowSillOffset = 0.42;
 const secondCorridorWindowTopOffset = secondCorridorWindowSillOffset + secondCorridorWindowH;
@@ -2108,65 +2096,6 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
   }
 }
 
-// 썬룸 계단 프레임(스틸) — 경사로가 아니라 계단 단면(디딤판+챌판) 지그재그 스트링거 + 단별 폭방향 디딤보.
-// deckStairs와 동일 파라미터/높이(steps 챌판 + steps-1 디딤). 기초가 낮아지면 topY가 자동 반영돼 늘 일치. 썬룸 골조 그룹.
-function deckStairFrame({ axis, span0, span1, edge, outward, steps = null, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3, group = 썬룸FrameObjects, mat = materials.entryFrame }) {
-  const nSteps = steps ?? Math.max(1, Math.ceil((topY - baseY) / 0.17));   // 1단 높이 ≤ 17cm 보장
-  const rise = (topY - baseY) / nSteps;
-  const bw = 0.07;                        // 프레임 부재 단면
-  // 한 스트링거(s 위치)의 수평 디딤 부재(수직축 v0~v1, 높이 y)
-  const horiz = (s, v0, v1, y) => {
-    const lo = Math.min(v0, v1), len = Math.abs(v1 - v0) + bw;
-    if (axis === 'x') group.push(box({ x: s - bw / 2, z: lo - bw / 2, w: bw, d: len, y, h: bw, mat, cast: false }));
-    else group.push(box({ x: lo - bw / 2, z: s - bw / 2, w: len, d: bw, y, h: bw, mat, cast: false }));
-  };
-  // 수직 챌판 부재(수직축 위치 v, 높이 y0~y1)
-  const vert = (s, v, y0, y1) => {
-    if (axis === 'x') group.push(box({ x: s - bw / 2, z: v - bw / 2, w: bw, d: bw, y: y0, h: y1 - y0, mat, cast: false }));
-    else group.push(box({ x: v - bw / 2, z: s - bw / 2, w: bw, d: bw, y: y0, h: y1 - y0, mat, cast: false }));
-  };
-  // 폭(span) 방향 가로 디딤보(양 스트링거 연결, 수직축 위치 v, 높이 y)
-  const widthBar = (v, y) => {
-    if (axis === 'x') group.push(box({ x: span0, z: v - bw / 2, w: span1 - span0, d: bw, y, h: bw, mat, cast: false }));
-    else group.push(box({ x: v - bw / 2, z: span0, w: bw, d: span1 - span0, y, h: bw, mat, cast: false }));
-  };
-  // 지그재그 스트링거(양 끝 + 중간 ~1.5m 간격)
-  const nS = Math.max(1, Math.round((span1 - span0) / 1.5));
-  for (let k = 0; k <= nS; k += 1) {
-    const s = span0 + (span1 - span0) * (k / nS);
-    for (let i = 0; i < nSteps; i += 1) vert(s, edge + outward * i * tread, topY - (i + 1) * rise, topY - i * rise);            // 챌판 nSteps개(데크~지면)
-    for (let i = 0; i < nSteps - 1; i += 1) horiz(s, edge + outward * i * tread, edge + outward * (i + 1) * tread, topY - (i + 1) * rise); // 디딤 nSteps-1개
-  }
-  for (let i = 0; i < nSteps - 1; i += 1) widthBar(edge + outward * (i + 1) * tread, topY - (i + 1) * rise);   // 단별 노징 디딤보
-  widthBar(edge + outward * (nSteps - 1) * tread, baseY);   // 발치 디딤보
-}
-
-// 원통형 흰색 나무 화분(지름×높이 기본 50×50cm) + 둥근 관목
-function whitePlanter({ cx, cz, diameter = 0.5, height = 0.5, baseY = firstFloorY }) {
-  const R = diameter / 2;
-  const potMat = new THREE.MeshLambertMaterial({ color: 0xf2efe7 });   // 흰색 나무
-  const rimMat = new THREE.MeshLambertMaterial({ color: 0xe4dfd3 });
-  const soilMat = new THREE.MeshLambertMaterial({ color: 0x3a2c20 });
-  const leafMat = new THREE.MeshLambertMaterial({ color: 0x24502b });   // 주목 — 짙은 상록 녹색
-  const trunkMat = new THREE.MeshLambertMaterial({ color: 0x6b4a32 });   // 주목 줄기(적갈색)
-  const pot = new THREE.Mesh(new THREE.CylinderGeometry(R, R * 0.9, height, 22), potMat);
-  pot.position.set(cx, baseY + height / 2, cz); pot.castShadow = true; scene.add(pot);
-  addGeometryEdges(pot, 0xcfc9bb);
-  const rim = new THREE.Mesh(new THREE.CylinderGeometry(R * 1.04, R * 1.04, 0.05, 22), rimMat);
-  rim.position.set(cx, baseY + height - 0.02, cz); scene.add(rim);
-  const soil = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.88, R * 0.88, 0.04, 22), soilMat);
-  soil.position.set(cx, baseY + height - 0.005, cz); scene.add(soil);
-  // 주목: 짧은 줄기 + 원뿔형으로 다듬은 짙은 녹색 수형(2단 콘으로 풍성하게)
-  const soilTopY = baseY + height;
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.12, R * 0.16, R * 0.5, 10), trunkMat);
-  trunk.position.set(cx, soilTopY + R * 0.25, cz); trunk.castShadow = true; scene.add(trunk);
-  const coneBaseY = soilTopY + R * 0.4;
-  const lower = new THREE.Mesh(new THREE.ConeGeometry(R * 1.0, R * 1.8, 18), leafMat);
-  lower.position.set(cx, coneBaseY + R * 0.9, cz); lower.castShadow = true; scene.add(lower);
-  const upper = new THREE.Mesh(new THREE.ConeGeometry(R * 0.7, R * 1.6, 18), leafMat);
-  upper.position.set(cx, coneBaseY + R * 1.9, cz); upper.castShadow = true; scene.add(upper);
-}
-
 // 거실 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 5.5m(fX1=5.5, 좌측 끝 x=5.7)
 //   지붕면은 거실+안방을 덮는 단일 패널 하나로 그린다(전체 폭 8.9m, 중심 x=4.25 — −0.2~8.7).
 const living썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: 8.9, roofPanelCenterX: 4.25, deckDepth: 3.8 });   // 데크 깊이 3.8m 고정(지붕 4m 경사와 분리 — 실제 시공)
@@ -2340,7 +2269,6 @@ captureInto(planOnlyDimObjects, () => {
 
 // 데크 계단 — 폴딩도어 출입문(정면·왼쪽 측면 앞) 앞 + 안방 측면 출입문 앞에만(각 0.8m 폭, 3계단)
 const _stairStart = scene.children.length;
-const stairW = sideDoorW;   // 0.8m — 안방 옆 계단과 같은 너비
 // 데크처럼: 포세린 디딤판은 계단틀(deckStairFrame) 디딤바 윗면 위에 얹는다. 아래 식은 deckStairFrame와 동일한 단수·rise·부재두께(bw)로 디딤바 윗면 높이를 재현.
 const _sfTop = deckTopY0 + deckFinishT, _sfBase = groundTopY, _sfBw = 0.07;
 const _sfN = Math.max(1, Math.ceil((_sfTop - _sfBase) / 0.17));

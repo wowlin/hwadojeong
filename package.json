@@ -10,13 +10,16 @@
     "test": "node --test",
     "test:watch": "node --test --watch",
     "check": "node --check src/main.js",
-    "shot": "node scripts/shot.mjs"
+    "shot": "node scripts/shot.mjs",
+    "lint": "eslint src"
   },
   "dependencies": {
     "three": "^0.179.1",
     "vite": "^7.2.7"
   },
   "devDependencies": {
+    "eslint": "^9.39.4",
+    "globals": "^17.7.0",
     "playwright": "^1.61.1"
   }
 }
