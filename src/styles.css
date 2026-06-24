@@ -45,7 +45,7 @@ body {
 .controls {
   display: flex;
   flex-wrap: wrap;              /* 한 줄에 다 들어가고, 넘치면 다음 줄로 */
-  align-items: flex-start;      /* 세로 크기는 각 버튼 내용만큼(같은 줄이라도 늘이지 않음) */
+  align-items: stretch;         /* 같은 줄 버튼 높이를 맞춤(가로는 내용맞춤, 세로는 균일) */
   justify-content: center;
   gap: 10px;
   max-width: 100%;
@@ -74,7 +74,7 @@ button.active {
   color: #ffffff;
 }
 
-/* 모든 컨트롤 버튼: 1줄 제목 / 부제(업체명·연락처)를 세로로 쌓는다. 높이는 내용(줄 수)만큼 — 균일 고정 안 함(최소 42px). */
+/* 모든 컨트롤 버튼: 1줄 제목 / 부제(업체명·연락처)를 세로로 쌓는다. 가로는 내용맞춤, 세로는 전 버튼 동일(78px). */
 .controls button {
   display: flex;
   flex-direction: column;
@@ -83,6 +83,7 @@ button.active {
   gap: 0;
   line-height: 1.18;
   padding: 6px 12px;
+  min-height: 78px;            /* 모든 버튼 높이 동일(최다 줄수 기준) */
 }
 
 .btn-sub {
