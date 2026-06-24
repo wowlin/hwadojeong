@@ -157,7 +157,15 @@ const secondAtticSideWallMaxH = secondWallHeight + gableRise;
 const secondAtticSideWallRearH = secondWallHeight + roofRiseAtZ(insideZ1);
 const secondAtticDoorH = 1.8;
 
+// 데크 계단 — 1단 높이(riser)는 17cm를 넘지 않는다(단수는 ceil로 자동 산정). main.js와 동일 식.
+const deckFoundationH = 0.4;
+const deckFinishT = 0.04;
+const deckStairTopY = groundTopY + deckFoundationH + deckFinishT;
+const deckStairSteps = Math.max(1, Math.ceil((deckStairTopY - groundTopY) / 0.17));
+const deckStairRise = (deckStairTopY - groundTopY) / deckStairSteps;
+
 const checks = [
+  lte(deckStairRise, 0.17, 'deck stair riser height is at most 17cm'),
   approx(foundationHeight, 0.5, 'foundation concrete is 0.5m high'),
   approx(buildingW, 8.5, 'foundation width label is 8.5m'),
   approx(buildingD, 4.0, 'foundation depth label is 4.0m'),
