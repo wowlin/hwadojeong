@@ -1536,11 +1536,6 @@ captureInto(floorFrameDimObjects, () => {
   const dY = deckTopY0 + FLOOR_JOIST_H;   // 데크 바닥틀 상단
   lengthDim('x', df.z - 0.5, df.x, df.x + df.w, `데크 ${fmtDim(df.w)}m`, { y: dY, side: -1, labelDist: 0.6 });
   lengthDim('z', df.x - 0.5, df.z, df.z + df.d, `데크 ${fmtDim(df.d)}m`, { y: dY, side: -1, labelDist: 0.6 });
-  // 데크 계단틀 너비 — 앞 계단(X 데크폭)·왼 계단(Z 데크깊이). 계단 한단(0.3m) 바깥에 치수선.
-  const sRun = 0.3;
-  const sX0 = df.x, sX1 = df.x + df.w, sFz = df.z, sWz = df.z + df.d;
-  lengthDim('x', sFz - sRun - 0.5, sX0, sX1, `앞 계단 ${fmtDim(sX1 - sX0)}m`, { y: dY, side: -1, labelDist: 0.6 });
-  lengthDim('z', sX1 + sRun + 0.5, sFz, sWz, `왼 계단 ${fmtDim(sWz - sFz)}m`, { y: dY, side: 1, labelDist: 0.6 });
 });
 
 // ── 바닥(평면도): 납작한 발자국 + 평면 치수 ─────────────────────────────────
