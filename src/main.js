@@ -85,7 +85,7 @@ import {
   atticOutletY
 } from './layout.js';
 import {
-  floorFinishObjects, firstFloorObjects, secondFloorObjects, roofObjects, deckObjects,
+  floorFinishObjects, firstFloorObjects, firstWallObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
@@ -535,6 +535,17 @@ hedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY
 captureInto(floorFinishObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY + 0.20, h: floorFinishH, mat: materials.floorFinish });
 });
+
+// 1층 외벽(반투명) — 방 바닥 테두리선(집 발자국 0~buildingW / buildingFrontZ~+buildingD)에 맞춰 바깥면을 두고, 막대는 모두 안쪽으로만(밖으로 안 튀어나옴). 두께 0.2·높이 2.4·firstFloorY에서 시작. 1층·다락·지붕 단계 표시.
+{
+  const wt = 0.2, wh = 2.4, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;
+  const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
+  const W = materials.firstExtWall;
+  firstWallObjects.push(box({ x: 0, z: z0, w: buildingW, d: wt, y: wy, h: wh, mat: W }));               // 앞(−Z) 외벽 — 바깥면 z=z0
+  firstWallObjects.push(box({ x: 0, z: z1 - wt, w: buildingW, d: wt, y: wy, h: wh, mat: W }));          // 뒤(+Z) 외벽 — 바깥면 z=z1
+  firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(거실, x=0) 외벽 — 바깥면 x=0
+  firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
+}
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
 
@@ -2318,7 +2329,7 @@ const TOGGLE_BUTTONS = [
   { id: 'toggleFence',     key: 'fenceOn' },
 ];
 // 골조(상호배타 frameMode): 같은 버튼 재클릭 시 off.
-const FRAME_BUTTONS = [{ id: 'toggleSteelFrame', mode: 'steel' }, { id: 'toggleWoodFrame', mode: 'wood' }];
+const FRAME_BUTTONS = [];   // 스틸골조·목골조 버튼 삭제됨
 
 function applyVisibility() {
   const { building, firstOn, atticOn, roofOn, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode } = viewState;
@@ -2333,12 +2344,14 @@ function applyVisibility() {
   const showFirst = firstOn;                                   // +1층: 독립 토글(현재 화면 위 누적)
   const showAttic = atticOn;                                   // +다락: 독립 토글
   const showRoof = roofOn;                                     // +지붕: 독립 토글
+  const showStageWall = building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof';   // 1층 외벽(반투명): 1층 단계부터 누적 표시
 
   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(effBuilding=floor) — 빈 화면 단계 없음. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
   for (const item of siteBaseObjects) item.visible = true;          // 바탕 대지·도로: 모든 화면에 표시
   for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
+  for (const item of firstWallObjects) item.visible = showStageWall;                   // 1층 외벽(반투명): 1층·다락·지붕 단계
   for (const item of secondFloorObjects) item.visible = showAttic;
   for (const item of roofObjects) item.visible = showRoof;
   for (const item of deckObjects) item.visible = showDeckFinish;                     // 데크 포세린 마감: '바닥' 단계 이상 자동 + 데크 토글
