@@ -30,9 +30,10 @@
 //   · 제거 : 그 box()/label() 줄 삭제(딸린 치수·라벨도 함께).
 //   · 토글 추가: ① app.innerHTML <button id="toggleX"> ② 그룹배열 const ③ applyVisibility() 규칙 ④ 하단 addEventListener.
 //
-// ▌헬퍼 (전부 전역, x·z는 최소 모서리, 단위 m)
-//   box({x,z,w,d,y,h,mat,name,cast}) · label(text,x,y,z,size) · flatPoly({points:[[x,z]…],y,h,mat,name})
-//   room/frontSash/sideSash/sideDoor/germanSlidingDoor/entryDoor/pocketDoor* · foundationHeightDim/planDim · setView/applyVisibility
+// ▌헬퍼 (x·z는 최소 모서리, 단위 m) — 무클로저 빌더는 모듈에서 import, 나머지는 main.js 전역
+//   primitives.js : box({x,z,w,d,y,h,mat,name,cast}) · flatPoly({points:[[x,z]…],y,h,mat,name}) · lerpPoint · fmtDim …
+//   builders.js   : floorFrame · systemPile/pileFoundation · yzWallPrism · roofSlab · slopedWallTopCap …
+//   main.js 전역  : label(text,x,y,z,size) · room/frontSash/sideSash/sideDoor/germanSlidingDoor/entryDoor/pocketDoor* · foundationHeightDim/planDim · setView/applyVisibility
 //
 // ▌주의 (ES모듈·strict)
 //   · 같은 이름 function/const 재정의 금지 → 앱 전체가 깨짐. 새 헬퍼는 새 이름으로.
