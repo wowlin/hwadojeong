@@ -44,6 +44,20 @@ import { materials } from './materials.js';
 import { stage, scene, camera, renderer, controls } from './scene.js';
 import { box, addGeometryEdges, lerpPoint, flatPoly, fmtDim, stairWallTopCap, railCylinder } from './primitives.js';
 import {
+  buildingW, buildingFrontZ, buildingBackZ, groundTopY, foundationHeight, pileR,
+  pileCapW, pileCapH, floorFinishH, deckFinishT, deckFoundationH, lotW,
+  lotD, lotX0, roadW, firstWallHeight, exteriorWall, interiorWall,
+  stairRunW, entryDoorLeafW, entryFrameOuterW, entryFrameH, interiorDoorW, interiorDoorH,
+  yardSashW, yardSashH, yardDeckH, secondFloorThickness, secondWallHeight, roofSlopeDeg,
+  roofThickness, stairRiserCount, lowerStraightTreadCount, winderTreadCount, stairTreadDepth, floorSurfaceH,
+  floorOverlayLift, familyWindowW, kitchenSinkW, kitchenSinkD, kitchenSinkH, livingRearWindowW,
+  familyRearWindowW, sideDoorW, sideDoorH, secondAtticDoorH, secondCorridorWindowH, secondCorridorWindowSillOffset,
+  atticVentWindowW, atticSkyWindowW, atticSkyWindowH, atticSkyWindowSillOffset, atticRearWindowW, atticRearWindowH,
+  atticRearWindowSillOffset, sideGableWindowW, sideGableWindowH, sideGableWindowSillOffset, soundWall, STUD_SPACING,
+  FRAME_WEB, FRAME_FLANGE, TRACK_H, frEaveOverhang, frSideOverhang, FRAME_ROOM_W,
+  FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_RIM_W, DECK_RIM_W, FLOOR_JOIST_SPACING, planMarkW
+} from './constants.js';
+import {
   floorFinishObjects, firstFloorObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
@@ -673,35 +687,20 @@ function captureSecond(fn) {
 
 // ═══════════ 주요 제원 (여기서 치수 수정 — 단위 m) ═══════════
 //   건물 외형
-const buildingW = 8.5;                 // 집 가로(동서)
-const buildingFrontZ = -0.7;           // 정면(북) 외벽 Z
-const buildingBackZ = 3.3;             // 후면(남) 외벽 Z
 const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
 //   기초·바닥
-const groundTopY = 0.08;               // 지면 상단
-const foundationHeight = 0.5;          // 집 기초 높이(지면~받침보 상단)
 const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단(0.58) = 바닥재 하단
 //   시스템 말뚝기초(독립기초, KC금강컨테이너 주택용) — 강관 말뚝 + 두부 헤드 브래킷(골조 볼트 체결)
-const pileR = 0.075;                    // 강관 말뚝 외경 Ø150 (반지름)
-const pileCapW = 0.2;                   // 두부 헤드 브래킷 한 변
-const pileCapH = 0.12;                  // 두부 헤드 브래킷 높이(스틸 골조 볼트 체결부)
-const floorFinishH = 0.10;                              // 바닥(바닥 시공) 두께 10cm — 골조 위 마감층
 const firstFloorY = foundationTopY + 0.20 + floorFinishH; // 기초 상단(0.58) + 장선(0.20) + 바닥(0.10) = 0.88
-const deckFinishT = 0.02;   // 포세린 마감 두께 20t=2cm(데크 기초 위에 얹힘 — 건식)
-const deckFoundationH = 0.4;    // 데크/썬룸 기초 높이 40cm(집 50cm보다 10cm 낮게 — 단차). 말뚝기초라 높이 자유.
 const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단(0.48) = 집 기초 상단(0.58)보다 0.1m 낮음
 
 // 부지(흙색 지면): 집 너비 방향(X) 9.95m × 정면 방향(Z) 9m. 집을 X로 중앙 배치, 뒤로 1m 여유.
-const lotW = 9.95;
-const lotD = 9;
-const lotX0 = -0.50;                    // 거실(정면 오른쪽, 낮은 X) 외벽(x=0)에서 50cm 이격 — 민법 242조(경계 반미터 이상)
 const lotX1 = lotX0 + lotW;
 const lotZ1 = buildingBackZ + 1;        // 후면 경계(집 뒤 1m)
 const lotZ0 = lotZ1 - lotD;             // 전면 경계
 // siteBaseObjects는 ./groups.js에 정의됨(여기선 빌더가 push만).
 siteBaseObjects.push(box({ x: lotX0, z: lotZ0, w: lotW, d: lotD, h: 0.08, mat: materials.site, cast: false, name: 'ground' }));
 // 도로(접도) — 부지 바깥. 우측면 + 후면 ㄱ자.
-const roadW = 1.1;
 siteBaseObjects.push(box({ x: lotX1, z: lotZ0, w: roadW, d: lotD, h: 0.1, mat: materials.road, cast: false, name: 'ground' }));          // 우측 도로(부지 밖)
 siteBaseObjects.push(box({ x: lotX0, z: lotZ1, w: lotW + roadW, d: roadW, h: 0.1, mat: materials.road, cast: false, name: 'ground' }));   // 후면 도로(부지 밖, 모서리 연결)
 
@@ -726,16 +725,12 @@ const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 
 // 1F measured plan. Dimensions are in meters within an 8.5m x 4.0m footprint.
 //   1층 층고·벽 두께 (제원)
 const firstWallY = firstFloorY;
-const firstWallHeight = 2.6;            // 1층 벽 높이
-const exteriorWall = 0.2;               // 외벽 두께
-const interiorWall = 0.1;               // 내벽 두께
 const insideX0 = exteriorWall;
 const insideZ0 = buildingFrontZ + exteriorWall;
 const insideX1 = buildingW - exteriorWall;
 const insideZ1 = buildingBackZ - exteriorWall;
 const insideD = insideZ1 - insideZ0;
 const layoutD = insideD;
-const stairRunW = 1.0;
 const stairGap = interiorWall;
 const stairClearW = stairRunW * 2 + stairGap;
 const sideRoomW = (insideX1 - insideX0 - stairClearW - interiorWall * 2) / 2;
@@ -756,30 +751,14 @@ const firstFamilyW = sideRoomW;
 const firstFamilyD = sideRoomD;
 const firstLivingX = planRightLivingX;
 const firstFamilyX = planLeftFamilyX;
-const entryDoorLeafW = 1.0;     // 현관 문짝 유효폭 1000mm
-const entryFrameOuterW = 1.1;   // 문틀 외곽(좌우 프레임 50mm씩 포함)
 const entryGapStart = stairClearX + (stairClearW - entryFrameOuterW) / 2;
-const entryFrameH = 2.18;
 const entryGapEnd = entryGapStart + entryFrameOuterW;
-const interiorDoorW = 0.9;
-const interiorDoorH = 2.1;
 const familyDoorZ = insideZ0;
-const yardSashW = 2.35;
-const yardSashH = 2.1;
-const yardDeckH = 0.08;
 const yardSashSillY = firstFloorY + yardDeckH;
 //   다락·지붕 (제원)
-const secondFloorThickness = 0.15;     // 다락 바닥 슬래브 두께
-const secondWallHeight = 1.10;         // 다락 무릎벽 높이(가중평균 ~1.75m로 다락 1.8m 한도 안전마진)
-const roofSlopeDeg = 33;               // 지붕 물매(도)
 const roofSlopeTan = Math.tan(THREE.MathUtils.degToRad(roofSlopeDeg));
 const gableRise = roofSlopeTan * (buildingD / 2);
-const roofThickness = 0.26;            // 지붕(단열 260T+징크) 두께
-const stairRiserCount = 16;
-const lowerStraightTreadCount = 6;
-const winderTreadCount = 3;
 const upperStraightTreadCount = stairRiserCount - 1 - lowerStraightTreadCount - winderTreadCount;
-const stairTreadDepth = 0.27;
 const stairTurnD = stairRunW;
 const stairTurnStart = insideZ1 - stairTurnD;
 const stairFirstRunStart = stairTurnStart - stairTreadDepth * lowerStraightTreadCount;
@@ -794,39 +773,29 @@ const stairBathDoorX = stairBathX + (stairBathW - stairBathDoorW) / 2;
 const stairBathDoorEndX = stairBathDoorX + stairBathDoorW;
 const stairBathDoorH = interiorDoorH;
 const stairBathWallH = firstWallHeight;
-const floorSurfaceH = 0.02;
-const floorOverlayLift = 0.002;
 const livingYardSashX = firstLivingX + (firstLivingW - yardSashW) / 2;
 const yardSashTopY = yardSashSillY + yardSashH;
 // 안방 전면은 출입창이 아니라 일반 창문 — 통상 규격: 폭 1800, 창대(sill) 바닥+900, 상단은 현관·거실 도어와 동일선
-const familyWindowW = 1.8;
 const familyWindowX = firstFamilyX + (firstFamilyW - familyWindowW) / 2;
 const familyWindowSillY = firstFloorY + 0.9;
 const familyWindowTopY = yardSashTopY;
 const familyWindowH = familyWindowTopY - familyWindowSillY;   // ≈1.28m
 const entryDoorBaseY = firstWallY + yardDeckH;
-const kitchenSinkW = 2.2;
-const kitchenSinkD = 0.6;
-const kitchenSinkH = 0.85;
 const kitchenSinkX = insideX0;   // 오른쪽(저X) 외벽에 붙임
 const kitchenSinkZ = insideZ1 - kitchenSinkD;   // 싱크대는 뒤쪽 벽으로(앞 입구 확보)
 const kitchenCounterY = firstFloorY + kitchenSinkH + 0.05;   // 싱크대 상판 높이(≈바닥+0.90)
 // 싱크대 창: 상판+백스플래시 위에서 시작, 윗선은 전면 도어와 동일선(2.18), 싱크대 위로 센터링
-const livingRearWindowW = 2.0;
 const livingRearWindowX = kitchenSinkX + (kitchenSinkW - livingRearWindowW) / 2;
 const livingRearWindowSillY = kitchenCounterY + 0.15;
 const livingRearWindowTopY = yardSashTopY;
 const livingRearWindowH = livingRearWindowTopY - livingRearWindowSillY;
-const familyRearWindowW = 1.8;                       // 안방 전면창과 동일 폭
 const familyRearWindowX = firstFamilyX + (firstFamilyW - familyRearWindowW) / 2;   // 안방 중앙
 const familyRearWindowSillY = firstFloorY + 0.9;     // 일반 창대(전면창과 동일)
 const familyRearWindowTopY = yardSashTopY;           // 윗선을 거실 싱크대 창·전면 개구부와 동일선(2.18)
 const familyRearWindowH = familyRearWindowTopY - familyRearWindowSillY;   // ≈1.28m
 // 안방 측면(도로측) 전면쪽 작은 출입문 — 800×2100 여닫이. 바깥 작은 공간으로 출입.
-const sideDoorW = 0.8;
 const sideDoorZ = insideZ0 + 0.2;                        // 전면쪽(코너에서 0.2m 띄움)
 const sideDoorBaseY = firstFloorY;                       // 바닥에서 시작(출입)
-const sideDoorH = 2.1;
 const sideDoorTopY = sideDoorBaseY + sideDoorH;
 const secondRoom2X = stairHighXClearX;
 const secondRoom2W = insideX1 - secondRoom2X;
@@ -838,23 +807,13 @@ const secondAtticWallZ = secondCorridorZ + secondCorridorD;
 const secondAtticZ = secondAtticWallZ + interiorWall;
 const secondAtticD = insideZ1 - secondAtticZ;
 const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
-const secondAtticDoorH = 1.8;
 const secondRoom1DoorX = planRightLivingX + (sideRoomW - interiorDoorW) / 2;
 const secondRoom2DoorX = secondRoom2X + (secondRoom2W - interiorDoorW) / 2;
-const secondCorridorWindowH = 0.45;
-const secondCorridorWindowSillOffset = 0.42;
 const secondCorridorWindowTopOffset = secondCorridorWindowSillOffset + secondCorridorWindowH;
 // 다락 정면 복도쪽: 기존 창 2개 제거 → 중앙 환기창 1개
-const atticVentWindowW = 0.9;                              // 환기창 폭
 const atticVentWindowX = (buildingW - atticVentWindowW) / 2;   // 정면 중앙
 // 계단 픽스창 — 1층에서 올라갈 때 첫 구간(저-X 런)은 후면(+Z)을 보고 오르므로, 후면에 둬야 올라가며 하늘이 보임
-const atticSkyWindowW = 0.7;
-const atticSkyWindowH = 0.95;
-const atticSkyWindowSillOffset = 0.10;
 const atticSkyWindowX = (stairClearX + stairHighXWallX) / 2 - atticSkyWindowW / 2;   // 계단실 가로 중앙
-const atticRearWindowW = 2.0;
-const atticRearWindowH = 0.45;
-const atticRearWindowSillOffset = 0.42;
 const atticRearWindowTopOffset = atticRearWindowSillOffset + atticRearWindowH;
 const atticRoom1RearWindowX = planRightLivingX + (sideRoomW - atticRearWindowW) / 2;
 const atticRoom2RearWindowX = secondRoom2X + (secondRoom2W - atticRearWindowW) / 2;
@@ -865,9 +824,6 @@ const frontCornerDimTickX = buildingW - 0.16;
 // 모서리 바깥에 나란히 붙여, 치수 막대와 라벨이 같은 모서리에 모이게 한다.
 const frontCornerDimLabelX = buildingW + 0.62;
 const frontCornerDimLabelZ = frontCornerDimZ;
-const sideGableWindowW = 1.0;
-const sideGableWindowH = 0.5;
-const sideGableWindowSillOffset = 0.35;
 
 // 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 2.8m
 heightDim(frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, '1층 높이 2.8m', { lineX: frontCornerDimX, tickX: frontCornerDimTickX, labelX: frontCornerDimLabelX, labelZ: frontCornerDimLabelZ });
@@ -956,7 +912,6 @@ verticalWallWithGaps(insideX1, buildingFrontZ, buildingD, firstWallY, [
 ], firstWallHeight, exteriorWall, materials.exteriorWall);
 lowWall(insideX1, sideDoorZ, exteriorWall, sideDoorW, sideDoorTopY, firstWallY + firstWallHeight - sideDoorTopY, materials.exteriorWall);   // 측면 출입문 위(인방)
 // 안방-화장실/계단 사이 내벽 — 방음벽(솔리드): 스틸스터드+암면 충진+양면 석고 2겹. 두께 0.16(일반 내벽 0.10보다 두껍게).
-const soundWall = 0.16;
 verticalWallWithGaps(stairHighXWallX, insideZ0, insideD, firstWallY, [
   [familyDoorZ, familyDoorZ + interiorDoorW]
 ], firstWallHeight, soundWall, materials.soundWall);
@@ -1188,10 +1143,6 @@ captureSecond(() => {
 // steelFrameObjects·woodFrameObjects·골조Objects는 ./groups.js에 정의됨.
 let frameMat = materials.steelFrame;   // 현재 골조 빌드 재질(스틸/목재 두 벌로 빌드)
 
-const STUD_SPACING = 0.5;       // 스터드 간격(통상 45~60cm)
-const FRAME_WEB = 0.092;        // C형강 웨브(벽 두께 방향)
-const FRAME_FLANGE = 0.045;     // C형강 플랜지(벽 길이 방향)
-const TRACK_H = 0.05;           // 상·하 트랙(러너) 높이
 
 function captureInto(arr, fn) {
   const s = scene.children.length;
@@ -1247,8 +1198,6 @@ const frSecondWallY = secondY + secondFloorThickness;  // 다락 무릎벽 하�
 const frGableBaseY = frSecondWallY + secondWallHeight;  // 박공 시작(무릎벽 상단)
 const frRidgeY = frGableBaseY + gableRise;             // 용마루
 const frRidgeZ = buildingFrontZ + buildingD / 2;
-const frEaveOverhang = 0.6;
-const frSideOverhang = 0.4;
 const frOuterEaveY = frGableBaseY - roofSlopeTan * frEaveOverhang;
 const frEaveZFront = buildingFrontZ - frEaveOverhang;
 const frEaveZBack = buildingBackZ + frEaveOverhang;
@@ -1256,7 +1205,6 @@ const gableTopY = (z) => frGableBaseY + gableRise - roofSlopeTan * Math.abs(z - 
 
 // ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격(방당 3.0m), 계단실=남는 중앙(대칭) ──
 //   ※ 1층 벽 좌표(stairHighXWallX 등)는 차차 맞춤. 지금은 바닥·기초·골조에만 이 레이아웃을 반영.
-const FRAME_ROOM_W = 3.0;                        // 방 기초 폭(외벽 중심선~계단벽 중심선) = 말뚝 1.5m × 2칸
 const 거실InnerWallX = frLeftX + FRAME_ROOM_W;    // 거실|계단실 벽 = 3.1
 const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽 = 5.4 (건물 중심 4.25에 대칭)
 // 말뚝 X열을 하중 경로에 맞춤: 좌·우 외벽 + 방 중앙(1.5m) + 계단실 양 벽. 계단실 가운데 2.3m는 무주(양 벽 말뚝이 받음).
@@ -1829,11 +1777,6 @@ for (const f of deckFootprints) {
 
 // ── 골조(단계적) ① 바닥 골조 — 둘레 림장선 + 등간격 바닥 장선. 기초 말뚝 두부 위에 얹힘. ─────
 //   골조 토글 전용 그룹(골조Objects). 집과 데크를 별도 재질로 구분해 따로 짠다.
-const FLOOR_JOIST_H = 0.2;          // 바닥 장선 춤(200mm)
-const FLOOR_JOIST_W = 0.045;        // 바닥 장선 폭
-const FLOOR_RIM_W = 0.05;           // 둘레 림장선 폭(집 기본)
-const DECK_RIM_W = 0.10;            // 데크 테두리(둘레 림장선) 폭 — 데크만 두껍게. 굵기 바꾸려면 여기만.
-const FLOOR_JOIST_SPACING = 0.45;   // 바닥 장선 간격(o.c.)
 // 바닥 골조 1벌 — (x0,z0,w,d) 발자국 위, yBottom(기초 두부 상단)에 얹힌 장선틀. 짧은 변으로 스팬(데크용).
 //   rim = 둘레 테두리(앞·뒤·좌·우) 4변 폭만 지정. 가운데 가로보·내부 장선은 rim과 무관(항상 기본값).
 function floorFrame(x0, z0, w, d, yBottom, mat, joistXs = null, rim = FLOOR_RIM_W) {
@@ -1902,7 +1845,6 @@ for (const f of deckFootprints) {
   footprintObjects.push(box({ x: f.x, z: f.z, w: f.w, d: f.d, y: planY, h: planH, mat: materials.deckFoundation, cast: false, name: 'ground' }));   // 데크 기초(0.4m) — 청회색으로 집 기초(0.5m)와 구분
 }
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
-const planMarkW = 0.22;
 function planPileMark(px, pz, mat = materials.pileHead) {   // 말뚝 두부 위치 마커(기본 검정 — 영상의 두부 브래킷처럼)
   planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat, cast: false, name: 'ground' }));
 }
