@@ -97,10 +97,12 @@ test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글
   //   · 새로 추가한 1층/다락/지붕(stageFirst/Attic/Roof → 'stageFirst'/'stageAttic'/'stageRoof')은 빈 화면.
   //   과거 회귀: 두 버튼이 같은 building 값을 공유 + blankStage가 기존을 비웠음. 둘 다 금지.
   const src = readFileSync(mainJs, 'utf8');
-  // (1) 기존 뷰 버튼 핸들러는 각자 boolean을 토글 — building/카메라 안 건드림
-  assert.match(src, /#viewFirst'\)\.addEventListener[\s\S]{0,80}viewState\.firstOn = !viewState\.firstOn;/, '+1층 핸들러는 firstOn 토글');
-  assert.match(src, /#viewSecond'\)\.addEventListener[\s\S]{0,80}viewState\.atticOn = !viewState\.atticOn;/, '+다락 핸들러는 atticOn 토글');
-  assert.match(src, /#viewAll'\)\.addEventListener[\s\S]{0,80}viewState\.roofOn = !viewState\.roofOn;/, '+지붕 핸들러는 roofOn 토글');
+  // (1) +1층/+다락/+지붕은 각각 독립 boolean 토글(TOGGLE_BUTTONS 테이블) — building/카메라 안 건드림
+  assert.match(src, /id: 'viewFirst',\s*key: 'firstOn'/, '+1층은 firstOn 토글(TOGGLE_BUTTONS)');
+  assert.match(src, /id: 'viewSecond',\s*key: 'atticOn'/, '+다락은 atticOn 토글(TOGGLE_BUTTONS)');
+  assert.match(src, /id: 'viewAll',\s*key: 'roofOn'/, '+지붕은 roofOn 토글(TOGGLE_BUTTONS)');
+  // viewFirst/Second/All은 STAGE_BUTTONS(building 변경)에 들어가면 안 됨 — 토글이지 화면전환 아님
+  assert.doesNotMatch(src, /id: 'view(First|Second|All)',\s*building:/, '기존 +버튼을 STAGE_BUTTONS(화면전환)에 넣지 말 것');
   // (2) 각 층 가시성은 독립 토글 boolean으로
   assert.match(src, /const showFirst = firstOn;/, '+1층 내용은 firstOn 토글로 표시');
   assert.match(src, /const showAttic = atticOn;/, '+다락 내용은 atticOn 토글로 표시');
@@ -108,10 +110,10 @@ test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글
   assert.match(src, /for \(const item of firstFloorObjects\) item\.visible = showFirst;/, '1층 그룹은 showFirst(=firstOn)로 표시');
   assert.match(src, /for \(const item of secondFloorObjects\) item\.visible = showAttic;/, '다락 그룹은 showAttic(=atticOn)으로 표시');
   assert.match(src, /for \(const item of roofObjects\) item\.visible = showRoof;/, '지붕 그룹은 showRoof(=roofOn)로 표시');
-  // (3) 새 버튼 핸들러는 전용 빈 화면 상태값
-  assert.match(src, /#stageFirst'\)\.addEventListener[\s\S]{0,120}building = 'stageFirst';/, '새 1층 핸들러는 building = \'stageFirst\'(빈 화면)');
-  assert.match(src, /#stageAttic'\)\.addEventListener[\s\S]{0,120}building = 'stageAttic';/, '새 다락 핸들러는 building = \'stageAttic\'(빈 화면)');
-  assert.match(src, /#stageRoof'\)\.addEventListener[\s\S]{0,120}building = 'stageRoof';/, '새 지붕 핸들러는 building = \'stageRoof\'(빈 화면)');
+  // (3) 새 버튼은 전용 빈 화면 building 값(STAGE_BUTTONS 테이블)
+  assert.match(src, /id: 'stageFirst',\s*building: 'stageFirst'/, '새 1층은 building \'stageFirst\'(STAGE_BUTTONS)');
+  assert.match(src, /id: 'stageAttic',\s*building: 'stageAttic'/, '새 다락은 building \'stageAttic\'(STAGE_BUTTONS)');
+  assert.match(src, /id: 'stageRoof',\s*building: 'stageRoof'/, '새 지붕은 building \'stageRoof\'(STAGE_BUTTONS)');
   // (4) 새 세 상태는 blankStage로 빈 화면 처리
   assert.match(src, /blankStage = building === 'stageFirst' \|\| building === 'stageAttic' \|\| building === 'stageRoof';/, '새 1층/다락/지붕은 blankStage로 빈 화면');
 });

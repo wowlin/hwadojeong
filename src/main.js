@@ -2345,9 +2345,25 @@ deckStairs({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWallZ,
 deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
 floorFinishObjects.push(...scene.children.slice(_stairStart));   // 계단 포세린 디딤판 — 데크 바닥 포세린과 동일하게 '바닥' 단계에서 계단틀 위에 표시
 
-// 데크 계단틀(스트링거) — 데크 전면(−Z)·왼쪽(高X) 계단. 1단 높이 ≤17cm(steps 자동). 바닥틀 그룹(골조Objects).
-deckStairFrame({ axis: 'x', span0: living썬룸.dX0, span1: living썬룸.dX1, edge: living썬룸.dFrontZ, outward: -1, group: 골조Objects, mat: materials.deckFloorFrame });
-deckStairFrame({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWallZ, edge: living썬룸.dX1, outward: 1, group: 골조Objects, mat: materials.deckFloorFrame });
+// 데크 계단틀 — 앞쪽(−Z)·왼쪽(高X) '발판 1개'를 납작한 직사각형 테두리로 표시. 깊이=발판 30cm, 계단 윗단(데크 상단) 높이에 공중에 뜬 것처럼. 바닥틀 그룹(골조Objects). (아래 단·세로 바는 이후 추가)
+{
+  const sTopY = deckTopY0 + deckFinishT;            // 맨 위 발판 높이 — 이 높이에 띄움
+  const tread = 0.3, t = 0.07;                      // 발판 깊이 30cm / 테두리 막대 두께
+  const flatRectFrame = (x0, x1, z0, z1) => {       // Y=sTopY 평면에 4변 막대로 두른 납작한 테두리
+    const xw = x1 - x0, zw = z1 - z0;
+    골조Objects.push(box({ x: x0, z: z0, w: xw, d: t, y: sTopY, h: t, mat: materials.deckFloorFrame, cast: false }));        // z0 변
+    골조Objects.push(box({ x: x0, z: z1 - t, w: xw, d: t, y: sTopY, h: t, mat: materials.deckFloorFrame, cast: false }));    // z1 변
+    골조Objects.push(box({ x: x0, z: z0, w: t, d: zw, y: sTopY, h: t, mat: materials.deckFloorFrame, cast: false }));        // x0 변
+    골조Objects.push(box({ x: x1 - t, z: z0, w: t, d: zw, y: sTopY, h: t, mat: materials.deckFloorFrame, cast: false }));    // x1 변
+  };
+  flatRectFrame(living썬룸.dX0, living썬룸.dX1, living썬룸.dFrontZ - tread, living썬룸.dFrontZ);   // 앞쪽 발판 1개: 데크폭(X) × 깊이 30cm(−Z)
+  flatRectFrame(living썬룸.dX1, living썬룸.dX1 + tread, living썬룸.dFrontZ, living썬룸.dWallZ);    // 왼쪽 발판 1개: 깊이 30cm(+X) × 데크깊이(Z)
+  // 발판 깊이 30cm 치수 — 바닥틀 화면에서만(발판틀 높이 sTopY에 표기)
+  captureInto(floorFrameDimObjects, () => {
+    lengthDim('z', living썬룸.dX0 - 0.3, living썬룸.dFrontZ - tread, living썬룸.dFrontZ, `발판 깊이 ${Math.round(tread * 100)}cm`, { y: sTopY, side: -1, labelDist: 0.6 });
+    lengthDim('x', living썬룸.dWallZ + 0.3, living썬룸.dX1, living썬룸.dX1 + tread, `발판 깊이 ${Math.round(tread * 100)}cm`, { y: sTopY, side: 1, labelDist: 0.6 });
+  });
+}
 // 부채꼴 코너 계단 — 앞·왼쪽 계단이 만나는 코너(dX1,dFrontZ) 바깥 사분면(+X~−Z)을 방사형 단으로 연결.
 {
   const cx = living썬룸.dX1, cz = living썬룸.dFrontZ;            // 코너점(앞·왼쪽 만나는 곳)
@@ -2937,9 +2953,38 @@ function setView(pos) {
 // building 시공 누적 단계: plan(배치도) → foundation(기초) → floorFrame(바닥틀) → floor(바닥재) → first(1층) → second(다락) → all(지붕)
 const viewState = { building: 'plan', firstOn: false, atticOn: false, roofOn: false, deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, hedgeOn: false, fenceOn: false, frameMode: 'none' };  // +1층(firstOn)·+다락(atticOn)·+지붕(roofOn) 각각 독립 토글, 현재 화면 위 누적 · 측백담장(hedgeOn)·옆집담장(fenceOn) 기본 꺼짐 · frameMode: 'none'|'steel'|'wood'(미검토 골조 토글)
 
+// ── 버튼 정의 (단일 출처) — 핸들러 등록·활성/비활성 반영을 이 테이블에서 일괄 구동 ──
+// 시공 단계(상호배타): building 값 설정 + 카메라. cam 없으면 setPlanView. reset=클릭 시 끌 토글 키.
+const STAGE_BUTTONS = [
+  { id: 'viewPlan',       building: 'plan' },
+  { id: 'viewFoundation', building: 'foundation', cam: [4.25, 10.2, -5.0] },
+  { id: 'toggleFrame',    building: 'floorFrame',  cam: [4.25, 10.4, -5.0] },
+  { id: 'stageFloor',     building: 'floor',       cam: [4.25, 10.7, -5.0] },
+  { id: 'stageFirst',     building: 'stageFirst',  cam: [4.25, 11.2, -5.0], reset: ['hedgeOn', 'fenceOn'] },
+  { id: 'stageAttic',     building: 'stageAttic',  cam: [4.25, 12.2, -5.0] },
+  { id: 'stageRoof',      building: 'stageRoof',   cam: [10.8, 6.8, -8.8] },
+];
+// 켜고/끄는 토글: viewState[key] 반전. needs=활성(클릭 가능) 조건, off=끌 때 함께 끌 키, exclusive=켤 때 끌 키.
+const TOGGLE_BUTTONS = [
+  { id: 'viewFirst',       key: 'firstOn' },
+  { id: 'viewSecond',      key: 'atticOn' },
+  { id: 'viewAll',         key: 'roofOn' },
+  { id: 'toggleDeck',      key: 'deckOn', off: ['썬룸On'] },                                  // 데크 끄면 썬룸도 off
+  { id: 'toggle썬룸',      key: '썬룸On', needs: () => viewState.deckOn },                    // 데크 위에만
+  { id: 'toggleWall',      key: 'wallOn', needs: () => viewState.deckOn && viewState.썬룸On, exclusive: ['foldingOn'] },   // 외벽↔폴딩 상호배타
+  { id: 'toggleFolding',   key: 'foldingOn', needs: () => viewState.deckOn && viewState.썬룸On, exclusive: ['wallOn'] },
+  { id: 'toggleAccessory', key: 'accessoryOn' },
+  { id: 'toggleOutlet',    key: 'outletsOn' },
+  { id: 'toggleHedge',     key: 'hedgeOn' },
+  { id: 'toggleFence',     key: 'fenceOn' },
+];
+// 골조(상호배타 frameMode): 같은 버튼 재클릭 시 off.
+const FRAME_BUTTONS = [{ id: 'toggleSteelFrame', mode: 'steel' }, { id: 'toggleWoodFrame', mode: 'wood' }];
+
 function applyVisibility() {
   const { building, firstOn, atticOn, roofOn, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
+  const sunReady = deckOn && 썬룸On;                            // 썬룸·외벽·폴딩 공통 전제 — 한 곳에서만 계산(흩어진 재계산 방지)
   const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
   const atLeast = (s) => STAGES.indexOf(building) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
   const showFrame = atLeast('floorFrame') && !isPlan;          // 바닥틀(골조Objects): 바닥틀 단계 이상
@@ -2962,10 +3007,10 @@ function applyVisibility() {
   for (const item of secondFloorObjects) item.visible = showAttic;
   for (const item of roofObjects) item.visible = showRoof;
   for (const item of deckObjects) item.visible = showDeckFinish;                     // 데크 포세린 마감: '바닥' 단계 이상 자동 + 데크 토글
-  for (const item of 썬룸Objects) item.visible = deckOn && 썬룸On && !isPlan;  // 썬룸는 데크 위에만
-  for (const item of 썬룸FrameObjects) item.visible = (frameMode !== 'none' || (deckOn && 썬룸On)) && !isPlan; // 썬룸 철골(노출 스틸): 스틸/목골조 토글 또는 썬룸 토글
-  for (const item of wallObjects) item.visible = deckOn && 썬룸On && wallOn && !isPlan; // 외벽은 썬룸 위에만
-  for (const item of foldingObjects) item.visible = deckOn && 썬룸On && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
+  for (const item of 썬룸Objects) item.visible = sunReady && !isPlan;  // 썬룸는 데크 위에만
+  for (const item of 썬룸FrameObjects) item.visible = (frameMode !== 'none' || sunReady) && !isPlan; // 썬룸 철골(노출 스틸): 스틸/목골조 토글 또는 썬룸 토글
+  for (const item of wallObjects) item.visible = sunReady && wallOn && !isPlan; // 외벽은 썬룸 위에만
+  for (const item of foldingObjects) item.visible = sunReady && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
   for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
   for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
   for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
@@ -2982,34 +3027,15 @@ function applyVisibility() {
   for (const item of woodFrameObjects) item.visible = frameMode === 'wood' && !isPlan;    // 목골조(상호배타)
   }
 
-  // 버튼 상태 반영 — 검토된 시공 단계(누적 building)
-  document.querySelector('#viewPlan').classList.toggle('active', building === 'plan');
-  document.querySelector('#viewFoundation').classList.toggle('active', building === 'foundation');
-  document.querySelector('#toggleFrame').classList.toggle('active', building === 'floorFrame');   // 바닥틀
-  document.querySelector('#stageFloor').classList.toggle('active', building === 'floor');          // 바닥
-  document.querySelector('#stageFirst').classList.toggle('active', building === 'stageFirst');     // 1층(새, 빈 화면)
-  document.querySelector('#stageAttic').classList.toggle('active', building === 'stageAttic');     // 다락(새, 빈 화면)
-  document.querySelector('#stageRoof').classList.toggle('active', building === 'stageRoof');       // 지붕(새, 빈 화면)
-  // 기존 +1층/+다락/+지붕 — 각각 독립 토글
-  document.querySelector('#viewFirst').classList.toggle('active', firstOn);
-  document.querySelector('#viewSecond').classList.toggle('active', atticOn);
-  document.querySelector('#viewAll').classList.toggle('active', roofOn);
-  document.querySelector('#toggleDeck').classList.toggle('active', deckOn);
-  const 썬룸Btn = document.querySelector('#toggle썬룸');
-  썬룸Btn.classList.toggle('active', deckOn && 썬룸On);
-  썬룸Btn.disabled = !deckOn;            // 데크가 꺼져 있으면 썬룸 토글 불가
-  const wallBtn = document.querySelector('#toggleWall');
-  wallBtn.classList.toggle('active', deckOn && 썬룸On && wallOn);
-  wallBtn.disabled = !(deckOn && 썬룸On);  // 썬룸가 꺼져 있으면 외벽 토글 불가
-  const foldingBtn = document.querySelector('#toggleFolding');
-  foldingBtn.classList.toggle('active', deckOn && 썬룸On && foldingOn);
-  foldingBtn.disabled = !(deckOn && 썬룸On);  // 썬룸가 꺼져 있으면 폴딩도어 토글 불가
-  document.querySelector('#toggleAccessory').classList.toggle('active', accessoryOn);
-  document.querySelector('#toggleOutlet').classList.toggle('active', outletsOn);
-  document.querySelector('#toggleHedge').classList.toggle('active', hedgeOn);
-  document.querySelector('#toggleFence').classList.toggle('active', fenceOn);
-  document.querySelector('#toggleSteelFrame').classList.toggle('active', frameMode === 'steel');
-  document.querySelector('#toggleWoodFrame').classList.toggle('active', frameMode === 'wood');
+  // 버튼 상태 반영 — STAGE/TOGGLE/FRAME 테이블에서 일괄 (단일 출처)
+  for (const b of STAGE_BUTTONS) document.querySelector('#' + b.id).classList.toggle('active', building === b.building);
+  for (const b of TOGGLE_BUTTONS) {
+    const el = document.querySelector('#' + b.id);
+    const ready = !b.needs || b.needs();              // 의존 조건(없으면 항상 가능)
+    el.classList.toggle('active', !!viewState[b.key] && ready);
+    if (b.needs) el.disabled = !ready;                // 전제 안 갖춰지면 클릭 불가
+  }
+  for (const b of FRAME_BUTTONS) document.querySelector('#' + b.id).classList.toggle('active', frameMode === b.mode);
 }
 
 // 바닥(배치도) 전용 카메라 — 대지 전체를 상부에서 내려다본다(도로·토지·담장·기초 바닥 한눈에).
@@ -3022,124 +3048,35 @@ function setPlanView() {
   controls.update();
 }
 
-document.querySelector('#viewPlan').addEventListener('click', () => {
-  viewState.building = 'plan';
-  applyVisibility();
-  setPlanView();
-});
+// 시공 단계 버튼 — building 설정 + 카메라(STAGE_BUTTONS 단일 출처). cam 없으면 배치도 평면 시점.
+for (const b of STAGE_BUTTONS) {
+  document.querySelector('#' + b.id).addEventListener('click', () => {
+    viewState.building = b.building;
+    if (b.reset) for (const k of b.reset) viewState[k] = false;   // 예: 1층 클릭 시 담장 자동 해제
+    applyVisibility();
+    if (b.cam) setView(b.cam); else setPlanView();
+  });
+}
 
-document.querySelector('#viewFoundation').addEventListener('click', () => {
-  viewState.building = 'foundation';
-  applyVisibility();
-  setView([4.25, 10.2, -5.0]);
-});
+// 켜고/끄는 토글 버튼 — needs(전제)·off(끌 때 함께 끔)·exclusive(켤 때 함께 끔) 보존(TOGGLE_BUTTONS 단일 출처).
+//   +1층/+다락/+지붕은 building·카메라 안 건드리고 해당 층만 현재 화면 위 누적.
+for (const b of TOGGLE_BUTTONS) {
+  document.querySelector('#' + b.id).addEventListener('click', () => {
+    if (b.needs && !b.needs()) return;                                       // 전제 안 갖춰지면 무시(예: 데크 꺼지면 썬룸 불가)
+    viewState[b.key] = !viewState[b.key];
+    if (viewState[b.key]) { for (const k of (b.exclusive || [])) viewState[k] = false; }  // 켜질 때 상호배타 끔(외벽↔폴딩)
+    else { for (const k of (b.off || [])) viewState[k] = false; }                          // 꺼질 때 종속 끔(데크↓→썬룸)
+    applyVisibility();
+  });
+}
 
-// 바닥틀 — 기초 위 바닥프레임(누적 단계 뷰)
-document.querySelector('#toggleFrame').addEventListener('click', () => {
-  viewState.building = 'floorFrame';
-  applyVisibility();
-  setView([4.25, 10.4, -5.0]);
-});
-
-// 바닥 — 바닥재·데크 포세린 마감까지
-document.querySelector('#stageFloor').addEventListener('click', () => {
-  viewState.building = 'floor';
-  applyVisibility();
-  setView([4.25, 10.7, -5.0]);
-});
-
-// 1층(새 버튼) — 빈 화면(미검토). 기존 +1층과 별개 상태.
-document.querySelector('#stageFirst').addEventListener('click', () => {
-  viewState.building = 'stageFirst';
-  viewState.hedgeOn = false; viewState.fenceOn = false;
-  applyVisibility();
-  setView([4.25, 11.2, -5.0]);
-});
-
-// 다락(새 버튼) — 빈 화면(미검토). 기존 +다락과 별개 상태.
-document.querySelector('#stageAttic').addEventListener('click', () => {
-  viewState.building = 'stageAttic';
-  applyVisibility();
-  setView([4.25, 12.2, -5.0]);
-});
-
-// 지붕(새 버튼) — 빈 화면(미검토). 기존 +지붕과 별개 상태.
-document.querySelector('#stageRoof').addEventListener('click', () => {
-  viewState.building = 'stageRoof';
-  applyVisibility();
-  setView([10.8, 6.8, -8.8]);
-});
-
-// +1층/+다락/+지붕 — 각각 독립 토글. 현재 화면 위에 해당 층만 켜고/끈다(building·카메라 안 건드림).
-document.querySelector('#viewFirst').addEventListener('click', () => {
-  viewState.firstOn = !viewState.firstOn;
-  applyVisibility();
-});
-
-document.querySelector('#viewSecond').addEventListener('click', () => {
-  viewState.atticOn = !viewState.atticOn;
-  applyVisibility();
-});
-
-document.querySelector('#viewAll').addEventListener('click', () => {
-  viewState.roofOn = !viewState.roofOn;
-  applyVisibility();
-});
-
-document.querySelector('#toggleDeck').addEventListener('click', () => {
-  viewState.deckOn = !viewState.deckOn;
-  if (!viewState.deckOn) viewState.썬룸On = false;   // 데크를 끄면 썬룸도 함께 off
-  applyVisibility();
-});
-
-document.querySelector('#toggle썬룸').addEventListener('click', () => {
-  if (!viewState.deckOn) return;            // 데크가 꺼져 있으면 썬룸 토글 불가
-  viewState.썬룸On = !viewState.썬룸On;
-  applyVisibility();
-});
-
-document.querySelector('#toggleWall').addEventListener('click', () => {
-  if (!viewState.deckOn || !viewState.썬룸On) return;   // 썬룸가 꺼져 있으면 외벽 토글 불가
-  viewState.wallOn = !viewState.wallOn;
-  if (viewState.wallOn) viewState.foldingOn = false;       // 외벽 켜면 폴딩도어 자동 끔(상호배타)
-  applyVisibility();
-});
-
-document.querySelector('#toggleFolding').addEventListener('click', () => {
-  if (!viewState.deckOn || !viewState.썬룸On) return;   // 썬룸가 꺼져 있으면 폴딩도어 토글 불가
-  viewState.foldingOn = !viewState.foldingOn;
-  if (viewState.foldingOn) viewState.wallOn = false;       // 폴딩도어 켜면 외벽 자동 끔(상호배타)
-  applyVisibility();
-});
-
-document.querySelector('#toggleAccessory').addEventListener('click', () => {
-  viewState.accessoryOn = !viewState.accessoryOn;
-  applyVisibility();
-});
-
-document.querySelector('#toggleOutlet').addEventListener('click', () => {
-  viewState.outletsOn = !viewState.outletsOn;
-  applyVisibility();
-});
-
-document.querySelector('#toggleHedge').addEventListener('click', () => {
-  viewState.hedgeOn = !viewState.hedgeOn;
-  applyVisibility();
-});
-document.querySelector('#toggleFence').addEventListener('click', () => {
-  viewState.fenceOn = !viewState.fenceOn;
-  applyVisibility();
-});
-
-// 스틸골조/목골조 — 상호배타: 하나를 켜면 다른 하나는 자동 off(한 번에 한 구조만). 같은 버튼 재클릭 시 off.
-document.querySelector('#toggleSteelFrame').addEventListener('click', () => {
-  viewState.frameMode = viewState.frameMode === 'steel' ? 'none' : 'steel';
-  applyVisibility();
-});
-document.querySelector('#toggleWoodFrame').addEventListener('click', () => {
-  viewState.frameMode = viewState.frameMode === 'wood' ? 'none' : 'wood';
-  applyVisibility();
-});
+// 스틸골조/목골조 — 상호배타: 하나를 켜면 다른 하나는 자동 off. 같은 버튼 재클릭 시 off(FRAME_BUTTONS 단일 출처).
+for (const b of FRAME_BUTTONS) {
+  document.querySelector('#' + b.id).addEventListener('click', () => {
+    viewState.frameMode = viewState.frameMode === b.mode ? 'none' : b.mode;
+    applyVisibility();
+  });
+}
 
 applyVisibility();
 setPlanView();   // 초기 화면 = 바닥(배치도) 평면도
