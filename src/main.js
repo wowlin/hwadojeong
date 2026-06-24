@@ -2341,7 +2341,7 @@ deckStairs({ axis: 'x', span0: living썬룸.dX0, span1: living썬룸.dX1, edge: 
 deckStairs({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWallZ, edge: living썬룸.dX1, outward: 1 });
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
 deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
-deckObjects.push(...scene.children.slice(_stairStart));
+floorFinishObjects.push(...scene.children.slice(_stairStart));   // 계단 포세린 디딤판 — 데크 바닥 포세린과 동일하게 '바닥' 단계에서 계단틀 위에 표시
 
 // 데크 계단틀(스트링거) — 데크 전면(−Z)·왼쪽(高X) 계단. 1단 높이 ≤17cm(steps 자동). 바닥틀 그룹(골조Objects).
 deckStairFrame({ axis: 'x', span0: living썬룸.dX0, span1: living썬룸.dX1, edge: living썬룸.dFrontZ, outward: -1, group: 골조Objects, mat: materials.deckFloorFrame });
