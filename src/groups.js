@@ -1,0 +1,26 @@
+// 렌더 가시성 그룹(단일 출처) — 빌더가 push, applyVisibility가 visible 제어. 배열은 공유 참조(import해도 동일 객체).
+export const floorFinishObjects = []; // 바닥재 마감(바닥틀 위) — '바닥' 단계 이상에서 표시
+export const firstFloorObjects = [];   // 1층 골조·실내(기초 토글 시 숨김)
+export const secondFloorObjects = [];
+export const roofObjects = [];
+export const deckObjects = [];      // 데크 바닥·계단(데크 토글)
+export const 썬룸Objects = [];   // 썬룸 구조물: 지붕·팬·조명·치수·외피(썬룸 토글)
+export const 썬룸FrameObjects = []; // 썬룸 철골 골조: 기둥·보·평프레임(골조 토글 또는 썬룸 토글 중 하나라도 켜지면 표시)
+export const wallObjects = [];      // 썬룸 외벽: 다누몰 자바라 폴딩창(외벽 토글 — 시공 업체 별도)
+export const foldingObjects = [];   // 거실 데크 3면 폴딩도어(폴딩도어 토글 — 외벽과 상호배타)
+export const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 표시)
+export const outletObjects = [];       // 전기 콘센트(1층) — 콘센트 토글
+export const atticOutletObjects = [];  // 전기 콘센트(다락) — 콘센트 토글 + 다락 표시 시
+export const hedgeObjects = [];        // 측백나무 생울타리(뒤·좌측) — 측백담장 토글
+export const fenceObjects = [];        // 우측 콘크리트 담장(옆집 경계) — 옆집담장 토글
+export const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·두부, 높이 치수) — 바닥(평면도)에선 숨김
+export const foundationDimObjects = []; // 기초 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
+export const floorFrameDimObjects = []; // 바닥틀 방별 너비(뒤편)·깊이(오른쪽) 치수 — 바닥틀 뷰에서만
+export const footprintObjects = [];    // 집·데크·담장 납작 발자국 — ★단일 출처★ 모든 화면에 동일 표시(토글 무관, 바닥에서 바꾸면 전 화면 반영)
+export const planObjects = [];         // 바닥(평면도): 말뚝 마커 — 바닥에서만
+export const dimObjects = [];          // 평면 치수·모눈(라벨+선 한 세트) — 바닥 + 기초에 동일 표시
+export const planOnlyDimObjects = [];  // 평면 전용 치수(측백 0.5m) — 바닥에만, 기초 뷰에선 숨김
+export const siteBaseObjects = [];   // 바탕 대지(흙)·도로 — 미검토 단계(1층·다락·지붕)에선 숨겨 빈 화면
+export const steelFrameObjects = [];   // 스틸 골조(스틸골조 토글) — 1층·다락·지붕 일괄
+export const woodFrameObjects = [];    // 목골조(목골조 토글) — 동일 형상, 목재 마감
+export const 골조Objects = [];          // 골조 버튼 전용 — 사용자가 단계적으로 추가할 골조 형상(스틸/목골조와 별개). 켜짐 시 입체 뷰에 표시.
