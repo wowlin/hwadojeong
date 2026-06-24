@@ -1612,17 +1612,8 @@ captureInto(planOnlyDimObjects, () => {
   }
 });
 
-// 데크 계단 — 폴딩도어 출입문(정면·왼쪽 측면 앞) 앞 + 안방 측면 출입문 앞에만(각 0.8m 폭, 3계단)
+// 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
-// 데크처럼: 포세린 디딤판은 계단틀(deckStairFrame) 디딤바 윗면 위에 얹는다. 아래 식은 deckStairFrame와 동일한 단수·rise·부재두께(bw)로 디딤바 윗면 높이를 재현.
-const _sfTop = deckTopY0 + deckFinishT, _sfBase = groundTopY, _sfBw = 0.07;
-const _sfN = Math.max(1, Math.ceil((_sfTop - _sfBase) / 0.17));
-const _sfRise = (_sfTop - _sfBase) / _sfN;
-const stairFrameTopY = (i) => _sfTop - (i + 1) * _sfRise + _sfBw;   // i단 디딤바 윗면 = 포세린 타일이 얹히는 면
-// · 거실 데크 정면 전체 폭 계단(-z로 내려감) — 데크 좌우 끝까지 전체 길이
-deckStairs({ axis: 'x', span0: living썬룸.dX0, span1: living썬룸.dX1, edge: living썬룸.dFrontZ, outward: -1, steps: _sfN, frameTopY: stairFrameTopY });
-// · 거실 데크 왼쪽(동) 측면 전체 깊이 계단(+x로 내려감) — 앞단~집벽쪽 전체 길이
-deckStairs({ axis: 'z', span0: living썬룸.dFrontZ, span1: living썬룸.dWallZ, edge: living썬룸.dX1, outward: 1, steps: _sfN, frameTopY: stairFrameTopY });
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
 deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
 floorFinishObjects.push(...scene.children.slice(_stairStart));   // 계단 포세린 디딤판 — 데크 바닥 포세린과 동일하게 '바닥' 단계에서 계단틀 위에 표시
