@@ -6,6 +6,7 @@ dist/
 
 # 캡처/생성 산출물
 screenshot.png
+shot.png
 
 # OS / 에디터
 .DS_Store
