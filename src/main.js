@@ -2170,7 +2170,27 @@ function planPileMarks(x0, z0, w, d, spacingX, spacingZ) {
 }
 planPileMarks(0.1, buildingFrontZ + 0.1, buildingW - 0.2, buildingD - 0.2, 1.7, 1.9);
 for (const f of deckFootprints) planPileMarks(f.x + 0.1, f.z + 0.1, f.w - 0.2, f.d - 0.2, 1.6, 1.7);
-for (const [px, pz] of 안방썬룸.groundPosts) planPileMark(px, pz);   // 안방 앞 썬룸 기둥 시스템말뚝
+// 안방 말뚝 3개(평면) — X는 그대로, Z 위·아래를 가이드라인(집 앞벽 −0.7 / 거실 데크 앞)에 딱 붙임.
+{
+  const abX = 안방썬룸.groundPosts[0][0];
+  const abTop = buildingFrontZ, abBot = deckFootprints[0].z;
+  for (const pz of [abTop, (abTop + abBot) / 2, abBot]) planPileMark(abX, pz);
+}
+// [TEMP] 가이드라인 빨강 표시: 안방앞(집 앞벽 z=−0.7) + 가장 아래(거실 데크 앞 z=deckFootprints[0].z)
+const _gRed = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+for (const z of [buildingFrontZ, deckFootprints[0].z]) planObjects.push(box({ x: lotX0 - 0.6, z: z - 0.01, w: lotW + 1.2, d: 0.02, y: planY + planH + 0.04, h: 0.012, mat: _gRed, cast: false, name: 'ground' }));
+// [TEMP] 안방 기둥 줄: 위(안방앞 z=−0.7)=초록, 아래(도면 좌하 z=거실데크앞)=파랑
+const _bBlue = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+const _bGreen = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
+const _abX = 안방썬룸.groundPosts[0][0];
+planObjects.push(box({ x: _abX - planMarkW / 2, z: buildingFrontZ - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH + 0.06, h: 0.012, mat: _bGreen, cast: false, name: 'ground' }));
+planObjects.push(box({ x: _abX - planMarkW / 2, z: deckFootprints[0].z - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH + 0.06, h: 0.012, mat: _bBlue, cast: false, name: 'ground' }));
+// [TEMP] 썬룸(거실 데크) 오른쪽 두 모서리 기둥(앞·뒤)을 주황으로 표시 — 색만, 크기 동일
+const _bOrange = new THREE.MeshBasicMaterial({ color: 0xff8800 });
+{
+  const f = deckFootprints[0], ox = f.x + 0.1;
+  for (const oz of [f.z + 0.1, f.z + f.d - 0.1]) planObjects.push(box({ x: ox - planMarkW / 2, z: oz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH + 0.07, h: 0.012, mat: _bOrange, cast: false, name: 'ground' }));
+}
 // 3면 담장 발자국 — 우측 콘크리트(회베이지) + 뒤·좌측 생울타리(녹색). 담장 토글 시.
 planBoundaryObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
 planBoundaryObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
