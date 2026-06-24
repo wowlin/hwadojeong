@@ -23,7 +23,7 @@
 // ▌객체 추가/제거 — 토글 그룹 시스템
 //   표시는 "그룹 배열 + applyVisibility()" 로 제어. 객체는 한 그룹에 속함:
 //     firstFloorObjects/secondFloorObjects/roofObjects/deckObjects/썬룸Objects/
-//     wallObjects/foldingObjects/outletObjects/boundaryObjects/foundationObjects/planObjects/extrasObjects
+//     wallObjects/foldingObjects/outletObjects/hedgeObjects/fenceObjects/foundationObjects/planObjects/extrasObjects
 //   · 추가 : 해당 위치에서 box({…})/label(…) → 캡처범위에 자동 분류, 또는 group.push(box({…}))(콘센트·담장식).
 //            캡처 패턴: const _s = scene.children.length; … ; group.push(...scene.children.slice(_s));
 //            (1층=_firstFloorStart, 다락=captureSecond(), 썬룸=썬룸() 내부)
@@ -65,7 +65,8 @@ app.innerHTML = `
         <button id="toggleFolding" type="button" class="toggle">폴딩도어<span class="btn-sub">JJ시스템</span><span class="btn-sub btn-sub-xs">1899-9043</span></button>
         <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
         <button id="toggleOutlet" type="button" class="toggle">콘센트</button>
-        <button id="toggleBoundary" type="button" class="toggle">담장<span class="btn-sub">3면 경계</span></button>
+        <button id="toggleHedge" type="button" class="toggle">측백담장<span class="btn-sub">뒤·좌 생울타리</span></button>
+        <button id="toggleFence" type="button" class="toggle">옆집담장<span class="btn-sub">우측 경계벽</span></button>
       </div>
     </aside>
   </main>
@@ -103,11 +104,13 @@ const foldingObjects = [];   // 거실 데크 3면 폴딩도어(폴딩도어 토
 const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 표시)
 const outletObjects = [];       // 전기 콘센트(1층) — 콘센트 토글
 const atticOutletObjects = [];  // 전기 콘센트(다락) — 콘센트 토글 + 다락 표시 시
-const boundaryObjects = [];     // 3면 경계(우측 콘크리트 담장 + 뒤·좌측 측백나무 생울타리) — 담장 토글
+const hedgeObjects = [];        // 측백나무 생울타리(뒤·좌측) — 측백담장 토글
+const fenceObjects = [];        // 우측 콘크리트 담장(옆집 경계) — 옆집담장 토글
 const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·두부, 높이 치수) — 바닥(평면도)에선 숨김
 const foundationDimObjects = []; // 기초 가로/세로·대지 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 const planObjects = [];         // 바닥(평면도): 납작한 기초 발자국 + 평면 치수 — 바닥에서만
-const planBoundaryObjects = []; // 바닥(평면도): 납작한 담장·생울타리 발자국 — 바닥 + 담장 토글 시
+const planHedgeObjects = [];    // 바닥(평면도): 측백 생울타리 발자국 — 측백담장 토글
+const planFenceObjects = [];    // 바닥(평면도): 옆집 담장 발자국 — 옆집담장 토글
 
 const materials = {
   site: new THREE.MeshLambertMaterial({ color: 0xa3814f }),   // 흙색(부지 지면)
@@ -953,13 +956,13 @@ const roadW = 1.1;
 box({ x: lotX1, z: lotZ0, w: roadW, d: lotD, h: 0.1, mat: materials.road, cast: false, name: 'ground' });          // 우측 도로(부지 밖)
 box({ x: lotX0, z: lotZ1, w: lotW + roadW, d: roadW, h: 0.1, mat: materials.road, cast: false, name: 'ground' });   // 후면 도로(부지 밖, 모서리 연결)
 
-// 3면 경계(담장 토글) — boundaryObjects로 수집해 버튼 하나로 표시 토글.
-// 담장(경계벽) — 대지 오른쪽(거실 쪽, 낮은 X) 바깥. 폭 0.2m × 높이 1.0m, 경계선 전체 길이.
+// 경계 — 측백담장(측백 생울타리)·옆집담장(우측 콘크리트) 두 토글로 분리.
+// 옆집담장(경계벽) — 대지 오른쪽(거실 쪽, 낮은 X) 바깥. 폭 0.2m × 높이 1.0m, 경계선 전체 길이.
 const fenceMat = new THREE.MeshLambertMaterial({ color: 0xb0a692 });
-boundaryObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: groundTopY, h: 1.0, mat: fenceMat, name: 'ground' }));
+fenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: groundTopY, h: 1.0, mat: fenceMat, name: 'ground' }));
 // 측백나무 생울타리(상록) — 뒤쪽 + 왼쪽(가족방 쪽, 높은 X) 경계 안쪽 50cm, 높이 1.8m.
-boundaryObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
-boundaryObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 왼쪽(가족방) 생울타리
+hedgeObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
+hedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 왼쪽(가족방) 생울타리
 
 // 대지 가로/세로(전체) 치수 — 입체 뷰에서만. 바닥(평면도)에선 분할 치수를 쓰므로 숨김(foundationObjects).
 captureInto(foundationObjects, () => {
@@ -2199,10 +2202,10 @@ PILE_POS.decks.forEach((d) => planPileMarks(d.x0, d.z0, d.w, d.d, d.sx, d.sz, ()
 PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHead));                    // 안방 말뚝(0.4m) — 청색
 // 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
 PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
-// 3면 담장 발자국 — 우측 콘크리트(회베이지) + 뒤·좌측 생울타리(녹색). 담장 토글 시.
-planBoundaryObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
-planBoundaryObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
-planBoundaryObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
+// 담장 발자국 — 옆집담장: 우측 콘크리트(회베이지) / 측백담장: 뒤·좌측 생울타리(녹색). 각 토글 시.
+planFenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));
+planHedgeObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
+planHedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));
 // 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인.
 captureInto(planObjects, () => {
   const D = 0.55;   // 모든 평면 치수 라벨 동일 크기
@@ -2806,10 +2809,10 @@ function setView(pos) {
 //    - 썬룸는 데크가 켜진 경우에만 가능(썬룸는 데크 위에 얹힘)
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 썬룸가 켜진 경우에만 가능(외벽은 썬룸에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
-const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, boundaryOn: true, frameMode: 'none', frameOn: false };  // frameMode: 'none' | 'steel' | 'wood' (상호배타) · frameOn: 골조 토글(독립)
+const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, hedgeOn: false, fenceOn: false, frameMode: 'none', frameOn: false };  // 측백담장(hedgeOn)·옆집담장(fenceOn) 기본 꺼짐 · frameMode: 'none'|'steel'|'wood' · frameOn: 골조 토글
 
 function applyVisibility() {
-  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, boundaryOn, frameMode, frameOn } = viewState;
+  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode, frameOn } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
   const showFirst = building === 'first' || building === 'second' || building === 'all'; // 1층 표시(바닥·기초에선 숨김)
   const showAttic = building === 'second' || building === 'all'; // +다락·+지붕에서 다락 표시
@@ -2827,8 +2830,10 @@ function applyVisibility() {
   for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
   for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
   for (const item of planObjects) item.visible = isPlan;                             // 납작한 기초 발자국·평면 치수: 바닥에서만
-  for (const item of planBoundaryObjects) item.visible = isPlan && boundaryOn;        // 납작한 담장 발자국: 바닥 + 담장 토글
-  for (const item of boundaryObjects) item.visible = boundaryOn && !isPlan;          // 입체 담장·생울타리: 바닥에선 납작 버전으로 대체
+  for (const item of planHedgeObjects) item.visible = isPlan && hedgeOn;             // 납작 측백 발자국: 바닥 + 측백담장 토글
+  for (const item of planFenceObjects) item.visible = isPlan && fenceOn;             // 납작 옆집담장 발자국: 바닥 + 옆집담장 토글
+  for (const item of hedgeObjects) item.visible = hedgeOn && !isPlan;                // 입체 측백 생울타리: 바닥에선 납작 버전으로 대체
+  for (const item of fenceObjects) item.visible = fenceOn && !isPlan;                // 입체 옆집 콘크리트 담장: 바닥에선 납작 버전으로 대체
   for (const item of outletObjects) item.visible = outletsOn && showFirst;          // 1층 콘센트: 독립 토글(기초만일 땐 숨김)
   for (const item of atticOutletObjects) item.visible = outletsOn && showAttic;     // 다락 콘센트: 다락 표시 시
   for (const item of steelFrameObjects) item.visible = frameMode === 'steel' && !isPlan;  // 스틸골조(상호배타)
@@ -2853,7 +2858,8 @@ function applyVisibility() {
   foldingBtn.disabled = !(deckOn && 썬룸On);  // 썬룸가 꺼져 있으면 폴딩도어 토글 불가
   document.querySelector('#toggleAccessory').classList.toggle('active', accessoryOn);
   document.querySelector('#toggleOutlet').classList.toggle('active', outletsOn);
-  document.querySelector('#toggleBoundary').classList.toggle('active', boundaryOn);
+  document.querySelector('#toggleHedge').classList.toggle('active', hedgeOn);
+  document.querySelector('#toggleFence').classList.toggle('active', fenceOn);
   document.querySelector('#toggleFrame').classList.toggle('active', frameOn);
   document.querySelector('#toggleSteelFrame').classList.toggle('active', frameMode === 'steel');
   document.querySelector('#toggleWoodFrame').classList.toggle('active', frameMode === 'wood');
@@ -2883,7 +2889,7 @@ document.querySelector('#viewFoundation').addEventListener('click', () => {
 
 document.querySelector('#viewFirst').addEventListener('click', () => {
   viewState.building = 'first';
-  viewState.boundaryOn = false;   // 1층을 보면 담장 자동 해제
+  viewState.hedgeOn = false; viewState.fenceOn = false;   // 1층을 보면 담장(측백·옆집) 자동 해제
   applyVisibility();
   setView([4.25, 11.2, -5.0]);
 });
@@ -2936,8 +2942,12 @@ document.querySelector('#toggleOutlet').addEventListener('click', () => {
   applyVisibility();
 });
 
-document.querySelector('#toggleBoundary').addEventListener('click', () => {
-  viewState.boundaryOn = !viewState.boundaryOn;
+document.querySelector('#toggleHedge').addEventListener('click', () => {
+  viewState.hedgeOn = !viewState.hedgeOn;
+  applyVisibility();
+});
+document.querySelector('#toggleFence').addEventListener('click', () => {
+  viewState.fenceOn = !viewState.fenceOn;
   applyVisibility();
 });
 
