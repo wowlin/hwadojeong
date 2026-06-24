@@ -51,22 +51,28 @@ app.innerHTML = `
     </section>
     <aside class="panel">
       <div class="controls">
-        <button id="viewPlan" type="button">바닥<span class="btn-sub">배치도</span></button>
+        <!-- 검토된 시공 단계(누적): 배치도 › 기초 › 바닥틀 › 바닥 › 1층 › 다락 › 지붕 -->
+        <button id="viewPlan" type="button">배치도</button>
         <button id="viewFoundation" type="button">기초<span class="btn-sub">KC금강컨테이너</span><span class="btn-sub btn-sub-xs">시스템말뚝기초 주택용</span></button>
-        <button id="toggleFrame" type="button" class="toggle">골조</button>
-        <button id="toggleSteelFrame" type="button" class="toggle">스틸골조<span class="btn-sub">(주)세움스틸하우스</span><span class="btn-sub btn-sub-xs">1544-2909</span></button>
-        <button id="toggleWoodFrame" type="button" class="toggle">목골조<span class="btn-sub">중목·경량목구조</span><span class="btn-sub btn-sub-xs">업체 TBD</span></button>
-        <button id="viewFirst" type="button">+1층</button>
-        <button id="viewSecond" type="button">+다락</button>
-        <button id="viewAll" type="button">+지붕<span class="btn-sub">태연남(태양광)</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
-        <button id="toggleDeck" type="button" class="toggle">데크<span class="btn-sub">포세린</span><span class="btn-sub btn-sub-xs">1644-6472</span></button>
-        <button id="toggle썬룸" type="button" class="toggle">썬룸</button>
-        <button id="toggleWall" type="button" class="toggle">외벽<span class="btn-sub">주식회사 단우</span><span class="btn-sub btn-sub-xs">1811-8179</span><span class="btn-sub btn-sub-xs">010-5382-8179</span></button>
-        <button id="toggleFolding" type="button" class="toggle">폴딩도어<span class="btn-sub">JJ시스템</span><span class="btn-sub btn-sub-xs">1899-9043</span></button>
-        <button id="toggleAccessory" type="button" class="toggle">악세사리</button>
-        <button id="toggleOutlet" type="button" class="toggle">콘센트</button>
-        <button id="toggleHedge" type="button" class="toggle">측백담장<span class="btn-sub">뒤·좌 생울타리</span></button>
-        <button id="toggleFence" type="button" class="toggle">옆집담장<span class="btn-sub">우측 경계벽</span></button>
+        <button id="toggleFrame" type="button">바닥틀<span class="btn-sub">기초 위 바닥프레임</span></button>
+        <button id="stageFloor" type="button">바닥<span class="btn-sub">바닥재·데크 포세린</span></button>
+        <button id="stageFirst" type="button">1층<span class="btn-sub">벽·계단</span></button>
+        <button id="stageAttic" type="button">다락<span class="btn-sub">바닥·벽</span></button>
+        <button id="stageRoof" type="button">지붕</button>
+        <!-- 미검토(참고용) — 검토되는대로 하나씩 삭제 예정 -->
+        <button id="toggleSteelFrame" type="button" class="toggle unreviewed">스틸골조<span class="btn-sub">(주)세움스틸하우스</span><span class="btn-sub btn-sub-xs">1544-2909</span></button>
+        <button id="toggleWoodFrame" type="button" class="toggle unreviewed">목골조<span class="btn-sub">중목·경량목구조</span><span class="btn-sub btn-sub-xs">업체 TBD</span></button>
+        <button id="viewFirst" type="button" class="unreviewed">+1층</button>
+        <button id="viewSecond" type="button" class="unreviewed">+다락</button>
+        <button id="viewAll" type="button" class="unreviewed">+지붕<span class="btn-sub">태연남(태양광)</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
+        <button id="toggleDeck" type="button" class="toggle unreviewed">데크<span class="btn-sub">포세린</span><span class="btn-sub btn-sub-xs">1644-6472</span></button>
+        <button id="toggle썬룸" type="button" class="toggle unreviewed">썬룸</button>
+        <button id="toggleWall" type="button" class="toggle unreviewed">외벽<span class="btn-sub">주식회사 단우</span><span class="btn-sub btn-sub-xs">1811-8179</span><span class="btn-sub btn-sub-xs">010-5382-8179</span></button>
+        <button id="toggleFolding" type="button" class="toggle unreviewed">폴딩도어<span class="btn-sub">JJ시스템</span><span class="btn-sub btn-sub-xs">1899-9043</span></button>
+        <button id="toggleAccessory" type="button" class="toggle unreviewed">악세사리</button>
+        <button id="toggleOutlet" type="button" class="toggle unreviewed">콘센트</button>
+        <button id="toggleHedge" type="button" class="toggle unreviewed">측백담장<span class="btn-sub">뒤·좌 생울타리</span></button>
+        <button id="toggleFence" type="button" class="toggle unreviewed">옆집담장<span class="btn-sub">우측 경계벽</span></button>
       </div>
     </aside>
   </main>
@@ -93,6 +99,7 @@ controls.maxPolarAngle = Math.PI * 0.48;
 controls.minDistance = 4;
 controls.maxDistance = 32;
 
+const floorFinishObjects = []; // 바닥재 마감(바닥틀 위) — '바닥' 단계 이상에서 표시
 const firstFloorObjects = [];   // 1층 골조·실내(기초 토글 시 숨김)
 const secondFloorObjects = [];
 const roofObjects = [];
@@ -694,19 +701,23 @@ function label(text, x, y, z, group = 'dim') {
   const { bg, size } = LABEL_GROUPS[group] || LABEL_GROUPS.dim;   // 그룹이 배경색·글자크기 결정
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = 768;
-  canvas.height = 192;
+  const H = 192;                                                // 캔버스 높이(세로)는 고정 — 월드 높이 불변
+  const lines = String(text).split('\n');                      // '\n'으로 여러 줄 지원
+  let fontSize = 62;
+  const setFont = () => { ctx.font = `800 ${fontSize}px Apple SD Gothic Neo, Noto Sans KR, Arial`; };
+  setFont();
+  while (fontSize * 1.18 * lines.length > H * 0.92 && fontSize > 30) {   // 줄 수에 맞춰 세로 축소(가로는 캔버스를 늘려 맞춤)
+    fontSize -= 2;
+    setFont();
+  }
+  const pad = 40;                                              // 좌우 여백(px) — 글자에 딱 붙지 않게
+  const textW = Math.max(...lines.map((l) => ctx.measureText(l).width));
+  canvas.width = Math.max(120, Math.ceil(textW + pad * 2));    // 가로폭 = 텍스트 폭 + 여백(고정 768 폐기)
+  canvas.height = H;
+  setFont();                                                   // 캔버스 리사이즈로 컨텍스트 초기화됨 → 재설정
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#111827';
-  const lines = String(text).split('\n');                      // '\n'으로 여러 줄 지원
-  let fontSize = 62;
-  const widest = () => Math.max(...lines.map((l) => ctx.measureText(l).width));
-  ctx.font = `800 ${fontSize}px Apple SD Gothic Neo, Noto Sans KR, Arial`;
-  while ((widest() > canvas.width * 0.9 || fontSize * 1.18 * lines.length > canvas.height * 0.92) && fontSize > 30) {
-    fontSize -= 2;
-    ctx.font = `800 ${fontSize}px Apple SD Gothic Neo, Noto Sans KR, Arial`;
-  }
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lineH = fontSize * 1.18;
@@ -715,8 +726,9 @@ function label(text, x, y, z, group = 'dim') {
   const texture = new THREE.CanvasTexture(canvas);
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
   const readableSize = Math.max(size, 0.28);
+  const worldH = readableSize * 1.2;                           // 세로(월드 높이) — 기존과 동일
   sprite.position.set(x, y, z);
-  sprite.scale.set(readableSize * 4.8, readableSize * 1.2, 1);
+  sprite.scale.set(worldH * (canvas.width / canvas.height), worldH, 1);   // 가로폭만 텍스트 비율에 맞춤
   scene.add(sprite);
   return sprite;
 }
@@ -780,9 +792,11 @@ function systemPile(cx, cz, headTopY, cast = false, headMat = materials.pileHead
 }
 
 // 말뚝 격자(시스템말뚝기초). headTopY = 두부 상단(= 그 위에 스틸 골조/바닥이 직접 얹혀 볼트 체결).
-function pileFoundation(x0, z0, w, d, headTopY, { spacingX = 1.7, spacingZ = 1.9, cast = false, headMat = materials.pileHead } = {}) {
-  const { xs, zs } = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
-  for (const x of xs) for (const z of zs) systemPile(x, z, headTopY, cast, headMat);
+//   xs 지정 시: 등간격 대신 그 X열들(하중 경로=벽·실 중앙)에 말뚝을 박는다.
+function pileFoundation(x0, z0, w, d, headTopY, { spacingX = 1.7, spacingZ = 1.9, cast = false, headMat = materials.pileHead, xs = null } = {}) {
+  const grid = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
+  const cols = xs || grid.xs;
+  for (const x of cols) for (const z of grid.zs) systemPile(x, z, headTopY, cast, headMat);
 }
 
 // 수평 길이 치수(범용) — 선 + 양끝 틱 + 라벨을 ★한 세트★로 묶는다(라벨·선 분리 금지: 한 줄로 추가/삭제).
@@ -1001,20 +1015,16 @@ captureInto(lotDimObjects, () => {
   lengthDim('x', lotZ0 - 0.35, lotX0, lotX1, `대지 가로 ${fmtDim(lotW)}m`, { y: 0.12, side: -1, labelDist: 0.5, tick: 0.34, labelLift: 0.22 });
   lengthDim('z', lotX0 - 0.35, lotZ0, lotZ1, `대지 세로 ${fmtDim(lotD)}m`, { y: 0.12, side: -1, labelDist: 0.55, tick: 0.34, labelLift: 0.22 });
 });
-// 입체 집 기초(시스템말뚝 + 두부) — foundationObjects(1층·다락·지붕에도 표시, 바닥에선 발자국으로 대체)
-captureInto(foundationObjects, () => {
-  // 말뚝 격자는 외주 벽 중심선(가장자리에서 0.1=외벽/2 안쪽)에 정렬.
-  const m = 0.1;
-  pileFoundation(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingX: 1.7, spacingZ: 1.9 });
-  foundationHeightDim(buildingW + 0.2, buildingBackZ - 0.4, groundTopY, foundationTopY, '말뚝기초 0.5m', 0.6);
-});
+// 입체 집 기초(시스템말뚝 + 두부)는 1층 벽·실 좌표가 정의된 뒤(아래)에서 만든다 — 하중 경로에 말뚝 정렬.
 // 기초 가로/세로 길이 치수 — 제거(라벨 정리)
 
-const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
+// 바닥재(바닥 시공 20cm) — 바닥틀 위 마감층. '바닥' 단계 이상에서 표시(floorFinishObjects). 1층 벽·계단·가구는 이 위(firstFloorY)에서 시작.
+captureInto(floorFinishObjects, () => {
+  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY, h: floorFinishH, mat: materials.floorFinish });
+  foundationHeightDim(-0.2, buildingFrontZ + 0.5, foundationTopY, firstFloorY, '바닥재 0.2m');
+});
 
-// 바닥재(바닥 시공 20cm) — 기초 슬래브 위에 얹히는 마감층. 1층 벽·계단·가구는 이 위(firstFloorY)에서 시작.
-box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY, h: floorFinishH, mat: materials.floorFinish });
-foundationHeightDim(-0.2, buildingFrontZ + 0.5, foundationTopY, firstFloorY, '바닥재 0.2m');
+const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
 
 // 1F measured plan. Dimensions are in meters within an 8.5m x 4.0m footprint.
 //   1층 층고·벽 두께 (제원)
@@ -1486,6 +1496,8 @@ captureSecond(() => {
 // ───────────────────────────────────────────────────────────────────────────
 materials.steelFrame = new THREE.MeshLambertMaterial({ color: 0x9fb1bd });
 materials.woodFrame = new THREE.MeshLambertMaterial({ color: 0xc69c6d });   // 목골조(중목·경량목) 목재 마감
+materials.houseFloorFrame = new THREE.MeshLambertMaterial({ color: 0x8f99a1 });  // 집 바닥 골조(장선) — 강회색
+materials.deckFloorFrame = new THREE.MeshLambertMaterial({ color: 0xb5793f });   // 데크 바닥 골조(장선) — 목재 갈색(집과 구분)
 
 const steelFrameObjects = [];   // 스틸 골조(스틸골조 토글) — 1층·다락·지붕 일괄
 const woodFrameObjects = [];    // 목골조(목골조 토글) — 동일 형상, 목재 마감
@@ -1557,6 +1569,30 @@ const frOuterEaveY = frGableBaseY - roofSlopeTan * frEaveOverhang;
 const frEaveZFront = buildingFrontZ - frEaveOverhang;
 const frEaveZBack = buildingBackZ + frEaveOverhang;
 const gableTopY = (z) => frGableBaseY + gableRise - roofSlopeTan * Math.abs(z - frRidgeZ);
+
+// ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격(방당 3.0m), 계단실=남는 중앙(대칭) ──
+//   ※ 1층 벽 좌표(stairHighXWallX 등)는 차차 맞춤. 지금은 바닥·기초·골조에만 이 레이아웃을 반영.
+const FRAME_ROOM_W = 3.0;                        // 방 기초 폭(외벽 중심선~계단벽 중심선) = 말뚝 1.5m × 2칸
+const 거실InnerWallX = frLeftX + FRAME_ROOM_W;    // 거실|계단실 벽 = 3.1
+const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽 = 5.4 (건물 중심 4.25에 대칭)
+// 말뚝 X열을 하중 경로에 맞춤: 좌·우 외벽 + 방 중앙(1.5m) + 계단실 양 벽. 계단실 가운데 2.3m는 무주(양 벽 말뚝이 받음).
+const housePileXs = [
+  frLeftX,             // 좌 외벽(거실쪽) 0.1
+  frLeftX + 1.5,       // 거실 중앙말뚝 1.6
+  거실InnerWallX,       // 거실|계단실 벽 3.1
+  안방InnerWallX,       // 계단실|안방 벽 5.4
+  frRightX - 1.5,      // 안방 중앙말뚝 6.9
+  frRightX,            // 우 외벽(안방쪽) 8.4
+];
+captureInto(foundationObjects, () => {
+  const m = 0.1;
+  pileFoundation(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingZ: 1.9, xs: housePileXs });
+  // 말뚝기초 높이 치수 — 뒤(+Z)에서 두 번째 줄, 안방 중앙 열 "옆"(+x로 0.45 비켜서)에 표시
+  const _fg = pileGridCoords(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, 1.7, 1.9);
+  const _pileX = housePileXs[housePileXs.length - 2];   // 안방 중앙 열
+  const _pileZ = _fg.zs[_fg.zs.length - 2];             // 뒤에서 두 번째 줄
+  foundationHeightDim(_pileX + 0.45, _pileZ, groundTopY, foundationTopY, '말뚝기초 0.5m', 0.5);
+});
 
 // 집 골조 1벌 빌드(현재 frameMat 재질로) — 1층 외주벽+계단 내벽 / 다락 장선·무릎벽·박공 / 지붕 용마루·서까래.
 // 스틸·목재 두 벌로 각각 빌드해 상호배타 토글로 한 번에 하나만 표시.
@@ -2147,7 +2183,9 @@ for (const f of deckFootprints) {
   captureInto(foundationObjects, () => {
     const m = 0.1;   // 둘레 토대보 밑에 말뚝이 오도록 가장자리 가까이 정렬
     pileFoundation(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, deckTopY0, { spacingX: 1.6, spacingZ: 1.7, headMat: materials.deckPileHead });   // 데크 기초(0.4m) — 두부 청회색으로 집 기초와 구분
-    foundationHeightDim(f.x - 0.18, f.z + 0.2, groundTopY, deckTopY0, '데크 기초 0.4m');
+    // 데크 기초 높이 치수 — 앞(−Z)·오른쪽(低x)에서 각각 두 번째 말뚝 "옆"(+x로 0.4 비켜서)에 표시
+    const _dg = pileGridCoords(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, 1.6, 1.7);
+    foundationHeightDim(_dg.xs[1] + 0.4, _dg.zs[1], groundTopY, deckTopY0, '데크 기초 0.4m', 0.5);
   });
   // 바닥 골조(토대보) — 데크 둘레 사각보(바닥 밑, 말뚝 상단과 만남). 폴딩도어·외벽이 이 위에 얹혀 더는 떠 보이지 않음. 썬룸 골조 그룹(골조/썬룸 토글).
   const sy = deckTopY0 - sunroomSillH;   // 토대보 하단(바닥 밑 0.12) — 상단은 deckTopY0(바닥 밑면)
@@ -2156,6 +2194,47 @@ for (const f of deckFootprints) {
   for (const z of [f.z, fz1]) 썬룸FrameObjects.push(box({ x: f.x, z: z - bw / 2, w: f.w, d: bw, y: sy, h: sunroomSillH, mat: materials.entryFrame, cast: false }));   // 앞·뒤(가로)
   for (const x of [f.x, fx1]) 썬룸FrameObjects.push(box({ x: x - bw / 2, z: f.z, w: bw, d: f.d, y: sy, h: sunroomSillH, mat: materials.entryFrame, cast: false }));   // 좌·우(세로)
 }
+
+// ── 골조(단계적) ① 바닥 골조 — 둘레 림장선 + 등간격 바닥 장선. 기초 말뚝 두부 위에 얹힘. ─────
+//   골조 토글 전용 그룹(골조Objects). 집과 데크를 별도 재질로 구분해 따로 짠다.
+const FLOOR_JOIST_H = 0.2;          // 바닥 장선 춤(200mm)
+const FLOOR_JOIST_W = 0.045;        // 바닥 장선 폭
+const FLOOR_RIM_W = 0.05;           // 둘레 림장선 폭
+const FLOOR_JOIST_SPACING = 0.45;   // 바닥 장선 간격(o.c.)
+// 바닥 골조 1벌 — (x0,z0,w,d) 발자국 위, yBottom(기초 두부 상단)에 얹힌 장선틀. 짧은 변으로 스팬(데크용).
+function floorFrame(x0, z0, w, d, yBottom, mat) {
+  const x1 = x0 + w, z1 = z0 + d, rim = FLOOR_RIM_W, jh = FLOOR_JOIST_H, jw = FLOOR_JOIST_W;
+  box({ x: x0, z: z0, w, d: rim, y: yBottom, h: jh, mat, cast: false, receive: false });        // 앞(−Z) 림장선
+  box({ x: x0, z: z1 - rim, w, d: rim, y: yBottom, h: jh, mat, cast: false, receive: false });   // 뒤(+Z) 림장선
+  box({ x: x0, z: z0, w: rim, d, y: yBottom, h: jh, mat, cast: false, receive: false });         // 저X측 림장선
+  box({ x: x1 - rim, z: z0, w: rim, d, y: yBottom, h: jh, mat, cast: false, receive: false });    // 고X측 림장선
+  box({ x: x0, z: z0 + d / 2 - rim / 2, w, d: rim, y: yBottom, h: jh, mat, cast: false, receive: false });  // 중앙 가로보(X방향, Z중앙) — 장선과 직교
+  if (d <= w) {   // Z가 짧음 → 장선은 Z로 스팬, X 따라 등간격
+    const a = x0 + rim, b = x1 - rim, n = Math.max(1, Math.round((b - a) / FLOOR_JOIST_SPACING));
+    for (let i = 1; i < n; i += 1) {
+      const jx = a + (b - a) * (i / n);
+      box({ x: jx - jw / 2, z: z0 + rim, w: jw, d: d - 2 * rim, y: yBottom, h: jh, mat, cast: false, receive: false });
+    }
+  } else {        // X가 짧음 → 장선은 X로 스팬, Z 따라 등간격
+    const a = z0 + rim, b = z1 - rim, n = Math.max(1, Math.round((b - a) / FLOOR_JOIST_SPACING));
+    for (let i = 1; i < n; i += 1) {
+      const jz = a + (b - a) * (i / n);
+      box({ x: x0 + rim, z: jz - jw / 2, w: w - 2 * rim, d: jw, y: yBottom, h: jh, mat, cast: false, receive: false });
+    }
+  }
+}
+captureInto(골조Objects, () => {
+  // 집 바닥 골조 — 세로 부재를 1층 세로(Z) 벽 중심선에 맞춰 그 위에 벽 골조가 서게 한다. 집 기초 두부 상단(0.58)에 얹힘.
+  //   세로 벽: 좌 외벽(거실쪽)·거실|계단 벽·계단|안방 벽·우 외벽(안방쪽).  가로 부재: 앞벽·중앙·뒤벽 중심선.
+  const jh = FLOOR_JOIST_H, jw = FLOOR_JOIST_W, mat = materials.houseFloorFrame, y = foundationTopY;
+  const x0 = frLeftX, x1 = frRightX, z0 = frFrontZ, z1 = frBackZ, zc = (z0 + z1) / 2;
+  for (const xc of [frLeftX, 거실InnerWallX, 안방InnerWallX, frRightX])           // 세로(Z) — 벽 중심선마다(기초 말뚝과 동일 X)
+    box({ x: xc - jw / 2, z: z0 - jw / 2, w: jw, d: (z1 - z0) + jw, y, h: jh, mat, cast: false, receive: false });
+  for (const zc2 of [z0, zc, z1])                                                // 가로(X) — 앞벽·중앙·뒤벽
+    box({ x: x0 - jw / 2, z: zc2 - jw / 2, w: (x1 - x0) + jw, d: jw, y, h: jh, mat, cast: false, receive: false });
+  // 데크 바닥 골조 — 데크 기초 두부 상단(deckTopY0=0.48)에 얹힘(집보다 0.1m 낮음)
+  for (const f of deckFootprints) floorFrame(f.x, f.z, f.w, f.d, deckTopY0, materials.deckFloorFrame);
+});
 
 // ── 바닥(평면도): 납작한 발자국 + 평면 치수 ─────────────────────────────────
 const planY = 0.1, planH = 0.025;   // 지면 위 얇게(거의 평평)
@@ -2169,9 +2248,10 @@ const planMarkW = 0.22;
 function planPileMark(px, pz, mat = materials.pileHead) {   // 말뚝 두부 위치 마커(기본 검정 — 영상의 두부 브래킷처럼)
   planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat, cast: false, name: 'ground' }));
 }
-function planPileMarks(x0, z0, w, d, spacingX, spacingZ, matFor) {   // matFor(px,pz) → 해당 마커 색(없으면 기본 검정)
-  const { xs, zs } = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
-  for (const px of xs) for (const pz of zs) planPileMark(px, pz, (matFor && matFor(px, pz)) || materials.pileHead);
+function planPileMarks(x0, z0, w, d, spacingX, spacingZ, matFor, xs = null) {   // matFor(px,pz) → 해당 마커 색(없으면 기본 검정). xs 지정 시 그 X열 사용.
+  const grid = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
+  const cols = xs || grid.xs;
+  for (const px of cols) for (const pz of grid.zs) planPileMark(px, pz, (matFor && matFor(px, pz)) || materials.pileHead);
 }
 // ════════════════════════════════════════════════════════════════════════════
 // ▌말뚝기초 위치(좌표) — ★잠금 영역★  사용자가 "위치를 옮겨라"라고 명시하기 전까지 절대 수정 금지.
@@ -2181,14 +2261,14 @@ function planPileMarks(x0, z0, w, d, spacingX, spacingZ, matFor) {   // matFor(p
 const _abFrontZ = deckFootprints[0].z + 0.1;                          // 안방 앞 말뚝 Z (사용자 확정 — 옛 파랑 자리)
 const _abBackZ = deckFootprints[0].z + deckFootprints[0].d - 0.1;     // 안방 뒤 말뚝 Z (사용자 확정 — 옛 초록 자리)
 const PILE_POS = Object.freeze({
-  house: { x0: 0.1, z0: buildingFrontZ + 0.1, w: buildingW - 0.2, d: buildingD - 0.2, sx: 1.7, sz: 1.9 },
+  house: { x0: 0.1, z0: buildingFrontZ + 0.1, w: buildingW - 0.2, d: buildingD - 0.2, sx: 1.7, sz: 1.9, xs: housePileXs },   // X열은 하중 경로(housePileXs) 단일 출처 — 입체 말뚝과 동일
   decks: deckFootprints.map((f) => ({ x0: f.x + 0.1, z0: f.z + 0.1, w: f.w - 0.2, d: f.d - 0.2, sx: 1.6, sz: 1.7 })),
   // 안방 3개: X=groundPosts X, Z=[앞=_abFrontZ, 가운데=groundPosts 원위치, 뒤=_abBackZ]
   anbang: 안방썬룸.groundPosts.map(([px, pz], i) => [px, i === 0 ? _abFrontZ : i === 2 ? _abBackZ : pz]),
 });
 // ── 말뚝 마커 렌더 — 위치는 PILE_POS만 읽고, 여기서는 '색'만 정한다(위치 식 작성 금지). ──
 const _hp = PILE_POS.house;
-planPileMarks(_hp.x0, _hp.z0, _hp.w, _hp.d, _hp.sx, _hp.sz);                                           // 집 말뚝(0.5m) — 검정
+planPileMarks(_hp.x0, _hp.z0, _hp.w, _hp.d, _hp.sx, _hp.sz, undefined, _hp.xs);                        // 집 말뚝(0.5m) — 검정, X열=housePileXs
 PILE_POS.decks.forEach((d) => planPileMarks(d.x0, d.z0, d.w, d.d, d.sx, d.sz, () => materials.deckPileHead));   // 데크 말뚝(0.4m) — 청색
 PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHead));                    // 안방 말뚝(0.4m) — 청색
 // 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
@@ -2221,6 +2301,13 @@ captureInto(dimObjects, () => {
   }
   for (const z of [dL.z, buildingFrontZ, buildingBackZ, lotZ1]) {   // lotZ0(맨 아래) 가로 가이드라인 제거. 전부 동일 회청색 가이드.
     box({ x: gx0, z: z - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat, cast: false, name: 'ground' });
+  }
+});
+// 집 말뚝 X열 간격 치수 — 뒤쪽(+Z) 말뚝 줄에서 약간 뒤로 비켜 표시(기초 위 겹침 방지). 바닥 전용(기초·입체 뷰엔 숨김).
+captureInto(planOnlyDimObjects, () => {
+  const dimZ = buildingBackZ + 0.25;   // 말뚝 뒤줄(3.2)에서 약간 뒤쪽 — 후면 여백에
+  for (let i = 0; i < housePileXs.length - 1; i += 1) {
+    planDim('x', dimZ, housePileXs[i], housePileXs[i + 1], `${fmtDim(housePileXs[i + 1] - housePileXs[i])}m`, 1, 0.3);
   }
 });
 
@@ -2798,19 +2885,27 @@ function setView(pos) {
 //    - 썬룸는 데크가 켜진 경우에만 가능(썬룸는 데크 위에 얹힘)
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 썬룸가 켜진 경우에만 가능(외벽은 썬룸에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
-const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, hedgeOn: false, fenceOn: false, frameMode: 'none', frameOn: false };  // 측백담장(hedgeOn)·옆집담장(fenceOn) 기본 꺼짐 · frameMode: 'none'|'steel'|'wood' · frameOn: 골조 토글
+// building 시공 누적 단계: plan(배치도) → foundation(기초) → floorFrame(바닥틀) → floor(바닥재) → first(1층) → second(다락) → all(지붕)
+const viewState = { building: 'plan', deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, hedgeOn: false, fenceOn: false, frameMode: 'none' };  // 측백담장(hedgeOn)·옆집담장(fenceOn) 기본 꺼짐 · frameMode: 'none'|'steel'|'wood'(미검토 골조 토글)
 
 function applyVisibility() {
-  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode, frameOn } = viewState;
+  const { building, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
-  const showFirst = building === 'first' || building === 'second' || building === 'all'; // 1층 표시(바닥·기초에선 숨김)
-  const showAttic = building === 'second' || building === 'all'; // +다락·+지붕에서 다락 표시
-  const showRoof = building === 'all';                          // 집 지붕은 +지붕에서만
+  const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
+  const atLeast = (s) => STAGES.indexOf(building) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
+  const showFrame = atLeast('floorFrame') && !isPlan;          // 바닥틀(골조Objects): 바닥틀 단계 이상
+  const showFloorFinish = atLeast('floor') && !isPlan;         // 바닥재: 바닥 단계 이상
+  const showDeckFinish = (deckOn || atLeast('floor')) && !isPlan; // 데크 포세린: 바닥 단계 이상 자동 + 데크 토글
+  const showFirst = atLeast('first');                          // 1층 벽·계단
+  const showAttic = atLeast('second');                         // 다락
+  const showRoof = atLeast('all');                             // 지붕
 
+  for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
+  for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
   for (const item of secondFloorObjects) item.visible = showAttic;
   for (const item of roofObjects) item.visible = showRoof;
-  for (const item of deckObjects) item.visible = deckOn && !isPlan;                  // 데크 마감: 바닥(배치도)에선 숨김
+  for (const item of deckObjects) item.visible = showDeckFinish;                     // 데크 포세린 마감: '바닥' 단계 이상 자동 + 데크 토글
   for (const item of 썬룸Objects) item.visible = deckOn && 썬룸On && !isPlan;  // 썬룸는 데크 위에만
   for (const item of 썬룸FrameObjects) item.visible = (frameMode !== 'none' || (deckOn && 썬룸On)) && !isPlan; // 썬룸 철골(노출 스틸): 스틸/목골조 토글 또는 썬룸 토글
   for (const item of wallObjects) item.visible = deckOn && 썬룸On && wallOn && !isPlan; // 외벽은 썬룸 위에만
@@ -2829,11 +2924,16 @@ function applyVisibility() {
   for (const item of atticOutletObjects) item.visible = outletsOn && showAttic;     // 다락 콘센트: 다락 표시 시
   for (const item of steelFrameObjects) item.visible = frameMode === 'steel' && !isPlan;  // 스틸골조(상호배타)
   for (const item of woodFrameObjects) item.visible = frameMode === 'wood' && !isPlan;    // 목골조(상호배타)
-  for (const item of 골조Objects) item.visible = frameOn && !isPlan;                       // 골조(단계적 추가) — 골조 토글, 바닥(평면도)에선 숨김
 
-  // 버튼 상태 반영
+  // 버튼 상태 반영 — 검토된 시공 단계(누적 building)
   document.querySelector('#viewPlan').classList.toggle('active', building === 'plan');
   document.querySelector('#viewFoundation').classList.toggle('active', building === 'foundation');
+  document.querySelector('#toggleFrame').classList.toggle('active', building === 'floorFrame');   // 바닥틀
+  document.querySelector('#stageFloor').classList.toggle('active', building === 'floor');          // 바닥
+  document.querySelector('#stageFirst').classList.toggle('active', building === 'first');          // 1층
+  document.querySelector('#stageAttic').classList.toggle('active', building === 'second');         // 다락
+  document.querySelector('#stageRoof').classList.toggle('active', building === 'all');             // 지붕
+  // 미검토(참고) 뷰 버튼 — 곧 삭제 예정
   document.querySelector('#viewFirst').classList.toggle('active', building === 'first');
   document.querySelector('#viewSecond').classList.toggle('active', building === 'second');
   document.querySelector('#viewAll').classList.toggle('active', building === 'all');
@@ -2851,7 +2951,6 @@ function applyVisibility() {
   document.querySelector('#toggleOutlet').classList.toggle('active', outletsOn);
   document.querySelector('#toggleHedge').classList.toggle('active', hedgeOn);
   document.querySelector('#toggleFence').classList.toggle('active', fenceOn);
-  document.querySelector('#toggleFrame').classList.toggle('active', frameOn);
   document.querySelector('#toggleSteelFrame').classList.toggle('active', frameMode === 'steel');
   document.querySelector('#toggleWoodFrame').classList.toggle('active', frameMode === 'wood');
 }
@@ -2876,6 +2975,42 @@ document.querySelector('#viewFoundation').addEventListener('click', () => {
   viewState.building = 'foundation';
   applyVisibility();
   setView([4.25, 10.2, -5.0]);
+});
+
+// 바닥틀 — 기초 위 바닥프레임(누적 단계 뷰)
+document.querySelector('#toggleFrame').addEventListener('click', () => {
+  viewState.building = 'floorFrame';
+  applyVisibility();
+  setView([4.25, 10.4, -5.0]);
+});
+
+// 바닥 — 바닥재·데크 포세린 마감까지
+document.querySelector('#stageFloor').addEventListener('click', () => {
+  viewState.building = 'floor';
+  applyVisibility();
+  setView([4.25, 10.7, -5.0]);
+});
+
+// 1층 — 벽·계단(검토 단계 버튼)
+document.querySelector('#stageFirst').addEventListener('click', () => {
+  viewState.building = 'first';
+  viewState.hedgeOn = false; viewState.fenceOn = false;
+  applyVisibility();
+  setView([4.25, 11.2, -5.0]);
+});
+
+// 다락 — 바닥·벽
+document.querySelector('#stageAttic').addEventListener('click', () => {
+  viewState.building = 'second';
+  applyVisibility();
+  setView([4.25, 12.2, -5.0]);
+});
+
+// 지붕
+document.querySelector('#stageRoof').addEventListener('click', () => {
+  viewState.building = 'all';
+  applyVisibility();
+  setView([10.8, 6.8, -8.8]);
 });
 
 document.querySelector('#viewFirst').addEventListener('click', () => {
@@ -2939,12 +3074,6 @@ document.querySelector('#toggleHedge').addEventListener('click', () => {
 });
 document.querySelector('#toggleFence').addEventListener('click', () => {
   viewState.fenceOn = !viewState.fenceOn;
-  applyVisibility();
-});
-
-// 골조 — 독립 토글(단계적으로 골조 형상을 추가할 그룹 골조Objects를 켜고 끈다).
-document.querySelector('#toggleFrame').addEventListener('click', () => {
-  viewState.frameOn = !viewState.frameOn;
   applyVisibility();
 });
 
