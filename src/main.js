@@ -541,7 +541,11 @@ captureInto(floorFinishObjects, () => {
   const wt = 0.2, wh = 2.4, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;
   const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
   const W = materials.firstExtWall;
-  firstWallObjects.push(box({ x: 0, z: z0, w: buildingW, d: wt, y: wy, h: wh, mat: W }));               // 앞(−Z) 외벽 — 바깥면 z=z0
+  // 앞(−Z) 외벽 — 정면 중앙에 방화출입문 개구부(표준 외짝 방화문+문틀: 폭 1.0m·높이 2.1m). 좌·우 벽 + 상부 인방으로 나누고 가운데를 비움.
+  const ow = 1.0, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭/높이, 중앙 정렬
+  firstWallObjects.push(box({ x: 0, z: z0, w: ox0, d: wt, y: wy, h: wh, mat: W }));                     // 앞 외벽 — 개구 왼쪽(거실측)
+  firstWallObjects.push(box({ x: ox1, z: z0, w: buildingW - ox1, d: wt, y: wy, h: wh, mat: W }));       // 앞 외벽 — 개구 오른쪽(안방측)
+  firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 개구 상부 인방(문 위)
   firstWallObjects.push(box({ x: 0, z: z1 - wt, w: buildingW, d: wt, y: wy, h: wh, mat: W }));          // 뒤(+Z) 외벽 — 바깥면 z=z1
   firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(거실, x=0) 외벽 — 바깥면 x=0
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
@@ -657,6 +661,9 @@ verticalWallWithGaps(stairHighXWallX, insideZ0, insideD, firstWallY, [
 ], firstWallHeight, soundWall, materials.soundWall);
 lowWall(stairHighXWallX, familyDoorZ, soundWall, interiorDoorW, firstWallY + interiorDoorH, firstWallHeight - interiorDoorH, materials.soundWall);
 label('안방·화장실 방음벽\n(암면+석고2겹)', stairHighXWallX + 0.1, firstFloorY + 1.95, 1.8, 'struct');
+// 계단실 양쪽 세로 프레임(거실|계단실 3.1 · 계단실|안방 5.4) 중앙에 세로 내벽 2개 — 1층 내벽 모양, 두께 10cm(interiorWall), 높이 외벽(firstWallHeight)
+verticalWallWithGaps(frLeftX + FRAME_ROOM_W - interiorWall / 2, insideZ0, insideD, firstWallY, [], firstWallHeight, interiorWall, materials.wall);
+verticalWallWithGaps(frRightX - FRAME_ROOM_W - interiorWall / 2, insideZ0, insideD, firstWallY, [], firstWallHeight, interiorWall, materials.wall);
 horizontalWallWithGaps(stairBathX, stairBathZ, stairBathW, firstWallY, [
   [stairBathDoorX, stairBathDoorEndX]
 ], stairBathWallH, interiorWall, materials.stairWall);
