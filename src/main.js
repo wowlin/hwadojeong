@@ -367,9 +367,9 @@ function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelDist = 0
   }
 }
 
-// 평면(배치도) 가로(x축) 치수 — 라벨은 선 길이 가운데 위. 바닥에 붙임(두께 2mm, 시차 줄이려 라벨도 바닥 가까이).
+// 평면(배치도) 가로(x축) 치수 — 라벨은 선 길이 가운데에서 위쪽(+Z=화면 위)으로 약간 띄움. 바닥에 붙임(두께 2mm).
 function planHDim(fixed, a, b, text) {
-  lengthDim('x', fixed, a, b, text, { labelDist: 0, y: 0.012, h: 0.002, labelLift: 0.02 });
+  lengthDim('x', fixed, a, b, text, { labelDist: 0.3, side: 1, y: 0.012, h: 0.002, labelLift: 0.02 });
 }
 // 평면(배치도) 세로(z축) 치수 — 가로와 별개. 라벨은 선 위쪽 끝(+Z=화면 상단) 위에. 바닥에 붙임(두께 2mm).
 function planVDim(fixed, a, b, text) {
