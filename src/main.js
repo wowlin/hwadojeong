@@ -997,17 +997,8 @@ hedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY
 
 // 대지 가로/세로(전체) 치수 — 기초 제외 입체(1층·다락·지붕). 바닥은 분할 치수, 기초에선 제거(lotDimObjects).
 captureInto(lotDimObjects, () => {
-  const lotDimY = 0.12;
-  const lotDimZ = lotZ0 - 0.35;   // 전면 바깥쪽 가로 치수선
-  box({ x: lotX0, z: lotDimZ, w: lotW, d: 0.04, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-  box({ x: lotX0, z: lotDimZ - 0.15, w: 0.04, d: 0.34, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-  box({ x: lotX1 - 0.04, z: lotDimZ - 0.15, w: 0.04, d: 0.34, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-  label(`대지 가로 ${fmtDim(lotW)}m`, (lotX0 + lotX1) / 2, 0.34, lotDimZ - 0.5, 'dim');
-  const lotDimX = lotX0 - 0.35;   // 좌측 바깥쪽 세로 치수선
-  box({ x: lotDimX, z: lotZ0, w: 0.04, d: lotD, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-  box({ x: lotDimX - 0.15, z: lotZ0, w: 0.34, d: 0.04, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-  box({ x: lotDimX - 0.15, z: lotZ1 - 0.04, w: 0.34, d: 0.04, y: lotDimY, h: 0.04, mat: materials.dimension, cast: false, name: 'ground' });
-  label(`대지 세로 ${fmtDim(lotD)}m`, lotDimX - 0.55, 0.34, (lotZ0 + lotZ1) / 2, 'dim');
+  lengthDim('x', lotZ0 - 0.35, lotX0, lotX1, `대지 가로 ${fmtDim(lotW)}m`, { y: 0.12, side: -1, labelDist: 0.5, tick: 0.34, labelLift: 0.22 });
+  lengthDim('z', lotX0 - 0.35, lotZ0, lotZ1, `대지 세로 ${fmtDim(lotD)}m`, { y: 0.12, side: -1, labelDist: 0.55, tick: 0.34, labelLift: 0.22 });
 });
 // 입체 집 기초(시스템말뚝 + 두부) — foundationObjects(1층·다락·지붕에도 표시, 바닥에선 발자국으로 대체)
 captureInto(foundationObjects, () => {
@@ -1018,14 +1009,8 @@ captureInto(foundationObjects, () => {
 });
 // 기초 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 captureInto(foundationDimObjects, () => {
-  box({ x: 0, z: buildingBackZ + 0.18, w: buildingW, d: 0.035, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
-  box({ x: 0, z: buildingBackZ + 0.08, w: 0.035, d: 0.27, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
-  box({ x: buildingW - 0.035, z: buildingBackZ + 0.08, w: 0.035, d: 0.27, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
-  label('기초 가로 8.5m', buildingW / 2, foundationTopY + 0.3, buildingBackZ + 0.5, 'dim');
-  box({ x: buildingW + 0.18, z: buildingFrontZ, w: 0.035, d: buildingD, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
-  box({ x: buildingW + 0.08, z: buildingFrontZ, w: 0.27, d: 0.035, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
-  box({ x: buildingW + 0.08, z: buildingBackZ - 0.035, w: 0.27, d: 0.035, y: foundationTopY + 0.02, h: 0.035, mat: materials.dimension });
-  label('기초 세로 4.0m', buildingW + 0.58, foundationTopY + 0.3, buildingFrontZ + buildingD / 2, 'dim');
+  lengthDim('x', buildingBackZ + 0.18, 0, buildingW, `기초 가로 ${fmtDim(buildingW)}m`, { y: foundationTopY + 0.02, side: 1, labelDist: 0.32, tick: 0.27, lw: 0.035, labelLift: 0.28 });
+  lengthDim('z', buildingW + 0.18, buildingFrontZ, buildingBackZ, `기초 세로 ${fmtDim(buildingD)}m`, { y: foundationTopY + 0.02, side: 1, labelDist: 0.4, tick: 0.27, lw: 0.035, labelLift: 0.28 });
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
@@ -1189,10 +1174,7 @@ const sideGableWindowH = 0.5;
 const sideGableWindowSillOffset = 0.35;
 
 // 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 2.8m
-box({ x: frontCornerDimX, z: frontCornerDimZ, w: 0.035, d: 0.035, y: foundationTopY, h: firstWallHeight + floorFinishH, mat: materials.dimension });
-box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: foundationTopY, h: 0.035, mat: materials.dimension });
-box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: firstWallY + firstWallHeight - 0.035, h: 0.035, mat: materials.dimension });
-label('1층 높이 2.8m', frontCornerDimLabelX, (foundationTopY + firstWallY + firstWallHeight) / 2, frontCornerDimLabelZ, 'dim');
+heightDim(frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, '1층 높이 2.8m', { lineX: frontCornerDimX, tickX: frontCornerDimTickX, labelX: frontCornerDimLabelX, labelZ: frontCornerDimLabelZ });
 
 room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: firstFloorY + floorOverlayLift, mat: materials.living, text: roomText('거실+주방', firstLivingW, firstLivingD) });
 // 거실 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 실외기는 통풍 좋은 곳에 별도.
@@ -1355,24 +1337,15 @@ captureSecond(() => {
   room({ x: planRightLivingX, z: secondAtticZ, w: sideRoomW, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', sideRoomW, secondAtticD) });
   room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
 
-  box({ x: frontCornerDimX, z: frontCornerDimZ, w: 0.035, d: 0.035, y: secondWallY, h: secondWallHeight, mat: materials.dimension });
-  box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: secondWallY, h: 0.035, mat: materials.dimension });
-  box({ x: frontCornerDimTickX, z: frontCornerDimZ, w: 0.35, d: 0.035, y: secondWallY + secondWallHeight - 0.035, h: 0.035, mat: materials.dimension });
-  label(`다락 벽높이 ${fmtDim(secondWallHeight)}m`, frontCornerDimLabelX, secondWallY + secondWallHeight / 2, frontCornerDimLabelZ, 'dim');
+  heightDim(frontCornerDimZ, secondWallY, secondWallY + secondWallHeight, `다락 벽높이 ${fmtDim(secondWallHeight)}m`, { lineX: frontCornerDimX, tickX: frontCornerDimTickX, labelX: frontCornerDimLabelX, labelZ: frontCornerDimLabelZ });
 
   // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
   const atticRidgeZ = buildingFrontZ + buildingD / 2;
   const atticPeakH = secondWallHeight + gableRise;
-  box({ x: frontCornerDimX, z: atticRidgeZ, w: 0.035, d: 0.035, y: secondWallY, h: atticPeakH, mat: materials.dimension });
-  box({ x: frontCornerDimTickX, z: atticRidgeZ, w: 0.35, d: 0.035, y: secondWallY, h: 0.035, mat: materials.dimension });
-  box({ x: frontCornerDimTickX, z: atticRidgeZ, w: 0.35, d: 0.035, y: secondWallY + atticPeakH - 0.035, h: 0.035, mat: materials.dimension });
-  label(`용마루 ${fmtDim(atticPeakH)}m`, frontCornerDimLabelX, secondWallY + atticPeakH / 2, atticRidgeZ, 'dim');
+  heightDim(atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`, { lineX: frontCornerDimX, tickX: frontCornerDimTickX, labelX: frontCornerDimLabelX, labelZ: atticRidgeZ });
 
   // 다락방 문이 있는 벽 높이 — 칸막이(secondAtticWallZ) 위치, 왼쪽 벽
-  box({ x: frontCornerDimX, z: secondAtticWallZ, w: 0.035, d: 0.035, y: secondWallY, h: secondAtticFrontWallH, mat: materials.dimension });
-  box({ x: frontCornerDimTickX, z: secondAtticWallZ, w: 0.35, d: 0.035, y: secondWallY, h: 0.035, mat: materials.dimension });
-  box({ x: frontCornerDimTickX, z: secondAtticWallZ, w: 0.35, d: 0.035, y: secondWallY + secondAtticFrontWallH - 0.035, h: 0.035, mat: materials.dimension });
-  label(`다락방 벽 ${fmtDim(secondAtticFrontWallH)}m`, frontCornerDimLabelX, secondWallY + secondAtticFrontWallH / 2, secondAtticWallZ, 'dim');
+  heightDim(secondAtticWallZ, secondWallY, secondWallY + secondAtticFrontWallH, `다락방 벽 ${fmtDim(secondAtticFrontWallH)}m`, { lineX: frontCornerDimX, tickX: frontCornerDimTickX, labelX: frontCornerDimLabelX, labelZ: secondAtticWallZ });
 
   // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
   horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [
@@ -2009,19 +1982,13 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     const frontPostTopY = glassYatZ(fFrontZ) - beamDrop - beamH;
     const frontPostHeight = frontPostTopY - firstFloorY;   // 데크 상단~보 밑면(데크 위 기둥 길이)
     const dimZ = fFrontZ - 0.25;                       // 앞단 기둥 앞쪽으로 치수선을 뺀다
-    box({ x: fX0 - 0.018, z: dimZ, w: 0.035, d: 0.035, y: firstFloorY, h: frontPostHeight, mat: materials.dimension }); // 세로 치수선
-    box({ x: fX0 - 0.2, z: dimZ, w: 0.4, d: 0.035, y: firstFloorY, h: 0.035, mat: materials.dimension });              // 하단 틱(데크 상단)
-    box({ x: fX0 - 0.2, z: dimZ, w: 0.4, d: 0.035, y: frontPostTopY - 0.035, h: 0.035, mat: materials.dimension });    // 상단 틱
-    label(`최저(앞단) 기둥 ${fmtDim(frontPostHeight)}m`, fX0 - 0.1, firstFloorY + frontPostHeight / 2, dimZ - 0.4, 'dim');
+    heightDim(dimZ, firstFloorY, firstFloorY + frontPostHeight, `최저(앞단) 기둥 ${fmtDim(frontPostHeight)}m`, { lineX: fX0 - 0.018, tickX: fX0 - 0.2, tickW: 0.4, labelX: fX0 - 0.1, labelZ: dimZ - 0.4 });
 
     // 집 벽쪽(건물 부착부, 가장 높은 쪽) 높이 표시 — 데크 상단~보 밑면
     const wallPostTopY = wallTopAtZ(fWallZ);
     const wallPostHeight = wallPostTopY - firstFloorY;
     const dimX = fX0 - 0.25;                           // 우측 모서리 바깥으로 치수선을 뺀다
-    box({ x: dimX - 0.018, z: fWallZ - 0.018, w: 0.035, d: 0.035, y: firstFloorY, h: wallPostHeight, mat: materials.dimension }); // 세로 치수선
-    box({ x: dimX - 0.2, z: fWallZ - 0.018, w: 0.4, d: 0.035, y: firstFloorY, h: 0.035, mat: materials.dimension });             // 하단 틱(데크 상단)
-    box({ x: dimX - 0.2, z: fWallZ - 0.018, w: 0.4, d: 0.035, y: wallPostTopY - 0.035, h: 0.035, mat: materials.dimension });    // 상단 틱
-    label(`집 벽쪽 높이 ${fmtDim(wallPostHeight)}m`, dimX - 0.45, firstFloorY + wallPostHeight / 2, fWallZ, 'dim');
+    heightDim(fWallZ - 0.018, firstFloorY, firstFloorY + wallPostHeight, `집 벽쪽 높이 ${fmtDim(wallPostHeight)}m`, { lineX: dimX - 0.018, tickX: dimX - 0.2, tickW: 0.4, labelX: dimX - 0.45, labelZ: fWallZ });
   }
 
   // 가장 짧은(앞단) 기둥 높이 — 기둥이 지면에 서는 개방형 썬룸용(가족방 앞). 왼쪽(높은 X) 기둥 바깥에 표기.
@@ -2029,10 +1996,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     const fpTopY = glassYatZ(fFrontZ) - beamDrop - beamH;   // 앞단 보 밑면
     const fpH = fpTopY - postBaseY;                          // 지면(postBaseY)~보 밑면 = 가장 짧은 기둥
     const dimX2 = fX1 + 0.25;                                // 왼쪽 기둥 바깥으로 치수선
-    box({ x: dimX2 - 0.018, z: fFrontZ - 0.018, w: 0.035, d: 0.035, y: postBaseY, h: fpH, mat: materials.dimension }); // 세로 치수선
-    box({ x: dimX2 - 0.2, z: fFrontZ - 0.018, w: 0.4, d: 0.035, y: postBaseY, h: 0.035, mat: materials.dimension });   // 하단 틱(지면)
-    box({ x: dimX2 - 0.2, z: fFrontZ - 0.018, w: 0.4, d: 0.035, y: fpTopY - 0.035, h: 0.035, mat: materials.dimension }); // 상단 틱
-    label(`최저(앞단) 기둥 ${fmtDim(fpH)}m`, dimX2 + 0.35, postBaseY + fpH / 2, fFrontZ, 'dim');
+    heightDim(fFrontZ - 0.018, postBaseY, postBaseY + fpH, `최저(앞단) 기둥 ${fmtDim(fpH)}m`, { lineX: dimX2 - 0.018, tickX: dimX2 - 0.2, tickW: 0.4, labelX: dimX2 + 0.35, labelZ: fFrontZ });
   }
 
   // 썬룸 천장: 실링팬(옵션) + 양옆 조명(오른쪽 1, 왼쪽 1) — 추가된 평평한 프레임에 매단다
