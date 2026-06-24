@@ -64,3 +64,13 @@ test('⑦ 안방 말뚝 — 바닥 마커와 입체 말뚝이 같은 출처(PILE
   // 썬룸 내부에서 땅 기둥 말뚝(systemPile)을 옛 방식(foundationLocal 루프)으로 직접 그리면 안 된다 — 좌표 이원화 부활 금지.
   assert.doesNotMatch(src, /captureInto\(foundationLocal[\s\S]{0,120}systemPile\(/, '땅 기둥 말뚝을 PILE_POS 밖에서 직접 그리지 말 것(이원화 회귀)');
 });
+
+test('⑧ 집·데크 발자국 — 단일 출처(footprintObjects), 모든 화면 동일 표시', () => {
+  // 발자국은 한 곳(footprintObjects)에만 정의하고 모든 화면에 표시 → 바닥에서 바꾸면 전 화면 반영.
+  const src = readFileSync(mainJs, 'utf8');
+  assert.match(src, /footprintObjects\.push\(box\(\{ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD,[\s\S]{0,120}materials\.foundation/, '집 발자국은 footprintObjects에 정의');
+  assert.match(src, /footprintObjects\.push\(box\(\{ x: f\.x, z: f\.z,[\s\S]{0,120}materials\.deckFoundation/, '데크 발자국은 footprintObjects에 정의');
+  assert.match(src, /for \(const item of footprintObjects\) item\.visible = true;/, '발자국은 모든 화면에 항상 표시(단일 출처)');
+  // 발자국 색(집·데크 기초재)을 planObjects에 다시 그리지 말 것 — 그러면 바닥 전용으로 이원화됨.
+  assert.doesNotMatch(src, /planObjects\.push\([^)]*materials\.(foundation|deckFoundation)/, '발자국을 planObjects(바닥 전용)에 중복 정의 금지');
+});
