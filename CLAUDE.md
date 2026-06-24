@@ -49,5 +49,10 @@
 - 커밋 메시지: 한글, 작업 내용 1줄 요약.
 - 커밋 안 하고 다음 작업 넘어가는 것 = 규칙 위반.
 
+## 하네스 (생성-검증 패턴)
+- src/main.js 편집 후 **반드시 verifier 에이전트 호출** → PASS일 때만 커밋.
+- 절차: `.claude/skills/model-edit/SKILL.md` 참조.
+- 검증 에이전트: `.claude/agents/verifier.md` — 범위·가시성·테스트 3항 검증.
+
 ## 명령
 - `npm test` 검증 · `npm run dev` 개발 · `npm run build` 빌드 · `npm run shot` 배치도 렌더 캡처(렌더 확인용)
