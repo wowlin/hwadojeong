@@ -15,8 +15,8 @@ app.innerHTML = `
         <button id="viewFoundation" type="button">기초<span class="btn-sub">KC금강컨테이너</span><span class="btn-sub btn-sub-xs">시스템말뚝기초 주택용</span></button>
         <button id="toggleFrame" type="button">바닥틀</button>
         <button id="stageFloor" type="button">바닥</button>
-        <button id="stageFirst" type="button">1층<span class="btn-sub">벽·계단</span></button>
-        <button id="stageAttic" type="button">다락<span class="btn-sub">바닥·벽</span></button>
+        <button id="stageFirst" type="button">1층</button>
+        <button id="stageAttic" type="button">다락</button>
         <button id="stageRoof" type="button">지붕</button>
         <!-- 미검토(참고용) — 검토되는대로 하나씩 삭제 예정 -->
         <button id="toggleSteelFrame" type="button" class="toggle unreviewed">스틸골조<span class="btn-sub">(주)세움스틸하우스</span><span class="btn-sub btn-sub-xs">1544-2909</span></button>
@@ -57,3 +57,6 @@ controls.target.set(4.55, 2.55, 0.65);
 controls.maxPolarAngle = Math.PI * 0.48;
 controls.minDistance = 4;
 controls.maxDistance = 32;
+
+// 렌더 캡처(npm run shot:side)에서 시점을 측면으로 직접 잡기 위한 디버그 핸들 — 읽기 전용 용도, 앱 동작엔 영향 없음.
+if (typeof window !== 'undefined') window.__cc = { THREE, camera, controls };

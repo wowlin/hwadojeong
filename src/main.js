@@ -2324,7 +2324,8 @@ function applyVisibility() {
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
   const sunReady = deckOn && 썬룸On;                            // 썬룸·외벽·폴딩 공통 전제 — 한 곳에서만 계산(흩어진 재계산 방지)
   const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
-  const atLeast = (s) => STAGES.indexOf(building) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
+  const effBuilding = building === 'stageFirst' ? 'floor' : building;     // '1층' 화면은 '바닥' 상태를 그대로 표시(같은 그룹 → 바닥 변경이 함께 반영=연동)
+  const atLeast = (s) => STAGES.indexOf(effBuilding) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
   const showFrame = atLeast('floorFrame') && !isPlan;          // 바닥틀(골조Objects): 바닥틀 단계 이상
   const showFloorFinish = atLeast('floor') && !isPlan;         // 바닥: 바닥 단계 이상(골조 위 10cm 마감층)
   const showDeckFinish = (deckOn || atLeast('first')) && !isPlan; // 데크 바닥·계단: 1층 이상 자동 + 데크 토글
@@ -2332,8 +2333,8 @@ function applyVisibility() {
   const showAttic = atticOn;                                   // +다락: 독립 토글
   const showRoof = roofOn;                                     // +지붕: 독립 토글
 
-  // 새 버튼(1층·다락·지붕)은 미검토 → 빈 화면. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
-  const blankStage = building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof';
+  // 새 버튼(다락·지붕)은 미검토 → 빈 화면. 1층은 '바닥' 상태를 그대로 표시(effBuilding). 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
+  const blankStage = building === 'stageAttic' || building === 'stageRoof';
   const ALL_GROUPS = [골조Objects, floorFinishObjects, firstFloorObjects, secondFloorObjects, roofObjects, deckObjects, 썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects, foundationObjects, foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects, planOnlyDimObjects, hedgeObjects, fenceObjects, outletObjects, atticOutletObjects, steelFrameObjects, woodFrameObjects, siteBaseObjects];
   if (blankStage) {
     for (const g of ALL_GROUPS) for (const item of g) item.visible = false;
