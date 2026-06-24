@@ -19,8 +19,6 @@ app.innerHTML = `
         <button id="stageAttic" type="button">다락</button>
         <button id="stageRoof" type="button">지붕</button>
         <!-- 미검토(참고용) — 검토되는대로 하나씩 삭제 예정 -->
-        <button id="toggleSteelFrame" type="button" class="toggle unreviewed">스틸골조<span class="btn-sub">(주)세움스틸하우스</span><span class="btn-sub btn-sub-xs">1544-2909</span></button>
-        <button id="toggleWoodFrame" type="button" class="toggle unreviewed">목골조<span class="btn-sub">중목·경량목구조</span><span class="btn-sub btn-sub-xs">업체 TBD</span></button>
         <button id="viewFirst" type="button" class="unreviewed">+1층</button>
         <button id="viewSecond" type="button" class="unreviewed">+다락</button>
         <button id="viewAll" type="button" class="unreviewed">+지붕<span class="btn-sub">태연남(태양광)</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
