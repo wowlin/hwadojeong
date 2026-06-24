@@ -369,7 +369,7 @@ function lengthDim(axis, fixed, a, b, text, { y = 0.13, side = -1, labelDist = 0
 
 // 평면(바닥 도면) 치수 — lengthDim에 위임(y=0.13 납작). labelSide: 라벨을 선 기준 어느 쪽(+1/-1).
 function planDim(axis, fixed, a, b, text, labelSide = -1, labelDist = 0.6) {
-  lengthDim(axis, fixed, a, b, text, { side: labelSide, labelDist, y: 0.012, h: 0.002 });   // 배치도 치수선 — 바닥에 붙임(기준선 위 1mm), 두께 2mm
+  lengthDim(axis, fixed, a, b, text, { side: labelSide, labelDist: 0, y: 0.012, h: 0.002 });   // 배치도 치수선 — 바닥에 붙임(기준선 위 1mm), 두께 2mm. 라벨은 선 가운데 위(옆 치우침 0).
 }
 
 function horizontalWallWithGaps(x, z, w, y, gaps = [], h = 0.7, thickness = 0.08, mat = materials.wall) {
