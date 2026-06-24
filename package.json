@@ -11,6 +11,7 @@
     "test:watch": "node --test --watch",
     "check": "node --check src/main.js",
     "shot": "node scripts/shot.mjs",
+    "shot:side": "node scripts/shot-side.mjs",
     "check:buttons": "node scripts/check-buttons.mjs",
     "check:views": "node scripts/check-views.mjs",
     "check:render": "node scripts/check-render.mjs",
