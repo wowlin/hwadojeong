@@ -524,10 +524,10 @@ function captureSecond(fn) {
 
 // 부지(흙색 지면): 집 너비 방향(X) 9.95m × 정면 방향(Z) 9m. 집을 X로 중앙 배치, 뒤로 1m 여유.
 // siteBaseObjects는 ./groups.js에 정의됨(여기선 빌더가 push만).
-siteBaseObjects.push(box({ x: lotX0, z: lotZ0, w: lotW, d: lotD, h: 0.08, mat: materials.site, cast: false, name: 'ground' }));
+siteBaseObjects.push(box({ x: lotX0, z: lotZ0, w: lotW, d: lotD, h: 0.002, mat: materials.site, cast: false, name: 'ground' }));   // 평면(높이 0 취급) — 깜빡임만 막는 2mm
 // 도로(접도) — 부지 바깥. 우측면 + 후면 ㄱ자.
-siteBaseObjects.push(box({ x: lotX1, z: lotZ0, w: roadW, d: lotD, h: 0.1, mat: materials.road, cast: false, name: 'ground' }));          // 우측 도로(부지 밖)
-siteBaseObjects.push(box({ x: lotX0, z: lotZ1, w: lotW + roadW, d: roadW, h: 0.1, mat: materials.road, cast: false, name: 'ground' }));   // 후면 도로(부지 밖, 모서리 연결)
+siteBaseObjects.push(box({ x: lotX1, z: lotZ0, w: roadW, d: lotD, h: 0.002, mat: materials.road, cast: false, name: 'ground' }));          // 우측 도로(부지 밖)
+siteBaseObjects.push(box({ x: lotX0, z: lotZ1, w: lotW + roadW, d: roadW, h: 0.002, mat: materials.road, cast: false, name: 'ground' }));   // 후면 도로(부지 밖, 모서리 연결)
 
 // 경계 — 측백담장(측백 생울타리)·옆집담장(우측 콘크리트) 두 토글로 분리.
 // 옆집담장(경계벽) — 대지 오른쪽(거실 쪽, 낮은 X) 바깥. 폭 0.2m × 높이 1.0m, 경계선 전체 길이.
@@ -1539,7 +1539,7 @@ captureInto(floorFrameDimObjects, () => {
 });
 
 // ── 바닥(평면도): 납작한 발자국 + 평면 치수 ─────────────────────────────────
-const planY = 0.1, planH = 0.025;   // 지면 위 얇게(거의 평평)
+const planY = 0.003, planH = 0.002;   // 평면(높이 0 취급) — 대지 위 1mm 띄워 깜빡임만 막는 2mm 두께
 // 기초 발자국(집 + 데크) — 단일 출처(footprintObjects). 모든 화면에 동일 표시.
 footprintObjects.push(box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
 for (const f of deckFootprints) {
@@ -1547,7 +1547,7 @@ for (const f of deckFootprints) {
 }
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
 function planPileMark(px, pz, mat = materials.pileHead) {   // 말뚝 두부 위치 마커(기본 검정 — 영상의 두부 브래킷처럼)
-  planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH, h: 0.012, mat, cast: false, name: 'ground' }));
+  planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH + 0.001, h: 0.002, mat, cast: false, name: 'ground' }));
 }
 function planPileMarks(x0, z0, w, d, spacingX, spacingZ, matFor, xs = null) {   // matFor(px,pz) → 해당 마커 색(없으면 기본 검정). xs 지정 시 그 X열 사용.
   const grid = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
