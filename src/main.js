@@ -85,7 +85,7 @@ import {
   atticOutletY
 } from './layout.js';
 import {
-  floorFinishObjects, firstFloorObjects, firstWallObjects, secondFloorObjects, roofObjects, deckObjects,
+  floorFinishObjects, firstFloorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
@@ -347,20 +347,20 @@ function planYDim(x, z, y0, y1, text, labelDx = -0.55) {
 // 볼트로 체결된다(별도 받침 각관 없음). 그 위에 바닥(집)·포세린(데크)이 올라간다.
 // 말뚝/두부는 그림자 생략(가벼움).
 // 평면(배치도) 가로(x축) 치수 — 가로선 + 양끝 틱 + 라벨. 라벨은 치수선 중앙(x 가운데, z=선 위치), y축으로 살짝 위(0.5).
-function planXDim(fixed, a, b, text) {
-  const y = 0.012, h = 0.002, lw = 0.04, tick = 0.3;
+function planXDim(fixed, a, b, text, y = 0.012, labelY = 0.5) {
+  const h = 0.002, lw = 0.04, tick = 0.3;
   box({ x: a, z: fixed - lw / 2, w: b - a, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });   // 가로선
   box({ x: a, z: fixed - tick / 2, w: lw, d: tick, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // a끝 틱
   box({ x: b - lw, z: fixed - tick / 2, w: lw, d: tick, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // b끝 틱
-  label(text, (a + b) / 2, 0.5, fixed, 'dim');   // 라벨은 치수선 중앙, y축으로 치수선보다 살짝 위(0.5)
+  label(text, (a + b) / 2, labelY, fixed, 'dim');   // 라벨은 치수선 중앙, y축으로 치수선보다 살짝 위(기본 0.5)
 }
 // 평면(배치도) 세로(z축) 치수 — 가로와 별개. 라벨은 선 위쪽 끝(+Z=화면 상단) 위에. 카드가 땅에 안 박히게 y로 띄움.
-function planZDim(fixed, a, b, text) {
-  const y = 0.012, h = 0.002, lw = 0.04, tick = 0.3;
+function planZDim(fixed, a, b, text, y = 0.012, labelY = 0.5) {
+  const h = 0.002, lw = 0.04, tick = 0.3;
   box({ x: fixed - lw / 2, z: a, w: lw, d: b - a, y, h, mat: materials.dimension, cast: false, name: 'ground' });   // 세로선
   box({ x: fixed - tick / 2, z: a, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // 아래 틱(−Z)
   box({ x: fixed - tick / 2, z: b - lw, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // 위 틱(+Z)
-  label(text, fixed, 0.5, (a + b) / 2, 'dim');   // 라벨은 치수선 중앙(z 가운데, x=선 위치), y축으로 치수선보다 살짝 위(0.5)
+  label(text, fixed, labelY, (a + b) / 2, 'dim');   // 라벨은 치수선 중앙(z 가운데, x=선 위치), y축으로 치수선보다 살짝 위(기본 0.5)
 }
 
 function horizontalWallWithGaps(x, z, w, y, gaps = [], h = 0.7, thickness = 0.08, mat = materials.wall) {
@@ -549,7 +549,22 @@ captureInto(floorFinishObjects, () => {
   firstWallObjects.push(box({ x: 0, z: z1 - wt, w: buildingW, d: wt, y: wy, h: wh, mat: W }));          // 뒤(+Z) 외벽 — 바깥면 z=z1
   firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(거실, x=0) 외벽 — 바깥면 x=0
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
+  // 계단실 양쪽 세로 프레임(거실|계단실 3.1 · 계단실|안방 5.4) 중앙에 세로 내벽 2개 — 두께 10cm, 높이 외벽(wh)
+  const inW = 0.1, inOv = 0.05;   // inOv: 앞·뒤 외벽 안쪽으로 살짝 파고들어 연결부 면겹침(z-fighting 반짝) 방지
+  firstWallObjects.push(box({ x: frLeftX + FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.wall }));   // 거실|계단실 내벽
+  firstWallObjects.push(box({ x: frRightX - FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.wall }));   // 계단실|안방 내벽
 }
+
+// 1층 방 안목치수 — 거실·계단실·안방 너비(가로) + 깊이(세로)를 방바닥(firstFloorY) 위에 표기. 1층·다락·지붕 단계 표시.
+captureInto(firstDimObjects, () => {
+  const dy = firstFloorY + 0.02, ly = firstFloorY + 0.45;       // 치수선은 바닥 바로 위, 라벨은 바닥 위 0.45m
+  const d1 = frLeftX + FRAME_ROOM_W, d2 = frRightX - FRAME_ROOM_W;   // 내벽 경계(거실|계단실=3.1, 계단실|안방=5.4)
+  const zRow = buildingFrontZ + buildingD * 0.42;               // 너비 치수 줄(방 가운데 약간 앞 — 문 개구부 피함)
+  planXDim(zRow, 0, d1, `${fmtDim(d1)}m`, dy, ly);                       // 거실 너비
+  planXDim(zRow, d1, d2, `${fmtDim(d2 - d1)}m`, dy, ly);                 // 계단실 너비
+  planXDim(zRow, d2, buildingW, `${fmtDim(buildingW - d2)}m`, dy, ly);   // 안방 너비
+  planZDim(0.45, buildingFrontZ, buildingBackZ, `${fmtDim(buildingD)}m`, dy, ly);   // 깊이(거실측 가장자리)
+});
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
 
@@ -661,9 +676,6 @@ verticalWallWithGaps(stairHighXWallX, insideZ0, insideD, firstWallY, [
 ], firstWallHeight, soundWall, materials.soundWall);
 lowWall(stairHighXWallX, familyDoorZ, soundWall, interiorDoorW, firstWallY + interiorDoorH, firstWallHeight - interiorDoorH, materials.soundWall);
 label('안방·화장실 방음벽\n(암면+석고2겹)', stairHighXWallX + 0.1, firstFloorY + 1.95, 1.8, 'struct');
-// 계단실 양쪽 세로 프레임(거실|계단실 3.1 · 계단실|안방 5.4) 중앙에 세로 내벽 2개 — 1층 내벽 모양, 두께 10cm(interiorWall), 높이 외벽(firstWallHeight)
-verticalWallWithGaps(frLeftX + FRAME_ROOM_W - interiorWall / 2, insideZ0, insideD, firstWallY, [], firstWallHeight, interiorWall, materials.wall);
-verticalWallWithGaps(frRightX - FRAME_ROOM_W - interiorWall / 2, insideZ0, insideD, firstWallY, [], firstWallHeight, interiorWall, materials.wall);
 horizontalWallWithGaps(stairBathX, stairBathZ, stairBathW, firstWallY, [
   [stairBathDoorX, stairBathDoorEndX]
 ], stairBathWallH, interiorWall, materials.stairWall);
@@ -2359,6 +2371,7 @@ function applyVisibility() {
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
   for (const item of firstWallObjects) item.visible = showStageWall;                   // 1층 외벽(반투명): 1층·다락·지붕 단계
+  for (const item of firstDimObjects) item.visible = showStageWall;                    // 1층 방 안목치수: 1층·다락·지붕 단계
   for (const item of secondFloorObjects) item.visible = showAttic;
   for (const item of roofObjects) item.visible = showRoof;
   for (const item of deckObjects) item.visible = showDeckFinish;                     // 데크 포세린 마감: '바닥' 단계 이상 자동 + 데크 토글
