@@ -2586,6 +2586,7 @@ function resize() {
   equalizeButtonHeights();   // 줄바꿈 수가 바뀌어도 높이 통일 유지
 }
 window.addEventListener('resize', resize);
+resize();   // 시작 시 1회 — dev에서 초기 stage 높이가 늦게 잡혀 캔버스가 0높이(백지)로 뜨는 것 방지.
 
 function animate() {
   controls.update();

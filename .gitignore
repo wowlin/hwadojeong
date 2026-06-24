@@ -14,3 +14,6 @@ shot*.png
 
 # 로컬 도구 설정
 .claude/
+scratch-render-check.png
+shot.png
+diag-*.png

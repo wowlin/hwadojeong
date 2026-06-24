@@ -13,6 +13,7 @@
     "shot": "node scripts/shot.mjs",
     "check:buttons": "node scripts/check-buttons.mjs",
     "check:views": "node scripts/check-views.mjs",
+    "check:render": "node scripts/check-render.mjs",
     "lint": "eslint src"
   },
   "dependencies": {
