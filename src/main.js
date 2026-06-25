@@ -2331,7 +2331,7 @@ function drawStairCore(p) {
 // 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
 function drawStairAnno(p) {
   const g = stairGeom(p);
-  const { W, R, N, fy, nL, nWind, nU, loftY, treadH, riserD, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
+  const { W, R, N, fy, nL, nWind, nU, loftY, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
   label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   // 다락 바닥(상부계단 앞 통행) — 상부계단 출구(zFrontU)에서 앞 외벽 안쪽(insideZ0)까지 확보되는 평탄 통행 깊이.
@@ -2340,12 +2340,11 @@ function drawStairAnno(p) {
   const loftPass = zFrontU - insideZ0;
   const loftTh = loftFloorThickness;
   box({ x: laneB - 0.2, z: insideZ0, w: W + 0.4, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });
-  // 다락 앞 단높이 면(상부 마지막 단 → 다락 바닥 한 단 올라감)
-  box({ x: laneB, z: zFrontU, w: W, d: riserD, y: loftY - R, h: R - treadH, mat: materials.stairWall, cast: false });
+  // (상부 마지막 단↔다락 바닥 사이 계단벽은 두지 않음 — 30cm 두께 다락 바닥의 앞면이 그 단높이 벽 역할을 함)
   label(`다락 통행 ${fmtDim(loftPass)}m`, laneB + W / 2, loftY + 0.22, insideZ0 + loftPass / 2, 'dim');
   // 1층 계단 앞 통행 — 하부계단 입구(zFrontL)에서 앞 외벽 안쪽(insideZ0)까지. 하부 단수가 늘면 줄어든다.
+  // (도면 위 라벨은 두지 않음 — 뒤쪽 계단을 가려서. 통행 거리 값은 좌상단 패널에 표시)
   const firstPass = zFrontL - insideZ0;
-  label(`1층 계단앞 통행 ${fmtDim(firstPass)}m`, laneA + W / 2, fy + 0.22, insideZ0 + firstPass / 2, 'dim');
   // 1층 거실·안방 — 1층 도면과 동일 크기(계단실 벽 위치가 1층 기준이라 양쪽 화면이 같음)
   const roomY = fy + 0.012;
   room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: roomY, mat: materials.living, text: roomText('거실', firstLivingW, firstLivingD) });
