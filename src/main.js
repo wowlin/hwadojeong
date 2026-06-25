@@ -2454,7 +2454,6 @@ for (const b of FRAME_BUTTONS) {
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
 const stairParams = { W: 0.9, R: 0.18, T: 0.25, N: 15 };   // 너비/단높이/계단폭/개수
-const STAIR_RAD = Math.PI / 180;
 
 function drawStair(p) {
   const W = p.W, R = p.R, T = p.T, N = Math.max(5, Math.round(p.N));
@@ -2474,31 +2473,40 @@ function drawStair(p) {
   const zFrontL = zTurn0 - flightLenL;                  // 하부계단 앞 끝(1층 입구)
   const zFrontU = zTurn0 - flightLenU;                  // 상부계단 앞 끝(다락 출구)
 
-  // 하부 곧은계단(lane A, +Z로 오름)
+  // 하부 곧은계단(lane A, +Z로 오름) — 세로막이는 발판 두께만큼 아래로(발판 밑면에 맞춤), 첫 단은 위쪽 발판 두께만큼 없앰
   for (let i = 0; i < nL; i += 1) {
     const topY = fy + (i + 1) * R;
-    box({ x: laneA, z: zFrontL + i * T, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
-    box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: fy + i * R, h: R, mat: materials.stairWall, cast: false });
+    box({ x: laneA, z: zFrontL + i * T, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });   // 발판
+    const rY = i === 0 ? fy : fy + i * R - treadH;
+    const rH = i === 0 ? R - treadH : R;
+    box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });          // 세로막이
   }
-  // 사선(부채꼴) 3단 — pivot=(laneB, zTurn0), 180°(-X 입구) → 90°(+X 경계로 빠짐)
+  // 사선 3단 — 둥글게(부채꼴) 하지 않고 정사각 턴 존을 직선 분할로 꽉 채움. pivot=P(앞-우 안쪽 코너)
   const P = [laneB, zTurn0];
-  const pt = (a) => [P[0] + W * Math.cos(a * STAIR_RAD), P[1] + W * Math.sin(a * STAIR_RAD)];
+  const A1 = [laneA, zTurn0];               // 앞-좌(하부계단에서 진입)
+  const A2 = [laneA, zBack];                // 뒤-좌
+  const A3 = [laneB, zBack];                // 뒤-우(계단참으로 빠짐)
+  const Q1 = [laneA, zTurn0 + 2 * W / 3];   // 좌측 변 분할점
+  const Q2 = [laneA + W / 3, zBack];        // 뒤측 변 분할점
+  const windPolys = [[P, A1, Q1], [P, Q1, A2, Q2], [P, Q2, A3]];   // 3장이 정사각을 빈틈없이 채움
   for (let k = 1; k <= nWind; k += 1) {
-    const a0 = 180 - 30 * (k - 1), a1 = 180 - 30 * k, am = (a0 + a1) / 2;
     const topY = fy + (nL + k) * R;
-    flatPoly({ points: [P, pt(a0), pt(am), pt(a1)], y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+    flatPoly({ points: windPolys[k - 1], y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
   }
   // 계단참(lane B 턴 존, 평평) — 사선과 상부계단 사이 90° 전환
   const landingY = fy + (nL + nWind) * R;
   box({ x: laneB, z: zTurn0, w: W, d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
   label('계단참', laneB + W / 2, landingY + 0.25, (zTurn0 + zBack) / 2, 'dim');
   label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
-  // 상부 곧은계단(lane B, -Z로 오름) → 마지막 = 다락 바닥
+  // 상부 곧은계단(lane B, -Z로 오름) → 마지막 = 다락 바닥. 세로막이는 반대편(+Z) + 발판 두께만큼 아래로, 첫 단 위쪽 두께만큼 없앰
+  const baseU = fy + (nL + nWind) * R;   // 계단참(상부계단 출발) 높이
   for (let j = 0; j < nU; j += 1) {
-    const topY = fy + (nL + nWind + j + 1) * R;
+    const topY = baseU + (j + 1) * R;
     const zT = zTurn0 - (j + 1) * T;
-    box({ x: laneB, z: zT, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
-    box({ x: laneB, z: zT, w: W, d: riserD, y: fy + (nL + nWind + j) * R, h: R, mat: materials.stairWall, cast: false });
+    box({ x: laneB, z: zT, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });   // 발판
+    const rY = j === 0 ? baseU : baseU + j * R - treadH;
+    const rH = j === 0 ? R - treadH : R;
+    box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });   // 세로막이(반대편)
   }
   // 다락 바닥(상부계단 앞, 통행 ≥1m 공간) + 1층 통행 표기
   const loftD = 1.0;

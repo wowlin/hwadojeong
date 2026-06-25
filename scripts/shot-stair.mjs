@@ -40,6 +40,12 @@ await setCam([8.6, 2.8, -4.2], [4.25, 1.6, 1.4]);
 await page.waitForTimeout(500);
 await page.screenshot({ path: root + '/scratchpad/st-corner.png' });
 
+// 3) 상단 직하(평면) — 사선 3단 사각 채움·계단참·발판 배치
+await page.evaluate(() => { const { camera } = window.__cc; camera.up.set(0, 0, -1); });
+await setCam([4.25, 12.0, 1.85], [4.25, 0.9, 1.85]);
+await page.waitForTimeout(500);
+await page.screenshot({ path: root + '/scratchpad/st-plan.png' });
+
 await browser.close();
 cleanup();
-console.log('저장: scratchpad/st-side.png, scratchpad/st-corner.png');
+console.log('저장: scratchpad/st-side.png, scratchpad/st-corner.png, scratchpad/st-plan.png');
