@@ -68,7 +68,7 @@ import {
   insideD, stairGap, stairClearW, sideRoomW,
   stairClearX, stairLowXRunX, stairHighXRunX, stairLowXWallX, stairHighXWallX,
   planRightLivingX, planLeftFamilyX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
-  innerWallW, livingInnerWallX, familyInnerWallX,
+  innerWallW, familyInnerWallW, livingInnerWallX, familyInnerWallX,
   firstLivingX, firstFamilyX, entryGapStart, entryGapEnd, familyDoorZ, yardSashSillY,
   upperStraightTreadCount, stairTurnD, stairTurnStart, stairFirstRunStart, stairOpeningStart, stairBottomLandingD,
   stairBathX, stairBathZ, stairBathW, stairBathD, stairBathDoorW, stairBathDoorX,
@@ -558,14 +558,15 @@ captureInto(floorFinishObjects, () => {
 // 1층 방 안목치수 — 벽(외벽·내벽)을 제외한 실사용 방바닥 크기를 "너비 x 깊이"로 각 방 가운데에 표기. 1층·다락·지붕 단계 표시.
 captureInto(firstDimObjects, () => {
   const ly = firstFloorY + 0.4;                                // 라벨 높이(방바닥 위)
-  const ph = innerWallW / 2;                                  // 내벽 반두께
+  const ph = innerWallW / 2;                                  // 거실측 내벽 반두께(10cm)
+  const fph = familyInnerWallW / 2;                           // 안방측 내력벽 반두께(20cm)
   const d1 = livingInnerWallX, d2 = familyInnerWallX;         // 내벽 중심(거실|계단실=3.1, 계단실|안방=5.4)
   const zF = buildingFrontZ + exteriorWall, zB = buildingBackZ - exteriorWall;   // 앞·뒤 외벽 안쪽 면
   const dep = zB - zF;                                         // 안목 깊이(모든 방 공통 = 3.6)
   const rooms = [
     [exteriorWall, d1 - ph],            // 거실: 우 외벽 안쪽 ~ 거실|계단실 내벽 면
-    [d1 + ph, d2 - ph],                 // 계단실: 두 내벽 사이
-    [d2 + ph, buildingW - exteriorWall] // 안방: 계단실|안방 내벽 면 ~ 좌 외벽 안쪽
+    [d1 + ph, d2 - fph],                // 계단실: 거실측 내벽 ~ 안방측 내력벽 면
+    [d2 + fph, buildingW - exteriorWall] // 안방: 계단실|안방 내력벽(20cm) 면 ~ 좌 외벽 안쪽
   ];
   for (const [x0, x1] of rooms) label(`${fmtDim(x1 - x0)} x ${fmtDim(dep)}m`, (x0 + x1) / 2, ly, (zF + zB) / 2, 'dim');
 });
@@ -2365,8 +2366,8 @@ function buildStairWalls() {
   const loftY = firstFloorY + N * stairParams.R;          // 다락 바닥 높이(=계단 전체 높이)
   const wallH = (loftY - loftFloorThickness) - wy;        // 윗면 = 다락 바닥 밑면
   const d = buildingD - 2 * wt + 2 * inOv;
-  stairWallObjects.push(box({ x: livingInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d, y: wy, h: wallH, mat: materials.stairInnerWall }));   // 거실|계단실 내벽
-  stairWallObjects.push(box({ x: familyInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d, y: wy, h: wallH, mat: materials.stairInnerWall }));   // 계단실|안방 내벽
+  stairWallObjects.push(box({ x: livingInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d, y: wy, h: wallH, mat: materials.stairInnerWall }));   // 거실|계단실 내벽(비내력 10cm)
+  stairWallObjects.push(box({ x: familyInnerWallX - familyInnerWallW / 2, z: z0 + wt - inOv, w: familyInnerWallW, d, y: wy, h: wallH, mat: materials.stairInnerWall }));   // 계단실|안방 내력벽 20cm — 말뚝 중심에 정렬
 }
 
 let stairInfo = null;
