@@ -2103,13 +2103,6 @@ captureInto(firstWallObjects, () => {
     [stairCenterLineX, firstFloorY + (stairRiserCount - 1) * riserH, turnStart - upperStraightTreadCount * runGap],
     { height: centerRailHeight }
   );
-  label(
-    `계단실 ${fmtDim(stairClearW)}x${fmtDim((insideZ1 - stairOpeningStart))}m`,
-    stairCenterLineX,
-    firstFloorY + ((lowerStraightTreadCount + winderTreadCount + 1 + stairRiserCount - 1) / 2) * riserH + centerRailHeight + 0.18,
-    turnStart - ((upperStraightTreadCount + 1) / 2) * runGap, 'dim'
-  );
-
   addStairRailingSegment(
     [planRightLivingSideRailX, firstFloorY + riserH, firstRunStart],
     [planRightLivingSideRailX, firstFloorY + lowerStraightTreadCount * riserH, turnStart],
@@ -2334,6 +2327,7 @@ const STAGE_BUTTONS = [
   { id: 'toggleFrame',    building: 'floorFrame',  cam: [4.25, 10.4, -5.0] },
   { id: 'stageFloor',     building: 'floor',       cam: [4.25, 10.7, -5.0] },
   { id: 'stageFirst',     building: 'stageFirst',  cam: [4.25, 11.2, -5.0], reset: ['hedgeOn', 'fenceOn'] },
+  { id: 'stageStair',     building: 'stageStair',  cam: [4.25, 11.2, -5.0] },   // 계단 단독 설계 — 빈 화면(아래 isStair에서 전부 숨김)
   { id: 'stageAttic',     building: 'stageAttic',  cam: [4.25, 12.2, -5.0] },
   { id: 'stageRoof',      building: 'stageRoof',   cam: [10.8, 6.8, -8.8] },
 ];
@@ -2357,6 +2351,7 @@ const FRAME_BUTTONS = [];   // 스틸골조·목골조 버튼 삭제됨
 function applyVisibility() {
   const { building, firstOn, atticOn, roofOn, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode } = viewState;
   const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
+  const isStair = building === 'stageStair';                    // 계단 단독 설계 화면 — 아직 빈 화면(모든 그룹 숨김, 계단 설계 추가 예정)
   const sunReady = deckOn && 썬룸On;                            // 썬룸·외벽·폴딩 공통 전제 — 한 곳에서만 계산(흩어진 재계산 방지)
   const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
   const effBuilding = (building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof') ? 'floor' : building;   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(같은 그룹 → 바닥 변경이 함께 반영=연동)
@@ -2370,7 +2365,7 @@ function applyVisibility() {
   const showStageWall = building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof';   // 1층 외벽(반투명): 1층 단계부터 누적 표시
 
   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(effBuilding=floor) — 빈 화면 단계 없음. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
-  for (const item of siteBaseObjects) item.visible = true;          // 바탕 대지·도로: 모든 화면에 표시
+  for (const item of siteBaseObjects) item.visible = !isStair;      // 바탕 대지·도로: 모든 화면에 표시(계단 단독 화면은 빈 화면)
   for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
@@ -2384,10 +2379,10 @@ function applyVisibility() {
   for (const item of wallObjects) item.visible = sunReady && wallOn && !isPlan; // 외벽은 썬룸 위에만
   for (const item of foldingObjects) item.visible = sunReady && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
   for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
-  for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
+  for (const item of foundationObjects) item.visible = !isPlan && !isStair;          // 입체 기초: 바닥(평면도)·계단 단독 화면에선 숨김
   for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
   for (const item of floorFrameDimObjects) item.visible = building === 'floorFrame'; // 바닥틀 방별 너비·깊이 치수: 바닥틀 뷰에서만
-  for (const item of footprintObjects) item.visible = true;                          // 집·데크 발자국: 단일 출처, 모든 화면에 항상 표시
+  for (const item of footprintObjects) item.visible = !isStair;                      // 집·데크 발자국: 단일 출처, 모든 화면에 표시(계단 단독 화면은 빈 화면)
   for (const item of planObjects) item.visible = isPlan;                             // 말뚝 마커: 바닥에서만
   for (const item of dimObjects) item.visible = isPlan || building === 'foundation'; // 평면 치수·모눈: 바닥 + 기초에 동일 표시
   for (const item of planOnlyDimObjects) item.visible = isPlan;                       // 측백 0.5m 치수: 바닥 전용(기초 뷰 숨김)

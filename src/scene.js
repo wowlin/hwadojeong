@@ -16,6 +16,7 @@ app.innerHTML = `
         <button id="toggleFrame" type="button">바닥틀</button>
         <button id="stageFloor" type="button">바닥</button>
         <button id="stageFirst" type="button">1층</button>
+        <button id="stageStair" type="button">계단</button>
         <button id="stageAttic" type="button">다락</button>
         <button id="stageRoof" type="button">지붕</button>
         <!-- 미검토(참고용) — 검토되는대로 하나씩 삭제 예정 -->
