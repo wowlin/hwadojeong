@@ -2333,8 +2333,8 @@ function drawStairAnno(p) {
   label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   // 다락 바닥(상부계단 앞, 통행 ≥1m) + 1층 통행 표기
-  const loftD = 1.0;
-  box({ x: laneB - 0.2, z: zFrontU - loftD, w: W + 0.4, d: loftD, y: loftY - treadH, h: treadH, mat: materials.landing, cast: false });
+  const loftD = 1.0, loftTh = 0.30;   // loftTh: 다락 바닥 두께 30cm(윗면은 loftY 고정, 아래로 두꺼워짐)
+  box({ x: laneB - 0.2, z: zFrontU - loftD, w: W + 0.4, d: loftD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });
   label('다락 바닥', laneB + W / 2, loftY + 0.22, zFrontU - loftD / 2, 'dim');
   label('1층 통행 ≥1m', laneA + W / 2, fy + 0.22, zFrontL - 0.6, 'dim');
   // 1층 거실·안방 — 1층 도면과 동일 크기(계단실 벽 위치가 1층 기준이라 양쪽 화면이 같음)
