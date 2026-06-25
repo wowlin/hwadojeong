@@ -68,6 +68,7 @@ import {
   insideD, stairGap, stairClearW, sideRoomW,
   stairClearX, stairLowXRunX, stairHighXRunX, stairLowXWallX, stairHighXWallX,
   planRightLivingX, planLeftFamilyX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
+  innerWallW, livingInnerWallX, familyInnerWallX,
   firstLivingX, firstFamilyX, entryGapStart, entryGapEnd, familyDoorZ, yardSashSillY,
   upperStraightTreadCount, stairTurnD, stairTurnStart, stairFirstRunStart, stairOpeningStart, stairBottomLandingD,
   stairBathX, stairBathZ, stairBathW, stairBathD, stairBathDoorW, stairBathDoorX,
@@ -551,16 +552,16 @@ captureInto(floorFinishObjects, () => {
   firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(거실, x=0) 외벽 — 바깥면 x=0
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
   // 계단실 양쪽 세로 프레임(거실|계단실 3.1 · 계단실|안방 5.4) 중앙에 세로 내벽 2개 — 두께 10cm, 높이 외벽(wh)
-  const inW = 0.1, inOv = 0.05;   // inOv: 앞·뒤 외벽 안쪽으로 살짝 파고들어 연결부 면겹침(z-fighting 반짝) 방지
-  stairWallObjects.push(box({ x: frLeftX + FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 거실|계단실 내벽 — 반투명, 계단 화면과 공유
-  stairWallObjects.push(box({ x: frRightX - FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 계단실|안방 내벽 — 반투명, 계단 화면과 공유
+  const inW = innerWallW, inOv = 0.05;   // inOv: 앞·뒤 외벽 안쪽으로 살짝 파고들어 연결부 면겹침(z-fighting 반짝) 방지
+  stairWallObjects.push(box({ x: livingInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 거실|계단실 내벽 — 반투명, 계단 화면과 공유
+  stairWallObjects.push(box({ x: familyInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 계단실|안방 내벽 — 반투명, 계단 화면과 공유
 }
 
 // 1층 방 안목치수 — 벽(외벽·내벽)을 제외한 실사용 방바닥 크기를 "너비 x 깊이"로 각 방 가운데에 표기. 1층·다락·지붕 단계 표시.
 captureInto(firstDimObjects, () => {
   const ly = firstFloorY + 0.4;                                // 라벨 높이(방바닥 위)
-  const ph = interiorWall / 2;                                 // 내벽 반두께
-  const d1 = frLeftX + FRAME_ROOM_W, d2 = frRightX - FRAME_ROOM_W;   // 내벽 중심(거실|계단실=3.1, 계단실|안방=5.4)
+  const ph = innerWallW / 2;                                  // 내벽 반두께
+  const d1 = livingInnerWallX, d2 = familyInnerWallX;         // 내벽 중심(거실|계단실=3.1, 계단실|안방=5.4)
   const zF = buildingFrontZ + exteriorWall, zB = buildingBackZ - exteriorWall;   // 앞·뒤 외벽 안쪽 면
   const dep = zB - zF;                                         // 안목 깊이(모든 방 공통 = 3.6)
   const rooms = [

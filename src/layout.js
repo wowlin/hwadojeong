@@ -8,7 +8,7 @@ import {
   stairTreadDepth, interiorDoorW, interiorDoorH, firstWallHeight, yardSashW, yardSashH,
   familyWindowW, kitchenSinkD, kitchenSinkH, kitchenSinkW, livingRearWindowW, familyRearWindowW,
   sideDoorH, secondCorridorWindowSillOffset, secondCorridorWindowH, atticVentWindowW, atticSkyWindowW, atticRearWindowSillOffset,
-  atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang
+  atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang, FRAME_ROOM_W
 } from './constants.js';
 
 export const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
@@ -37,12 +37,17 @@ export const stairHighXWallX = stairClearX + stairClearW;
 export const stairHighXClearX = stairHighXWallX + interiorWall;
 export const planRightLivingX = insideX0;
 export const planLeftFamilyX = stairHighXClearX;
-export const firstLivingW = sideRoomW;
+// 계단실 양쪽 내벽(거실|계단실 · 계단실|안방) — 중심 위치·두께를 1층/계단 화면이 공유하는 단일 기준.
+// 방 바닥은 이 내벽의 안쪽 면까지만 채워 겹침이 없고, 두께·위치가 바뀌면 방 너비가 따라 갱신된다.
+export const innerWallW = interiorWall;                                       // 계단실 내벽 두께(가변)
+export const livingInnerWallX = exteriorWall / 2 + FRAME_ROOM_W;              // 거실|계단실 내벽 중심 X
+export const familyInnerWallX = buildingW - exteriorWall / 2 - FRAME_ROOM_W;  // 계단실|안방 내벽 중심 X
 export const firstLivingD = sideRoomD;
-export const firstFamilyW = sideRoomW;
 export const firstFamilyD = sideRoomD;
-export const firstLivingX = planRightLivingX;
-export const firstFamilyX = planLeftFamilyX;
+export const firstLivingX = planRightLivingX;                                 // 거실 바닥 시작 = 우 외벽 안쪽 면
+export const firstLivingW = livingInnerWallX - innerWallW / 2 - firstLivingX; // 거실 바닥 끝 = 내벽 안쪽 면(겹침 없음)
+export const firstFamilyX = familyInnerWallX + innerWallW / 2;                // 안방 바닥 시작 = 내벽 안쪽 면(겹침 없음)
+export const firstFamilyW = insideX1 - firstFamilyX;                          // 안방 바닥 끝 = 좌 외벽 안쪽 면
 export const entryGapStart = stairClearX + (stairClearW - entryFrameOuterW) / 2;
 export const entryGapEnd = entryGapStart + entryFrameOuterW;
 export const familyDoorZ = insideZ0;
