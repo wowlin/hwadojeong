@@ -90,7 +90,7 @@ import {
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, siteBaseObjects, steelFrameObjects, woodFrameObjects, 골조Objects,
-  stairObjects, stairCoreObjects,
+  stairObjects, stairCoreObjects, stairWallObjects,
 } from './groups.js';
 import './styles.css';
 
@@ -552,8 +552,8 @@ captureInto(floorFinishObjects, () => {
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
   // 계단실 양쪽 세로 프레임(거실|계단실 3.1 · 계단실|안방 5.4) 중앙에 세로 내벽 2개 — 두께 10cm, 높이 외벽(wh)
   const inW = 0.1, inOv = 0.05;   // inOv: 앞·뒤 외벽 안쪽으로 살짝 파고들어 연결부 면겹침(z-fighting 반짝) 방지
-  firstWallObjects.push(box({ x: frLeftX + FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.wall }));   // 거실|계단실 내벽
-  firstWallObjects.push(box({ x: frRightX - FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.wall }));   // 계단실|안방 내벽
+  stairWallObjects.push(box({ x: frLeftX + FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 거실|계단실 내벽 — 반투명, 계단 화면과 공유
+  stairWallObjects.push(box({ x: frRightX - FRAME_ROOM_W - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 계단실|안방 내벽 — 반투명, 계단 화면과 공유
 }
 
 // 1층 방 안목치수 — 벽(외벽·내벽)을 제외한 실사용 방바닥 크기를 "너비 x 깊이"로 각 방 가운데에 표기. 1층·다락·지붕 단계 표시.
@@ -1928,16 +1928,9 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
   label('외부 부동수전', faucetX + 0.5, topY + 0.85, faucetZ - 0.25, 'mep'); // 수전이 가려지지 않게 위쪽·옆으로
 }
 
-captureInto(firstWallObjects, () => {
-  // 계단실 내벽(1층 위치 고정) — 거실측·안방측 측벽, 바닥~천장 솔리드.
-  // ㄷ자 계단 본체는 계단 화면과 공유하는 stairCoreObjects(buildStair)로 그려 1층에도 함께 표시(계단에서 바꾸면 1층 반영).
-  const wallH = firstCeilingY - firstFloorY;
-  const wallFrontZ = stairFirstRunStart;                 // 측벽 앞 끝(계단 앞)
-  box({ x: stairLowXWallX, z: wallFrontZ, w: interiorWall, d: insideZ1 - wallFrontZ, y: firstFloorY, h: wallH, mat: materials.stairWall, cast: false, receive: false });   // 거실측 벽
-  box({ x: stairHighXWallX, z: wallFrontZ, w: interiorWall, d: insideZ1 - wallFrontZ, y: firstFloorY, h: wallH, mat: materials.stairWall, cast: false, receive: false });  // 안방측 벽
-});
+// 계단실 양쪽 내벽은 1층 원래 내벽(stairWallObjects) 1벌을 계단 화면과 공유 — 여기서 따로 그리지 않음(중복 제거).
 
-firstFloorObjects.push(...scene.children.slice(_firstFixturesStart));   // 외부설비·계단실 벽을 1층 그룹에 추가(계단 본체는 stairCoreObjects로 공유 표시)
+firstFloorObjects.push(...scene.children.slice(_firstFixturesStart));   // 외부설비를 1층 그룹에 추가(계단 본체·계단실 벽은 stairCoreObjects·stairWallObjects로 공유 표시)
 
 function ceilingFan({ x, z, ceilingY, bladeCount = 5, bladeLength = 0.62, drop = 0.3 }) {
   const dropY = ceilingY - drop;
@@ -2190,6 +2183,7 @@ function applyVisibility() {
   for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
   for (const item of stairObjects) item.visible = isStair;                             // 계단 화면 전용 주석(거실·안방 크기·라벨·층고)
   for (const item of stairCoreObjects) item.visible = isStair || showStageWall || showFirst;   // ㄷ자 계단 본체: 계단 화면 + 1층(단계·+1층) 공유
+  for (const item of stairWallObjects) item.visible = isStair || showStageWall;                // 계단실 양쪽 내벽: 계단 화면 + 1층·다락·지붕 단계 공유
   if (typeof stairPanel !== 'undefined' && stairPanel) stairPanel.style.display = isStair ? 'flex' : 'none';   // 계단 조절 패널: 계단 화면에서만
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
