@@ -2278,8 +2278,9 @@ function stairGeom(p) {
   const fy = firstFloorY;
   const nWind = 3;
   const nL = Math.max(1, Math.ceil((N - nWind) / 2));   // 하부 곧은계단 수
-  const nU = Math.max(1, N - nWind - nL);               // 상부 곧은계단 수
+  const nU = Math.max(1, N - nWind - nL - 2);           // 상부 곧은계단 수 (계단참·다락이 각각 한 단을 차지 → -2, 총 단수·다락높이 불변)
   const loftY = fy + N * R;                             // 다락 바닥 높이(=1층 층고)
+  const landingY = fy + (nL + nWind + 1) * R;           // 계단참 높이 = 사선 맨위 단보다 한 단 위(평평 아님)
   const treadH = 0.05, riserD = 0.03;
   const zBack = insideZ1;                               // 턴존이 뒤벽에 붙음
   const turnD = stairTurnD;                             // 턴존 깊이(1층 고정)
@@ -2289,13 +2290,13 @@ function stairGeom(p) {
   const flightLenL = nL * T, flightLenU = nU * T;
   const zFrontL = zTurn0 - flightLenL;                  // 하부계단 앞 끝(1층 입구)
   const zFrontU = zTurn0 - flightLenU;                  // 상부계단 앞 끝(다락 출구)
-  return { W, R, T, N, fy, nWind, nL, nU, loftY, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, flightLenL, flightLenU, zFrontL, zFrontU };
+  return { W, R, T, N, fy, nWind, nL, nU, loftY, landingY, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, flightLenL, flightLenU, zFrontL, zFrontU };
 }
 
 // 계단 본체(발판·세로막이·사선·계단참) — 계단 화면 + 1층 공유(stairCoreObjects).
 function drawStairCore(p) {
   const g = stairGeom(p);
-  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, zFrontL } = g;
+  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY } = g;
   // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰
   for (let i = 0; i < nL; i += 1) {
     const topY = fy + (i + 1) * R;
@@ -2312,11 +2313,12 @@ function drawStairCore(p) {
   for (let k = 1; k <= nWind; k += 1) {
     flatPoly({ points: windPolys[k - 1], y: fy + (nL + k) * R - treadH, h: treadH, mat: materials.stair, cast: false });
   }
-  // 계단참(laneB 턴존 + 두 런 사이 gap까지) — 평평, 사선↔상부계단 90° 전환
-  const landingY = fy + (nL + nWind) * R;
+  // 계단참(laneB 턴존 + 두 런 사이 gap까지) — 사선 맨위 단보다 한 단 위(landingY), 사선↔상부계단 90° 전환
   box({ x: laneA + W, z: zTurn0, w: (laneB + W) - (laneA + W), d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
-  // 상부 곧은계단(laneB, -Z) → 마지막 = 다락 바닥. 세로막이 반대편(+Z) + 발판 두께만큼 아래로
-  const baseU = fy + (nL + nWind) * R;
+  // 계단참 앞 단높이 면(사선 맨위 단 → 계단참 한 단 올라감)
+  box({ x: laneA + W, z: zTurn0, w: riserD, d: turnD, y: landingY - R, h: R - treadH, mat: materials.stairWall, cast: false });
+  // 상부 곧은계단(laneB, -Z) → 마지막 단은 다락보다 한 단 아래. 세로막이 반대편(+Z) + 발판 두께만큼 아래로
+  const baseU = landingY;
   for (let j = 0; j < nU; j += 1) {
     const topY = baseU + (j + 1) * R;
     const zT = zTurn0 - (j + 1) * T;
@@ -2330,8 +2332,8 @@ function drawStairCore(p) {
 // 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
 function drawStairAnno(p) {
   const g = stairGeom(p);
-  const { W, R, N, fy, nL, nWind, nU, loftY, treadH, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
-  label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
+  const { W, R, N, fy, nL, nWind, nU, loftY, treadH, riserD, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
+  label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   // 다락 바닥(상부계단 앞 통행) — 상부계단 출구(zFrontU)에서 앞 외벽 안쪽(insideZ0)까지 확보되는 평탄 통행 깊이.
   // 상부 단수가 늘면 zFrontU가 앞으로 밀려 통행 깊이가 줄어든다(계단 변경 시 숫자 자동 갱신).
@@ -2340,6 +2342,8 @@ function drawStairAnno(p) {
   const wallTopY = fy + innerWallH;
   const loftTh = Math.max(0.02, loftY - wallTopY);
   box({ x: laneB - 0.2, z: insideZ0, w: W + 0.4, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });
+  // 다락 앞 단높이 면(상부 마지막 단 → 다락 바닥 한 단 올라감)
+  box({ x: laneB, z: zFrontU, w: W, d: riserD, y: loftY - R, h: R - treadH, mat: materials.stairWall, cast: false });
   label(`다락 통행 ${fmtDim(loftPass)}m`, laneB + W / 2, loftY + 0.22, insideZ0 + loftPass / 2, 'dim');
   // 1층 계단 앞 통행 — 하부계단 입구(zFrontL)에서 앞 외벽 안쪽(insideZ0)까지. 하부 단수가 늘면 줄어든다.
   const firstPass = zFrontL - insideZ0;
