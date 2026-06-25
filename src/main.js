@@ -90,7 +90,7 @@ import {
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, siteBaseObjects, steelFrameObjects, woodFrameObjects, 골조Objects,
-  stairObjects,
+  stairObjects, stairCoreObjects,
 } from './groups.js';
 import './styles.css';
 
@@ -1929,195 +1929,15 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
 }
 
 captureInto(firstWallObjects, () => {
-  // Winder U stair: equal risers. The last visible tread remains one riser
-  // below the 2F floor.
-  const stairTreadH = 0.08;
-  const riserH = (secondY + secondFloorThickness - firstFloorY) / stairRiserCount;
-  const firstRunStart = stairFirstRunStart;
-  const turnStart = stairTurnStart;
-  const runGap = stairTreadDepth;
-  const riserFaceD = 0.035;
-  const stairCenterWallX = stairLowXRunX + stairRunW;
-  const stairCenterLineX = stairCenterWallX + stairGap / 2;
-  const stairTurnMidX = stairClearX + stairClearW / 2;
-  const stairTurnMidZ = turnStart + stairTurnD / 2;
-  const centerRailHeight = 0.92;
-  const openRailHeight = 0.95;
-  const planRightLivingSideRailX = stairLowXRunX;
-
-  for (let i = 0; i < lowerStraightTreadCount; i += 1) {
-    box({
-      x: stairLowXRunX,
-      z: firstRunStart + i * runGap - riserFaceD,
-      w: stairRunW,
-      d: riserFaceD,
-      y: firstFloorY + i * riserH,
-      h: riserH,
-      mat: materials.stair,
-      cast: false,
-      receive: false
-    });
-    box({
-      x: stairLowXRunX,
-      z: firstRunStart + i * runGap,
-      w: stairRunW,
-      d: stairTreadDepth,
-      y: firstFloorY + (i + 1) * riserH - stairTreadH,
-      h: stairTreadH,
-      mat: materials.stair,
-      cast: false,
-      receive: false
-    });
-    const firstRunTop = firstFloorY + (i + 1) * riserH;
-    box({
-      x: stairCenterWallX,
-      z: firstRunStart + i * runGap,
-      w: stairGap,
-      d: stairTreadDepth,
-      y: firstFloorY,
-      h: firstRunTop - firstFloorY,
-      mat: materials.stairWall,
-      cast: false,
-      receive: false
-    });
-    stairWallTopCap({
-      x: stairCenterWallX,
-      z: firstRunStart + i * runGap,
-      w: stairGap,
-      d: stairTreadDepth,
-      topY: firstRunTop
-    });
-    box({
-      x: stairLowXWallX,
-      z: firstRunStart + i * runGap,
-      w: interiorWall,
-      d: stairTreadDepth,
-      y: firstFloorY,
-      h: firstRunTop - firstFloorY,
-      mat: materials.stairWall,
-      cast: false,
-      receive: false
-    });
-    stairWallTopCap({
-      x: stairLowXWallX,
-      z: firstRunStart + i * runGap,
-      w: interiorWall,
-      d: stairTreadDepth,
-      topY: firstRunTop
-    });
-  }
-  const turnSideWallTop = firstFloorY + (lowerStraightTreadCount + winderTreadCount) * riserH;
-  box({
-    x: stairLowXWallX,
-    z: turnStart,
-    w: interiorWall,
-    d: stairTurnD,
-    y: firstFloorY,
-    h: turnSideWallTop - firstFloorY,
-    mat: materials.stairWall,
-    cast: false,
-    receive: false
-  });
-  stairWallTopCap({
-    x: stairLowXWallX,
-    z: turnStart,
-    w: interiorWall,
-    d: stairTurnD,
-    topY: turnSideWallTop
-  });
-
-  const winderShapes = [
-    [
-      [stairLowXRunX, turnStart],
-      [stairLowXRunX + stairRunW, turnStart],
-      [stairTurnMidX, stairTurnMidZ],
-      [stairLowXRunX, stairTurnMidZ]
-    ],
-    [
-      [stairLowXRunX, stairTurnMidZ],
-      [stairTurnMidX, stairTurnMidZ],
-      [stairHighXWallX, stairTurnMidZ],
-      [stairHighXWallX, insideZ1],
-      [stairLowXRunX, insideZ1]
-    ],
-    [
-      [stairHighXRunX, turnStart],
-      [stairHighXWallX, turnStart],
-      [stairHighXWallX, stairTurnMidZ],
-      [stairTurnMidX, stairTurnMidZ]
-    ]
-  ];
-  for (let i = 0; i < winderTreadCount; i += 1) {
-    flatPoly({
-      points: winderShapes[i],
-      y: firstFloorY + (lowerStraightTreadCount + i + 1) * riserH - stairTreadH,
-      h: stairTreadH,
-      mat: materials.stair,
-      cast: false,
-      receive: false
-    });
-  }
-  for (let i = 0; i < upperStraightTreadCount; i += 1) {
-    box({
-      x: stairHighXRunX,
-      z: turnStart - (i + 1) * runGap,
-      w: stairRunW,
-      d: stairTreadDepth,
-      y: firstFloorY + (lowerStraightTreadCount + winderTreadCount + i + 1) * riserH - stairTreadH,
-      h: stairTreadH,
-      mat: materials.stair,
-      cast: false,
-      receive: false
-    });
-    box({
-      x: stairCenterWallX,
-      z: turnStart - (i + 1) * runGap,
-      w: stairGap,
-      d: stairTreadDepth,
-      y: firstFloorY,
-      h: firstFloorY + (lowerStraightTreadCount + winderTreadCount + i + 1) * riserH - firstFloorY,
-      mat: materials.stairWall,
-      cast: false,
-      receive: false
-    });
-    stairWallTopCap({
-      x: stairCenterWallX,
-      z: turnStart - (i + 1) * runGap,
-      w: stairGap,
-      d: stairTreadDepth,
-      topY: firstFloorY + (lowerStraightTreadCount + winderTreadCount + i + 1) * riserH
-    });
-  }
-
-  addStairRailingSegment(
-    [stairCenterLineX, firstFloorY + riserH, firstRunStart],
-    [stairCenterLineX, firstFloorY + lowerStraightTreadCount * riserH, turnStart],
-    { height: centerRailHeight }
-  );
-  addStairRailingSegment(
-    [stairCenterLineX, firstFloorY + lowerStraightTreadCount * riserH, turnStart],
-    [stairCenterLineX, firstFloorY + (lowerStraightTreadCount + winderTreadCount + 1) * riserH, turnStart - runGap],
-    { height: centerRailHeight }
-  );
-  addStairRailingSegment(
-    [stairCenterLineX, firstFloorY + (lowerStraightTreadCount + winderTreadCount + 1) * riserH, turnStart - runGap],
-    [stairCenterLineX, firstFloorY + (stairRiserCount - 1) * riserH, turnStart - upperStraightTreadCount * runGap],
-    { height: centerRailHeight }
-  );
-  addStairRailingSegment(
-    [planRightLivingSideRailX, firstFloorY + riserH, firstRunStart],
-    [planRightLivingSideRailX, firstFloorY + lowerStraightTreadCount * riserH, turnStart],
-    { height: openRailHeight, postSpacing: 0.5, balusterSpacing: 0.16 }
-  );
-  addStairRailingSegment(
-    [planRightLivingSideRailX, firstFloorY + lowerStraightTreadCount * riserH, turnStart],
-    [planRightLivingSideRailX, firstFloorY + (lowerStraightTreadCount + winderTreadCount) * riserH, insideZ1],
-    { height: openRailHeight, postSpacing: 0.5, balusterSpacing: 0.16 }
-  );
-
+  // 계단실 내벽(1층 위치 고정) — 거실측·안방측 측벽, 바닥~천장 솔리드.
+  // ㄷ자 계단 본체는 계단 화면과 공유하는 stairCoreObjects(buildStair)로 그려 1층에도 함께 표시(계단에서 바꾸면 1층 반영).
+  const wallH = firstCeilingY - firstFloorY;
+  const wallFrontZ = stairFirstRunStart;                 // 측벽 앞 끝(계단 앞)
+  box({ x: stairLowXWallX, z: wallFrontZ, w: interiorWall, d: insideZ1 - wallFrontZ, y: firstFloorY, h: wallH, mat: materials.stairWall, cast: false, receive: false });   // 거실측 벽
+  box({ x: stairHighXWallX, z: wallFrontZ, w: interiorWall, d: insideZ1 - wallFrontZ, y: firstFloorY, h: wallH, mat: materials.stairWall, cast: false, receive: false });  // 안방측 벽
 });
 
-firstFloorObjects.push(...scene.children.slice(_firstFixturesStart));   // 외부설비·실내 계단을 1층 그룹에 추가(계단은 위에서 firstWallObjects로 별도 캡처)
+firstFloorObjects.push(...scene.children.slice(_firstFixturesStart));   // 외부설비·계단실 벽을 1층 그룹에 추가(계단 본체는 stairCoreObjects로 공유 표시)
 
 function ceilingFan({ x, z, ceilingY, bladeCount = 5, bladeLength = 0.62, drop = 0.3 }) {
   const dropY = ceilingY - drop;
@@ -2368,7 +2188,8 @@ function applyVisibility() {
   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(effBuilding=floor) — 빈 화면 단계 없음. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
   for (const item of siteBaseObjects) item.visible = true;          // 바탕 대지·도로: 모든 화면에 표시
   for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
-  for (const item of stairObjects) item.visible = isStair;                             // ㄷ자 계단(계단 단독 설계 화면)
+  for (const item of stairObjects) item.visible = isStair;                             // 계단 화면 전용 주석(거실·안방 크기·라벨·층고)
+  for (const item of stairCoreObjects) item.visible = isStair || showStageWall || showFirst;   // ㄷ자 계단 본체: 계단 화면 + 1층(단계·+1층) 공유
   if (typeof stairPanel !== 'undefined' && stairPanel) stairPanel.style.display = isStair ? 'flex' : 'none';   // 계단 조절 패널: 계단 화면에서만
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
@@ -2453,100 +2274,103 @@ for (const b of FRAME_BUTTONS) {
 //   → 반대 방향 상부 곧은계단(-Z, 앞으로 오름) → 마지막 단 위 = 다락 바닥.
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
-const stairParams = { W: 0.9, R: 0.18, T: 0.25, N: 15, WT: interiorWall, X: (insideX0 + insideX1) / 2 };   // 너비/단높이/계단폭/개수/계단실벽두께/계단실중심X
+const stairParams = { R: 0.18, T: 0.25, N: 15 };   // 단높이/계단폭(디딤 깊이)/계단 개수 (너비·위치는 1층 계단실에 고정)
 
-function drawStair(p) {
-  const W = p.W, R = p.R, T = p.T, N = Math.max(5, Math.round(p.N));
+// ㄷ자 계단 좌표 — 1층 계단실(stairLowXRunX·stairHighXRunX, 뒤벽 턴존)에 맞춰 도출. 두 화면(계단·1층) 공유.
+function stairGeom(p) {
+  const W = stairRunW;                                  // 런 폭 = 1층 계단실 고정
+  const R = p.R, T = p.T, N = Math.max(5, Math.round(p.N));
   const fy = firstFloorY;
   const nWind = 3;
   const nL = Math.max(1, Math.ceil((N - nWind) / 2));   // 하부 곧은계단 수
   const nU = Math.max(1, N - nWind - nL);               // 상부 곧은계단 수
-  const loftY = fy + N * R;                             // 다락 바닥 높이
+  const loftY = fy + N * R;                             // 다락 바닥 높이(=1층 층고)
   const treadH = 0.05, riserD = 0.03;
-  const zBack = insideZ1 - 0.05;                        // 턴 존이 뒤벽에 붙음
-  const turnD = W;                                      // 턴 존 깊이(정사각)
-  const zTurn0 = zBack - turnD;                         // 턴 존 앞 경계
-  const wallT = p.WT;                                  // 계단실 벽 두께(가변)
-  const cx = p.X;                                       // 계단실 중심 X(가변 — 좌우로 이동)
-  const laneA = cx - W;                                 // 하부(1층→) 레인
-  const laneB = cx;                                     // 상부(→다락) 레인
+  const zBack = insideZ1;                               // 턴존이 뒤벽에 붙음
+  const turnD = stairTurnD;                             // 턴존 깊이(1층 고정)
+  const zTurn0 = stairTurnStart;                        // 턴존 앞 경계(= insideZ1 - turnD)
+  const laneA = stairLowXRunX;                          // 하부(1층→) 런 = 거실측
+  const laneB = stairHighXRunX;                         // 상부(→다락) 런 = 안방측 (= laneA + W + stairGap)
   const flightLenL = nL * T, flightLenU = nU * T;
   const zFrontL = zTurn0 - flightLenL;                  // 하부계단 앞 끝(1층 입구)
   const zFrontU = zTurn0 - flightLenU;                  // 상부계단 앞 끝(다락 출구)
+  return { W, R, T, N, fy, nWind, nL, nU, loftY, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, flightLenL, flightLenU, zFrontL, zFrontU };
+}
 
-  // 하부 곧은계단(lane A, +Z로 오름) — 세로막이는 발판 두께만큼 아래로(발판 밑면에 맞춤), 첫 단은 위쪽 발판 두께만큼 없앰
+// 계단 본체(발판·세로막이·사선·계단참) — 계단 화면 + 1층 공유(stairCoreObjects).
+function drawStairCore(p) {
+  const g = stairGeom(p);
+  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, zFrontL } = g;
+  // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰
   for (let i = 0; i < nL; i += 1) {
     const topY = fy + (i + 1) * R;
-    box({ x: laneA, z: zFrontL + i * T, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });   // 발판
+    box({ x: laneA, z: zFrontL + i * T, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
     const rY = i === 0 ? fy : fy + i * R - treadH;
     const rH = i === 0 ? R - treadH : R;
-    box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });          // 세로막이
+    box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });
   }
-  // 사선 3단 — 둥글게(부채꼴) 하지 않고 정사각 턴 존을 직선 분할로 꽉 채움. pivot=P(앞-우 안쪽 코너)
-  const P = [laneB, zTurn0];
-  const A1 = [laneA, zTurn0];               // 앞-좌(하부계단에서 진입)
-  const A2 = [laneA, zBack];                // 뒤-좌
-  const A3 = [laneB, zBack];                // 뒤-우(계단참으로 빠짐)
-  const Q1 = [laneA, zTurn0 + 2 * W / 3];   // 좌측 변 분할점
-  const Q2 = [laneA + W / 3, zBack];        // 뒤측 변 분할점
-  const windPolys = [[P, A1, Q1], [P, Q1, A2, Q2], [P, Q2, A3]];   // 3장이 정사각을 빈틈없이 채움
+  // 사선 3단 — 둥글게(부채꼴) 하지 않고 정사각 턴존을 직선 분할로 꽉 채움. pivot=P
+  const P = [laneA + W, zTurn0];
+  const A1 = [laneA, zTurn0], A2 = [laneA, zBack], A3 = [laneA + W, zBack];
+  const Q1 = [laneA, zTurn0 + 2 * W / 3], Q2 = [laneA + W / 3, zBack];
+  const windPolys = [[P, A1, Q1], [P, Q1, A2, Q2], [P, Q2, A3]];
   for (let k = 1; k <= nWind; k += 1) {
-    const topY = fy + (nL + k) * R;
-    flatPoly({ points: windPolys[k - 1], y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+    flatPoly({ points: windPolys[k - 1], y: fy + (nL + k) * R - treadH, h: treadH, mat: materials.stair, cast: false });
   }
-  // 계단참(lane B 턴 존, 평평) — 사선과 상부계단 사이 90° 전환
+  // 계단참(laneB 턴존 + 두 런 사이 gap까지) — 평평, 사선↔상부계단 90° 전환
   const landingY = fy + (nL + nWind) * R;
-  box({ x: laneB, z: zTurn0, w: W, d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
-  label('계단참', laneB + W / 2, landingY + 0.25, (zTurn0 + zBack) / 2, 'dim');
-  label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
-  // 상부 곧은계단(lane B, -Z로 오름) → 마지막 = 다락 바닥. 세로막이는 반대편(+Z) + 발판 두께만큼 아래로, 첫 단 위쪽 두께만큼 없앰
-  const baseU = fy + (nL + nWind) * R;   // 계단참(상부계단 출발) 높이
+  box({ x: laneA + W, z: zTurn0, w: (laneB + W) - (laneA + W), d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
+  // 상부 곧은계단(laneB, -Z) → 마지막 = 다락 바닥. 세로막이 반대편(+Z) + 발판 두께만큼 아래로
+  const baseU = fy + (nL + nWind) * R;
   for (let j = 0; j < nU; j += 1) {
     const topY = baseU + (j + 1) * R;
     const zT = zTurn0 - (j + 1) * T;
-    box({ x: laneB, z: zT, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });   // 발판
+    box({ x: laneB, z: zT, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
     const rY = j === 0 ? baseU : baseU + j * R - treadH;
     const rH = j === 0 ? R - treadH : R;
-    box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });   // 세로막이(반대편)
+    box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });
   }
-  // 다락 바닥(상부계단 앞, 통행 ≥1m 공간) + 1층 통행 표기
+}
+
+// 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
+function drawStairAnno(p) {
+  const g = stairGeom(p);
+  const { W, R, N, fy, nL, nWind, nU, loftY, treadH, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
+  label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
+  label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
+  // 다락 바닥(상부계단 앞, 통행 ≥1m) + 1층 통행 표기
   const loftD = 1.0;
   box({ x: laneB - 0.2, z: zFrontU - loftD, w: W + 0.4, d: loftD, y: loftY - treadH, h: treadH, mat: materials.landing, cast: false });
   label('다락 바닥', laneB + W / 2, loftY + 0.22, zFrontU - loftD / 2, 'dim');
   label('1층 통행 ≥1m', laneA + W / 2, fy + 0.22, zFrontL - 0.6, 'dim');
-  // 계단실 양쪽 내벽(1층과 연결될 벽) — 두 곧은계단 바깥쪽, 바닥~다락 높이(반투명, 계단 보이게). 두께·위치 가변.
-  const wallLeftOuter = laneA - wallT;                  // 거실측(낮은 X) 벽 바깥면
-  const wallRightOuter = laneB + W + wallT;             // 안방측(높은 X) 벽 바깥면
-  const zWallFront = Math.min(zFrontL, zFrontU);
-  const wallH = loftY - fy;
-  box({ x: laneA - wallT, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });   // 거실측 내벽
-  box({ x: laneB + W, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });        // 안방측 내벽
-  // 1층 거실(낮은 X)·안방(높은 X) — 계단실 벽 바깥쪽 잔여 바닥. 벽 두께·위치 바뀌면 크기 갱신.
-  const livingW = wallLeftOuter - insideX0;             // 거실 폭(insideX0 ~ 거실측 벽)
-  const anbangW = insideX1 - wallRightOuter;            // 안방 폭(안방측 벽 ~ insideX1)
-  const roomD = insideZ1 - insideZ0;                    // 방 깊이(앞~뒤 안목)
+  // 1층 거실·안방 — 1층 도면과 동일 크기(계단실 벽 위치가 1층 기준이라 양쪽 화면이 같음)
   const roomY = fy + 0.012;
-  if (livingW > 0.1) room({ x: insideX0, z: insideZ0, w: livingW, d: roomD, y: roomY, mat: materials.living, text: roomText('거실', livingW, roomD) });
-  if (anbangW > 0.1) room({ x: wallRightOuter, z: insideZ0, w: anbangW, d: roomD, y: roomY, mat: materials.bed, text: roomText('안방', anbangW, roomD) });
+  room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: roomY, mat: materials.living, text: roomText('거실', firstLivingW, firstLivingD) });
+  room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: roomY, mat: materials.bed, text: roomText('안방', firstFamilyW, firstFamilyD) });
   // 1층바닥→다락바닥 전체 높이(=층고) 막대 + 라벨
   box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: loftY - fy, mat: materials.guard, cast: false });
   label(`층고 ${fmtDim(N * R)}m`, laneA - 0.38, fy + (loftY - fy) / 2, zFrontL - 0.05, 'dim');
-  return { nL, nU, height: N * R, livingW, anbangW };
+  return { nL, nU, height: N * R, livingW: firstLivingW, anbangW: firstFamilyW };
 }
 
 let stairInfo = null;
-function buildStair() {
-  for (const o of stairObjects) {
+function clearStairGroup(arr) {
+  for (const o of arr) {
     scene.remove(o);
     if (o.geometry) o.geometry.dispose();
     if (o.material && o.material.map) o.material.map.dispose();
   }
-  stairObjects.length = 0;
-  captureInto(stairObjects, () => { stairInfo = drawStair(stairParams); });
+  arr.length = 0;
+}
+function buildStair() {
+  clearStairGroup(stairCoreObjects);                                       // 계단 본체(계단+1층 공유)
+  clearStairGroup(stairObjects);                                           // 계단 화면 전용 주석
+  captureInto(stairCoreObjects, () => { drawStairCore(stairParams); });
+  captureInto(stairObjects, () => { stairInfo = drawStairAnno(stairParams); });
   applyVisibility();
   if (stairInfoEl && stairInfo) {
     const N = Math.max(5, Math.round(stairParams.N));
-    stairInfoEl.textContent = `층고(1층바닥→다락바닥) ${fmtDim(N * stairParams.R)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n거실 폭 ${fmtDim(stairInfo.livingW)}m · 안방 폭 ${fmtDim(stairInfo.anbangW)}m`;
+    stairInfoEl.textContent = `층고(1층바닥→다락바닥) ${fmtDim(N * stairParams.R)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
   }
 }
 
@@ -2557,6 +2381,7 @@ stairStyle.textContent = `
     background: rgba(255,255,255,0.94); border: 1px solid #cdbfa6; border-radius: 10px; padding: 12px 14px;
     font: 600 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color: #3a2f22; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
   #stairPanel .sp-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+  #stairPanel .sp-note { font-size: 11.5px; font-weight: 600; color: #8a7a5e; margin: -2px 0 2px; }
   #stairPanel label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   #stairPanel input { width: 80px; padding: 4px 6px; border: 1px solid #b9a988; border-radius: 6px; font: inherit; text-align: right; }
   #stairPanel .sp-info { margin-top: 4px; font-weight: 700; color: #4a7a3a; font-size: 12.5px; max-width: 240px; line-height: 1.5; white-space: pre-line; }
@@ -2566,31 +2391,24 @@ const stairPanel = document.createElement('div');
 stairPanel.id = 'stairPanel';
 stairPanel.innerHTML = `
   <div class="sp-title">ㄷ자 계단 설계</div>
-  <label>너비 (m)<input id="sp_w" type="number" step="0.05" min="0.6"></label>
+  <div class="sp-note">너비·위치는 1층 계단실 고정</div>
   <label>단높이 (m)<input id="sp_r" type="number" step="0.01" min="0.10"></label>
   <label>계단폭 (m)<input id="sp_t" type="number" step="0.01" min="0.20"></label>
   <label>계단 개수<input id="sp_n" type="number" step="1" min="5"></label>
-  <label>계단실 벽두께 (m)<input id="sp_wt" type="number" step="0.01" min="0.05"></label>
-  <label>계단실 위치 X (m)<input id="sp_x" type="number" step="0.1"></label>
   <div class="sp-info" id="sp_info"></div>
 `;
 document.body.appendChild(stairPanel);
 const stairInfoEl = document.querySelector('#sp_info');
-const _spw = document.querySelector('#sp_w'), _spr = document.querySelector('#sp_r');
+const _spr = document.querySelector('#sp_r');
 const _spt = document.querySelector('#sp_t'), _spn = document.querySelector('#sp_n');
-const _spwt = document.querySelector('#sp_wt'), _spx = document.querySelector('#sp_x');
-_spw.value = stairParams.W; _spr.value = stairParams.R; _spt.value = stairParams.T; _spn.value = stairParams.N;
-_spwt.value = stairParams.WT; _spx.value = stairParams.X;
+_spr.value = stairParams.R; _spt.value = stairParams.T; _spn.value = stairParams.N;
 function onStairInput() {
-  stairParams.W = parseFloat(_spw.value) || stairParams.W;
   stairParams.R = parseFloat(_spr.value) || stairParams.R;
   stairParams.T = parseFloat(_spt.value) || stairParams.T;
   stairParams.N = parseInt(_spn.value, 10) || stairParams.N;
-  stairParams.WT = parseFloat(_spwt.value) || stairParams.WT;
-  stairParams.X = parseFloat(_spx.value) || stairParams.X;
   buildStair();
 }
-for (const el of [_spw, _spr, _spt, _spn, _spwt, _spx]) el.addEventListener('input', onStairInput);
+for (const el of [_spr, _spt, _spn]) el.addEventListener('input', onStairInput);
 buildStair();
 
 applyVisibility();
