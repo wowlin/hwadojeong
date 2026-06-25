@@ -40,6 +40,7 @@ export const planLeftFamilyX = stairHighXClearX;
 // 계단실 양쪽 내벽(거실|계단실 · 계단실|안방) — 중심 위치·두께를 1층/계단 화면이 공유하는 단일 기준.
 // 방 바닥은 이 내벽의 안쪽 면까지만 채워 겹침이 없고, 두께·위치가 바뀌면 방 너비가 따라 갱신된다.
 export const innerWallW = interiorWall;                                       // 계단실 내벽 두께(가변)
+export const innerWallH = 2.4;                                                // 계단실 내벽 높이(=층고). 1층/계단 화면 공유. 윗면 = 다락 바닥 밑면.
 export const livingInnerWallX = exteriorWall / 2 + FRAME_ROOM_W;              // 거실|계단실 내벽 중심 X
 export const familyInnerWallX = buildingW - exteriorWall / 2 - FRAME_ROOM_W;  // 계단실|안방 내벽 중심 X
 export const firstLivingD = sideRoomD;

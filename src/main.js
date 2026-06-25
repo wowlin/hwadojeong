@@ -68,7 +68,7 @@ import {
   insideD, stairGap, stairClearW, sideRoomW,
   stairClearX, stairLowXRunX, stairHighXRunX, stairLowXWallX, stairHighXWallX,
   planRightLivingX, planLeftFamilyX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
-  innerWallW, livingInnerWallX, familyInnerWallX,
+  innerWallW, innerWallH, livingInnerWallX, familyInnerWallX,
   firstLivingX, firstFamilyX, entryGapStart, entryGapEnd, familyDoorZ, yardSashSillY,
   upperStraightTreadCount, stairTurnD, stairTurnStart, stairFirstRunStart, stairOpeningStart, stairBottomLandingD,
   stairBathX, stairBathZ, stairBathW, stairBathD, stairBathDoorW, stairBathDoorX,
@@ -553,8 +553,8 @@ captureInto(floorFinishObjects, () => {
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
   // 계단실 양쪽 세로 프레임(거실|계단실 3.1 · 계단실|안방 5.4) 중앙에 세로 내벽 2개 — 두께 10cm, 높이 외벽(wh)
   const inW = innerWallW, inOv = 0.05;   // inOv: 앞·뒤 외벽 안쪽으로 살짝 파고들어 연결부 면겹침(z-fighting 반짝) 방지
-  stairWallObjects.push(box({ x: livingInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 거실|계단실 내벽 — 반투명, 계단 화면과 공유
-  stairWallObjects.push(box({ x: familyInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: wh, mat: materials.stairInnerWall }));   // 계단실|안방 내벽 — 반투명, 계단 화면과 공유
+  stairWallObjects.push(box({ x: livingInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: innerWallH, mat: materials.stairInnerWall }));   // 거실|계단실 내벽 — 반투명, 높이=층고, 계단 화면과 공유
+  stairWallObjects.push(box({ x: familyInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d: buildingD - 2 * wt + 2 * inOv, y: wy, h: innerWallH, mat: materials.stairInnerWall }));   // 계단실|안방 내벽 — 반투명, 높이=층고, 계단 화면과 공유
 }
 
 // 1층 방 안목치수 — 벽(외벽·내벽)을 제외한 실사용 방바닥 크기를 "너비 x 깊이"로 각 방 가운데에 표기. 1층·다락·지붕 단계 표시.
@@ -2334,7 +2334,10 @@ function drawStairAnno(p) {
   label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   // 다락 바닥(상부계단 앞, 통행 ≥1m) + 1층 통행 표기
-  const loftD = 1.0, loftTh = 0.30;   // loftTh: 다락 바닥 두께 30cm(윗면은 loftY 고정, 아래로 두꺼워짐)
+  // 윗면은 다락 바닥 높이(loftY) 고정, 밑면은 내벽 윗면(fy+innerWallH)까지 자동으로 꽉 채움 — 내벽/다락 높이가 바뀌면 두께가 따라 갱신.
+  const loftD = 1.0;
+  const wallTopY = fy + innerWallH;
+  const loftTh = Math.max(0.02, loftY - wallTopY);
   box({ x: laneB - 0.2, z: zFrontU - loftD, w: W + 0.4, d: loftD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });
   label('다락 바닥', laneB + W / 2, loftY + 0.22, zFrontU - loftD / 2, 'dim');
   label('1층 통행 ≥1m', laneA + W / 2, fy + 0.22, zFrontL - 0.6, 'dim');
@@ -2342,10 +2345,10 @@ function drawStairAnno(p) {
   const roomY = fy + 0.012;
   room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: roomY, mat: materials.living, text: roomText('거실', firstLivingW, firstLivingD) });
   room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: roomY, mat: materials.bed, text: roomText('안방', firstFamilyW, firstFamilyD) });
-  // 1층바닥→다락바닥 전체 높이(=층고) 막대 + 라벨
-  box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: loftY - fy, mat: materials.guard, cast: false });
-  label(`층고 ${fmtDim(N * R)}m`, laneA - 0.38, fy + (loftY - fy) / 2, zFrontL - 0.05, 'dim');
-  return { nL, nU, height: N * R, livingW: firstLivingW, anbangW: firstFamilyW };
+  // 내벽 높이(=층고) 막대 + 라벨 — 1층 바닥~내벽 윗면. 내벽 높이가 바뀌면 숫자도 함께 갱신.
+  box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: innerWallH, mat: materials.guard, cast: false });
+  label(`내벽 높이 ${fmtDim(innerWallH)}m`, laneA - 0.38, fy + innerWallH / 2, zFrontL - 0.05, 'dim');
+  return { nL, nU, innerWallH, livingW: firstLivingW, anbangW: firstFamilyW };
 }
 
 let stairInfo = null;
@@ -2365,7 +2368,7 @@ function buildStair() {
   applyVisibility();
   if (stairInfoEl && stairInfo) {
     const N = Math.max(5, Math.round(stairParams.N));
-    stairInfoEl.textContent = `층고(1층바닥→다락바닥) ${fmtDim(N * stairParams.R)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
+    stairInfoEl.textContent = `내벽 높이(=층고) ${fmtDim(stairInfo.innerWallH)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
   }
 }
 
