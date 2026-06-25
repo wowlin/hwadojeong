@@ -58,7 +58,7 @@ import {
   floorOverlayLift, familyWindowW, kitchenSinkW, kitchenSinkD, kitchenSinkH, livingRearWindowW,
   familyRearWindowW, sideDoorW, sideDoorH, secondAtticDoorH, secondCorridorWindowH, secondCorridorWindowSillOffset,
   atticVentWindowW, atticSkyWindowW, atticSkyWindowH, atticSkyWindowSillOffset, atticRearWindowW, atticRearWindowH,
-  atticRearWindowSillOffset, sideGableWindowW, sideGableWindowH, sideGableWindowSillOffset, soundWall, STUD_SPACING,
+  atticRearWindowSillOffset, sideGableWindowW, sideGableWindowH, sideGableWindowSillOffset, STUD_SPACING,
   FRAME_WEB, FRAME_FLANGE, TRACK_H, frEaveOverhang, frSideOverhang, FRAME_ROOM_W,
   FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_RIM_W, DECK_RIM_W, FLOOR_JOIST_SPACING, planMarkW
 } from './constants.js';
@@ -675,12 +675,7 @@ verticalWallWithGaps(insideX1, buildingFrontZ, buildingD, firstWallY, [
   [sideDoorZ, sideDoorZ + sideDoorW]
 ], firstWallHeight, exteriorWall, materials.exteriorWall);
 lowWall(insideX1, sideDoorZ, exteriorWall, sideDoorW, sideDoorTopY, firstWallY + firstWallHeight - sideDoorTopY, materials.exteriorWall);   // 측면 출입문 위(인방)
-// 안방-화장실/계단 사이 내벽 — 방음벽(솔리드): 스틸스터드+암면 충진+양면 석고 2겹. 두께 0.16(일반 내벽 0.10보다 두껍게).
-verticalWallWithGaps(stairHighXWallX, insideZ0, insideD, firstWallY, [
-  [familyDoorZ, familyDoorZ + interiorDoorW]
-], firstWallHeight, soundWall, materials.soundWall);
-lowWall(stairHighXWallX, familyDoorZ, soundWall, interiorDoorW, firstWallY + interiorDoorH, firstWallHeight - interiorDoorH, materials.soundWall);
-label('안방·화장실 방음벽\n(암면+석고2겹)', stairHighXWallX + 0.1, firstFloorY + 1.95, 1.8, 'struct');
+// (안방-계단실 벽은 계단 단계 공유 벽[stairWallObjects]이 1층에 누적되므로 여기서 따로 그리지 않음 — 그 벽에 안방 출입문 개구가 포함됨)
 horizontalWallWithGaps(stairBathX, stairBathZ, stairBathW, firstWallY, [
   [stairBathDoorX, stairBathDoorEndX]
 ], stairBathWallH, interiorWall, materials.stairWall);
@@ -694,7 +689,7 @@ frontSash(familyRearWindowX, insideZ1 + 0.04, familyRearWindowW, familyRearWindo
 sideDoor(insideX1 + 0.04, sideDoorZ, sideDoorW, sideDoorBaseY, sideDoorH);   // 안방 측면 출입문(전면쪽, 도로측 창 대신)
 label('안방 측면 출입문', insideX1 + 0.5, sideDoorTopY + 0.05, sideDoorZ + sideDoorW / 2, 'opening');
 interiorDoorHorizontal(stairBathDoorX, stairBathZ, firstFloorY, stairBathDoorW, stairBathDoorH);
-pocketDoorVertical(stairHighXWallX, familyDoorZ, firstFloorY, interiorDoorH, 1);
+pocketDoorVertical(familyInnerWallX, familyDoorZ, firstFloorY, interiorDoorH, 1);   // 안방 출입문 — 공유 내력벽 개구에 맞춤
 
 // 안방 침대 2.0 x 2.0m — 뒤쪽 벽(높은 Z) + 동쪽(도로측, 높은 X) 코너. 머리맡=동쪽(높은 X) 벽.
 {
@@ -2366,8 +2361,14 @@ function buildStairWalls() {
   const loftY = firstFloorY + N * stairParams.R;          // 다락 바닥 높이(=계단 전체 높이)
   const wallH = (loftY - loftFloorThickness) - wy;        // 윗면 = 다락 바닥 밑면
   const d = buildingD - 2 * wt + 2 * inOv;
-  stairWallObjects.push(box({ x: livingInnerWallX - inW / 2, z: z0 + wt - inOv, w: inW, d, y: wy, h: wallH, mat: materials.stairInnerWall }));   // 거실|계단실 내벽(비내력 10cm)
-  stairWallObjects.push(box({ x: familyInnerWallX - familyInnerWallW / 2, z: z0 + wt - inOv, w: familyInnerWallW, d, y: wy, h: wallH, mat: materials.stairInnerWall }));   // 계단실|안방 내력벽 20cm — 말뚝 중심에 정렬
+  const zStart = z0 + wt - inOv;
+  const fx = familyInnerWallX - familyInnerWallW / 2;
+  captureInto(stairWallObjects, () => {
+    box({ x: livingInnerWallX - inW / 2, z: zStart, w: inW, d, y: wy, h: wallH, mat: materials.stairInnerWall });   // 거실|계단실 내벽(비내력 10cm)
+    // 계단실|안방 내력벽 20cm(말뚝 중심) — 안방 출입문 개구 1개 + 문 위 인방. 1층은 이 벽을 누적해 쓰고 따로 그리지 않음.
+    verticalWallWithGaps(fx, zStart, d, wy, [[familyDoorZ, familyDoorZ + interiorDoorW]], wallH, familyInnerWallW, materials.stairInnerWall);
+    lowWall(fx, familyDoorZ, familyInnerWallW, interiorDoorW, wy + interiorDoorH, wallH - interiorDoorH, materials.stairInnerWall);
+  });
 }
 
 let stairInfo = null;
