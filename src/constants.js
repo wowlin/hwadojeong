@@ -16,7 +16,7 @@ export const lotW = 9.95;
 export const lotD = 9;
 export const lotX0 = -0.50;                    // 거실(정면 오른쪽, 낮은 X) 외벽(x=0)에서 50cm 이격 — 민법 242조(경계 반미터 이상)
 export const roadW = 1.1;
-export const firstWallHeight = 2.6;            // 1층 벽 높이
+export const firstWallHeight = 2.59;           // 1층 벽 높이 = 계단 총높이(17×0.17=2.89) − 다락 바닥 30cm → 다락 바닥 윗면이 계단 꼭대기(loftY)에 맞음
 export const exteriorWall = 0.2;               // 외벽 두께
 export const interiorWall = 0.1;               // 내벽 두께
 export const stairRunW = 1.0;
@@ -28,7 +28,7 @@ export const interiorDoorH = 2.1;
 export const yardSashW = 2.35;
 export const yardSashH = 2.1;
 export const yardDeckH = 0.08;
-export const secondFloorThickness = 0.15;     // 다락 바닥 슬래브 두께
+export const secondFloorThickness = 0.30;     // 다락 바닥 슬래브 두께 = 계단 화면 loftFloorThickness와 동일(단일 출처). 윗면이 계단 꼭대기(loftY)에 맞음
 export const secondWallHeight = 1.10;         // 다락 무릎벽 높이(가중평균 ~1.75m로 다락 1.8m 한도 안전마진)
 export const roofSlopeDeg = 33;               // 지붕 물매(도)
 export const roofThickness = 0.26;            // 지붕(단열 260T+징크) 두께

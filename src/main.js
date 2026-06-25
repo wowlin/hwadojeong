@@ -2264,7 +2264,7 @@ for (const b of FRAME_BUTTONS) {
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
 const stairParams = { R: 0.17, T: 0.26, N: 17 };   // 단높이/계단폭(디딤 깊이)/계단 개수 (너비·위치는 1층 계단실에 고정)
-const loftFloorThickness = 0.30;                   // 다락 바닥 두께 고정 30cm — 계단 높이가 바뀌면 양쪽 내벽이 이 밑면에 맞춰 높이 변함(바닥 두께 불변)
+const loftFloorThickness = secondFloorThickness;   // 다락 바닥 두께(30cm) — 다락 슬래브(secondFloorThickness)와 단일 출처. 계단 높이가 바뀌어도 두께 불변, 양쪽 내벽이 밑면에 맞춤
 
 // ㄷ자 계단 좌표 — 1층 계단실(stairLowXRunX·stairHighXRunX, 뒤벽 턴존)에 맞춰 도출. 두 화면(계단·1층) 공유.
 function stairGeom(p) {
