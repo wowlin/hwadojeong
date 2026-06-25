@@ -2314,17 +2314,16 @@ function drawStairCore(p) {
   }
   // 계단참(laneB 턴존 + 두 런 사이 gap까지) — 사선 맨위 단보다 한 단 위(landingY), 사선↔상부계단 90° 전환
   box({ x: laneA + W, z: zTurn0, w: (laneB + W) - (laneA + W), d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
-  // 계단참 앞 단높이 면(사선 맨위 단 → 계단참 한 단 올라감)
-  box({ x: laneA + W, z: zTurn0, w: riserD, d: turnD, y: landingY - R, h: R - treadH, mat: materials.stairWall, cast: false });
+  // 계단참 앞 단높이 면(사선 맨위 단 → 계단참 한 단 올라감) — 일반 계단벽과 같은 높이(R), 윗면=계단참 발판 밑면
+  box({ x: laneA + W, z: zTurn0, w: riserD, d: turnD, y: landingY - treadH - R, h: R, mat: materials.stairWall, cast: false });
   // 상부 곧은계단(laneB, -Z) → 마지막 단은 다락보다 한 단 아래. 세로막이 반대편(+Z) + 발판 두께만큼 아래로
   const baseU = landingY;
   for (let j = 0; j < nU; j += 1) {
     const topY = baseU + (j + 1) * R;
     const zT = zTurn0 - (j + 1) * T;
     box({ x: laneB, z: zT, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
-    const rY = j === 0 ? baseU : baseU + j * R - treadH;
-    const rH = j === 0 ? R - treadH : R;
-    box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });
+    const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
+    box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
 }
 
