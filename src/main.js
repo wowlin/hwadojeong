@@ -90,6 +90,7 @@ import {
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, siteBaseObjects, steelFrameObjects, woodFrameObjects, 골조Objects,
+  stairObjects,
 } from './groups.js';
 import './styles.css';
 
@@ -2326,8 +2327,8 @@ const STAGE_BUTTONS = [
   { id: 'viewFoundation', building: 'foundation', cam: [4.25, 10.2, -5.0] },
   { id: 'toggleFrame',    building: 'floorFrame',  cam: [4.25, 10.4, -5.0] },
   { id: 'stageFloor',     building: 'floor',       cam: [4.25, 10.7, -5.0] },
+  { id: 'stageStair',     building: 'stageStair',  cam: [8.6, 2.8, -4.2] },     // 계단 단독 설계(1층 앞) — 바닥 연결 + ㄷ자 가변 계단
   { id: 'stageFirst',     building: 'stageFirst',  cam: [4.25, 11.2, -5.0], reset: ['hedgeOn', 'fenceOn'] },
-  { id: 'stageStair',     building: 'stageStair',  cam: [4.25, 11.2, -5.0] },   // 계단 단독 설계 — 빈 화면(아래 isStair에서 전부 숨김)
   { id: 'stageAttic',     building: 'stageAttic',  cam: [4.25, 12.2, -5.0] },
   { id: 'stageRoof',      building: 'stageRoof',   cam: [10.8, 6.8, -8.8] },
 ];
@@ -2356,8 +2357,8 @@ function applyVisibility() {
   const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
   const effBuilding = (building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof') ? 'floor' : building;   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(같은 그룹 → 바닥 변경이 함께 반영=연동)
   const atLeast = (s) => STAGES.indexOf(effBuilding) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
-  const showFrame = atLeast('floorFrame') && !isPlan;          // 바닥틀(골조Objects): 바닥틀 단계 이상
-  const showFloorFinish = atLeast('floor') && !isPlan;         // 바닥: 바닥 단계 이상(골조 위 10cm 마감층)
+  const showFrame = (atLeast('floorFrame') || isStair) && !isPlan;     // 바닥틀(골조Objects): 바닥틀 단계 이상 + 계단 화면(바닥 연결)
+  const showFloorFinish = (atLeast('floor') || isStair) && !isPlan;    // 바닥: 바닥 단계 이상 + 계단 화면(바닥 연결)
   const showDeckFinish = (deckOn || atLeast('first')) && !isPlan; // 데크 바닥·계단: 1층 이상 자동 + 데크 토글
   const showFirst = firstOn;                                   // +1층: 독립 토글(현재 화면 위 누적)
   const showAttic = atticOn;                                   // +다락: 독립 토글
@@ -2365,8 +2366,10 @@ function applyVisibility() {
   const showStageWall = building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof';   // 1층 외벽(반투명): 1층 단계부터 누적 표시
 
   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(effBuilding=floor) — 빈 화면 단계 없음. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
-  for (const item of siteBaseObjects) item.visible = !isStair;      // 바탕 대지·도로: 모든 화면에 표시(계단 단독 화면은 빈 화면)
+  for (const item of siteBaseObjects) item.visible = true;          // 바탕 대지·도로: 모든 화면에 표시
   for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
+  for (const item of stairObjects) item.visible = isStair;                             // ㄷ자 계단(계단 단독 설계 화면)
+  if (typeof stairPanel !== 'undefined' && stairPanel) stairPanel.style.display = isStair ? 'flex' : 'none';   // 계단 조절 패널: 계단 화면에서만
   for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
   for (const item of firstFloorObjects) item.visible = showFirst;
   for (const item of firstWallObjects) item.visible = showStageWall;                   // 1층 외벽(반투명): 1층·다락·지붕 단계
@@ -2379,10 +2382,10 @@ function applyVisibility() {
   for (const item of wallObjects) item.visible = sunReady && wallOn && !isPlan; // 외벽은 썬룸 위에만
   for (const item of foldingObjects) item.visible = sunReady && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
   for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
-  for (const item of foundationObjects) item.visible = !isPlan && !isStair;          // 입체 기초: 바닥(평면도)·계단 단독 화면에선 숨김
+  for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
   for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
   for (const item of floorFrameDimObjects) item.visible = building === 'floorFrame'; // 바닥틀 방별 너비·깊이 치수: 바닥틀 뷰에서만
-  for (const item of footprintObjects) item.visible = !isStair;                      // 집·데크 발자국: 단일 출처, 모든 화면에 표시(계단 단독 화면은 빈 화면)
+  for (const item of footprintObjects) item.visible = true;                          // 집·데크 발자국: 단일 출처, 모든 화면에 항상 표시
   for (const item of planObjects) item.visible = isPlan;                             // 말뚝 마커: 바닥에서만
   for (const item of dimObjects) item.visible = isPlan || building === 'foundation'; // 평면 치수·모눈: 바닥 + 기초에 동일 표시
   for (const item of planOnlyDimObjects) item.visible = isPlan;                       // 측백 0.5m 치수: 바닥 전용(기초 뷰 숨김)
@@ -2443,6 +2446,129 @@ for (const b of FRAME_BUTTONS) {
     applyVisibility();
   });
 }
+
+// ── 계단 단독 설계(ㄷ자 가변 계단) ─────────────────────────────────────────────
+// 뒤벽에 붙는 ㄷ자(반환) 계단을 가변값 4개로 그린다: 너비·단높이·계단폭(디딤 깊이)·개수.
+//   1층 바닥 → 하부 곧은계단(+Z, 뒤로 오름) → 사선 3단(부채꼴 90°) → 계단참(평평 90°)
+//   → 반대 방향 상부 곧은계단(-Z, 앞으로 오름) → 마지막 단 위 = 다락 바닥.
+//   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
+//   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
+const stairParams = { W: 0.9, R: 0.18, T: 0.25, N: 15 };   // 너비/단높이/계단폭/개수
+const STAIR_RAD = Math.PI / 180;
+
+function drawStair(p) {
+  const W = p.W, R = p.R, T = p.T, N = Math.max(5, Math.round(p.N));
+  const fy = firstFloorY;
+  const nWind = 3;
+  const nL = Math.max(1, Math.ceil((N - nWind) / 2));   // 하부 곧은계단 수
+  const nU = Math.max(1, N - nWind - nL);               // 상부 곧은계단 수
+  const loftY = fy + N * R;                             // 다락 바닥 높이
+  const treadH = 0.05, riserD = 0.03;
+  const zBack = insideZ1 - 0.05;                        // 턴 존이 뒤벽에 붙음
+  const turnD = W;                                      // 턴 존 깊이(정사각)
+  const zTurn0 = zBack - turnD;                         // 턴 존 앞 경계
+  const cx = (insideX0 + insideX1) / 2;
+  const laneA = cx - W;                                 // 하부(1층→) 레인
+  const laneB = cx;                                     // 상부(→다락) 레인
+  const flightLenL = nL * T, flightLenU = nU * T;
+  const zFrontL = zTurn0 - flightLenL;                  // 하부계단 앞 끝(1층 입구)
+  const zFrontU = zTurn0 - flightLenU;                  // 상부계단 앞 끝(다락 출구)
+
+  // 하부 곧은계단(lane A, +Z로 오름)
+  for (let i = 0; i < nL; i += 1) {
+    const topY = fy + (i + 1) * R;
+    box({ x: laneA, z: zFrontL + i * T, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+    box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: fy + i * R, h: R, mat: materials.stairWall, cast: false });
+  }
+  // 사선(부채꼴) 3단 — pivot=(laneB, zTurn0), 180°(-X 입구) → 90°(+X 경계로 빠짐)
+  const P = [laneB, zTurn0];
+  const pt = (a) => [P[0] + W * Math.cos(a * STAIR_RAD), P[1] + W * Math.sin(a * STAIR_RAD)];
+  for (let k = 1; k <= nWind; k += 1) {
+    const a0 = 180 - 30 * (k - 1), a1 = 180 - 30 * k, am = (a0 + a1) / 2;
+    const topY = fy + (nL + k) * R;
+    flatPoly({ points: [P, pt(a0), pt(am), pt(a1)], y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+  }
+  // 계단참(lane B 턴 존, 평평) — 사선과 상부계단 사이 90° 전환
+  const landingY = fy + (nL + nWind) * R;
+  box({ x: laneB, z: zTurn0, w: W, d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
+  label('계단참', laneB + W / 2, landingY + 0.25, (zTurn0 + zBack) / 2, 'dim');
+  label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
+  // 상부 곧은계단(lane B, -Z로 오름) → 마지막 = 다락 바닥
+  for (let j = 0; j < nU; j += 1) {
+    const topY = fy + (nL + nWind + j + 1) * R;
+    const zT = zTurn0 - (j + 1) * T;
+    box({ x: laneB, z: zT, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+    box({ x: laneB, z: zT, w: W, d: riserD, y: fy + (nL + nWind + j) * R, h: R, mat: materials.stairWall, cast: false });
+  }
+  // 다락 바닥(상부계단 앞, 통행 ≥1m 공간) + 1층 통행 표기
+  const loftD = 1.0;
+  box({ x: laneB - 0.2, z: zFrontU - loftD, w: W + 0.4, d: loftD, y: loftY - treadH, h: treadH, mat: materials.landing, cast: false });
+  label('다락 바닥', laneB + W / 2, loftY + 0.22, zFrontU - loftD / 2, 'dim');
+  label('1층 통행 ≥1m', laneA + W / 2, fy + 0.22, zFrontL - 0.6, 'dim');
+  // 계단실 양쪽 내벽(1층과 연결될 벽) — 두 곧은계단 바깥쪽, 바닥~다락 높이(반투명, 계단 보이게)
+  const wallT = interiorWall;
+  const zWallFront = Math.min(zFrontL, zFrontU);
+  const wallH = loftY - fy;
+  box({ x: laneA - wallT, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });   // 좌측 내벽
+  box({ x: laneB + W, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });        // 우측 내벽
+  // 1층바닥→다락바닥 전체 높이(=층고) 막대 + 라벨
+  box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: loftY - fy, mat: materials.guard, cast: false });
+  label(`층고 ${fmtDim(N * R)}m`, laneA - 0.38, fy + (loftY - fy) / 2, zFrontL - 0.05, 'dim');
+  return { nL, nU, height: N * R };
+}
+
+let stairInfo = null;
+function buildStair() {
+  for (const o of stairObjects) {
+    scene.remove(o);
+    if (o.geometry) o.geometry.dispose();
+    if (o.material && o.material.map) o.material.map.dispose();
+  }
+  stairObjects.length = 0;
+  captureInto(stairObjects, () => { stairInfo = drawStair(stairParams); });
+  applyVisibility();
+  if (stairInfoEl && stairInfo) {
+    const N = Math.max(5, Math.round(stairParams.N));
+    stairInfoEl.textContent = `층고(1층바닥→다락바닥) ${fmtDim(N * stairParams.R)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단`;
+  }
+}
+
+// 조절 패널(계단 화면에서만 표시) — 값 입력 시 즉시 다시 그림
+const stairStyle = document.createElement('style');
+stairStyle.textContent = `
+  #stairPanel { position: fixed; top: 14px; left: 14px; z-index: 50; display: none; flex-direction: column; gap: 8px;
+    background: rgba(255,255,255,0.94); border: 1px solid #cdbfa6; border-radius: 10px; padding: 12px 14px;
+    font: 600 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color: #3a2f22; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+  #stairPanel .sp-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+  #stairPanel label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  #stairPanel input { width: 80px; padding: 4px 6px; border: 1px solid #b9a988; border-radius: 6px; font: inherit; text-align: right; }
+  #stairPanel .sp-info { margin-top: 4px; font-weight: 700; color: #4a7a3a; font-size: 12.5px; max-width: 220px; line-height: 1.4; }
+`;
+document.head.appendChild(stairStyle);
+const stairPanel = document.createElement('div');
+stairPanel.id = 'stairPanel';
+stairPanel.innerHTML = `
+  <div class="sp-title">ㄷ자 계단 설계</div>
+  <label>너비 (m)<input id="sp_w" type="number" step="0.05" min="0.6"></label>
+  <label>단높이 (m)<input id="sp_r" type="number" step="0.01" min="0.10"></label>
+  <label>계단폭 (m)<input id="sp_t" type="number" step="0.01" min="0.20"></label>
+  <label>계단 개수<input id="sp_n" type="number" step="1" min="5"></label>
+  <div class="sp-info" id="sp_info"></div>
+`;
+document.body.appendChild(stairPanel);
+const stairInfoEl = document.querySelector('#sp_info');
+const _spw = document.querySelector('#sp_w'), _spr = document.querySelector('#sp_r');
+const _spt = document.querySelector('#sp_t'), _spn = document.querySelector('#sp_n');
+_spw.value = stairParams.W; _spr.value = stairParams.R; _spt.value = stairParams.T; _spn.value = stairParams.N;
+function onStairInput() {
+  stairParams.W = parseFloat(_spw.value) || stairParams.W;
+  stairParams.R = parseFloat(_spr.value) || stairParams.R;
+  stairParams.T = parseFloat(_spt.value) || stairParams.T;
+  stairParams.N = parseInt(_spn.value, 10) || stairParams.N;
+  buildStair();
+}
+for (const el of [_spw, _spr, _spt, _spn]) el.addEventListener('input', onStairInput);
+buildStair();
 
 applyVisibility();
 setPlanView();   // 초기 화면 = 바닥(배치도) 평면도

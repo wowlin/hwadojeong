@@ -26,3 +26,4 @@ export const siteBaseObjects = [];   // 바탕 대지(흙)·도로 — 미검토
 export const steelFrameObjects = [];   // 스틸 골조(스틸골조 토글) — 1층·다락·지붕 일괄
 export const woodFrameObjects = [];    // 목골조(목골조 토글) — 동일 형상, 목재 마감
 export const 골조Objects = [];          // 골조 버튼 전용 — 사용자가 단계적으로 추가할 골조 형상(스틸/목골조와 별개). 켜짐 시 입체 뷰에 표시.
+export const stairObjects = [];        // 계단 단독 설계(계단 버튼) — ㄷ자 계단(가변: 너비·단높이·계단폭·개수). 계단 화면에서만 표시.
