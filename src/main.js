@@ -2333,14 +2333,17 @@ function drawStairAnno(p) {
   const { W, R, N, fy, nL, nWind, nU, loftY, treadH, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
   label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
-  // 다락 바닥(상부계단 앞, 통행 ≥1m) + 1층 통행 표기
-  // 윗면은 다락 바닥 높이(loftY) 고정, 밑면은 내벽 윗면(fy+innerWallH)까지 자동으로 꽉 채움 — 내벽/다락 높이가 바뀌면 두께가 따라 갱신.
-  const loftD = 1.0;
+  // 다락 바닥(상부계단 앞 통행) — 상부계단 출구(zFrontU)에서 앞 외벽 안쪽(insideZ0)까지 확보되는 평탄 통행 깊이.
+  // 상부 단수가 늘면 zFrontU가 앞으로 밀려 통행 깊이가 줄어든다(계단 변경 시 숫자 자동 갱신).
+  // 윗면은 다락 바닥 높이(loftY) 고정, 밑면은 내벽 윗면(fy+innerWallH)까지 자동으로 꽉 채움.
+  const loftPass = zFrontU - insideZ0;
   const wallTopY = fy + innerWallH;
   const loftTh = Math.max(0.02, loftY - wallTopY);
-  box({ x: laneB - 0.2, z: zFrontU - loftD, w: W + 0.4, d: loftD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });
-  label('다락 바닥', laneB + W / 2, loftY + 0.22, zFrontU - loftD / 2, 'dim');
-  label('1층 통행 ≥1m', laneA + W / 2, fy + 0.22, zFrontL - 0.6, 'dim');
+  box({ x: laneB - 0.2, z: insideZ0, w: W + 0.4, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });
+  label(`다락 통행 ${fmtDim(loftPass)}m`, laneB + W / 2, loftY + 0.22, insideZ0 + loftPass / 2, 'dim');
+  // 1층 계단 앞 통행 — 하부계단 입구(zFrontL)에서 앞 외벽 안쪽(insideZ0)까지. 하부 단수가 늘면 줄어든다.
+  const firstPass = zFrontL - insideZ0;
+  label(`1층 계단앞 통행 ${fmtDim(firstPass)}m`, laneA + W / 2, fy + 0.22, insideZ0 + firstPass / 2, 'dim');
   // 1층 거실·안방 — 1층 도면과 동일 크기(계단실 벽 위치가 1층 기준이라 양쪽 화면이 같음)
   const roomY = fy + 0.012;
   room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: roomY, mat: materials.living, text: roomText('거실', firstLivingW, firstLivingD) });
@@ -2348,7 +2351,7 @@ function drawStairAnno(p) {
   // 내벽 높이(=층고) 막대 + 라벨 — 1층 바닥~내벽 윗면. 내벽 높이가 바뀌면 숫자도 함께 갱신.
   box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: innerWallH, mat: materials.guard, cast: false });
   label(`내벽 높이 ${fmtDim(innerWallH)}m`, laneA - 0.38, fy + innerWallH / 2, zFrontL - 0.05, 'dim');
-  return { nL, nU, innerWallH, livingW: firstLivingW, anbangW: firstFamilyW };
+  return { nL, nU, innerWallH, firstPass, loftPass, livingW: firstLivingW, anbangW: firstFamilyW };
 }
 
 let stairInfo = null;
@@ -2368,7 +2371,7 @@ function buildStair() {
   applyVisibility();
   if (stairInfoEl && stairInfo) {
     const N = Math.max(5, Math.round(stairParams.N));
-    stairInfoEl.textContent = `내벽 높이(=층고) ${fmtDim(stairInfo.innerWallH)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
+    stairInfoEl.textContent = `내벽 높이(=층고) ${fmtDim(stairInfo.innerWallH)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n1층 계단앞 통행 ${fmtDim(stairInfo.firstPass)}m · 다락 통행 ${fmtDim(stairInfo.loftPass)}m\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
   }
 }
 
