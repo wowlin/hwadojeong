@@ -540,7 +540,7 @@ captureInto(floorFinishObjects, () => {
 
 // 1층 외벽(반투명) — 방 바닥 테두리선(집 발자국 0~buildingW / buildingFrontZ~+buildingD)에 맞춰 바깥면을 두고, 막대는 모두 안쪽으로만(밖으로 안 튀어나옴). 두께 0.2·높이 2.4·firstFloorY에서 시작. 1층·다락·지붕 단계 표시.
 {
-  const wt = 0.2, wh = 2.4, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;
+  const wt = exteriorWall, wh = firstWallHeight, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;   // 두께·높이를 단일 상수에서 읽음(외벽 설계 시 도식·상세가 함께 갱신)
   const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
   const W = materials.firstExtWall;
   // 앞(−Z) 외벽 — 정면 중앙에 방화출입문 개구부(표준 외짝 방화문+문틀: 폭 1.0m·높이 2.1m). 좌·우 벽 + 상부 인방으로 나누고 가운데를 비움.
