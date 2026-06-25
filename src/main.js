@@ -2453,7 +2453,7 @@ for (const b of FRAME_BUTTONS) {
 //   → 반대 방향 상부 곧은계단(-Z, 앞으로 오름) → 마지막 단 위 = 다락 바닥.
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
-const stairParams = { W: 0.9, R: 0.18, T: 0.25, N: 15 };   // 너비/단높이/계단폭/개수
+const stairParams = { W: 0.9, R: 0.18, T: 0.25, N: 15, WT: interiorWall, X: (insideX0 + insideX1) / 2 };   // 너비/단높이/계단폭/개수/계단실벽두께/계단실중심X
 
 function drawStair(p) {
   const W = p.W, R = p.R, T = p.T, N = Math.max(5, Math.round(p.N));
@@ -2466,7 +2466,8 @@ function drawStair(p) {
   const zBack = insideZ1 - 0.05;                        // 턴 존이 뒤벽에 붙음
   const turnD = W;                                      // 턴 존 깊이(정사각)
   const zTurn0 = zBack - turnD;                         // 턴 존 앞 경계
-  const cx = (insideX0 + insideX1) / 2;
+  const wallT = p.WT;                                  // 계단실 벽 두께(가변)
+  const cx = p.X;                                       // 계단실 중심 X(가변 — 좌우로 이동)
   const laneA = cx - W;                                 // 하부(1층→) 레인
   const laneB = cx;                                     // 상부(→다락) 레인
   const flightLenL = nL * T, flightLenU = nU * T;
@@ -2513,16 +2514,24 @@ function drawStair(p) {
   box({ x: laneB - 0.2, z: zFrontU - loftD, w: W + 0.4, d: loftD, y: loftY - treadH, h: treadH, mat: materials.landing, cast: false });
   label('다락 바닥', laneB + W / 2, loftY + 0.22, zFrontU - loftD / 2, 'dim');
   label('1층 통행 ≥1m', laneA + W / 2, fy + 0.22, zFrontL - 0.6, 'dim');
-  // 계단실 양쪽 내벽(1층과 연결될 벽) — 두 곧은계단 바깥쪽, 바닥~다락 높이(반투명, 계단 보이게)
-  const wallT = interiorWall;
+  // 계단실 양쪽 내벽(1층과 연결될 벽) — 두 곧은계단 바깥쪽, 바닥~다락 높이(반투명, 계단 보이게). 두께·위치 가변.
+  const wallLeftOuter = laneA - wallT;                  // 거실측(낮은 X) 벽 바깥면
+  const wallRightOuter = laneB + W + wallT;             // 안방측(높은 X) 벽 바깥면
   const zWallFront = Math.min(zFrontL, zFrontU);
   const wallH = loftY - fy;
-  box({ x: laneA - wallT, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });   // 좌측 내벽
-  box({ x: laneB + W, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });        // 우측 내벽
+  box({ x: laneA - wallT, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });   // 거실측 내벽
+  box({ x: laneB + W, z: zWallFront, w: wallT, d: zBack - zWallFront, y: fy, h: wallH, mat: materials.exteriorWall, cast: false, receive: false });        // 안방측 내벽
+  // 1층 거실(낮은 X)·안방(높은 X) — 계단실 벽 바깥쪽 잔여 바닥. 벽 두께·위치 바뀌면 크기 갱신.
+  const livingW = wallLeftOuter - insideX0;             // 거실 폭(insideX0 ~ 거실측 벽)
+  const anbangW = insideX1 - wallRightOuter;            // 안방 폭(안방측 벽 ~ insideX1)
+  const roomD = insideZ1 - insideZ0;                    // 방 깊이(앞~뒤 안목)
+  const roomY = fy + 0.012;
+  if (livingW > 0.1) room({ x: insideX0, z: insideZ0, w: livingW, d: roomD, y: roomY, mat: materials.living, text: roomText('거실', livingW, roomD) });
+  if (anbangW > 0.1) room({ x: wallRightOuter, z: insideZ0, w: anbangW, d: roomD, y: roomY, mat: materials.bed, text: roomText('안방', anbangW, roomD) });
   // 1층바닥→다락바닥 전체 높이(=층고) 막대 + 라벨
   box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: loftY - fy, mat: materials.guard, cast: false });
   label(`층고 ${fmtDim(N * R)}m`, laneA - 0.38, fy + (loftY - fy) / 2, zFrontL - 0.05, 'dim');
-  return { nL, nU, height: N * R };
+  return { nL, nU, height: N * R, livingW, anbangW };
 }
 
 let stairInfo = null;
@@ -2537,7 +2546,7 @@ function buildStair() {
   applyVisibility();
   if (stairInfoEl && stairInfo) {
     const N = Math.max(5, Math.round(stairParams.N));
-    stairInfoEl.textContent = `층고(1층바닥→다락바닥) ${fmtDim(N * stairParams.R)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단`;
+    stairInfoEl.textContent = `층고(1층바닥→다락바닥) ${fmtDim(N * stairParams.R)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n거실 폭 ${fmtDim(stairInfo.livingW)}m · 안방 폭 ${fmtDim(stairInfo.anbangW)}m`;
   }
 }
 
@@ -2550,7 +2559,7 @@ stairStyle.textContent = `
   #stairPanel .sp-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
   #stairPanel label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   #stairPanel input { width: 80px; padding: 4px 6px; border: 1px solid #b9a988; border-radius: 6px; font: inherit; text-align: right; }
-  #stairPanel .sp-info { margin-top: 4px; font-weight: 700; color: #4a7a3a; font-size: 12.5px; max-width: 220px; line-height: 1.4; }
+  #stairPanel .sp-info { margin-top: 4px; font-weight: 700; color: #4a7a3a; font-size: 12.5px; max-width: 240px; line-height: 1.5; white-space: pre-line; }
 `;
 document.head.appendChild(stairStyle);
 const stairPanel = document.createElement('div');
@@ -2561,21 +2570,27 @@ stairPanel.innerHTML = `
   <label>단높이 (m)<input id="sp_r" type="number" step="0.01" min="0.10"></label>
   <label>계단폭 (m)<input id="sp_t" type="number" step="0.01" min="0.20"></label>
   <label>계단 개수<input id="sp_n" type="number" step="1" min="5"></label>
+  <label>계단실 벽두께 (m)<input id="sp_wt" type="number" step="0.01" min="0.05"></label>
+  <label>계단실 위치 X (m)<input id="sp_x" type="number" step="0.1"></label>
   <div class="sp-info" id="sp_info"></div>
 `;
 document.body.appendChild(stairPanel);
 const stairInfoEl = document.querySelector('#sp_info');
 const _spw = document.querySelector('#sp_w'), _spr = document.querySelector('#sp_r');
 const _spt = document.querySelector('#sp_t'), _spn = document.querySelector('#sp_n');
+const _spwt = document.querySelector('#sp_wt'), _spx = document.querySelector('#sp_x');
 _spw.value = stairParams.W; _spr.value = stairParams.R; _spt.value = stairParams.T; _spn.value = stairParams.N;
+_spwt.value = stairParams.WT; _spx.value = stairParams.X;
 function onStairInput() {
   stairParams.W = parseFloat(_spw.value) || stairParams.W;
   stairParams.R = parseFloat(_spr.value) || stairParams.R;
   stairParams.T = parseFloat(_spt.value) || stairParams.T;
   stairParams.N = parseInt(_spn.value, 10) || stairParams.N;
+  stairParams.WT = parseFloat(_spwt.value) || stairParams.WT;
+  stairParams.X = parseFloat(_spx.value) || stairParams.X;
   buildStair();
 }
-for (const el of [_spw, _spr, _spt, _spn]) el.addEventListener('input', onStairInput);
+for (const el of [_spw, _spr, _spt, _spn, _spwt, _spx]) el.addEventListener('input', onStairInput);
 buildStair();
 
 applyVisibility();
