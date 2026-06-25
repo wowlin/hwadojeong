@@ -2267,7 +2267,7 @@ for (const b of FRAME_BUTTONS) {
 //   → 반대 방향 상부 곧은계단(-Z, 앞으로 오름) → 마지막 단 위 = 다락 바닥.
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
-const stairParams = { R: 0.18, T: 0.25, N: 15 };   // 단높이/계단폭(디딤 깊이)/계단 개수 (너비·위치는 1층 계단실에 고정)
+const stairParams = { R: 0.17, T: 0.26, N: 17 };   // 단높이/계단폭(디딤 깊이)/계단 개수 (너비·위치는 1층 계단실에 고정)
 const loftFloorThickness = 0.30;                   // 다락 바닥 두께 고정 30cm — 계단 높이가 바뀌면 양쪽 내벽이 이 밑면에 맞춰 높이 변함(바닥 두께 불변)
 
 // ㄷ자 계단 좌표 — 1층 계단실(stairLowXRunX·stairHighXRunX, 뒤벽 턴존)에 맞춰 도출. 두 화면(계단·1층) 공유.
@@ -2276,8 +2276,8 @@ function stairGeom(p) {
   const R = p.R, T = p.T, N = Math.max(5, Math.round(p.N));
   const fy = firstFloorY;
   const nWind = 3;
-  const nL = Math.max(1, Math.ceil((N - nWind) / 2));   // 하부 곧은계단 수
-  const nU = Math.max(1, N - nWind - nL - 2);           // 상부 곧은계단 수 (계단참·다락이 각각 한 단을 차지 → -2, 총 단수·다락높이 불변)
+  const nL = Math.max(1, Math.min(lowerStraightTreadCount, N - nWind - 3));   // 하부 곧은계단 = 고정(6). 추가 단은 다락쪽(상부)으로. 작은 N에서만 축소
+  const nU = Math.max(1, N - nWind - nL - 2);           // 상부(다락쪽) 곧은계단 = 나머지 (계단참·다락이 각각 한 단을 차지 → -2)
   const loftY = fy + N * R;                             // 다락 바닥 높이(=1층 층고)
   const landingY = fy + (nL + nWind + 1) * R;           // 계단참 높이 = 사선 맨위 단보다 한 단 위(평평 아님)
   const treadH = 0.05, riserD = 0.03;
