@@ -2351,7 +2351,7 @@ function drawStairAnno(p) {
   // 내벽 높이(=층고) 막대 + 라벨 — 1층 바닥~내벽 윗면. 내벽 높이가 바뀌면 숫자도 함께 갱신.
   box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: innerWallH, mat: materials.guard, cast: false });
   label(`내벽 높이 ${fmtDim(innerWallH)}m`, laneA - 0.38, fy + innerWallH / 2, zFrontL - 0.05, 'dim');
-  return { nL, nU, innerWallH, firstPass, loftPass, livingW: firstLivingW, anbangW: firstFamilyW };
+  return { nL, nU, innerWallH, firstPass, loftPass, livingW: firstLivingW, anbangW: firstFamilyW, stairW: W };
 }
 
 let stairInfo = null;
@@ -2371,7 +2371,7 @@ function buildStair() {
   applyVisibility();
   if (stairInfoEl && stairInfo) {
     const N = Math.max(5, Math.round(stairParams.N));
-    stairInfoEl.textContent = `내벽 높이(=층고) ${fmtDim(stairInfo.innerWallH)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n1층 계단앞 통행 ${fmtDim(stairInfo.firstPass)}m · 다락 통행 ${fmtDim(stairInfo.loftPass)}m\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
+    stairInfoEl.textContent = `계단 너비 ${fmtDim(stairInfo.stairW)}m\n내벽 높이(=층고) ${fmtDim(stairInfo.innerWallH)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n1층 계단앞 통행 ${fmtDim(stairInfo.firstPass)}m · 다락 통행 ${fmtDim(stairInfo.loftPass)}m\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
   }
 }
 
