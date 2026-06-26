@@ -2308,10 +2308,12 @@ function drawStairCore(p) {
   for (let k = 1; k <= nWind; k += 1) {
     flatPoly({ points: windPolys[k - 1], y: fy + (nL + k) * R - treadH, h: treadH, mat: materials.stair, cast: false });
   }
-  // 계단참(laneB 턴존 + 두 런 사이 gap까지) — 사선 맨위 단보다 한 단 위(landingY), 사선↔상부계단 90° 전환
-  box({ x: laneA + W, z: zTurn0, w: (laneB + W) - (laneA + W), d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
+  // 계단참(laneB 턴존만 — 상부 직선계단과 같은 폭 W) — 사선 맨위 단보다 한 단 위(landingY), 사선↔상부계단 90° 전환
+  box({ x: laneB, z: zTurn0, w: W, d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
+  // 두 런 사이 gap 공간 — 계단참에서 빼고 사선 맨위 단과 같은 높이로 내려, 사선계단 가장 위 단에 포함
+  box({ x: laneA + W, z: zTurn0, w: laneB - (laneA + W), d: turnD, y: fy + (nL + nWind) * R - treadH, h: treadH, mat: materials.stair, cast: false });
   // 계단참 앞 단높이 면(사선 맨위 단 → 계단참 한 단 올라감) — 일반 계단벽과 같은 높이(R), 윗면=계단참 발판 밑면
-  box({ x: laneA + W, z: zTurn0, w: riserD, d: turnD, y: landingY - treadH - R, h: R, mat: materials.stairWall, cast: false });
+  box({ x: laneB, z: zTurn0, w: riserD, d: turnD, y: landingY - treadH - R, h: R, mat: materials.stairWall, cast: false });
   // 상부 곧은계단(laneB, -Z) → 마지막 단은 다락보다 한 단 아래. 세로막이 반대편(+Z) + 발판 두께만큼 아래로
   const baseU = landingY;
   for (let j = 0; j < nU; j += 1) {
@@ -2327,8 +2329,7 @@ function drawStairCore(p) {
 function drawStairAnno(p) {
   const g = stairGeom(p);
   const { W, R, N, fy, nL, nWind, nU, loftY, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
-  label('계단참', laneA + W + (laneB - laneA) / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
-  label('사선 3단', laneA + W / 2, fy + (nL + 2) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
+  label('계단참', laneB + W / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   // 다락 바닥(상부계단 앞 통행) — 상부계단 출구(zFrontU)에서 앞 외벽 안쪽(insideZ0)까지 확보되는 평탄 통행 깊이.
   // 상부 단수가 늘면 zFrontU가 앞으로 밀려 통행 깊이가 줄어든다(계단 변경 시 숫자 자동 갱신).
   // 두께는 30cm 고정(loftFloorThickness). 윗면=다락 바닥 높이(loftY), 밑면=loftY-30cm → 양쪽 내벽이 이 밑면에 맞춰 높이 변함.
