@@ -690,10 +690,7 @@ verticalWallWithGaps(insideX1, buildingFrontZ, buildingD, firstWallY, [
 ], firstWallHeight, exteriorWall, materials.exteriorWall);
 lowWall(insideX1, sideDoorZ, exteriorWall, sideDoorW, sideDoorTopY, firstWallY + firstWallHeight - sideDoorTopY, materials.exteriorWall);   // 측면 출입문 위(인방)
 // (안방-계단실 벽은 계단 단계 공유 벽[stairWallObjects]이 1층에 누적되므로 여기서 따로 그리지 않음 — 그 벽에 안방 출입문 개구가 포함됨)
-horizontalWallWithGaps(stairBathX, stairBathZ, stairBathW, firstWallY, [
-  [stairBathDoorX, stairBathDoorEndX]
-], stairBathWallH, interiorWall, materials.stairWall);
-lowWall(stairBathDoorX, stairBathZ, stairBathDoorW, interiorWall, firstWallY + stairBathDoorH, stairBathWallH - stairBathDoorH, materials.stairWall);
+// (계단하부 WC 앞벽·출입문은 계단 본체와 함께 drawStairCore()에서 그림 → 계단 단계부터 보임. 여기선 안 그림)
 germanSlidingDoor(livingYardSashX, buildingFrontZ - 0.04, yardSashW, yardSashSillY, yardSashH); // 거실 전면 독일식 시스템도어(출입·현관 높이 2.1m)
 label('거실 독일식 시스템도어 VATON PS', livingYardSashX + yardSashW / 2, yardSashTopY + 0.14, buildingFrontZ - 0.35, 'opening');
 entryDoor(entryGapStart, buildingFrontZ - 0.04, entryFrameOuterW, entryDoorLeafW, entryDoorBaseY);
@@ -702,7 +699,6 @@ frontSash(livingRearWindowX, insideZ1 + 0.04, livingRearWindowW, livingRearWindo
 frontSash(familyRearWindowX, insideZ1 + 0.04, familyRearWindowW, familyRearWindowSillY, familyRearWindowH);
 sideDoor(insideX1 + 0.04, sideDoorZ, sideDoorW, sideDoorBaseY, sideDoorH);   // 안방 측면 출입문(전면쪽, 도로측 창 대신)
 label('안방 측면 출입문', insideX1 + 0.5, sideDoorTopY + 0.05, sideDoorZ + sideDoorW / 2, 'opening');
-interiorDoorHorizontal(stairBathDoorX, stairBathZ, firstFloorY, stairBathDoorW, stairBathDoorH);
 pocketDoorVertical(familyInnerWallX, familyDoorZ, firstFloorY, interiorDoorH, 1);   // 안방 출입문 — 공유 내력벽 개구에 맞춤
 
 // 안방 침대 2.0 x 2.0m — 뒤쪽 벽(높은 Z) + 동쪽(도로측, 높은 X) 코너. 머리맡=동쪽(높은 X) 벽.
@@ -2305,7 +2301,7 @@ function stairGeom(p) {
 // 계단 본체(발판·세로막이·사선·계단참) — 계단 화면 + 1층 공유(stairCoreObjects).
 function drawStairCore(p) {
   const g = stairGeom(p);
-  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY } = g;
+  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY, loftY } = g;
   const nosing = 0.02;   // 계단코 — 디딤판 앞코가 아래 단 위로 돌출하는 길이
   // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰. 앞코(-Z)로 nosing 돌출.
   for (let i = 0; i < nL; i += 1) {
@@ -2367,6 +2363,16 @@ function drawStairCore(p) {
   }
   // 뒷부분(턴존~뒤 외벽) — 계단 아래 높이(사선 맨위 단)로 채워 칸막이를 뒤 외벽까지 연장 → 계단실을 두 공간으로 분리. 위(천장까지)는 트임.
   box({ x: gapX, z: zTurn0, w: gapW, d: insideZ1 - zTurn0, y: fy, h: (nL + nWind) * R, mat: materials.stairWall, cast: false });
+  // 계단하부 WC(상부런 laneB 아래·안방측 공간) 앞벽 — 트인 전면을 막아 화장실로 사용. 가운데 출입문 1개. 윗면=다락 바닥 밑면.
+  {
+    const wcWallH = (loftY - loftFloorThickness) - fy;
+    const dW = interiorDoorW, dH = interiorDoorH, t = interiorWall;
+    const dx0 = laneB + (W - dW) / 2, dx1 = dx0 + dW;
+    box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });          // 문 왼쪽 벽
+    box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });      // 문 오른쪽 벽
+    box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairWall, cast: false });          // 문 위 인방
+    interiorDoorHorizontal(dx0, zFrontL, fy, dW, dH);                                                                       // WC 출입문
+  }
   // 난간 — 칸막이(벽)가 막는 두 런 사이가 아니라, 트여서 추락 위험이 있는 '하부 직선계단의 거실측(laneA)' 가장자리에 둔다. 계단 경사를 따라 손잡이(발판+0.9m) + 양 끝·중간 수직 동자.
   const railX = laneA, railH = 0.9, postR = 0.022, handR = 0.028;
   const post = (y0, z) => railCylinder([railX, y0, z], [railX, y0 + railH, z], postR);
