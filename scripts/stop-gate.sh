@@ -35,9 +35,10 @@ if printf '%s' "$LAST" | grep -Eq '계단|높이|폭|위치|정렬|부채꼴|치
 
 NEED_SIDE=0
 [ "$SRC_DIRTY" -eq 1 ] && NEED_SIDE=1
-[ "$CLAIM" -eq 1 ] && [ "$TOPIC" -eq 1 ] && NEED_SIDE=1
+# 단순 질문(코드 변경 없음)에는 측면 렌더를 강제하지 않는다 — 편집했을 때(SRC_DIRTY)만 측면 확인 요구.
+# (CLAIM·TOPIC는 위에서 계산만 하고 트리거엔 쓰지 않음: Q&A 반복 차단 방지)
 
-# 둘 다 해당 없으면(코드 클린 + 기하 단정 없음) 통과.
+# 코드 변경이 없으면 통과.
 [ "$NEED_SIDE" -eq 0 ] && exit 0
 
 fails=""
