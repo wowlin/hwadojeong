@@ -10,7 +10,7 @@
 #         A. src 에 커밋 안 된 변경이 있다(편집함)
 #         B. 마지막 답변이 '기하 주제(계단/높이/폭/정렬/부채꼴/치수…)'에 대해 '완료/일치'를 단정한다
 #       또한 src 가 dirty 면 유닛테스트·렌더 게이트도 돌려 실패 시 차단한다.
-ROOT=/Users/aine/work/three-house
+ROOT=/Users/aine/work/hwadojeong
 cd "$ROOT" || exit 0
 
 INPUT=$(cat 2>/dev/null)

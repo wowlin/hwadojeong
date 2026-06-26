@@ -43,7 +43,9 @@
   3. 이 변경을 안 하면 요청 자체가 불가능한가?
   → 하나라도 No면 멈추고 묻는다.
 - "화면: 요청" 형식 → 콜론 앞 = 대상 화면, 뒤 = 작업. 해당 화면에서 결과가 반드시 보여야 함.
-- 에이전트: `.claude/agents/verifier.md` · 스킬: `.claude/skills/model-edit/SKILL.md`
+- 에이전트: `.claude/agents/verifier.md` · 스킬: `.claude/skills/model-edit/SKILL.md` (둘 다 실재함).
+- 종료 게이트 `scripts/stop-gate.sh`는 Stop 훅에 연결됨 — src가 dirty거나 기하 '완료' 단정 시 `npm test`·`check:render`·측면 렌더(최근성) 미충족이면 종료를 차단. 한글 보고 게이트(`korean-check.mjs`)도 함께 작동.
+- 하네스 재구성·점검은 `harness` 플러그인 메타 스킬로: "하네스 구성해줘"/"하네스 점검해줘" 호출(에이전트 팀 모드, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 설정됨).
 
 ## 5. 프로그램 구조 — 단일 출처·누적 (앞→뒤)
 - **설계 파이프라인(배치→기초→바닥틀→바닥→계단→1층→다락→지붕)이 '진짜 집'이자 단일 출처다.** 각 부재는 처음 나오는 단계에서 **딱 한 번만** 정의한다. 뒤 단계는 그것을 자동 누적하고, 거기서 사용자가 할 일은 **'보이기/숨기기'뿐.** 같은 부재를 뒤 단계에서 다시 그리거나 좌표를 다시 잡지 마라.
