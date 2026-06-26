@@ -49,7 +49,10 @@ export function flatPoly({ points, y, h = 0.08, mat, name, cast = true, receive 
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
-  const mesh = new THREE.Mesh(geometry, mat);
+  // 폴리곤마다 점 순서(시계/반시계)가 섞여 윗면·옆면이 뒷면 컬링으로 사라지는 것 방지 → 양면 렌더
+  const dmat = mat.clone();
+  dmat.side = THREE.DoubleSide;
+  const mesh = new THREE.Mesh(geometry, dmat);
   mesh.castShadow = cast;
   mesh.receiveShadow = receive;
   mesh.name = name || '';
