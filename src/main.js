@@ -2389,9 +2389,8 @@ function buildStairWalls() {
   const fx = familyInnerWallX - familyInnerWallW / 2;
   captureInto(stairWallObjects, () => {
     box({ x: livingInnerWallX - inW / 2, z: zStart, w: inW, d, y: wy, h: wallH, mat: materials.stairInnerWall });   // 거실|계단실 내벽(비내력 10cm)
-    // 계단실|안방 내력벽 20cm(말뚝 중심) — 안방 출입문 개구 1개 + 문 위 인방. 1층은 이 벽을 누적해 쓰고 따로 그리지 않음.
-    verticalWallWithGaps(fx, zStart, d, wy, [[familyDoorZ, familyDoorZ + interiorDoorW]], wallH, familyInnerWallW, materials.stairInnerWall);
-    lowWall(fx, familyDoorZ, familyInnerWallW, interiorDoorW, wy + interiorDoorH, wallH - interiorDoorH, materials.stairInnerWall);
+    // 계단실|안방 내력벽 20cm(말뚝 중심) — 일단 통벽(안방 출입문 개구 없음, 나중에 다시 추가). 1층은 이 벽을 누적해 쓰고 따로 그리지 않음.
+    verticalWallWithGaps(fx, zStart, d, wy, [], wallH, familyInnerWallW, materials.stairInnerWall);
   });
 }
 
