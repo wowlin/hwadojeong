@@ -2357,6 +2357,14 @@ function drawStairCore(p) {
     const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
     box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
+  // 두 런(1층 하부런 ↔ 2층 상부런) 사이 gap 칸막이 — 각 단 발판 높이까지 계단모양으로 채워 양쪽 계단 하부(밑 삼각공간)를 가림.
+  const gapX = laneA + W, gapW = laneB - (laneA + W);
+  for (let i = 0; i < nL; i += 1) {
+    box({ x: gapX, z: zFrontL + i * T, w: gapW, d: T, y: fy, h: (i + 1) * R, mat: materials.stairWall, cast: false });        // 1층 하부런 측
+  }
+  for (let j = 0; j < nU; j += 1) {
+    box({ x: gapX, z: zTurn0 - (j + 1) * T, w: gapW, d: T, y: fy, h: (baseU + (j + 1) * R) - fy, mat: materials.stairWall, cast: false });   // 2층 상부런 측
+  }
 }
 
 // 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
