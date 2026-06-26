@@ -2306,10 +2306,11 @@ function stairGeom(p) {
 function drawStairCore(p) {
   const g = stairGeom(p);
   const { W, R, T, fy, nWind, nL, nU, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY } = g;
-  // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰
+  const nosing = 0.02;   // 계단코 — 디딤판 앞코가 아래 단 위로 돌출하는 길이
+  // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰. 앞코(-Z)로 nosing 돌출.
   for (let i = 0; i < nL; i += 1) {
     const topY = fy + (i + 1) * R;
-    box({ x: laneA, z: zFrontL + i * T, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+    box({ x: laneA, z: zFrontL + i * T - nosing, w: W, d: T + nosing, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
     const rY = i === 0 ? fy : fy + i * R - treadH;
     const rH = i === 0 ? R - treadH : R;
     box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });
@@ -2333,7 +2334,7 @@ function drawStairCore(p) {
   for (let j = 0; j < nU; j += 1) {
     const topY = baseU + (j + 1) * R;
     const zT = zTurn0 - (j + 1) * T;
-    box({ x: laneB, z: zT, w: W, d: T, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+    box({ x: laneB, z: zT, w: W, d: T + nosing, y: topY - treadH, h: treadH, mat: materials.stair, cast: false });   // 앞코(+Z)로 nosing 돌출
     const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
     box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
