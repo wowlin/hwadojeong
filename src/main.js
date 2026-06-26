@@ -2367,6 +2367,12 @@ function drawStairCore(p) {
   }
   // 뒷부분(턴존~뒤 외벽) — 계단 아래 높이(사선 맨위 단)로 채워 칸막이를 뒤 외벽까지 연장 → 계단실을 두 공간으로 분리. 위(천장까지)는 트임.
   box({ x: gapX, z: zTurn0, w: gapW, d: insideZ1 - zTurn0, y: fy, h: (nL + nWind) * R, mat: materials.stairWall, cast: false });
+  // 난간 — 칸막이(벽)가 막는 두 런 사이가 아니라, 트여서 추락 위험이 있는 '하부 직선계단의 거실측(laneA)' 가장자리에 둔다. 계단 경사를 따라 손잡이(발판+0.9m) + 양 끝·중간 수직 동자.
+  const railX = laneA, railH = 0.9, postR = 0.022, handR = 0.028;
+  const post = (y0, z) => railCylinder([railX, y0, z], [railX, y0 + railH, z], postR);
+  const loA = fy + R, loB = fy + nL * R;
+  railCylinder([railX, loA + railH, zFrontL], [railX, loB + railH, zTurn0], handR);
+  post(loA, zFrontL); post(loB, zTurn0); post(fy + Math.ceil(nL / 2) * R, zFrontL + Math.ceil(nL / 2) * T);
 }
 
 // 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
