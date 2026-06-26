@@ -2315,10 +2315,17 @@ function drawStairCore(p) {
     const rH = i === 0 ? R - treadH : R;
     box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });
   }
-  // 사선 3단 — 둥글게(부채꼴) 하지 않고 정사각 턴존을 직선 분할로 꽉 채움. pivot=P
+  // 사선 3단 — 회전 중심(안쪽 코너 P)에서 90°를 30°씩 균등 분할(보행선 디딤이 단마다 같아지게 = 돌음계단 안전 표준). 분할선이 턴존 경계와 만나는 점이 Q1·Q2.
   const P = [laneA + W, zTurn0];
   const A1 = [laneA, zTurn0], A2 = [laneA, zBack], A3 = [laneA + W, zBack];
-  const Q1 = [laneA, zTurn0 + 2 * W / 3], Q2 = [laneA + W / 3, zBack];
+  const rayHit = (deg) => {                                  // P에서 deg(0°=하부런쪽, 90°=상부런쪽) 광선이 턴존 벽(x=laneA 또는 z=zBack)과 만나는 점
+    const a = deg * Math.PI / 180, du = Math.cos(a), dv = Math.sin(a);
+    let t = Infinity;
+    if (du > 1e-9) t = Math.min(t, W / du);
+    if (dv > 1e-9) t = Math.min(t, turnD / dv);
+    return [laneA + W - t * du, zTurn0 + t * dv];
+  };
+  const Q1 = rayHit(30), Q2 = rayHit(60);
   const windPolys = [[P, A1, Q1], [P, Q1, A2, Q2], [P, Q2, A3]];
   for (let k = 1; k <= nWind; k += 1) {
     flatPoly({ points: windPolys[k - 1], y: fy + (nL + k) * R - treadH, h: treadH, mat: materials.stair, cast: false });
