@@ -2380,7 +2380,7 @@ function drawStairAnno(p) {
 function buildStairWalls() {
   clearStairGroup(stairWallObjects);
   const wt = 0.2, z0 = buildingFrontZ, wy = firstWallY + 0.003;
-  const inW = innerWallW, inOv = 0.05;   // inOv: 앞·뒤 외벽 안쪽으로 살짝 파고들어 연결부 면겹침(z-fighting 반짝) 방지
+  const inW = innerWallW, inOv = 0.003;   // inOv: 앞·뒤 외벽 안쪽으로 3mm만 파고들어 연결부 면겹침(z-fighting 반짝) 방지 — 폭은 안목 3.6m로 계산됨
   const N = Math.max(5, Math.round(stairParams.N));
   const loftY = firstFloorY + N * stairParams.R;          // 다락 바닥 높이(=계단 전체 높이)
   const wallH = (loftY - loftFloorThickness) - wy;        // 윗면 = 다락 바닥 밑면
