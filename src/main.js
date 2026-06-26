@@ -2378,7 +2378,11 @@ function drawStairAnno(p) {
   // 두께는 30cm 고정(loftFloorThickness). 윗면=다락 바닥 높이(loftY), 밑면=loftY-30cm → 양쪽 내벽이 이 밑면에 맞춰 높이 변함.
   const loftPass = zFrontU - insideZ0;
   const loftTh = loftFloorThickness;
-  box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 양쪽 외벽 안쪽까지
+  box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 양쪽 외벽 안쪽까지(앞쪽 통행)
+  // 거실 위·안방 위 다락바닥 — 계단실(가운데)만 비우고 양쪽을 뒤 외벽까지 채움. 앞쪽 통행 바닥과 zFrontU에서 이어짐.
+  const loftRestD = insideZ1 - zFrontU;
+  box({ x: insideX0, z: zFrontU, w: livingInnerWallX - insideX0, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });        // 거실 위
+  box({ x: familyInnerWallX, z: zFrontU, w: insideX1 - familyInnerWallX, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false }); // 안방 위
   // (상부 마지막 단↔다락 바닥 사이 계단벽은 두지 않음 — 30cm 두께 다락 바닥의 앞면이 그 단높이 벽 역할을 함)
   label(`다락 통행 ${fmtDim(loftPass)}m`, laneB + W / 2, loftY + 0.22, insideZ0 + loftPass / 2, 'dim');
   // 1층 계단 앞 통행 — 하부계단 입구(zFrontL)에서 앞 외벽 안쪽(insideZ0)까지. 하부 단수가 늘면 줄어든다.
