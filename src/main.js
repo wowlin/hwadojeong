@@ -2323,8 +2323,20 @@ function drawStairCore(p) {
   for (let k = 1; k <= nWind; k += 1) {
     flatPoly({ points: windPolys[k - 1], y: fy + (nL + k) * R - treadH, h: treadH, mat: materials.stair, cast: false });
   }
-  // 계단참(laneB 턴존만 — 상부 직선계단과 같은 폭 W) — 사선 맨위 단보다 한 단 위(landingY), 사선↔상부계단 90° 전환
-  box({ x: laneB, z: zTurn0, w: W, d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
+  // 사선 3단 앞코 — 각 단의 '아래 단과 맞닿는 앞 경계변'을 아래 단 쪽으로 nosing만큼 내민 띠.
+  const cen = (pts) => [pts.reduce((s, q) => s + q[0], 0) / pts.length, pts.reduce((s, q) => s + q[1], 0) / pts.length];
+  const noseStrip = (a, b, belowPt, topY) => {
+    let nx = -(b[1] - a[1]), nz = b[0] - a[0];                          // 경계변의 법선
+    const mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2;
+    if ((belowPt[0] - mx) * nx + (belowPt[1] - mz) * nz < 0) { nx = -nx; nz = -nz; }   // 아래 단 쪽으로
+    const len = Math.hypot(nx, nz) || 1; nx = nx / len * nosing; nz = nz / len * nosing;
+    flatPoly({ points: [a, b, [b[0] + nx, b[1] + nz], [a[0] + nx, a[1] + nz]], y: topY - treadH, h: treadH, mat: materials.stair, cast: false });
+  };
+  noseStrip(A1, P, [laneA + W / 2, zTurn0 - T / 2], fy + (nL + 1) * R);   // 단1 앞 = 하부런 마지막 단 위로
+  noseStrip(P, Q1, cen(windPolys[0]), fy + (nL + 2) * R);                 // 단2 앞 = 단1 위로
+  noseStrip(P, Q2, cen(windPolys[1]), fy + (nL + 3) * R);                 // 단3 앞 = 단2 위로
+  // 계단참(laneB 턴존만 — 상부 직선계단과 같은 폭 W) — 사선 맨위 단보다 한 단 위(landingY), 사선↔상부계단 90° 전환. 앞코(-X, 사선쪽)로 nosing 돌출.
+  box({ x: laneB - nosing, z: zTurn0, w: W + nosing, d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
   // 두 런 사이 gap 공간 — 계단참에서 빼고 사선 맨위 단과 같은 높이로 내려, 사선계단 가장 위 단에 포함
   box({ x: laneA + W, z: zTurn0, w: laneB - (laneA + W), d: turnD, y: fy + (nL + nWind) * R - treadH, h: treadH, mat: materials.stair, cast: false });
   // 계단참 앞 단높이 면(사선 맨위 단 → 계단참 한 단 올라감) — 일반 계단벽과 같은 높이(R), 윗면=계단참 발판 밑면
