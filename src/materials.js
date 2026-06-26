@@ -29,6 +29,7 @@ export const materials = {
   stairFront: new THREE.MeshLambertMaterial({ color: 0xdfeecf }),
   hall: new THREE.MeshLambertMaterial({ color: 0xeeeeee }),
   landing: new THREE.MeshLambertMaterial({ color: 0xffd166 }),
+  loftHeadFill: new THREE.MeshLambertMaterial({ color: 0x7fbf9b }),   // 1층계단 위 헤드룸 한계까지 메운 다락바닥 — 일반 다락바닥(노랑)과 구별(청록)
   stairWall: new THREE.MeshLambertMaterial({ color: 0xf2f0e8 }),
   guard: new THREE.MeshLambertMaterial({ color: 0x374151 }),
   sinkCabinet: new THREE.MeshLambertMaterial({ color: 0xd8c7a4 }),
