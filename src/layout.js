@@ -30,8 +30,6 @@ export const stairClearW = stairRunW * 2 + stairGap;
 export const sideRoomW = (insideX1 - insideX0 - stairClearW - interiorWall * 2) / 2;
 export const sideRoomD = layoutD;
 export const stairClearX = insideX0 + sideRoomW + interiorWall;
-export const stairLowXRunX = stairClearX;
-export const stairHighXRunX = stairLowXRunX + stairRunW + stairGap;
 export const stairLowXWallX = stairClearX - interiorWall;
 export const stairHighXWallX = stairClearX + stairClearW;
 export const stairHighXClearX = stairHighXWallX + interiorWall;
@@ -44,6 +42,9 @@ export const familyInnerWallW = 0.20;                                         //
 export const innerWallH = 2.4;                                                // 계단실 내벽 높이(=층고). 1층/계단 화면 공유. 윗면 = 다락 바닥 밑면.
 export const livingInnerWallX = exteriorWall / 2 + FRAME_ROOM_W;              // 거실|계단실 내벽 중심 X
 export const familyInnerWallX = buildingW - exteriorWall / 2 - FRAME_ROOM_W;  // 계단실|안방 내벽 중심 X
+// 계단 두 런 — 양쪽 내벽 안쪽 면에 직접 붙임(단일 출처=벽). 벽 두께·위치가 바뀌면 런이 자동으로 벽에 붙어 따라온다.
+export const stairLowXRunX = livingInnerWallX + innerWallW / 2;                       // 하부런 = 거실측 내벽 안쪽 면
+export const stairHighXRunX = familyInnerWallX - familyInnerWallW / 2 - stairRunW;    // 상부런 = 안방측 내력벽 안쪽 면(런폭만큼 안쪽)
 export const firstLivingD = sideRoomD;
 export const firstFamilyD = sideRoomD;
 export const firstLivingX = planRightLivingX;                                 // 거실 바닥 시작 = 우 외벽 안쪽 면
