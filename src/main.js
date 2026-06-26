@@ -2371,7 +2371,7 @@ function drawStairAnno(p) {
   // 두께는 30cm 고정(loftFloorThickness). 윗면=다락 바닥 높이(loftY), 밑면=loftY-30cm → 양쪽 내벽이 이 밑면에 맞춰 높이 변함.
   const loftPass = zFrontU - insideZ0;
   const loftTh = loftFloorThickness;
-  box({ x: laneB - 0.2, z: insideZ0, w: W + 0.4, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });
+  box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 양쪽 외벽 안쪽까지
   // (상부 마지막 단↔다락 바닥 사이 계단벽은 두지 않음 — 30cm 두께 다락 바닥의 앞면이 그 단높이 벽 역할을 함)
   label(`다락 통행 ${fmtDim(loftPass)}m`, laneB + W / 2, loftY + 0.22, insideZ0 + loftPass / 2, 'dim');
   // 1층 계단 앞 통행 — 하부계단 입구(zFrontL)에서 앞 외벽 안쪽(insideZ0)까지. 하부 단수가 늘면 줄어든다.
