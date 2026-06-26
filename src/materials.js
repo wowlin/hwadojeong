@@ -17,6 +17,7 @@ export const materials = {
   wall: new THREE.MeshLambertMaterial({ color: 0xffffff }),
   wallSide: new THREE.MeshLambertMaterial({ color: 0x9f917f }),
   exteriorWall: new THREE.MeshLambertMaterial({ color: 0xe4ded2, transparent: true, opacity: 0.58, depthWrite: false }),
+  exteriorWallMark: new THREE.MeshLambertMaterial({ color: 0xff8a5c }),   // 계단 화면 외벽 자리 표시(주황) — 외벽이 안 그려지는 화면에서 공간 경계 인지용
   wallTop: new THREE.MeshLambertMaterial({ color: 0x8f8374 }),
   living: new THREE.MeshLambertMaterial({ color: 0xfff3c4 }),
   bed: new THREE.MeshLambertMaterial({ color: 0xbed8ff }),

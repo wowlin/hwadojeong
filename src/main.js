@@ -299,14 +299,28 @@ function label(text, x, y, z, group = 'dim') {
   canvas.width = Math.max(120, Math.ceil(textW + pad * 2));    // 가로폭 = 텍스트 폭 + 여백(고정 768 폐기)
   canvas.height = H;
   setFont();                                                   // 캔버스 리사이즈로 컨텍스트 초기화됨 → 재설정
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#111827';
+  // 배경 박스 없음(투명) → 뒤 구조가 안 가려짐. 대신 글자에 외곽선 + 옅은 입체 두께로 어디서나 또렷.
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  const faceColor = bg.replace(/[\d.]+\)\s*$/, '1)');   // 그룹색을 불투명으로 → 글자 윗면 색(그룹 구분 유지)
+  const depth = Math.max(2, Math.round(fontSize * 0.07));   // 입체 두께(px)
   const lineH = fontSize * 1.18;
   const startY = canvas.height / 2 - lineH * (lines.length - 1) / 2;
-  lines.forEach((l, i) => ctx.fillText(l, canvas.width / 2, startY + i * lineH));
+  const cx = canvas.width / 2;
+  lines.forEach((l, i) => {
+    const ly = startY + i * lineH;
+    for (let d = depth; d >= 1; d -= 1) {            // 옆면(아래·오른쪽으로 밀린 어두운 복제) = 두께
+      ctx.fillStyle = '#374151';
+      ctx.fillText(l, cx + d, ly + d);
+    }
+    ctx.lineWidth = Math.max(4, fontSize * 0.16);    // 외곽선 — 배경 없이도 밝/어두운 바탕 모두에서 또렷
+    ctx.strokeStyle = '#1f2937';
+    ctx.strokeText(l, cx, ly);
+    ctx.fillStyle = faceColor;                        // 윗면(그룹색)
+    ctx.fillText(l, cx, ly);
+  });
   const texture = new THREE.CanvasTexture(canvas);
   const isDim = group === 'dim';   // 치수 라벨은 항상 맨 위에 그려 땅·두부·구조에 안 묻히게(깊이 무시)
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: !isDim, depthWrite: !isDim }));
@@ -2329,6 +2343,15 @@ function drawStairCore(p) {
 function drawStairAnno(p) {
   const g = stairGeom(p);
   const { W, R, N, fy, nL, nWind, nU, loftY, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
+  // 외벽 자리 표시 — 계단 화면엔 외벽을 안 그리므로, 외벽 둘레(집 발자국 테두리)를 주황 바닥띠로 표시해 공간 경계를 인지시킨다.
+  {
+    const wt = exteriorWall, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;
+    const my = firstWallY, mh = 0.05, M = materials.exteriorWallMark;
+    box({ x: 0, z: z0, w: buildingW, d: wt, y: my, h: mh, mat: M, cast: false });                 // 앞(입구쪽)
+    box({ x: 0, z: z1 - wt, w: buildingW, d: wt, y: my, h: mh, mat: M, cast: false });             // 뒤
+    box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: my, h: mh, mat: M, cast: false });    // 우(거실쪽)
+    box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: my, h: mh, mat: M, cast: false }); // 좌(안방쪽)
+  }
   label('계단참', laneB + W / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
   // 다락 바닥(상부계단 앞 통행) — 상부계단 출구(zFrontU)에서 앞 외벽 안쪽(insideZ0)까지 확보되는 평탄 통행 깊이.
   // 상부 단수가 늘면 zFrontU가 앞으로 밀려 통행 깊이가 줄어든다(계단 변경 시 숫자 자동 갱신).
