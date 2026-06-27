@@ -1,5 +1,6 @@
 // 렌더 가시성 그룹(단일 출처) — 빌더가 push, applyVisibility가 visible 제어. 배열은 공유 참조(import해도 동일 객체).
-export const floorFinishObjects = []; // 바닥재 마감(바닥틀 위) — '바닥' 단계 이상에서 표시
+export const firstFloorFinishObjects = []; // 집 1층 바닥재(바닥틀 위) — 1층 '1층 바닥' 토글
+export const deckFloorObjects = [];   // 데크 포세린 바닥 + 데크 계단 디딤판 — 썬룸 '데크 바닥' 토글
 export const firstFloorObjects = [];   // 1층 골조·실내(기초 토글 시 숨김)
 export const bathObjects = [];         // 계단하부 WC(변기·세면대·온수기·배기) — '화장실' 토글
 export const firstWallObjects = [];    // 1층 외벽(반투명, 두께 0.2·높이 2.4) — 1층·다락·지붕 단계에서 표시
@@ -28,6 +29,7 @@ export const siteBaseObjects = [];   // 바탕 대지(흙)·도로 — 미검토
 export const steelFrameObjects = [];   // 스틸 골조(스틸골조 토글) — 1층·다락·지붕 일괄
 export const woodFrameObjects = [];    // 목골조(목골조 토글) — 동일 형상, 목재 마감
 export const 골조Objects = [];          // 골조 버튼 전용 — 사용자가 단계적으로 추가할 골조 형상(스틸/목골조와 별개). 켜짐 시 입체 뷰에 표시.
+export const deckStairFrameObjects = []; // 데크 계단틀(직선 앞·왼쪽 + 부채꼴 코너) — 바닥틀에서 분리, 썬룸 '데크계단틀' 토글
 export const stairObjects = [];        // 계단 화면 전용 주석(거실·안방 크기·라벨·층고·다락바닥) — 계단 화면에서만 표시.
 export const stairCoreObjects = [];    // ㄷ자 계단 본체(발판·사선·계단참) — 계단 화면 + 1층 화면 공유(계단에서 바꾸면 1층 반영).
 export const stairWallObjects = [];    // 계단실 양쪽 세로 내벽(거실|계단실·계단실|안방) — 계단 화면 + 1층 화면 공유(1층 원래 벽 1벌). (구 단일 출처: 분리 후 livingInnerWallObjects·familyInnerWallObjects 사용)

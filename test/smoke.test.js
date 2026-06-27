@@ -100,7 +100,7 @@ test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없
   const src = readFileSync(mainJs, 'utf8');
   // (1) 부품 상태는 view 객체의 독립 boolean — 핵심 부품 키 존재
   assert.match(src, /const view = \{/, '부품 상태는 단일 view 객체');
-  for (const k of ['foundation', 'floorFrame', 'floor', 'stair', 'livingWall', 'familyWall', 'extWall', 'roof', 'deck', 'sun']) {
+  for (const k of ['foundation', 'floorFrame', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun']) {
     assert.match(src, new RegExp(`\\b${k}:`), `view에 부품 키 ${k} 존재`);
   }
   // (2) PARTS 테이블이 부품→객체배열을 매핑하고, 가시성은 그 테이블로 일괄(독립)

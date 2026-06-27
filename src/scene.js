@@ -12,12 +12,12 @@ app.innerHTML = `
         <label class="chk"><input id="cFoundation" type="checkbox"><span>말뚝기초</span></label>
         <label class="chk"><input id="cMatFoundation" type="checkbox"><span>온통기초</span></label>
         <label class="chk"><input id="cFrame" type="checkbox"><span>바닥틀</span></label>
-        <label class="chk"><input id="cFloor" type="checkbox"><span>바닥</span></label>
         <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
         <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
       </section>
       <section class="menu-group">
         <h2 class="menu-title">1층</h2>
+        <label class="chk"><input id="cFirstFloorFinish" type="checkbox"><span>1층 바닥</span></label>
         <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
         <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
         <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
@@ -38,6 +38,8 @@ app.innerHTML = `
       <section class="menu-group">
         <h2 class="menu-title">썬룸</h2>
         <label class="chk"><input id="cDeck" type="checkbox"><span>데크</span></label>
+        <label class="chk"><input id="cDeckFloor" type="checkbox"><span>데크 바닥</span></label>
+        <label class="chk"><input id="cDeckStairFrame" type="checkbox"><span>데크계단틀</span></label>
         <label class="chk"><input id="cSun" type="checkbox"><span>썬룸</span></label>
         <label class="chk"><input id="cSunWall" type="checkbox"><span>외벽</span></label>
         <label class="chk"><input id="cFolding" type="checkbox"><span>폴딩도어</span></label>
