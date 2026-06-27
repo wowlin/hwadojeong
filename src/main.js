@@ -2259,22 +2259,16 @@ function setPlanView() {
   controls.update();
 }
 
-// 프리셋 뷰 — 배치도(부감): 모든 부품 끄고 평면만. 전체 모델(참고): 모든 부품 켜기.
+// 프리셋 뷰 — 배치도(부감): 모든 부품 끄고 평면만.
 function showPlan() {
   for (const k of Object.keys(view)) view[k] = false;
   view.plan = true;
   applyVisibility();
   setPlanView();
 }
-function showAll() {
-  for (const k of Object.keys(view)) view[k] = (k !== 'plan');
-  applyVisibility();
-  setView([10.8, 6.8, -8.8]);
-}
 
-// 뷰 버튼(배치도 · 현재 전체 모델)
+// 뷰 버튼(배치도)
 document.querySelector('#vPlan').addEventListener('click', showPlan);
-document.querySelector('#vAll').addEventListener('click', showAll);
 
 // 부품 체크박스 — 켜면 배치도(부감) 모드 자동 해제하고 해당 부품을 입체 모델 위에 표시.
 for (const [id, key] of CHECKS) {

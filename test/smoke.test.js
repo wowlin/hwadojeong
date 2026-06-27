@@ -95,7 +95,7 @@ test('⑩ 집 바닥틀 둘레 — 데크처럼 기초 footprint 끝까지(0~bui
 test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없음) + 배치도/전체모델 프리셋', () => {
   // 사용자 지시(레이아웃 재설계): 좌측 메뉴 = 부품 체크박스, 우측 = 렌더.
   //   · 각 부품은 view[key] boolean으로 완전 독립 표시(누적·단계 없음). PARTS 테이블이 [객체배열↔상태]를 일괄 구동.
-  //   · 배치도(부감)·현재 전체 모델은 여러 부품을 한 번에 세팅하는 프리셋 뷰(showPlan/showAll).
+  //   · 배치도(부감)는 여러 부품을 한 번에 끄는 프리셋 뷰(showPlan). '전체 모델' 프리셋은 제거됨.
   //   회귀 금지: 옛 누적 단계(STAGE_BUTTONS·effBuilding·atLeast·blankStage)로 되돌리지 말 것.
   const src = readFileSync(mainJs, 'utf8');
   // (1) 부품 상태는 view 객체의 독립 boolean — 핵심 부품 키 존재
@@ -109,10 +109,9 @@ test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없
   // (3) 안방 내력벽·거실측 벽은 분리된 별도 배열(부품별 토글 대상)
   assert.match(src, /key: 'familyWall', arrays: \[familyInnerWallObjects\]/, '안방 내력벽은 familyInnerWallObjects 단독 부품');
   assert.match(src, /key: 'livingWall', arrays: \[livingInnerWallObjects\]/, '거실측 벽은 livingInnerWallObjects 단독 부품');
-  // (4) 프리셋 뷰 — 배치도(전부 끄고 plan만) / 전체모델(전부 켜기)
+  // (4) 프리셋 뷰 — 배치도(전부 끄고 plan만). '전체 모델' 버튼·showAll은 제거됨.
   assert.match(src, /function showPlan\(\)/, '배치도 프리셋 showPlan');
-  assert.match(src, /function showAll\(\)/, '전체 모델 프리셋 showAll');
-  assert.match(src, /for \(const k of Object\.keys\(view\)\) view\[k\] = \(k !== 'plan'\);/, 'showAll은 plan 외 모든 부품 ON');
+  assert.doesNotMatch(src, /function showAll\(\)/, "'전체 모델' 프리셋 showAll 제거됨");
   // (5) 옛 누적 단계 구조 금지 — STAGE_BUTTONS·effBuilding·atLeast·blankStage 모두 제거
   assert.doesNotMatch(src, /STAGE_BUTTONS|effBuilding|blankStage/, '옛 누적 단계 구조(STAGE_BUTTONS·effBuilding·blankStage) 제거');
   assert.doesNotMatch(src, /const atLeast =/, '누적 판정 atLeast 제거(부품 독립 토글)');

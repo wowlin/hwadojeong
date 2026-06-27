@@ -12,6 +12,8 @@ app.innerHTML = `
         <label class="chk"><input id="cFoundation" type="checkbox"><span>기초</span></label>
         <label class="chk"><input id="cFrame" type="checkbox"><span>바닥틀</span></label>
         <label class="chk"><input id="cFloor" type="checkbox"><span>바닥</span></label>
+        <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
+        <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
       </section>
       <section class="menu-group">
         <h2 class="menu-title">집</h2>
@@ -32,12 +34,6 @@ app.innerHTML = `
         <label class="chk"><input id="cSunWall" type="checkbox"><span>외벽</span></label>
         <label class="chk"><input id="cFolding" type="checkbox"><span>폴딩도어</span></label>
         <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
-      </section>
-      <section class="menu-group reference">
-        <h2 class="menu-title">참고 (임시)</h2>
-        <button id="vAll" type="button" class="view-btn">현재 전체 모델</button>
-        <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
-        <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
       </section>
     </aside>
     <section class="stage-wrap">

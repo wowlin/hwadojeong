@@ -14,7 +14,7 @@ const manifestPath = resolve(root, 'tests/baseline-views.json');
 const update = process.argv.includes('--update');
 
 // 캡처할 화면 = scene을 바꾸는 뷰 버튼·부품 토글(각자 깨끗한 새 로드에서 1개만 클릭).
-const VIEWS = ['vPlan', 'cFoundation', 'cFrame', 'cFloor', 'cStair', 'cExtWall', 'cRoof', 'vAll'];
+const VIEWS = ['vPlan', 'cFoundation', 'cFrame', 'cFloor', 'cStair', 'cExtWall', 'cRoof'];
 
 let chromium;
 try { ({ chromium } = await import('playwright')); }

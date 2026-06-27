@@ -54,10 +54,7 @@ for (const id of [...ids].reverse()) {
   await page.click('#' + id); await page.waitForTimeout(80);
 }
 
-// 2) 프리셋 뷰: 현재 전체 모델(vAll)은 모든 부품 체크박스를 켜고, 배치도(vPlan)는 모두 끈다.
-await page.click('#vAll'); await page.waitForTimeout(200);
-const allOn = await page.$$eval('.sidebar input[type=checkbox]', (els) => els.every((c) => c.checked));
-if (!allOn) violations.push('전체 모델(vAll) 클릭 후 일부 부품이 꺼져 있음');
+// 2) 프리셋 뷰: 배치도(vPlan)는 모든 부품 체크박스를 끈다.
 await page.click('#vPlan'); await page.waitForTimeout(200);
 const allOff = await page.$$eval('.sidebar input[type=checkbox]', (els) => els.every((c) => !c.checked));
 if (!allOff) violations.push('배치도(vPlan) 클릭 후 일부 부품이 켜져 있음');
