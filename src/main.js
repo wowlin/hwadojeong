@@ -88,7 +88,7 @@ import {
 import {
   firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
-  outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationObjects,
+  outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, siteBaseObjects, steelFrameObjects, woodFrameObjects, 골조Objects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
@@ -995,11 +995,6 @@ captureInto(foundationObjects, () => {
   const m = 0.1;
   pileFoundation(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingZ: 1.9, xs: housePileXs });
 });
-// 온통기초(매트 슬래브) — 건물 발자국 전체를 덮는 콘크리트 슬래브(지면~기초 상단). 말뚝기초의 대안, 온통기초 토글로만 표시.
-captureInto(matFoundationObjects, () => {
-  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: foundationTopY - groundTopY, mat: materials.matFoundation });
-});
-
 // 말뚝기초 높이 치수 — 기초 뷰에서만 표시
 captureInto(foundationDimObjects, () => {
   const m = 0.1;
@@ -1596,6 +1591,15 @@ footprintObjects.push(box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD,
 for (const f of deckFootprints) {
   footprintObjects.push(box({ x: f.x, z: f.z, w: f.w, d: f.d, y: planY, h: planH, mat: materials.deckFoundation, cast: false, name: 'ground' }));   // 데크 기초(0.4m) — 청회색으로 집 기초(0.5m)와 구분
 }
+// 매트(온통)기초 — 말뚝기초의 대안. 50cm 콘크리트 슬래브. 부분=집만, 전체=집+데크(상호 단독 토글).
+const MAT_H = 0.5;   // 매트기초 높이 50cm
+captureInto(matFoundationHouseObjects, () => {
+  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트
+});
+captureInto(matFoundationFullObjects, () => {
+  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트
+  for (const f of deckFootprints) box({ x: f.x, z: f.z, w: f.w, d: f.d, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 데크 매트
+});
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
 function planPileMark(px, pz, mat = materials.pileHead) {   // 말뚝 두부 위치 마커(기본 검정 — 영상의 두부 브래킷처럼)
   planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH + 0.001, h: 0.002, mat, cast: false, name: 'ground' }));
@@ -2165,7 +2169,8 @@ const view = {
   // 기초 그룹
   plan: false,        // 배치도(부감) — 대지·도로·담장·말뚝·평면치수
   foundation: false,  // 입체 기초(시스템말뚝·두부)
-  matFoundation: false, // 온통기초(매트 슬래브)
+  matFoundationHouse: false, // 부분 매트기초(집만 50cm)
+  matFoundationFull: false,  // 전체 매트기초(집+데크 50cm)
   floorFrame: false,  // 바닥틀(바닥 골조)
   // 집 그룹(내부구조 부품별)
   firstFloorFinish: false, // 집 1층 바닥재
@@ -2188,7 +2193,8 @@ const view = {
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
 const PARTS = [
   { key: 'foundation', arrays: [foundationObjects, foundationDimObjects] },
-  { key: 'matFoundation', arrays: [matFoundationObjects] },
+  { key: 'matFoundationHouse', arrays: [matFoundationHouseObjects] },
+  { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
   { key: 'floorFrame', arrays: [골조Objects, floorFrameDimObjects] },
   { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects] },
   { key: 'stair',      arrays: [stairCoreObjects] },
@@ -2213,7 +2219,7 @@ const PARTS = [
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
-  ['cFoundation', 'foundation'], ['cMatFoundation', 'matFoundation'], ['cFrame', 'floorFrame'],
+  ['cFoundation', 'foundation'], ['cMatFoundationHouse', 'matFoundationHouse'], ['cMatFoundationFull', 'matFoundationFull'], ['cFrame', 'floorFrame'],
   ['cFirstFloorFinish', 'firstFloorFinish'],
   ['cStair', 'stair'], ['cLivingWall', 'livingWall'], ['cFamilyWall', 'familyWall'],
   ['cExtWall', 'extWall'], ['cFirstRoom', 'firstRoom'], ['cAnno', 'anno'], ['cOutlet', 'outlet'],
@@ -2251,7 +2257,7 @@ function applyVisibility() {
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundation', 'floorFrame', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'floorFrame', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;

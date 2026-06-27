@@ -10,7 +10,8 @@ app.innerHTML = `
         <h2 class="menu-title">기초</h2>
         <button id="vPlan" type="button" class="view-btn">배치도 (부감)</button>
         <label class="chk"><input id="cFoundation" type="checkbox"><span>말뚝기초</span></label>
-        <label class="chk"><input id="cMatFoundation" type="checkbox"><span>온통기초</span></label>
+        <label class="chk"><input id="cMatFoundationHouse" type="checkbox"><span>부분 매트기초</span></label>
+        <label class="chk"><input id="cMatFoundationFull" type="checkbox"><span>전체 매트기초</span></label>
         <label class="chk"><input id="cFrame" type="checkbox"><span>바닥틀</span></label>
         <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
         <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
