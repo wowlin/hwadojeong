@@ -17,6 +17,7 @@ export const atticOutletObjects = [];  // 전기 콘센트(다락) — 콘센트
 export const hedgeObjects = [];        // 측백나무 생울타리(뒤·좌측) — 측백담장 토글
 export const fenceObjects = [];        // 우측 콘크리트 담장(옆집 경계) — 옆집담장 토글
 export const foundationObjects = [];   // 입체 기초(집+데크 시스템말뚝·두부, 높이 치수) — 바닥(평면도)에선 숨김
+export const matFoundationObjects = []; // 온통기초(매트 슬래브) — 건물 발자국 전체 콘크리트 슬래브. 말뚝기초의 대안, 온통기초 토글
 export const foundationDimObjects = []; // 기초 가로/세로 길이 치수 — 기초 뷰에서만(1층·다락·지붕에선 숨김)
 export const floorFrameDimObjects = []; // 바닥틀 방별 너비(뒤편)·깊이(오른쪽) 치수 — 바닥틀 뷰에서만
 export const footprintObjects = [];    // 집·데크·담장 납작 발자국 — ★단일 출처★ 모든 화면에 동일 표시(토글 무관, 바닥에서 바꾸면 전 화면 반영)

@@ -88,7 +88,7 @@ import {
 import {
   floorFinishObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
-  outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
+  outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, siteBaseObjects, steelFrameObjects, woodFrameObjects, 골조Objects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
@@ -995,6 +995,11 @@ captureInto(foundationObjects, () => {
   const m = 0.1;
   pileFoundation(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingZ: 1.9, xs: housePileXs });
 });
+// 온통기초(매트 슬래브) — 건물 발자국 전체를 덮는 콘크리트 슬래브(지면~기초 상단). 말뚝기초의 대안, 온통기초 토글로만 표시.
+captureInto(matFoundationObjects, () => {
+  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: foundationTopY - groundTopY, mat: materials.matFoundation });
+});
+
 // 말뚝기초 높이 치수 — 기초 뷰에서만 표시
 captureInto(foundationDimObjects, () => {
   const m = 0.1;
@@ -2160,6 +2165,7 @@ const view = {
   // 기초 그룹
   plan: false,        // 배치도(부감) — 대지·도로·담장·말뚝·평면치수
   foundation: false,  // 입체 기초(시스템말뚝·두부)
+  matFoundation: false, // 온통기초(매트 슬래브)
   floorFrame: false,  // 바닥틀(바닥 골조)
   floor: false,       // 바닥재 마감
   // 집 그룹(내부구조 부품별)
@@ -2182,6 +2188,7 @@ const view = {
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
 const PARTS = [
   { key: 'foundation', arrays: [foundationObjects, foundationDimObjects] },
+  { key: 'matFoundation', arrays: [matFoundationObjects] },
   { key: 'floorFrame', arrays: [골조Objects, floorFrameDimObjects] },
   { key: 'floor',      arrays: [floorFinishObjects] },
   { key: 'stair',      arrays: [stairCoreObjects] },
@@ -2204,7 +2211,7 @@ const PARTS = [
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
-  ['cFoundation', 'foundation'], ['cFrame', 'floorFrame'], ['cFloor', 'floor'],
+  ['cFoundation', 'foundation'], ['cMatFoundation', 'matFoundation'], ['cFrame', 'floorFrame'], ['cFloor', 'floor'],
   ['cStair', 'stair'], ['cLivingWall', 'livingWall'], ['cFamilyWall', 'familyWall'],
   ['cExtWall', 'extWall'], ['cFirstRoom', 'firstRoom'], ['cAnno', 'anno'], ['cOutlet', 'outlet'],
   ['cBath', 'bath'],

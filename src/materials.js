@@ -8,6 +8,7 @@ export const materials = {
   road: new THREE.MeshLambertMaterial({ color: 0xcfd8e3 }),
   hedge: new THREE.MeshLambertMaterial({ color: 0x2f7d45 }),
   foundation: new THREE.MeshLambertMaterial({ color: 0xb8b8ad }),         // 집 기초(0.5m) — 따뜻한 회색
+  matFoundation: new THREE.MeshLambertMaterial({ color: 0x9a988e }),      // 온통기초(매트 슬래브) — 콘크리트 회색(말뚝기초 배경보다 진하게)
   deckFoundation: new THREE.MeshLambertMaterial({ color: 0xb3d3ef }),     // 데크 기초(0.4m) 배경 — 연한 하늘색(말뚝 두부 청색과 또렷이 구별되게 연하게)
   pile: new THREE.MeshLambertMaterial({ color: 0x7d8186 }),          // 강관 말뚝(아연도금)
   pileHead: new THREE.MeshLambertMaterial({ color: 0x2c3036 }),      // 두부 헤드 브래킷(검정) — 스틸 골조가 볼트 체결되는 부분
