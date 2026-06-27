@@ -416,8 +416,8 @@ function roomText(name, w, d) {
   return `${name} ${fmtDim(w)}x${fmtDim(d)}m`;
 }
 
-function interiorDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH) {
-  box({ x, z: z - 0.03, w, d: 0.06, y, h, mat: materials.interiorDoor });
+function interiorDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH, mat = materials.interiorDoor) {
+  box({ x, z: z - 0.03, w, d: 0.06, y, h, mat });
   box({ x: x + w - 0.18, z: z - 0.06, w: 0.05, d: 0.035, y: y + Math.min(1.02, h * 0.58), h: 0.05, mat: materials.handle });
 }
 
@@ -2366,12 +2366,12 @@ function drawStairCore(p) {
   // 계단하부 WC(상부런 laneB 아래·안방측 공간) 앞벽 — 트인 전면을 막아 화장실로 사용. 가운데 출입문 1개. 윗면=다락 바닥 밑면.
   {
     const wcWallH = (loftY - loftFloorThickness) - fy;
-    const dW = interiorDoorW, dH = interiorDoorH, t = interiorWall;
+    const dW = 0.7, dH = 2.0, t = interiorWall;            // 욕실문 표준(폭 0.7·높이 2.0) — 일반 방문(0.9·2.1)보다 작게
     const dx0 = laneB + (W - dW) / 2, dx1 = dx0 + dW;
     box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });          // 문 왼쪽 벽
     box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });      // 문 오른쪽 벽
     box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairWall, cast: false });          // 문 위 인방
-    interiorDoorHorizontal(dx0, zFrontL, fy, dW, dH);                                                                       // WC 출입문
+    interiorDoorHorizontal(dx0, zFrontL, fy, dW, dH, materials.wcDoor);                                                     // WC 출입문(욕실문 색)
   }
   // WC 천장 — 상부런 발판 밑면(들쭉날쭉)을 가리는 사선 천장 패널. 단의 안쪽 뒤코너 선(z=zTurn0-jT, y=baseU+jR-treadH)을 따라 기울인 평판.
   {
@@ -2386,14 +2386,13 @@ function drawStairCore(p) {
   }
   // WC 문 안여닫이 스윙 공간 — 밖에서 밀어 안(+Z)으로 90° 열릴 때 문이 쓸고 지나가는 1/4 기둥(반경=문폭, 높이=문높이). 사선 천장에 닿는지 눈으로 확인용. 반투명.
   {
-    const dW = interiorDoorW, dH = interiorDoorH;
+    const dW = 0.7, dH = 2.0;                            // 욕실문(앞벽 문과 동일 치수)
     const hingeX = laneB + (W - dW) / 2;                 // 경첩 = 문 거실측(낮은 X) 모서리
     const swept = new THREE.Mesh(
       new THREE.CylinderGeometry(dW, dW, dH, 24, 1, false, 0, Math.PI / 2),   // Y축 수직 1/4기둥
       new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }),
     );
-    swept.position.set(hingeX, fy + dH / 2, zFrontL);
-    swept.rotation.y = -Math.PI / 2;                     // 1/4 부채꼴이 +X(닫힘)~+Z(열림) 사분면을 향하게
+    swept.position.set(hingeX, fy + dH / 2, zFrontL);    // 1/4 부채꼴(theta 0~90°)=+Z(닫힘,벽)~+X… 회전 없이 +X(닫힘)·+Z(화장실 안쪽 열림) 사분면
     scene.add(swept);
   }
   // 난간 — 칸막이(벽)가 막는 두 런 사이가 아니라, 트여서 추락 위험이 있는 '하부 직선계단의 거실측(laneA)' 가장자리에 둔다. 계단 경사를 따라 손잡이(발판+0.9m) + 양 끝·중간 수직 동자.
