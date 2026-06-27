@@ -42,7 +42,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 import * as THREE from 'three';
 import { materials } from './materials.js';
-import { stage, scene, camera, renderer, controls } from './scene.js';
+import { stage, scene, houseGroup, camera, renderer, controls } from './scene.js';
 import { box, addGeometryEdges, lerpPoint, flatPoly, fmtDim, stairWallTopCap, railCylinder } from './primitives.js';
 import {
   pileGridCoords, systemPile, pileFoundation,
@@ -2102,6 +2102,10 @@ const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull
 
 function applyVisibility() {
   const isPlan = view.plan;
+  // 집 높이: 선택된 기초 윗면에 1층 바닥이 앉도록 집 전체(houseGroup)를 Y로 이동.
+  // 말뚝기초=기준(오프셋 0), 매트기초(부분/전체)=매트 윗면−말뚝 윗면 만큼 위로. 기초 높이를 바꾸면 자동 반영(하드코딩 없음).
+  const activeFoundationTopY = (view.matFoundationHouse || view.matFoundationFull) ? (groundTopY + MAT_H) : foundationTopY;
+  houseGroup.position.y = activeFoundationTopY - foundationTopY;
   // 항상 표시: 바탕 대지·도로·발자국(단일 출처)
   for (const item of siteBaseObjects) item.visible = true;
   for (const item of footprintObjects) item.visible = true;
@@ -2408,6 +2412,20 @@ function buildStair() {
 
 // 계단 제원은 stairParams 기본값으로 확정 — 화면 내 조절 패널은 제거함.
 buildStair();
+
+// ── 집(바닥~지붕)을 houseGroup으로 묶기 — 기초 윗면 높이에 맞춰 통째로 Y 이동(단일 출처) ──
+// 집 객체 전부를 houseGroup 자식으로 옮긴다(빌드 좌표는 말뚝기초 윗면 기준 그대로 보존).
+// 선택 기초가 매트면 applyVisibility에서 houseGroup.position.y에 (매트 윗면 − 말뚝 윗면)을 줘 집이 따라 올라간다.
+// 기초·데크·대지·발자국·담장은 옮기지 않는다(각자 자기 자리에 고정).
+{
+  const HOUSE_ARRAYS = [
+    firstFloorFinishObjects, firstDimObjects, firstWallObjects, firstFloorObjects, bathObjects,
+    secondFloorObjects, roofObjects, outletObjects, atticOutletObjects,
+    stairCoreObjects, stairObjects, livingInnerWallObjects, familyInnerWallObjects,
+  ];
+  const seen = new Set();
+  for (const arr of HOUSE_ARRAYS) for (const o of arr) { if (!seen.has(o)) { seen.add(o); houseGroup.add(o); } }   // add = scene→houseGroup 재부모(로컬좌표 보존)
+}
 
 showPlan();   // 초기 화면 = 배치도(부감)
 

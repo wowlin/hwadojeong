@@ -60,6 +60,11 @@ export const stage = document.querySelector('#stage');
 export const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf7f4ee);
 
+// 집(1층 바닥~지붕) 묶음 그룹 — 선택된 기초 윗면 높이에 맞춰 집 전체를 Y로 통째 이동(말뚝↔매트).
+// 집은 말뚝기초 윗면 기준으로 빌드하고, houseGroup.position.y에 (선택 기초 윗면 − 말뚝 윗면)만 준다.
+export const houseGroup = new THREE.Group();
+scene.add(houseGroup);
+
 export const camera = new THREE.PerspectiveCamera(42, stage.clientWidth / stage.clientHeight, 0.1, 100);
 camera.position.set(10.8, 6.8, -8.8);
 
@@ -78,4 +83,4 @@ controls.minDistance = 4;
 controls.maxDistance = 32;
 
 // 렌더 캡처(npm run shot:side)에서 시점을 측면으로 직접 잡기 위한 디버그 핸들 — 읽기 전용 용도, 앱 동작엔 영향 없음.
-if (typeof window !== 'undefined') window.__cc = { THREE, camera, controls };
+if (typeof window !== 'undefined') window.__cc = { THREE, camera, controls, scene, houseGroup };
