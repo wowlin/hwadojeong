@@ -368,7 +368,7 @@ function planXDim(fixed, a, b, text) {
   box({ x: a, z: fixed - lw / 2, w: b - a, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });   // 가로선
   box({ x: a, z: fixed - tick / 2, w: lw, d: tick, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // a끝 틱
   box({ x: b - lw, z: fixed - tick / 2, w: lw, d: tick, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // b끝 틱
-  label(text, (a + b) / 2, 0.5, fixed, 'dim');   // 라벨은 치수선 중앙, y축으로 치수선보다 살짝 위(0.5)
+  label(text, (a + b) / 2, 0.2, fixed, 'dim');   // 라벨은 치수선 중앙, y축으로 치수선보다 살짝 위(배경 없으니 가깝게)
 }
 // 평면(배치도) 세로(z축) 치수 — 가로와 별개. 라벨은 선 위쪽 끝(+Z=화면 상단) 위에. 카드가 땅에 안 박히게 y로 띄움.
 function planZDim(fixed, a, b, text) {
@@ -376,7 +376,7 @@ function planZDim(fixed, a, b, text) {
   box({ x: fixed - lw / 2, z: a, w: lw, d: b - a, y, h, mat: materials.dimension, cast: false, name: 'ground' });   // 세로선
   box({ x: fixed - tick / 2, z: a, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // 아래 틱(−Z)
   box({ x: fixed - tick / 2, z: b - lw, w: tick, d: lw, y, h, mat: materials.dimension, cast: false, name: 'ground' });  // 위 틱(+Z)
-  label(text, fixed, 0.5, (a + b) / 2, 'dim');   // 라벨은 치수선 중앙(z 가운데, x=선 위치), y축으로 치수선보다 살짝 위(0.5)
+  label(text, fixed, 0.2, (a + b) / 2, 'dim');   // 라벨은 치수선 중앙(z 가운데, x=선 위치), y축으로 치수선보다 살짝 위(배경 없으니 가깝게)
 }
 
 function horizontalWallWithGaps(x, z, w, y, gaps = [], h = 0.7, thickness = 0.08, mat = materials.wall) {
