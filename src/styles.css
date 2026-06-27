@@ -107,6 +107,23 @@ body {
   letter-spacing: 0.02em;
   border-bottom: 1px solid #e3e1da;
   padding-bottom: 4px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+/* 접기/펼치기 캐럿 */
+.menu-title::after {
+  content: '▾';
+  font-size: 10px;
+  color: #9ca3af;
+}
+.menu-group.collapsed .menu-title::after {
+  content: '▸';
+}
+.menu-group.collapsed > :not(.menu-title) {
+  display: none;
 }
 
 /* 부품 토글(체크박스) */

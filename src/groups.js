@@ -1,6 +1,7 @@
 // 렌더 가시성 그룹(단일 출처) — 빌더가 push, applyVisibility가 visible 제어. 배열은 공유 참조(import해도 동일 객체).
 export const floorFinishObjects = []; // 바닥재 마감(바닥틀 위) — '바닥' 단계 이상에서 표시
 export const firstFloorObjects = [];   // 1층 골조·실내(기초 토글 시 숨김)
+export const bathObjects = [];         // 계단하부 WC(변기·세면대·온수기·배기) — '화장실' 토글
 export const firstWallObjects = [];    // 1층 외벽(반투명, 두께 0.2·높이 2.4) — 1층·다락·지붕 단계에서 표시
 export const firstDimObjects = [];     // 1층 방 안목치수(너비·깊이) — 방바닥에 표기, 1층·다락·지붕 단계에서 표시
 export const secondFloorObjects = [];

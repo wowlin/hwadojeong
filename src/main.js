@@ -86,7 +86,7 @@ import {
   atticOutletY
 } from './layout.js';
 import {
-  floorFinishObjects, firstFloorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, roofObjects, deckObjects,
+  floorFinishObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
@@ -642,39 +642,41 @@ label(`싱크대 ${fmtDim(kitchenSinkW)}x${fmtDim(kitchenSinkD)}m`, kitchenSinkX
 box({ x: stairClearX, z: insideZ0, w: stairClearW, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 label(`계단 앞 ${fmtDim(stairClearW)}x${fmtDim(stairBottomLandingD)}m`, stairClearX + stairClearW / 2, firstFloorY + floorOverlayLift + 0.18, insideZ0 + stairBottomLandingD * 0.72, 'dim');
 box({ x: stairLowXWallX, z: insideZ0, w: interiorWall, d: insideD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
-room({ x: stairBathX, z: stairBathZ, w: stairBathW, d: stairBathD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bath, text: roomText('계단하부 WC', stairBathW, stairBathD), surfaceH: 0.018 });
-label(roomText('계단하부 WC', stairBathW, stairBathD), stairBathDoorX + stairBathDoorW / 2, firstFloorY + stairBathDoorH / 2, stairBathZ - 0.12, 'room');
-// 세면대 — 안방쪽 벽(높은 X)·앞쪽. 문 스윙(계단쪽 앞)을 피해 천장 높은 앞부분에 둠
-box({ x: stairBathX + 0.58, z: stairBathZ + 0.18, w: 0.32, d: 0.34, y: firstFloorY, h: 0.72, mat: materials.vanity });
-box({ x: stairBathX + 0.62, z: stairBathZ + 0.23, w: 0.24, d: 0.22, y: firstFloorY + 0.72, h: 0.04, mat: materials.sinkBasin });
-box({ x: stairBathX + 0.85, z: stairBathZ + 0.27, w: 0.04, d: 0.04, y: firstFloorY + 0.76, h: 0.2, mat: materials.entryFrame });   // 수전
-label('세면대', stairBathX + 0.72, firstFloorY + 1.0, stairBathZ + 0.35, 'furniture');
-// 양변기 — 맨 안쪽(뒤 외벽)에 물탱크 붙이고 앞(문쪽·천장 높은 방향)을 향하게 착석. 계단쪽으로 붙여 안방쪽 뒤코너를 온수기 자리로 비움
-box({ x: stairBathX + 0.06, z: stairBathZ + stairBathD - 0.62, w: 0.44, d: 0.5, y: firstFloorY, h: 0.34, mat: materials.toilet });
-box({ x: stairBathX + 0.04, z: stairBathZ + stairBathD - 0.14, w: 0.48, d: 0.1, y: firstFloorY, h: 0.58, mat: materials.toilet });
-label('양변기', stairBathX + 0.28, firstFloorY + 0.85, stairBathZ + stairBathD - 0.45, 'furniture');
-// 50L 전기 온수기(예정) — 맨 안쪽 안방쪽 뒤코너. 변기를 계단쪽에 붙여 비운 폭 0.47m 자리(세로형 0.45×0.45, 높이 1.0m < 천장). 반투명 예약 표시
-{
-  const hx = stairBathX + 0.53, hd = 0.42, hw = 0.42;
-  const heater = new THREE.Mesh(
-    new THREE.BoxGeometry(hw, 1.0, hd),
-    new THREE.MeshLambertMaterial({ color: 0x9fd0e0, transparent: true, opacity: 0.4, depthWrite: false }),
-  );
-  heater.position.set(hx + hw / 2, firstFloorY + 0.5, (stairBathZ + stairBathD - 0.04) - hd / 2);
-  scene.add(heater);
-  label('온수기 예정 50L', stairBathX + 0.74, firstFloorY + 1.12, stairBathZ + stairBathD - 0.25, 'mep');
-}
-// 계단하부 WC는 외벽에 안 접한 무창 화장실 → 기계환기 필수: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기
-{
-  const ventX = stairBathX + stairBathW / 2;
-  // WC 천장은 계단 밑 경사면 → 뒤쪽 실사용 천장선은 바닥+약 1.3m(벽 절반). 배기팬은 그 천장선 바로 아래(WC 실내 공기 안)여야 실제로 배기됨.
-  const capY = firstFloorY + 1.08;
-  box({ x: ventX - 0.12, z: insideZ1 - 0.06, w: 0.24, d: 0.06, y: capY, h: 0.22, mat: materials.guard });           // 실내 벽붙이 배기팬 그릴(천장선 바로 아래)
-  box({ x: ventX - 0.05, z: insideZ1 - 0.11, w: 0.1, d: 0.06, y: capY + 0.06, h: 0.1, mat: materials.guard });      // 팬 흡입구
-  box({ x: ventX - 0.13, z: buildingBackZ, w: 0.26, d: 0.05, y: capY, h: 0.22, mat: materials.entryFrame });          // 뒤 외벽 외부 환기캡(방수 후드)
-  box({ x: ventX - 0.14, z: buildingBackZ + 0.03, w: 0.28, d: 0.06, y: capY - 0.03, h: 0.05, mat: materials.entryFrame });  // 하단 빗물막이 립
-  label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 'mep');
-}
+captureInto(bathObjects, () => {
+  room({ x: stairBathX, z: stairBathZ, w: stairBathW, d: stairBathD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bath, text: roomText('계단하부 WC', stairBathW, stairBathD), surfaceH: 0.018 });
+  label(roomText('계단하부 WC', stairBathW, stairBathD), stairBathDoorX + stairBathDoorW / 2, firstFloorY + stairBathDoorH / 2, stairBathZ - 0.12, 'room');
+  // 세면대 — 안방쪽 벽(높은 X)·앞쪽. 문 스윙(계단쪽 앞)을 피해 천장 높은 앞부분에 둠
+  box({ x: stairBathX + 0.58, z: stairBathZ + 0.18, w: 0.32, d: 0.34, y: firstFloorY, h: 0.72, mat: materials.vanity });
+  box({ x: stairBathX + 0.62, z: stairBathZ + 0.23, w: 0.24, d: 0.22, y: firstFloorY + 0.72, h: 0.04, mat: materials.sinkBasin });
+  box({ x: stairBathX + 0.85, z: stairBathZ + 0.27, w: 0.04, d: 0.04, y: firstFloorY + 0.76, h: 0.2, mat: materials.entryFrame });   // 수전
+  label('세면대', stairBathX + 0.72, firstFloorY + 1.0, stairBathZ + 0.35, 'furniture');
+  // 양변기 — 맨 안쪽(뒤 외벽)에 물탱크 붙이고 앞(문쪽·천장 높은 방향)을 향하게 착석. 계단쪽으로 붙여 안방쪽 뒤코너를 온수기 자리로 비움
+  box({ x: stairBathX + 0.06, z: stairBathZ + stairBathD - 0.62, w: 0.44, d: 0.5, y: firstFloorY, h: 0.34, mat: materials.toilet });
+  box({ x: stairBathX + 0.04, z: stairBathZ + stairBathD - 0.14, w: 0.48, d: 0.1, y: firstFloorY, h: 0.58, mat: materials.toilet });
+  label('양변기', stairBathX + 0.28, firstFloorY + 0.85, stairBathZ + stairBathD - 0.45, 'furniture');
+  // 50L 전기 온수기(예정) — 맨 안쪽 안방쪽 뒤코너. 변기를 계단쪽에 붙여 비운 폭 0.47m 자리(세로형 0.45×0.45, 높이 1.0m < 천장). 반투명 예약 표시
+  {
+    const hx = stairBathX + 0.53, hd = 0.42, hw = 0.42;
+    const heater = new THREE.Mesh(
+      new THREE.BoxGeometry(hw, 1.0, hd),
+      new THREE.MeshLambertMaterial({ color: 0x9fd0e0, transparent: true, opacity: 0.4, depthWrite: false }),
+    );
+    heater.position.set(hx + hw / 2, firstFloorY + 0.5, (stairBathZ + stairBathD - 0.04) - hd / 2);
+    scene.add(heater);
+    label('온수기 예정 50L', stairBathX + 0.74, firstFloorY + 1.12, stairBathZ + stairBathD - 0.25, 'mep');
+  }
+  // 계단하부 WC는 외벽에 안 접한 무창 화장실 → 기계환기 필수: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기
+  {
+    const ventX = stairBathX + stairBathW / 2;
+    // WC 천장은 계단 밑 경사면 → 뒤쪽 실사용 천장선은 바닥+약 1.3m(벽 절반). 배기팬은 그 천장선 바로 아래(WC 실내 공기 안)여야 실제로 배기됨.
+    const capY = firstFloorY + 1.08;
+    box({ x: ventX - 0.12, z: insideZ1 - 0.06, w: 0.24, d: 0.06, y: capY, h: 0.22, mat: materials.guard });           // 실내 벽붙이 배기팬 그릴(천장선 바로 아래)
+    box({ x: ventX - 0.05, z: insideZ1 - 0.11, w: 0.1, d: 0.06, y: capY + 0.06, h: 0.1, mat: materials.guard });      // 팬 흡입구
+    box({ x: ventX - 0.13, z: buildingBackZ, w: 0.26, d: 0.05, y: capY, h: 0.22, mat: materials.entryFrame });          // 뒤 외벽 외부 환기캡(방수 후드)
+    box({ x: ventX - 0.14, z: buildingBackZ + 0.03, w: 0.28, d: 0.06, y: capY - 0.03, h: 0.05, mat: materials.entryFrame });  // 하단 빗물막이 립
+    label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 'mep');
+  }
+});
 box({ x: stairClearX, z: stairOpeningStart, w: stairClearW, d: insideZ1 - stairOpeningStart, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stair, cast: false });
 room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed, text: roomText('안방', firstFamilyW, firstFamilyD) });
 
@@ -755,7 +757,7 @@ curtainRail({ x: familyWindowX, z: insideZ0, len: familyWindowW, headY: familyWi
 curtainRail({ x: livingRearWindowX, z: insideZ1, len: livingRearWindowW, headY: livingRearWindowTopY, axis: 'x', sign: -1 }); // 거실 후면창
 curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: familyRearWindowTopY, axis: 'x', sign: -1 }); // 가족방 후면창
 
-firstFloorObjects.push(...scene.children.slice(_firstFloorStart));   // 1층 골조·실내 그룹 확정(다락 빌드 전)
+{ const _bathSet = new Set(bathObjects); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_bathSet.has(o))); }   // 1층 골조·실내 그룹 확정(화장실 부품은 bathObjects로 분리)
 
 captureSecond(() => {
   // 2F measured plan. The stair arrival continues left/right as a front corridor,
@@ -2167,6 +2169,7 @@ const view = {
   extWall: false,     // 1층 외벽
   firstRoom: false,   // 1층 골조·실내
   anno: false,        // 계단 설계 도면(방·다락바닥·치수·라벨)
+  bath: false,        // 계단하부 WC(화장실)
   loft: false,        // 다락 바닥·골조
   roof: false,        // 지붕
   outlet: false,      // 콘센트(1층+다락)
@@ -2187,6 +2190,7 @@ const PARTS = [
   { key: 'extWall',    arrays: [firstWallObjects] },
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
   { key: 'anno',       arrays: [stairObjects, firstDimObjects] },
+  { key: 'bath',       arrays: [bathObjects] },
   { key: 'loft',       arrays: [secondFloorObjects] },
   { key: 'roof',       arrays: [roofObjects] },
   { key: 'outlet',     arrays: [outletObjects, atticOutletObjects] },
@@ -2202,8 +2206,9 @@ const PARTS = [
 const CHECKS = [
   ['cFoundation', 'foundation'], ['cFrame', 'floorFrame'], ['cFloor', 'floor'],
   ['cStair', 'stair'], ['cLivingWall', 'livingWall'], ['cFamilyWall', 'familyWall'],
-  ['cExtWall', 'extWall'], ['cFirstRoom', 'firstRoom'], ['cAnno', 'anno'],
-  ['cLoft', 'loft'], ['cRoof', 'roof'], ['cOutlet', 'outlet'],
+  ['cExtWall', 'extWall'], ['cFirstRoom', 'firstRoom'], ['cAnno', 'anno'], ['cOutlet', 'outlet'],
+  ['cBath', 'bath'],
+  ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
 ];
@@ -2236,7 +2241,7 @@ function applyVisibility() {
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'floorFrame', 'floor', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'loft', 'roof', 'outlet', 'deck', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
+const NOTE_ORDER = ['plan', 'foundation', 'floorFrame', 'floor', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
@@ -2265,6 +2270,11 @@ function showPlan() {
   view.plan = true;
   applyVisibility();
   setPlanView();
+}
+
+// 메뉴 그룹 접기/펼치기 — 제목 클릭 시 해당 그룹 토글
+for (const title of document.querySelectorAll('.menu-group .menu-title')) {
+  title.addEventListener('click', () => title.parentElement.classList.toggle('collapsed'));
 }
 
 // 뷰 버튼(배치도)

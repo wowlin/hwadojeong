@@ -16,16 +16,23 @@ app.innerHTML = `
         <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
       </section>
       <section class="menu-group">
-        <h2 class="menu-title">집</h2>
+        <h2 class="menu-title">1층</h2>
         <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
         <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
         <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
         <label class="chk"><input id="cExtWall" type="checkbox"><span>1층 외벽</span></label>
         <label class="chk"><input id="cFirstRoom" type="checkbox"><span>1층 골조·실내</span></label>
         <label class="chk"><input id="cAnno" type="checkbox"><span>방·치수 도면</span></label>
+        <label class="chk"><input id="cOutlet" type="checkbox"><span>콘센트</span></label>
+      </section>
+      <section class="menu-group">
+        <h2 class="menu-title">화장실</h2>
+        <label class="chk"><input id="cBath" type="checkbox"><span>계단하부 WC</span></label>
+      </section>
+      <section class="menu-group">
+        <h2 class="menu-title">다락</h2>
         <label class="chk"><input id="cLoft" type="checkbox"><span>다락 바닥</span></label>
         <label class="chk"><input id="cRoof" type="checkbox"><span>지붕</span></label>
-        <label class="chk"><input id="cOutlet" type="checkbox"><span>콘센트</span></label>
       </section>
       <section class="menu-group">
         <h2 class="menu-title">썬룸</h2>
