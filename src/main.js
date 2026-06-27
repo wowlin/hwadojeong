@@ -2373,6 +2373,17 @@ function drawStairCore(p) {
     box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairWall, cast: false });          // 문 위 인방
     interiorDoorHorizontal(dx0, zFrontL, fy, dW, dH);                                                                       // WC 출입문
   }
+  // WC 천장 — 상부런 발판 밑면(들쭉날쭉)을 가리는 사선 천장 패널. 단의 안쪽 뒤코너 선(z=zTurn0-jT, y=baseU+jR-treadH)을 따라 기울인 평판.
+  {
+    const baseU = landingY, zFrontU = zTurn0 - nU * T;
+    const yBack = baseU - treadH, yFront = baseU + nU * R - treadH;           // 뒤(낮음)·앞(높음)
+    const panelLen = Math.hypot(nU * T, nU * R), tilt = Math.atan2(R, T), th = 0.05, drop = 0.05;   // 코너선 아래(z-파이팅 회피·발판 밑면 가림)
+    const ceil = new THREE.Mesh(new THREE.BoxGeometry(W, th, panelLen), new THREE.MeshLambertMaterial({ color: 0xf2f0e8, side: THREE.DoubleSide }));   // 벽과 같은 톤·양면(내부=밑에서 봄)
+    ceil.position.set(laneB + W / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zFrontU) / 2);
+    ceil.rotation.x = tilt;
+    ceil.receiveShadow = true;
+    scene.add(ceil);
+  }
   // 난간 — 칸막이(벽)가 막는 두 런 사이가 아니라, 트여서 추락 위험이 있는 '하부 직선계단의 거실측(laneA)' 가장자리에 둔다. 계단 경사를 따라 손잡이(발판+0.9m) + 양 끝·중간 수직 동자.
   const railX = laneA, railH = 0.9, postR = 0.022, handR = 0.028;
   const post = (y0, z) => railCylinder([railX, y0, z], [railX, y0 + railH, z], postR);
