@@ -2228,6 +2228,8 @@ const CHECKS = [
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
 ];
+// 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
+const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
 
 function applyVisibility() {
   const isPlan = view.plan;
@@ -2303,6 +2305,10 @@ for (const [id, key] of CHECKS) {
   el.addEventListener('change', () => {
     view[key] = el.checked;
     if (el.checked && view.plan) view.plan = false;   // 부품 켜면 부감에서 빠져나옴
+    // 기초 3종(말뚝기초·부분 매트기초·전체 매트기초)은 상호배타 — 하나 켜면 나머지 끔(셋 중 하나 선택).
+    if (el.checked && FOUNDATION_GROUP.includes(key)) {
+      for (const k of FOUNDATION_GROUP) if (k !== key) view[k] = false;
+    }
     applyVisibility();
   });
 }
