@@ -2384,6 +2384,18 @@ function drawStairCore(p) {
     ceil.receiveShadow = true;
     scene.add(ceil);
   }
+  // WC 문 안여닫이 스윙 공간 — 밖에서 밀어 안(+Z)으로 90° 열릴 때 문이 쓸고 지나가는 1/4 기둥(반경=문폭, 높이=문높이). 사선 천장에 닿는지 눈으로 확인용. 반투명.
+  {
+    const dW = interiorDoorW, dH = interiorDoorH;
+    const hingeX = laneB + (W - dW) / 2;                 // 경첩 = 문 거실측(낮은 X) 모서리
+    const swept = new THREE.Mesh(
+      new THREE.CylinderGeometry(dW, dW, dH, 24, 1, false, 0, Math.PI / 2),   // Y축 수직 1/4기둥
+      new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }),
+    );
+    swept.position.set(hingeX, fy + dH / 2, zFrontL);
+    swept.rotation.y = -Math.PI / 2;                     // 1/4 부채꼴이 +X(닫힘)~+Z(열림) 사분면을 향하게
+    scene.add(swept);
+  }
   // 난간 — 칸막이(벽)가 막는 두 런 사이가 아니라, 트여서 추락 위험이 있는 '하부 직선계단의 거실측(laneA)' 가장자리에 둔다. 계단 경사를 따라 손잡이(발판+0.9m) + 양 끝·중간 수직 동자.
   const railX = laneA, railH = 0.9, postR = 0.022, handR = 0.028;
   const post = (y0, z) => railCylinder([railX, y0, z], [railX, y0 + railH, z], postR);
