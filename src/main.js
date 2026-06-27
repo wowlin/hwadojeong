@@ -2229,6 +2229,20 @@ function applyVisibility() {
   // 체크박스 상태 동기화(단일 출처)
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
   const planBtn = document.querySelector('#vPlan'); if (planBtn) planBtn.classList.toggle('active', isPlan);
+  updateNotes();
+}
+
+// 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
+const NOTES = {
+  roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
+};
+const NOTE_ORDER = ['plan', 'foundation', 'floorFrame', 'floor', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'loft', 'roof', 'outlet', 'deck', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
+function updateNotes() {
+  const body = document.querySelector('#noteBody');
+  if (!body) return;
+  const active = NOTE_ORDER.filter((k) => (k === 'plan' ? view.plan : (!view.plan && view[k])) && NOTES[k]);
+  if (!active.length) { body.innerHTML = '<p class="note-empty">이 화면에 대한 메모가 아직 없습니다.</p>'; return; }
+  body.innerHTML = active.map((k) => `<section class="note-item"><h3>${NOTES[k].title}</h3><div class="note-text">${NOTES[k].body}</div></section>`).join('');
 }
 
 // 배치도(부감) 전용 카메라 — 대지 전체를 상부에서 내려다본다(도로·토지·담장·기초 바닥 한눈에).

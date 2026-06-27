@@ -43,6 +43,10 @@ app.innerHTML = `
     <section class="stage-wrap">
       <div id="stage" aria-label="주말주택 3D 개념 모형"></div>
     </section>
+    <aside class="notes">
+      <h2 class="notes-title">설계 메모</h2>
+      <div id="noteBody" class="note-body"></div>
+    </aside>
   </main>
 `;
 
