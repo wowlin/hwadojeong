@@ -1650,8 +1650,8 @@ captureInto(dimObjects, () => {
     box({ x: gx0, z: z - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat, cast: false, name: 'ground' });
   }
 });
-// 집 말뚝 X열 간격 치수 — 뒤쪽(+Z) 말뚝 줄에서 약간 뒤로 비켜 표시(기초 위 겹침 방지). 바닥 전용(기초·입체 뷰엔 숨김).
-captureInto(planOnlyDimObjects, () => {
+// 집 말뚝 X열 간격 치수 — 뒤쪽(+Z) 말뚝 줄에서 약간 뒤로 비켜 표시(기초 위 겹침 방지). 기초 뷰 전용.
+captureInto(foundationDimObjects, () => {
   const dimZ = buildingBackZ + 0.25;   // 말뚝 뒤줄(3.2)에서 약간 뒤쪽 — 후면 여백에
   for (let i = 0; i < housePileXs.length - 1; i += 1) {
     planXDim(dimZ, housePileXs[i], housePileXs[i + 1], `${fmtDim(housePileXs[i + 1] - housePileXs[i])}m`);
