@@ -2226,7 +2226,7 @@ function applyVisibility() {
   for (const item of siteBaseObjects) item.visible = true;
   for (const item of footprintObjects) item.visible = true;
   // 배치도(부감) 전용: 말뚝 마커·평면 치수·측백 0.5
-  for (const item of planObjects) item.visible = isPlan;
+  for (const item of planObjects) item.visible = false;   // 말뚝 위치 마커 — 배치도에서 숨김(집·썬룸 배치만 표시)
   for (const item of dimObjects) item.visible = isPlan || view.foundation;            // 평면 모눈: 배치도 + 기초 토글
   for (const item of planOnlyDimObjects) item.visible = isPlan;
   // 부품: PARTS 테이블 일괄 — 각 부품 독립 토글(배치도일 땐 모두 숨김)
