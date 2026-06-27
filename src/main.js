@@ -2254,8 +2254,8 @@ function setPlanView() {
   // 정남(화면 아래) = 옆집담장·측백담장이 만나는 모서리(낮은 X·뒤쪽 Z). 그 모서리가 화면 맨 아래로
   // 오도록 상부 시점의 살짝 기운 방향을 모서리 쪽으로 돌린다.
   const corner = new THREE.Vector2(lotX0 - cx, lotZ1 - cz);   // 중심→모서리 (X,Z)
-  corner.normalize().multiplyScalar(2.4);                     // 기존 기울기 크기 유지
-  camera.position.set(cx + corner.x, 18.6, cz + corner.y);    // 대각 배치도라 살짝 더 높여 전체가 들어오게
+  corner.normalize().multiplyScalar(9.0);                     // 남쪽으로 더 물러나 비스듬히(입체감) 내려다봄
+  camera.position.set(cx + corner.x, 15.5, cz + corner.y);    // 높이를 낮춰 수직 부감 → 약 30° 기운 조감
   controls.update();
 }
 
