@@ -12,7 +12,6 @@ app.innerHTML = `
         <label class="chk"><input id="cFoundation" type="checkbox"><span>말뚝기초</span></label>
         <label class="chk"><input id="cMatFoundationHouse" type="checkbox"><span>부분 매트기초</span></label>
         <label class="chk"><input id="cMatFoundationFull" type="checkbox"><span>전체 매트기초</span></label>
-        <label class="chk"><input id="cFrame" type="checkbox"><span>바닥틀</span></label>
         <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
         <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
       </section>

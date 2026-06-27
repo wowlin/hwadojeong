@@ -45,7 +45,7 @@ import { materials } from './materials.js';
 import { stage, scene, camera, renderer, controls } from './scene.js';
 import { box, addGeometryEdges, lerpPoint, flatPoly, fmtDim, stairWallTopCap, railCylinder } from './primitives.js';
 import {
-  pileGridCoords, systemPile, pileFoundation, floorFrame,
+  pileGridCoords, systemPile, pileFoundation,
   addStairRailingSegment, yzWallPrism, gableEndWallThicknessCap, slopedWallTopCap, wallEndThicknessFace, roofSlab,
 } from './builders.js';
 import {
@@ -89,8 +89,8 @@ import {
   firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
-  foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, siteBaseObjects, steelFrameObjects, woodFrameObjects, 골조Objects, deckStairFrameObjects,
+  foundationDimObjects, footprintObjects, planObjects, dimObjects,
+  planOnlyDimObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -924,59 +924,11 @@ captureSecond(() => {
 // ───────────────────────────────────────────────────────────────────────────
 // 골조 재질(steelFrame·woodFrame·houseFloorFrame·deckFloorFrame)은 ./materials.js에 정의됨.
 
-// steelFrameObjects·woodFrameObjects·골조Objects는 ./groups.js에 정의됨.
-let frameMat = materials.steelFrame;   // 현재 골조 빌드 재질(스틸/목재 두 벌로 빌드)
-
-
 function captureInto(arr, fn) {
   const s = scene.children.length;
   fn();
   arr.push(...scene.children.slice(s));
 }
-
-// 수직 스터드 1개(중심 cx,cz). axis 'x'=벽이 X축을 따라감(플랜지가 x), 'z'=벽이 Z축을 따라감.
-function frameStud(cx, cz, yBottom, height, axis) {
-  if (height <= 0) return;
-  const w = axis === 'x' ? FRAME_FLANGE : FRAME_WEB;
-  const d = axis === 'x' ? FRAME_WEB : FRAME_FLANGE;
-  box({ x: cx - w / 2, z: cz - d / 2, w, d, y: yBottom, h: height, mat: frameMat, cast: false, receive: false });
-}
-
-// 수평 트랙(러너). axis 'x'=고정 z를 따라 X로, 'z'=고정 x를 따라 Z로.
-function frameTrack(axis, fixed, start, end, y) {
-  if (axis === 'x') box({ x: start, z: fixed - FRAME_WEB / 2, w: end - start, d: FRAME_WEB, y, h: TRACK_H, mat: frameMat, cast: false, receive: false });
-  else box({ x: fixed - FRAME_WEB / 2, z: start, w: FRAME_WEB, d: end - start, y, h: TRACK_H, mat: frameMat, cast: false, receive: false });
-}
-
-// 스터드 벽(상·하 트랙 + 등간격 스터드).
-function studWall(axis, fixed, start, end, yBottom, height) {
-  frameTrack(axis, fixed, start, end, yBottom);
-  frameTrack(axis, fixed, start, end, yBottom + height - TRACK_H);
-  const len = end - start;
-  const n = Math.max(1, Math.round(len / STUD_SPACING));
-  for (let i = 0; i <= n; i += 1) {
-    const t = start + len * (i / n);
-    if (axis === 'x') frameStud(t, fixed, yBottom + TRACK_H, height - 2 * TRACK_H, 'x');
-    else frameStud(fixed, t, yBottom + TRACK_H, height - 2 * TRACK_H, 'z');
-  }
-}
-
-// 경사 서까래 1개(x 고정, z-y 평면에서 (z0,y0)→(z1,y1)).
-function rafter(x, z0, y0, z1, y1, depth = 0.14) {
-  const dz = z1 - z0, dy = y1 - y0;
-  const len = Math.hypot(dz, dy);
-  const m = new THREE.Mesh(new THREE.BoxGeometry(FRAME_FLANGE, depth, len), frameMat);
-  m.position.set(x, (y0 + y1) / 2, (z0 + z1) / 2);
-  m.rotation.x = Math.atan2(-dy, dz);
-  m.castShadow = false;
-  m.receiveShadow = false;
-  scene.add(m);
-}
-
-// 골조 기준 좌표(벽 중심선 / 지붕 기하 — 지붕 슬래브 블록과 동일 값)
-const frRidgeY = frGableBaseY + gableRise;             // 용마루
-const frOuterEaveY = frGableBaseY - roofSlopeTan * frEaveOverhang;
-const gableTopY = (z) => frGableBaseY + gableRise - roofSlopeTan * Math.abs(z - frRidgeZ);
 
 // ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격(방당 3.0m), 계단실=남는 중앙(대칭) ──
 //   ※ 1층 벽 좌표(stairHighXWallX 등)는 차차 맞춤. 지금은 바닥·기초·골조에만 이 레이아웃을 반영.
@@ -1004,58 +956,7 @@ captureInto(foundationDimObjects, () => {
   planYDim(_pileX + 0.45, _pileZ, groundTopY, foundationTopY, '말뚝기초 0.35m', 0.5);
 });
 
-// 집 골조 1벌 빌드(현재 frameMat 재질로) — 1층 외주벽+계단 내벽 / 다락 장선·무릎벽·박공 / 지붕 용마루·서까래.
-// 스틸·목재 두 벌로 각각 빌드해 상호배타 토글로 한 번에 하나만 표시.
-function buildHouseFrame(name) {
-  // ── 1층 골조: 외주 스터드 벽 4면 + 계단 코어 내벽 2면 ──
-  studWall('x', frFrontZ, frLeftX, frRightX, firstWallY, firstWallHeight);   // 전면
-  studWall('x', frBackZ, frLeftX, frRightX, firstWallY, firstWallHeight);    // 후면
-  studWall('z', frLeftX, frFrontZ, frBackZ, firstWallY, firstWallHeight);    // 좌측 박공
-  studWall('z', frRightX, frFrontZ, frBackZ, firstWallY, firstWallHeight);   // 우측 박공
-  studWall('z', stairLowXWallX, insideZ0, insideZ1, firstWallY, firstWallHeight);   // 계단 내벽(우)
-  studWall('z', stairHighXWallX, insideZ0, insideZ1, firstWallY, firstWallHeight);  // 계단 내벽(좌)
-  // ── 다락 골조: 바닥 장선 + 무릎벽(전·후) + 박공 단부 스터드(좌·우) ──
-  const joistY = secondY;
-  const joistH = secondFloorThickness - 0.01;
-  const nJoist = Math.max(1, Math.round((insideX1 - insideX0) / 0.45));     // 짧은 방향(Z)으로 스팬, X 등간격
-  for (let i = 0; i <= nJoist; i += 1) {
-    const jx = insideX0 + (insideX1 - insideX0) * (i / nJoist);
-    box({ x: jx - FRAME_FLANGE / 2, z: insideZ0, w: FRAME_FLANGE, d: insideD, y: joistY, h: joistH, mat: frameMat, cast: false, receive: false });
-  }
-  box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: FRAME_FLANGE, y: joistY, h: joistH, mat: frameMat, cast: false, receive: false });            // 림장선(전)
-  box({ x: insideX0, z: insideZ1 - FRAME_FLANGE, w: insideX1 - insideX0, d: FRAME_FLANGE, y: joistY, h: joistH, mat: frameMat, cast: false, receive: false }); // 림장선(후)
-  studWall('x', frFrontZ, frLeftX, frRightX, frSecondWallY, secondWallHeight);   // 전면 무릎벽 1.15m
-  studWall('x', frBackZ, frLeftX, frRightX, frSecondWallY, secondWallHeight);    // 후면 무릎벽 1.15m
-  for (const gx of [frLeftX, frRightX]) {                                        // 박공 단부 스터드(경사 상단까지)
-    frameTrack('z', gx, frFrontZ, frBackZ, frSecondWallY);
-    const len = frBackZ - frFrontZ;
-    const n = Math.max(1, Math.round(len / STUD_SPACING));
-    for (let i = 0; i <= n; i += 1) {
-      const z = frFrontZ + len * (i / n);
-      frameStud(gx, z, frSecondWallY + TRACK_H, gableTopY(z) - frSecondWallY - TRACK_H, 'z');
-    }
-  }
-  // ── 지붕 골조: 용마루 보 + 양면 서까래(오버행 포함) ──
-  const ridgeX0 = frLeftX - frSideOverhang - 0.05;
-  const ridgeX1 = frRightX + frSideOverhang + 0.05;
-  box({ x: ridgeX0, z: frRidgeZ - 0.04, w: ridgeX1 - ridgeX0, d: 0.08, y: frRidgeY - 0.16, h: 0.16, mat: frameMat, cast: false, receive: false }); // 용마루 보
-  const rx0 = frLeftX - frSideOverhang;
-  const rx1 = frRightX + frSideOverhang;
-  const nr = Math.max(1, Math.round((rx1 - rx0) / 0.6));
-  for (let i = 0; i <= nr; i += 1) {
-    const x = rx0 + (rx1 - rx0) * (i / nr);
-    rafter(x, frRidgeZ, frRidgeY, frEaveZFront, frOuterEaveY);   // 전면 슬로프
-    rafter(x, frRidgeZ, frRidgeY, frEaveZBack, frOuterEaveY);    // 후면 슬로프
-  }
-  label(name, frRightX + 0.7, frGableBaseY + 0.2, frRidgeZ, 'struct');
-}
-
-// 두 모드(스틸/목재)로 각각 빌드 — 상호배타 토글로 한 번에 하나만 표시.
-frameMat = materials.steelFrame;
-captureInto(steelFrameObjects, () => buildHouseFrame('스틸 골조 (C형강 · 세움스틸)'));
-frameMat = materials.woodFrame;
-captureInto(woodFrameObjects, () => buildHouseFrame('목골조 (중목 · 경량목구조)'));
-frameMat = materials.steelFrame;
+// 집 골조(철골/목조 프레임)는 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다.
 
 // 캠핑 가구 재질 & 헬퍼 — 스노우피크 IGT 테이블, 반고 햄프턴 DLX 캠핑의자
 const igtMetalMat = new THREE.MeshLambertMaterial({ color: 0x8f969d });   // IGT 알루미늄 프레임/다리
@@ -1550,39 +1451,7 @@ for (const f of deckFootprints) {
   // 데크 둘레는 바닥틀(골조)의 림장선이 겸한다 — 집과 동일하게 한 겹(중복 토대보 제거).
 }
 
-// ── 골조(단계적) ① 바닥 골조 — 둘레 림장선 + 등간격 바닥 장선. 기초 말뚝 두부 위에 얹힘. ─────
-//   골조 토글 전용 그룹(골조Objects). 집과 데크를 별도 재질로 구분해 따로 짠다.
-// 바닥 골조 1벌 — (x0,z0,w,d) 발자국 위, yBottom(기초 두부 상단)에 얹힌 장선틀. 짧은 변으로 스팬(데크용).
-//   rim = 둘레 테두리(앞·뒤·좌·우) 4변 폭만 지정. 가운데 가로보·내부 장선은 rim과 무관(항상 기본값).
-captureInto(골조Objects, () => {
-  // 집 바닥 골조 — 둘레 림장선은 기초 footprint 끝까지(데크처럼, 0~buildingW / 앞~뒤 외벽 바깥선).
-  //   내부 세로(Z) 부재만 벽 중심선·방 중앙 말뚝열에 둔다(끝열은 둘레 림이 받음). 중앙 가로보는 floorFrame이 겸함.
-  floorFrame(0, buildingFrontZ, buildingW, buildingD, foundationTopY, materials.houseFloorFrame,
-    [frLeftX + 1.5, 거실InnerWallX, 안방InnerWallX, frRightX - 1.5]);   // 거실 중앙 1.6·거실|계단 3.1·계단|안방 5.4·안방 중앙 6.9
-  // 데크 바닥 골조 — 데크 기초 두부 상단(deckTopY0=0.48)에 얹힘(집보다 0.1m 낮음)
-  // 세로(Z) 장선은 기초말뚝 X열에만(말뚝 안 지나는 등간격 장선 제거). 둘레·중앙 가로보는 유지.
-  const dm = 0.1;
-  for (const f of deckFootprints) {
-    const pileXs = pileGridCoords(f.x + dm, f.z + dm, f.w - 2 * dm, f.d - 2 * dm, 1.6, 1.7).xs;   // 기초 배치와 동일 출처
-    const innerXs = pileXs.slice(1, -1);   // 끝 말뚝열은 둘레 림장선이 받음 → 내부 말뚝열에만 세로 장선(집처럼)
-    floorFrame(f.x, f.z, f.w, f.d, deckTopY0, materials.deckFloorFrame, innerXs, DECK_RIM_W);   // 데크 테두리만 DECK_RIM_W(10cm) — 가운데 보·장선 불변
-  }
-});
-
-// 바닥틀 방별 치수 — 뒤편(+Z)에 안방/계단실/거실 너비(가로), 오른쪽(低x=거실쪽)에 깊이(세로). 바닥틀 뷰에서만.
-captureInto(floorFrameDimObjects, () => {
-  const backZ = frBackZ + 0.5;                   // 뒤 림장선 바깥으로 너비 치수선을 뺀다
-  // 너비(가로 X) — 평면 좌(高x)→우(低x): 안방·계단실·거실. 계단실은 양벽 중심선, 안방·거실은 계단쪽 벽 중심→외곽 끝.
-  planXDim(backZ, 안방InnerWallX, buildingW, `안방 ${fmtDim(buildingW - 안방InnerWallX)}m`);
-  planXDim(backZ, 거실InnerWallX, 안방InnerWallX, `계단실 ${fmtDim(안방InnerWallX - 거실InnerWallX)}m`);
-  planXDim(backZ, 0, 거실InnerWallX, `거실 ${fmtDim(거실InnerWallX - 0)}m`);
-  // 깊이(세로 Z) — 오른쪽(평면 우 = 低x = 거실쪽) 외곽 바깥에. 외곽치수(footprint 앞~뒤 끝).
-  planZDim(-0.5, buildingFrontZ, buildingBackZ, `깊이 ${fmtDim(buildingBackZ - buildingFrontZ)}m`);
-  // 데크 치수 — 앞쪽(−Z)에 너비, 오른쪽(低x)에 깊이
-  const df = deckFootprints[0];
-  planXDim(df.z - 0.5, df.x, df.x + df.w, `데크 ${fmtDim(df.w)}m`);
-  planZDim(df.x - 0.5, df.z, df.z + df.d, `데크 ${fmtDim(df.d)}m`);
-});
+// 바닥틀(바닥 골조 장선틀)은 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다(메뉴 삭제).
 
 // ── 바닥(평면도): 납작한 발자국 + 평면 치수 ─────────────────────────────────
 const planY = 0.003, planH = 0.002;   // 평면(높이 0 취급) — 대지 위 1mm 띄워 깜빡임만 막는 2mm 두께
@@ -2171,7 +2040,6 @@ const view = {
   foundation: false,  // 입체 기초(시스템말뚝·두부)
   matFoundationHouse: false, // 부분 매트기초(집만 50cm)
   matFoundationFull: false,  // 전체 매트기초(집+데크 50cm)
-  floorFrame: false,  // 바닥틀(바닥 골조)
   // 집 그룹(내부구조 부품별)
   firstFloorFinish: false, // 집 1층 바닥재
   stair: false,       // ㄷ자 계단 본체
@@ -2195,7 +2063,6 @@ const PARTS = [
   { key: 'foundation', arrays: [foundationObjects, foundationDimObjects] },
   { key: 'matFoundationHouse', arrays: [matFoundationHouseObjects] },
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
-  { key: 'floorFrame', arrays: [골조Objects, floorFrameDimObjects] },
   { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects] },
   { key: 'stair',      arrays: [stairCoreObjects] },
   { key: 'livingWall', arrays: [livingInnerWallObjects] },
@@ -2219,7 +2086,7 @@ const PARTS = [
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
-  ['cFoundation', 'foundation'], ['cMatFoundationHouse', 'matFoundationHouse'], ['cMatFoundationFull', 'matFoundationFull'], ['cFrame', 'floorFrame'],
+  ['cFoundation', 'foundation'], ['cMatFoundationHouse', 'matFoundationHouse'], ['cMatFoundationFull', 'matFoundationFull'],
   ['cFirstFloorFinish', 'firstFloorFinish'],
   ['cStair', 'stair'], ['cLivingWall', 'livingWall'], ['cFamilyWall', 'familyWall'],
   ['cExtWall', 'extWall'], ['cFirstRoom', 'firstRoom'], ['cAnno', 'anno'], ['cOutlet', 'outlet'],
@@ -2246,8 +2113,6 @@ function applyVisibility() {
     for (const arr of p.arrays) for (const item of arr) item.visible = on;
   }
   // 미사용 배열(삭제된 골조 토글 · 구 통합 계단벽[분리됨])
-  for (const item of steelFrameObjects) item.visible = false;
-  for (const item of woodFrameObjects) item.visible = false;
   for (const item of stairWallObjects) item.visible = false;
   // 체크박스 상태 동기화(단일 출처)
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
@@ -2259,7 +2124,7 @@ function applyVisibility() {
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'floorFrame', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;

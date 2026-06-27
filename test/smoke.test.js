@@ -85,13 +85,6 @@ test('⑨ 치수선은 헬퍼 안에서만 — 인라인 치수선 금지(라벨
   assert.equal(n, 9, `치수선 box는 헬퍼 안 9개만이어야 함 — 현재 ${n}개. 헬퍼 밖 인라인 치수선이 생기면 라벨과 분리됨(라벨+선 한 세트 위반)`);
 });
 
-test('⑩ 집 바닥틀 둘레 — 데크처럼 기초 footprint 끝까지(0~buildingW / 앞~뒤). 벽 중심선 안쪽으로 들이지 말 것', () => {
-  // 집 골조 둘레 림장선은 floorFrame()로 footprint 전체(0, buildingFrontZ, buildingW, buildingD)에 두른다.
-  //   벽 중심선(frLeftX 등) 좌표로 외곽을 깔면 슬래브 끝보다 안쪽으로 들어가 데크와 어긋남(사용자: "데크처럼").
-  const src = readFileSync(mainJs, 'utf8');
-  assert.match(src, /floorFrame\(0, buildingFrontZ, buildingW, buildingD, foundationTopY, materials\.houseFloorFrame/, '집 골조 둘레는 footprint 끝까지(floorFrame에 0·buildingW·앞뒤 Z 전달)');
-});
-
 test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없음) + 배치도/전체모델 프리셋', () => {
   // 사용자 지시(레이아웃 재설계): 좌측 메뉴 = 부품 체크박스, 우측 = 렌더.
   //   · 각 부품은 view[key] boolean으로 완전 독립 표시(누적·단계 없음). PARTS 테이블이 [객체배열↔상태]를 일괄 구동.
@@ -100,7 +93,7 @@ test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없
   const src = readFileSync(mainJs, 'utf8');
   // (1) 부품 상태는 view 객체의 독립 boolean — 핵심 부품 키 존재
   assert.match(src, /const view = \{/, '부품 상태는 단일 view 객체');
-  for (const k of ['foundation', 'floorFrame', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun']) {
+  for (const k of ['foundation', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun']) {
     assert.match(src, new RegExp(`\\b${k}:`), `view에 부품 키 ${k} 존재`);
   }
   // (2) PARTS 테이블이 부품→객체배열을 매핑하고, 가시성은 그 테이블로 일괄(독립)
