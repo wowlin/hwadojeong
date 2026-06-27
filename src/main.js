@@ -2226,8 +2226,6 @@ function applyVisibility() {
   for (const item of steelFrameObjects) item.visible = false;
   for (const item of woodFrameObjects) item.visible = false;
   for (const item of stairWallObjects) item.visible = false;
-  // 계단 조절 패널: 계단 부품이 보일 때만
-  if (typeof stairPanel !== 'undefined' && stairPanel) stairPanel.style.display = (view.stair && !isPlan) ? 'flex' : 'none';
   // 체크박스 상태 동기화(단일 출처)
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
   const planBtn = document.querySelector('#vPlan'); if (planBtn) planBtn.classList.toggle('active', isPlan);
@@ -2499,47 +2497,9 @@ function buildStair() {
   captureInto(stairCoreObjects, () => { drawStairCore(stairParams); });
   captureInto(stairObjects, () => { stairInfo = drawStairAnno(stairParams); });
   applyVisibility();
-  if (stairInfoEl && stairInfo) {
-    const N = Math.max(5, Math.round(stairParams.N));
-    stairInfoEl.textContent = `계단 너비 ${fmtDim(stairInfo.stairW)}m\n내벽 높이(=층고) ${fmtDim(stairInfo.innerWallH)}m · 하부 ${stairInfo.nL}단 · 사선 3 · 상부 ${stairInfo.nU}단\n1층 계단앞 통행 ${fmtDim(stairInfo.firstPass)}m · 다락 통행 ${fmtDim(stairInfo.loftPass)}m\n거실 ${fmtDim(stairInfo.livingW)}m · 안방 ${fmtDim(stairInfo.anbangW)}m (1층과 동일)`;
-  }
 }
 
-// 조절 패널(계단 화면에서만 표시) — 값 입력 시 즉시 다시 그림
-const stairStyle = document.createElement('style');
-stairStyle.textContent = `
-  #stairPanel { position: fixed; top: 14px; left: 256px; z-index: 50; display: none; flex-direction: column; gap: 8px;
-    background: rgba(255,255,255,0.94); border: 1px solid #cdbfa6; border-radius: 10px; padding: 12px 14px;
-    font: 600 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color: #3a2f22; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
-  #stairPanel .sp-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
-  #stairPanel .sp-note { font-size: 11.5px; font-weight: 600; color: #8a7a5e; margin: -2px 0 2px; }
-  #stairPanel label { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  #stairPanel input { width: 80px; padding: 4px 6px; border: 1px solid #b9a988; border-radius: 6px; font: inherit; text-align: right; }
-  #stairPanel .sp-info { margin-top: 4px; font-weight: 700; color: #4a7a3a; font-size: 12.5px; max-width: 240px; line-height: 1.5; white-space: pre-line; }
-`;
-document.head.appendChild(stairStyle);
-const stairPanel = document.createElement('div');
-stairPanel.id = 'stairPanel';
-stairPanel.innerHTML = `
-  <div class="sp-title">ㄷ자 계단 설계</div>
-  <div class="sp-note">너비·위치는 1층 계단실 고정</div>
-  <label>단높이 (m)<input id="sp_r" type="number" step="0.01" min="0.10"></label>
-  <label>계단폭 (m)<input id="sp_t" type="number" step="0.01" min="0.20"></label>
-  <label>계단 개수<input id="sp_n" type="number" step="1" min="5"></label>
-  <div class="sp-info" id="sp_info"></div>
-`;
-document.body.appendChild(stairPanel);
-const stairInfoEl = document.querySelector('#sp_info');
-const _spr = document.querySelector('#sp_r');
-const _spt = document.querySelector('#sp_t'), _spn = document.querySelector('#sp_n');
-_spr.value = stairParams.R; _spt.value = stairParams.T; _spn.value = stairParams.N;
-function onStairInput() {
-  stairParams.R = parseFloat(_spr.value) || stairParams.R;
-  stairParams.T = parseFloat(_spt.value) || stairParams.T;
-  stairParams.N = parseInt(_spn.value, 10) || stairParams.N;
-  buildStair();
-}
-for (const el of [_spr, _spt, _spn]) el.addEventListener('input', onStairInput);
+// 계단 제원은 stairParams 기본값으로 확정 — 화면 내 조절 패널은 제거함.
 buildStair();
 
 showPlan();   // 초기 화면 = 배치도(부감)
