@@ -1464,10 +1464,12 @@ for (const f of deckFootprints) {
 const MAT_H = 0.5;   // 매트기초 높이 50cm
 captureInto(matFoundationHouseObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트
+  planYDim(buildingW + 0.1, buildingBackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 동남(SE) 끝 모서리 높이 치수
 });
 captureInto(matFoundationFullObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트
   for (const f of deckFootprints) box({ x: f.x, z: f.z, w: f.w, d: f.d, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 데크 매트
+  planYDim(buildingW + 0.1, buildingBackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 동남(SE) 끝 모서리 높이 치수
 });
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
 function planPileMark(px, pz, mat = materials.pileHead) {   // 말뚝 두부 위치 마커(기본 검정 — 영상의 두부 브래킷처럼)
@@ -2105,8 +2107,8 @@ function applyVisibility() {
   for (const item of footprintObjects) item.visible = true;
   // 배치도(부감) 전용: 말뚝 마커·평면 치수·측백 0.5
   for (const item of planObjects) item.visible = false;   // 말뚝 위치 마커 — 배치도에서 숨김(집·썬룸 배치만 표시)
-  for (const item of dimObjects) item.visible = isPlan || view.foundation;            // 평면 모눈: 배치도 + 기초 토글
-  for (const item of planOnlyDimObjects) item.visible = isPlan;
+  for (const item of dimObjects) item.visible = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull;   // 평면 치수: 배치도 + 말뚝기초 + 부분/전체 매트기초
+  for (const item of planOnlyDimObjects) item.visible = isPlan;   // 측백 치수는 배치도 전용(매트기초 뷰에선 제외 — dimObjects의 측백 메시도 여기서 다시 숨김)
   // 부품: PARTS 테이블 일괄 — 각 부품 독립 토글(배치도일 땐 모두 숨김)
   for (const p of PARTS) {
     const on = !isPlan && !!view[p.key];
