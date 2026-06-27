@@ -92,33 +92,30 @@ test('⑩ 집 바닥틀 둘레 — 데크처럼 기초 footprint 끝까지(0~bui
   assert.match(src, /floorFrame\(0, buildingFrontZ, buildingW, buildingD, foundationTopY, materials\.houseFloorFrame/, '집 골조 둘레는 footprint 끝까지(floorFrame에 0·buildingW·앞뒤 Z 전달)');
 });
 
-test('⑪ 화면 잠금 — 기존 +1층/+다락/+지붕은 각각 독립 토글, 새 1층/다락/지붕은 바닥 연동', () => {
-  // 사용자 절대 지시:
-  //   · 기존 황토색 버튼 +1층/+다락/+지붕(viewFirst/Second/All)은 각각 독립 토글(firstOn/atticOn/roofOn) — 현재 화면 위 누적.
-  //   · 새 1층/다락/지붕(stageFirst/Attic/Roof)은 모두 '바닥' 상태를 그대로 표시(effBuilding='floor', 같은 그룹 → 바닥 변경 연동). 빈 화면 단계 없음.
-  //   과거 회귀: 두 버튼이 같은 building 값을 공유 + blankStage가 기존을 비웠음. 둘 다 금지.
+test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없음) + 배치도/전체모델 프리셋', () => {
+  // 사용자 지시(레이아웃 재설계): 좌측 메뉴 = 부품 체크박스, 우측 = 렌더.
+  //   · 각 부품은 view[key] boolean으로 완전 독립 표시(누적·단계 없음). PARTS 테이블이 [객체배열↔상태]를 일괄 구동.
+  //   · 배치도(부감)·현재 전체 모델은 여러 부품을 한 번에 세팅하는 프리셋 뷰(showPlan/showAll).
+  //   회귀 금지: 옛 누적 단계(STAGE_BUTTONS·effBuilding·atLeast·blankStage)로 되돌리지 말 것.
   const src = readFileSync(mainJs, 'utf8');
-  // (1) +1층/+다락/+지붕은 각각 독립 boolean 토글(TOGGLE_BUTTONS 테이블) — building/카메라 안 건드림
-  assert.match(src, /id: 'viewFirst',\s*key: 'firstOn'/, '+1층은 firstOn 토글(TOGGLE_BUTTONS)');
-  assert.match(src, /id: 'viewSecond',\s*key: 'atticOn'/, '+다락은 atticOn 토글(TOGGLE_BUTTONS)');
-  assert.match(src, /id: 'viewAll',\s*key: 'roofOn'/, '+지붕은 roofOn 토글(TOGGLE_BUTTONS)');
-  // viewFirst/Second/All은 STAGE_BUTTONS(building 변경)에 들어가면 안 됨 — 토글이지 화면전환 아님
-  assert.doesNotMatch(src, /id: 'view(First|Second|All)',\s*building:/, '기존 +버튼을 STAGE_BUTTONS(화면전환)에 넣지 말 것');
-  // (2) 각 층 가시성은 독립 토글 boolean으로
-  assert.match(src, /const showFirst = firstOn;/, '+1층 내용은 firstOn 토글로 표시');
-  assert.match(src, /const showAttic = atticOn;/, '+다락 내용은 atticOn 토글로 표시');
-  assert.match(src, /const showRoof = roofOn;/, '+지붕 내용은 roofOn 토글로 표시');
-  assert.match(src, /for \(const item of firstFloorObjects\) item\.visible = showFirst;/, '1층 그룹은 showFirst(=firstOn)로 표시');
-  assert.match(src, /for \(const item of secondFloorObjects\) item\.visible = showAttic;/, '다락 그룹은 showAttic(=atticOn)으로 표시');
-  assert.match(src, /for \(const item of roofObjects\) item\.visible = showRoof;/, '지붕 그룹은 showRoof(=roofOn)로 표시');
-  // (3) 새 버튼은 전용 빈 화면 building 값(STAGE_BUTTONS 테이블)
-  assert.match(src, /id: 'stageFirst',\s*building: 'stageFirst'/, '새 1층은 building \'stageFirst\'(STAGE_BUTTONS)');
-  assert.match(src, /id: 'stageAttic',\s*building: 'stageAttic'/, '새 다락은 building \'stageAttic\'(STAGE_BUTTONS)');
-  assert.match(src, /id: 'stageRoof',\s*building: 'stageRoof'/, '새 지붕은 building \'stageRoof\'(STAGE_BUTTONS)');
-  // (4) 빈 화면 단계 없음 — blankStage 분기 제거됨
-  assert.doesNotMatch(src, /blankStage/, '빈 화면(blankStage) 분기는 제거(1층·다락·지붕 모두 바닥 연동)');
-  // (5) 1층·다락·지붕(stageFirst/Attic/Roof)은 모두 '바닥'(floor) 상태를 그대로 표시 — 같은 그룹 참조라 바닥 변경이 함께 반영됨
-  assert.match(src, /effBuilding = \(building === 'stageFirst' \|\| building === 'stageAttic' \|\| building === 'stageRoof'\) \? 'floor' : building/, '1층·다락·지붕은 effBuilding=floor로 바닥 상태 연동');
+  // (1) 부품 상태는 view 객체의 독립 boolean — 핵심 부품 키 존재
+  assert.match(src, /const view = \{/, '부품 상태는 단일 view 객체');
+  for (const k of ['foundation', 'floorFrame', 'floor', 'stair', 'livingWall', 'familyWall', 'extWall', 'roof', 'deck', 'sun']) {
+    assert.match(src, new RegExp(`\\b${k}:`), `view에 부품 키 ${k} 존재`);
+  }
+  // (2) PARTS 테이블이 부품→객체배열을 매핑하고, 가시성은 그 테이블로 일괄(독립)
+  assert.match(src, /const PARTS = \[/, '부품→객체배열 매핑 PARTS 테이블');
+  assert.match(src, /for \(const p of PARTS\)[\s\S]*?const on = !isPlan && !!view\[p\.key\];/, '각 부품은 view[key]로 독립 표시(배치도일 땐 숨김)');
+  // (3) 안방 내력벽·거실측 벽은 분리된 별도 배열(부품별 토글 대상)
+  assert.match(src, /key: 'familyWall', arrays: \[familyInnerWallObjects\]/, '안방 내력벽은 familyInnerWallObjects 단독 부품');
+  assert.match(src, /key: 'livingWall', arrays: \[livingInnerWallObjects\]/, '거실측 벽은 livingInnerWallObjects 단독 부품');
+  // (4) 프리셋 뷰 — 배치도(전부 끄고 plan만) / 전체모델(전부 켜기)
+  assert.match(src, /function showPlan\(\)/, '배치도 프리셋 showPlan');
+  assert.match(src, /function showAll\(\)/, '전체 모델 프리셋 showAll');
+  assert.match(src, /for \(const k of Object\.keys\(view\)\) view\[k\] = \(k !== 'plan'\);/, 'showAll은 plan 외 모든 부품 ON');
+  // (5) 옛 누적 단계 구조 금지 — STAGE_BUTTONS·effBuilding·atLeast·blankStage 모두 제거
+  assert.doesNotMatch(src, /STAGE_BUTTONS|effBuilding|blankStage/, '옛 누적 단계 구조(STAGE_BUTTONS·effBuilding·blankStage) 제거');
+  assert.doesNotMatch(src, /const atLeast =/, '누적 판정 atLeast 제거(부품 독립 토글)');
 });
 
 test('⑫ 데크 테두리 폭 — floorFrame을 실제 실행해 부재 치수를 측정(테두리만 10cm, 가운데 가로보는 5cm 불변)', () => {

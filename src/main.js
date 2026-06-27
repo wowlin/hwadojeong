@@ -91,7 +91,7 @@ import {
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects,
   foundationDimObjects, floorFrameDimObjects, footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, siteBaseObjects, steelFrameObjects, woodFrameObjects, 골조Objects,
-  stairObjects, stairCoreObjects, stairWallObjects,
+  stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
 
@@ -2150,98 +2150,90 @@ function setView(pos) {
 //    - 외벽(다누몰 자바라, 시공 업체 별도)은 썬룸가 켜진 경우에만 가능(외벽은 썬룸에 매달림)
 //    - 악세사리(화분·의자·테이블·그릴)는 완전 독립 토글
 // building 시공 누적 단계: plan(배치도) → foundation(기초) → floorFrame(바닥틀) → floor(바닥재) → first(1층) → second(다락) → all(지붕)
-const viewState = { building: 'plan', firstOn: false, atticOn: false, roofOn: false, deckOn: false, 썬룸On: false, wallOn: false, foldingOn: false, accessoryOn: false, outletsOn: false, hedgeOn: false, fenceOn: false, frameMode: 'none' };  // +1층(firstOn)·+다락(atticOn)·+지붕(roofOn) 각각 독립 토글, 현재 화면 위 누적 · 측백담장(hedgeOn)·옆집담장(fenceOn) 기본 꺼짐 · frameMode: 'none'|'steel'|'wood'(미검토 골조 토글)
+// ── 부품 가시성(레이어 패널 방식) ───────────────────────────────────────────────
+// 각 부품을 독립 체크박스 토글로 보이기/숨기기(완전 독립 — 누적 없음). 단일 출처 PARTS·CHECKS
+// 테이블이 [객체배열 ↔ 상태 ↔ 체크박스]를 일괄 구동. 배치도·전체모델은 여러 부품을 한 번에
+// 세팅하는 프리셋 뷰 버튼(부감/전체).
+const view = {
+  // 기초 그룹
+  plan: false,        // 배치도(부감) — 대지·도로·담장·말뚝·평면치수
+  foundation: false,  // 입체 기초(시스템말뚝·두부)
+  floorFrame: false,  // 바닥틀(바닥 골조)
+  floor: false,       // 바닥재 마감
+  // 집 그룹(내부구조 부품별)
+  stair: false,       // ㄷ자 계단 본체
+  livingWall: false,  // 거실측 내벽
+  familyWall: false,  // 안방 내력벽
+  extWall: false,     // 1층 외벽
+  firstRoom: false,   // 1층 골조·실내
+  anno: false,        // 계단 설계 도면(방·다락바닥·치수·라벨)
+  loft: false,        // 다락 바닥·골조
+  roof: false,        // 지붕
+  outlet: false,      // 콘센트(1층+다락)
+  // 썬룸 그룹
+  deck: false, sun: false, sunWall: false, folding: false, accessory: false,
+  // 참고(임시)
+  hedge: false, fence: false,
+};
 
-// ── 버튼 정의 (단일 출처) — 핸들러 등록·활성/비활성 반영을 이 테이블에서 일괄 구동 ──
-// 시공 단계(상호배타): building 값 설정 + 카메라. cam 없으면 setPlanView. reset=클릭 시 끌 토글 키.
-const STAGE_BUTTONS = [
-  { id: 'viewPlan',       building: 'plan' },
-  { id: 'viewFoundation', building: 'foundation', cam: [4.25, 10.2, -5.0] },
-  { id: 'toggleFrame',    building: 'floorFrame',  cam: [4.25, 10.4, -5.0] },
-  { id: 'stageFloor',     building: 'floor',       cam: [4.25, 10.7, -5.0] },
-  { id: 'stageStair',     building: 'stageStair',  cam: [8.6, 2.8, -4.2] },     // 계단 단독 설계(1층 앞) — 바닥 연결 + ㄷ자 가변 계단
-  { id: 'stageFirst',     building: 'stageFirst',  cam: [4.25, 11.2, -5.0], reset: ['hedgeOn', 'fenceOn'] },
-  { id: 'stageAttic',     building: 'stageAttic',  cam: [4.25, 12.2, -5.0] },
-  { id: 'stageRoof',      building: 'stageRoof',   cam: [10.8, 6.8, -8.8] },
+// 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
+const PARTS = [
+  { key: 'foundation', arrays: [foundationObjects, foundationDimObjects] },
+  { key: 'floorFrame', arrays: [골조Objects, floorFrameDimObjects] },
+  { key: 'floor',      arrays: [floorFinishObjects] },
+  { key: 'stair',      arrays: [stairCoreObjects] },
+  { key: 'livingWall', arrays: [livingInnerWallObjects] },
+  { key: 'familyWall', arrays: [familyInnerWallObjects] },
+  { key: 'extWall',    arrays: [firstWallObjects] },
+  { key: 'firstRoom',  arrays: [firstFloorObjects] },
+  { key: 'anno',       arrays: [stairObjects, firstDimObjects] },
+  { key: 'loft',       arrays: [secondFloorObjects] },
+  { key: 'roof',       arrays: [roofObjects] },
+  { key: 'outlet',     arrays: [outletObjects, atticOutletObjects] },
+  { key: 'deck',       arrays: [deckObjects] },
+  { key: 'sun',        arrays: [썬룸Objects, 썬룸FrameObjects] },
+  { key: 'sunWall',    arrays: [wallObjects] },
+  { key: 'folding',    arrays: [foldingObjects] },
+  { key: 'accessory',  arrays: [extrasObjects] },
+  { key: 'hedge',      arrays: [hedgeObjects] },
+  { key: 'fence',      arrays: [fenceObjects] },
 ];
-// 켜고/끄는 토글: viewState[key] 반전. needs=활성(클릭 가능) 조건, off=끌 때 함께 끌 키, exclusive=켤 때 끌 키.
-const TOGGLE_BUTTONS = [
-  { id: 'viewFirst',       key: 'firstOn' },
-  { id: 'viewSecond',      key: 'atticOn' },
-  { id: 'viewAll',         key: 'roofOn' },
-  { id: 'toggleDeck',      key: 'deckOn', off: ['썬룸On'] },                                  // 데크 끄면 썬룸도 off
-  { id: 'toggle썬룸',      key: '썬룸On', needs: () => viewState.deckOn },                    // 데크 위에만
-  { id: 'toggleWall',      key: 'wallOn', needs: () => viewState.deckOn && viewState.썬룸On, exclusive: ['foldingOn'] },   // 외벽↔폴딩 상호배타
-  { id: 'toggleFolding',   key: 'foldingOn', needs: () => viewState.deckOn && viewState.썬룸On, exclusive: ['wallOn'] },
-  { id: 'toggleAccessory', key: 'accessoryOn' },
-  { id: 'toggleOutlet',    key: 'outletsOn' },
-  { id: 'toggleHedge',     key: 'hedgeOn' },
-  { id: 'toggleFence',     key: 'fenceOn' },
+// 체크박스 id → view 키 (사이드바 토글 단일 출처)
+const CHECKS = [
+  ['cFoundation', 'foundation'], ['cFrame', 'floorFrame'], ['cFloor', 'floor'],
+  ['cStair', 'stair'], ['cLivingWall', 'livingWall'], ['cFamilyWall', 'familyWall'],
+  ['cExtWall', 'extWall'], ['cFirstRoom', 'firstRoom'], ['cAnno', 'anno'],
+  ['cLoft', 'loft'], ['cRoof', 'roof'], ['cOutlet', 'outlet'],
+  ['cDeck', 'deck'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
+  ['cHedge', 'hedge'], ['cFence', 'fence'],
 ];
-// 골조(상호배타 frameMode): 같은 버튼 재클릭 시 off.
-const FRAME_BUTTONS = [];   // 스틸골조·목골조 버튼 삭제됨
 
 function applyVisibility() {
-  const { building, firstOn, atticOn, roofOn, deckOn, 썬룸On, wallOn, foldingOn, accessoryOn, outletsOn, hedgeOn, fenceOn, frameMode } = viewState;
-  const isPlan = building === 'plan';                           // 바닥(배치도): 도로·토지·3면담장·기초 바닥만
-  const isStair = building === 'stageStair';                    // 계단 단독 설계 화면 — 아직 빈 화면(모든 그룹 숨김, 계단 설계 추가 예정)
-  const sunReady = deckOn && 썬룸On;                            // 썬룸·외벽·폴딩 공통 전제 — 한 곳에서만 계산(흩어진 재계산 방지)
-  const STAGES = ['plan', 'foundation', 'floorFrame', 'floor', 'first', 'second', 'all'];
-  const effBuilding = (building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof') ? 'floor' : building;   // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(같은 그룹 → 바닥 변경이 함께 반영=연동)
-  const atLeast = (s) => STAGES.indexOf(effBuilding) >= STAGES.indexOf(s);   // 누적: 그 단계 이상이면 표시
-  const showFrame = (atLeast('floorFrame') || isStair) && !isPlan;     // 바닥틀(골조Objects): 바닥틀 단계 이상 + 계단 화면(바닥 연결)
-  const showFloorFinish = (atLeast('floor') || isStair) && !isPlan;    // 바닥: 바닥 단계 이상 + 계단 화면(바닥 연결)
-  const showDeckFinish = (deckOn || atLeast('first')) && !isPlan; // 데크 바닥·계단: 1층 이상 자동 + 데크 토글
-  const showFirst = firstOn;                                   // +1층: 독립 토글(현재 화면 위 누적)
-  const showAttic = atticOn;                                   // +다락: 독립 토글
-  const showRoof = roofOn;                                     // +지붕: 독립 토글
-  const showStageWall = building === 'stageFirst' || building === 'stageAttic' || building === 'stageRoof';   // 1층 외벽(반투명): 1층 단계부터 누적 표시
-
-  // 1층·다락·지붕 화면은 모두 '바닥' 상태를 그대로 표시(effBuilding=floor) — 빈 화면 단계 없음. 기존 +1층/+다락/+지붕(first/second/all)은 영향 없음.
-  for (const item of siteBaseObjects) item.visible = true;          // 바탕 대지·도로: 모든 화면에 표시
-  for (const item of 골조Objects) item.visible = showFrame;                            // 바닥틀(기초 위 바닥프레임)
-  for (const item of stairObjects) item.visible = isStair;                             // 계단 화면 전용 주석(거실·안방 크기·라벨·층고)
-  for (const item of stairCoreObjects) item.visible = isStair || showStageWall || showFirst;   // ㄷ자 계단 본체: 계단 화면 + 1층(단계·+1층) 공유
-  for (const item of stairWallObjects) item.visible = isStair || showStageWall;                // 계단실 양쪽 내벽: 계단 화면 + 1층·다락·지붕 단계 공유
-  if (typeof stairPanel !== 'undefined' && stairPanel) stairPanel.style.display = isStair ? 'flex' : 'none';   // 계단 조절 패널: 계단 화면에서만
-  for (const item of floorFinishObjects) item.visible = showFloorFinish;               // 바닥재 마감
-  for (const item of firstFloorObjects) item.visible = showFirst;
-  for (const item of firstWallObjects) item.visible = showStageWall;                   // 1층 외벽(반투명): 1층·다락·지붕 단계
-  for (const item of firstDimObjects) item.visible = showStageWall;                    // 1층 방 안목치수: 1층·다락·지붕 단계
-  for (const item of secondFloorObjects) item.visible = showAttic;
-  for (const item of roofObjects) item.visible = showRoof;
-  for (const item of deckObjects) item.visible = showDeckFinish;                     // 데크 포세린 마감: '바닥' 단계 이상 자동 + 데크 토글
-  for (const item of 썬룸Objects) item.visible = sunReady && !isPlan;  // 썬룸는 데크 위에만
-  for (const item of 썬룸FrameObjects) item.visible = (frameMode !== 'none' || sunReady) && !isPlan; // 썬룸 철골(노출 스틸): 스틸/목골조 토글 또는 썬룸 토글
-  for (const item of wallObjects) item.visible = sunReady && wallOn && !isPlan; // 외벽은 썬룸 위에만
-  for (const item of foldingObjects) item.visible = sunReady && foldingOn && !isPlan; // 폴딩도어(외벽과 상호배타)
-  for (const item of extrasObjects) item.visible = accessoryOn && !isPlan;           // 악세사리: 독립 토글
-  for (const item of foundationObjects) item.visible = !isPlan;                      // 입체 기초: 바닥(평면도)에선 숨김
-  for (const item of foundationDimObjects) item.visible = building === 'foundation'; // 기초·대지 가로/세로 치수: 기초 뷰에서만
-  for (const item of floorFrameDimObjects) item.visible = building === 'floorFrame'; // 바닥틀 방별 너비·깊이 치수: 바닥틀 뷰에서만
-  for (const item of footprintObjects) item.visible = true;                          // 집·데크 발자국: 단일 출처, 모든 화면에 항상 표시
-  for (const item of planObjects) item.visible = isPlan;                             // 말뚝 마커: 바닥에서만
-  for (const item of dimObjects) item.visible = isPlan || building === 'foundation'; // 평면 치수·모눈: 바닥 + 기초에 동일 표시
-  for (const item of planOnlyDimObjects) item.visible = isPlan;                       // 측백 0.5m 치수: 바닥 전용(기초 뷰 숨김)
-  for (const item of hedgeObjects) item.visible = hedgeOn && !isPlan;                // 입체 측백 생울타리(높이 1.8m): 측백담장 토글. 발자국은 footprintObjects(항상)
-  for (const item of fenceObjects) item.visible = fenceOn && !isPlan;                // 입체 옆집 콘크리트 담장(높이 1.0m): 옆집담장 토글. 발자국은 footprintObjects(항상)
-  for (const item of outletObjects) item.visible = outletsOn && showFirst;          // 1층 콘센트: 독립 토글(기초만일 땐 숨김)
-  for (const item of atticOutletObjects) item.visible = outletsOn && showAttic;     // 다락 콘센트: 다락 표시 시
-  for (const item of steelFrameObjects) item.visible = frameMode === 'steel' && !isPlan;  // 스틸골조(상호배타)
-  for (const item of woodFrameObjects) item.visible = frameMode === 'wood' && !isPlan;    // 목골조(상호배타)
-
-  // 버튼 상태 반영 — STAGE/TOGGLE/FRAME 테이블에서 일괄 (단일 출처)
-  for (const b of STAGE_BUTTONS) document.querySelector('#' + b.id).classList.toggle('active', building === b.building);
-  for (const b of TOGGLE_BUTTONS) {
-    const el = document.querySelector('#' + b.id);
-    const ready = !b.needs || b.needs();              // 의존 조건(없으면 항상 가능)
-    el.classList.toggle('active', !!viewState[b.key] && ready);
-    if (b.needs) el.disabled = !ready;                // 전제 안 갖춰지면 클릭 불가
+  const isPlan = view.plan;
+  // 항상 표시: 바탕 대지·도로·발자국(단일 출처)
+  for (const item of siteBaseObjects) item.visible = true;
+  for (const item of footprintObjects) item.visible = true;
+  // 배치도(부감) 전용: 말뚝 마커·평면 치수·측백 0.5
+  for (const item of planObjects) item.visible = isPlan;
+  for (const item of dimObjects) item.visible = isPlan || view.foundation;            // 평면 모눈: 배치도 + 기초 토글
+  for (const item of planOnlyDimObjects) item.visible = isPlan;
+  // 부품: PARTS 테이블 일괄 — 각 부품 독립 토글(배치도일 땐 모두 숨김)
+  for (const p of PARTS) {
+    const on = !isPlan && !!view[p.key];
+    for (const arr of p.arrays) for (const item of arr) item.visible = on;
   }
-  for (const b of FRAME_BUTTONS) document.querySelector('#' + b.id).classList.toggle('active', frameMode === b.mode);
+  // 미사용 배열(삭제된 골조 토글 · 구 통합 계단벽[분리됨])
+  for (const item of steelFrameObjects) item.visible = false;
+  for (const item of woodFrameObjects) item.visible = false;
+  for (const item of stairWallObjects) item.visible = false;
+  // 계단 조절 패널: 계단 부품이 보일 때만
+  if (typeof stairPanel !== 'undefined' && stairPanel) stairPanel.style.display = (view.stair && !isPlan) ? 'flex' : 'none';
+  // 체크박스 상태 동기화(단일 출처)
+  for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
+  const planBtn = document.querySelector('#vPlan'); if (planBtn) planBtn.classList.toggle('active', isPlan);
 }
 
-// 바닥(배치도) 전용 카메라 — 대지 전체를 상부에서 내려다본다(도로·토지·담장·기초 바닥 한눈에).
+// 배치도(부감) 전용 카메라 — 대지 전체를 상부에서 내려다본다(도로·토지·담장·기초 바닥 한눈에).
 function setPlanView() {
   camera.up.set(0, 1, 0);
   const cx = (lotX0 + lotX1) / 2;
@@ -2251,32 +2243,30 @@ function setPlanView() {
   controls.update();
 }
 
-// 시공 단계 버튼 — building 설정 + 카메라(STAGE_BUTTONS 단일 출처). cam 없으면 배치도 평면 시점.
-for (const b of STAGE_BUTTONS) {
-  document.querySelector('#' + b.id).addEventListener('click', () => {
-    viewState.building = b.building;
-    if (b.reset) for (const k of b.reset) viewState[k] = false;   // 예: 1층 클릭 시 담장 자동 해제
-    applyVisibility();
-    if (b.cam) setView(b.cam); else setPlanView();
-  });
+// 프리셋 뷰 — 배치도(부감): 모든 부품 끄고 평면만. 전체 모델(참고): 모든 부품 켜기.
+function showPlan() {
+  for (const k of Object.keys(view)) view[k] = false;
+  view.plan = true;
+  applyVisibility();
+  setPlanView();
+}
+function showAll() {
+  for (const k of Object.keys(view)) view[k] = (k !== 'plan');
+  applyVisibility();
+  setView([10.8, 6.8, -8.8]);
 }
 
-// 켜고/끄는 토글 버튼 — needs(전제)·off(끌 때 함께 끔)·exclusive(켤 때 함께 끔) 보존(TOGGLE_BUTTONS 단일 출처).
-//   +1층/+다락/+지붕은 building·카메라 안 건드리고 해당 층만 현재 화면 위 누적.
-for (const b of TOGGLE_BUTTONS) {
-  document.querySelector('#' + b.id).addEventListener('click', () => {
-    if (b.needs && !b.needs()) return;                                       // 전제 안 갖춰지면 무시(예: 데크 꺼지면 썬룸 불가)
-    viewState[b.key] = !viewState[b.key];
-    if (viewState[b.key]) { for (const k of (b.exclusive || [])) viewState[k] = false; }  // 켜질 때 상호배타 끔(외벽↔폴딩)
-    else { for (const k of (b.off || [])) viewState[k] = false; }                          // 꺼질 때 종속 끔(데크↓→썬룸)
-    applyVisibility();
-  });
-}
+// 뷰 버튼(배치도 · 현재 전체 모델)
+document.querySelector('#vPlan').addEventListener('click', showPlan);
+document.querySelector('#vAll').addEventListener('click', showAll);
 
-// 스틸골조/목골조 — 상호배타: 하나를 켜면 다른 하나는 자동 off. 같은 버튼 재클릭 시 off(FRAME_BUTTONS 단일 출처).
-for (const b of FRAME_BUTTONS) {
-  document.querySelector('#' + b.id).addEventListener('click', () => {
-    viewState.frameMode = viewState.frameMode === b.mode ? 'none' : b.mode;
+// 부품 체크박스 — 켜면 배치도(부감) 모드 자동 해제하고 해당 부품을 입체 모델 위에 표시.
+for (const [id, key] of CHECKS) {
+  const el = document.querySelector('#' + id);
+  if (!el) continue;
+  el.addEventListener('change', () => {
+    view[key] = el.checked;
+    if (el.checked && view.plan) view.plan = false;   // 부품 켜면 부감에서 빠져나옴
     applyVisibility();
   });
 }
@@ -2468,7 +2458,8 @@ function drawStairAnno(p) {
 // 계단실 양쪽 세로 내벽(거실|계단실·계단실|안방) — 윗면이 다락 바닥 밑면(loftY-30cm)에 맞도록 높이가 계단에 따라 변함.
 // 계단 화면 + 1층/다락/지붕 단계 공유(stairWallObjects). 계단 변경 시 buildStair()에서 다시 그림.
 function buildStairWalls() {
-  clearStairGroup(stairWallObjects);
+  clearStairGroup(livingInnerWallObjects);
+  clearStairGroup(familyInnerWallObjects);
   const wt = 0.2, z0 = buildingFrontZ, wy = firstWallY + 0.003;
   const inW = innerWallW, inOv = 0.003;   // inOv: 앞·뒤 외벽 안쪽으로 3mm만 파고들어 연결부 면겹침(z-fighting 반짝) 방지 — 폭은 안목 3.6m로 계산됨
   const N = Math.max(5, Math.round(stairParams.N));
@@ -2477,10 +2468,12 @@ function buildStairWalls() {
   const d = buildingD - 2 * wt + 2 * inOv;
   const zStart = z0 + wt - inOv;
   const fx = familyInnerWallX - familyInnerWallW / 2;
-  captureInto(stairWallObjects, () => {
+  captureInto(livingInnerWallObjects, () => {
     // 거실|계단실 내벽(비내력 10cm) — 앞쪽(하부런 구간) 제거, 사선계단 구간(턴존 시작 stairTurnStart ~ 뒤 외벽)만 남김 → 하부 직선계단은 거실과 트임.
     const livZ = stairTurnStart, livD = (insideZ1 + inOv) - stairTurnStart;
     box({ x: livingInnerWallX - inW / 2, z: livZ, w: inW, d: livD, y: wy, h: wallH, mat: materials.stairInnerWall });
+  });
+  captureInto(familyInnerWallObjects, () => {
     // 계단실|안방 내력벽 20cm(말뚝 중심) — 일단 통벽(안방 출입문 개구 없음, 나중에 다시 추가). 1층은 이 벽을 누적해 쓰고 따로 그리지 않음.
     verticalWallWithGaps(fx, zStart, d, wy, [], wallH, familyInnerWallW, materials.stairInnerWall);
   });
@@ -2511,7 +2504,7 @@ function buildStair() {
 // 조절 패널(계단 화면에서만 표시) — 값 입력 시 즉시 다시 그림
 const stairStyle = document.createElement('style');
 stairStyle.textContent = `
-  #stairPanel { position: fixed; top: 14px; left: 14px; z-index: 50; display: none; flex-direction: column; gap: 8px;
+  #stairPanel { position: fixed; top: 14px; left: 256px; z-index: 50; display: none; flex-direction: column; gap: 8px;
     background: rgba(255,255,255,0.94); border: 1px solid #cdbfa6; border-radius: 10px; padding: 12px 14px;
     font: 600 14px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif; color: #3a2f22; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
   #stairPanel .sp-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
@@ -2545,8 +2538,7 @@ function onStairInput() {
 for (const el of [_spr, _spt, _spn]) el.addEventListener('input', onStairInput);
 buildStair();
 
-applyVisibility();
-setPlanView();   // 초기 화면 = 바닥(배치도) 평면도
+showPlan();   // 초기 화면 = 배치도(부감)
 
 // 모든 컨트롤 버튼 높이를 '가장 큰 버튼'에 맞춰 통일 — 라벨 줄이 늘어도, 몇 줄로 줄바꿈돼도 항상 동일.
 function equalizeButtonHeights() {

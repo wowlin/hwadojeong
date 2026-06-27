@@ -28,4 +28,6 @@ export const woodFrameObjects = [];    // 목골조(목골조 토글) — 동일
 export const 골조Objects = [];          // 골조 버튼 전용 — 사용자가 단계적으로 추가할 골조 형상(스틸/목골조와 별개). 켜짐 시 입체 뷰에 표시.
 export const stairObjects = [];        // 계단 화면 전용 주석(거실·안방 크기·라벨·층고·다락바닥) — 계단 화면에서만 표시.
 export const stairCoreObjects = [];    // ㄷ자 계단 본체(발판·사선·계단참) — 계단 화면 + 1층 화면 공유(계단에서 바꾸면 1층 반영).
-export const stairWallObjects = [];    // 계단실 양쪽 세로 내벽(거실|계단실·계단실|안방) — 계단 화면 + 1층 화면 공유(1층 원래 벽 1벌).
+export const stairWallObjects = [];    // 계단실 양쪽 세로 내벽(거실|계단실·계단실|안방) — 계단 화면 + 1층 화면 공유(1층 원래 벽 1벌). (구 단일 출처: 분리 후 livingInnerWallObjects·familyInnerWallObjects 사용)
+export const livingInnerWallObjects = [];  // 거실|계단실 세로 내벽(비내력 10cm) — '거실측 벽' 부품 토글
+export const familyInnerWallObjects = [];  // 계단실|안방 세로 내력벽(20cm) — '안방 내력벽' 부품 토글

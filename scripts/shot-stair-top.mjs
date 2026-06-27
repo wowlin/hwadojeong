@@ -12,7 +12,7 @@ for (let i = 0; i < 60; i += 1) { try { if ((await fetch(url)).ok) break; } catc
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 1600, height: 1200 }, deviceScaleFactor: 2 });
 await page.goto(url, { waitUntil: 'networkidle' });
-await page.click('#stageStair');
+await page.click('#cStair');
 await page.waitForTimeout(700);
 const setCam = (p, t) => page.evaluate(({ p, t }) => {
   const { camera, controls } = window.__cc;

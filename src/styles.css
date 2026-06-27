@@ -16,15 +16,16 @@ body {
   background: #f7f4ee;
 }
 
+/* 좌측 메뉴 사이드바 / 우측 렌더 2단 레이아웃 */
 .shell {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  min-height: 100%;
+  grid-template-columns: 240px minmax(0, 1fr);
+  height: 100%;
 }
 
 .stage-wrap {
   position: relative;
-  min-height: 0;
+  min-width: 0;
 }
 
 #stage {
@@ -32,29 +33,64 @@ body {
   height: 100%;
 }
 
-.panel {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid #d5d8df;
-  box-shadow: 0 12px 32px rgba(31, 41, 55, 0.12);
-}
-
-.panel {
-  padding: 12px;
-}
-
-.controls {
+/* 좌측 메뉴 */
+.sidebar {
+  background: rgba(255, 255, 255, 0.94);
+  border-right: 1px solid #d5d8df;
+  box-shadow: 6px 0 18px rgba(31, 41, 55, 0.06);
+  padding: 14px 12px;
+  overflow-y: auto;
   display: flex;
-  flex-wrap: wrap;              /* 한 줄에 다 들어가고, 넘치면 다음 줄로 */
-  align-items: flex-start;      /* 각 버튼은 내용 높이 — 전체 균일화는 JS(equalizeButtonHeights)가 가장 큰 값으로 맞춤 */
-  justify-content: center;
-  gap: 10px;
-  max-width: 100%;
-  margin: 0 auto;
+  flex-direction: column;
+  gap: 16px;
 }
 
-button {
-  flex: 0 0 auto;              /* 라벨 내용만큼 가로 크기(늘이지·줄이지 않음) */
-  min-height: 42px;
+.menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #374151;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid #e3e1da;
+  padding-bottom: 4px;
+}
+
+/* 부품 토글(체크박스) */
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.chk:hover {
+  background: #eef2f7;
+}
+.chk input {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: #15803d;
+}
+.chk:has(input:checked) {
+  background: #e7f3ea;
+  color: #14532d;
+}
+
+/* 뷰 전환 버튼(배치도·전체모델) */
+.view-btn {
+  margin-bottom: 4px;
+  padding: 7px 10px;
   border: 1px solid #9aa3af;
   border-radius: 6px;
   background: #ffffff;
@@ -62,71 +98,26 @@ button {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  text-align: left;
 }
-
-button:hover {
+.view-btn:hover {
   background: #eef2f7;
 }
-
-button.active {
+.view-btn.active {
   background: #111827;
   border-color: #111827;
   color: #ffffff;
 }
 
-/* 모든 컨트롤 버튼: 1줄 제목 / 부제(업체명·연락처)를 세로로 쌓는다.
-   가로 = 내용맞춤. 세로 = JS가 전 버튼을 '가장 큰 버튼' 높이로 통일(라벨 줄이 늘어도 자동 재조정). */
-.controls button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  line-height: 1.18;
-  padding: 6px 12px;
+/* 참고(임시) 그룹 — 흐린 베이지 + 점선으로 "나중 제거 예정" 표시 */
+.menu-group.reference {
+  margin-top: auto;
+  background: #f7f1e1;
+  border: 1px dashed #c9b582;
+  border-radius: 8px;
+  padding: 10px;
 }
-
-.btn-sub {
-  font-size: 0.82em;
-  font-weight: 600;
-  white-space: nowrap;   /* 업체명·전화번호가 버튼 폭에서 줄바꿈되지 않도록(줄 수 고정) */
-}
-
-.btn-sub-xs {
-  font-weight: 500;
-  opacity: 0.85;
-}
-
-/* 데크·썬룸은 on/off 토글 — 켜짐은 초록으로 건물 뷰 선택과 구분 */
-button.toggle.active {
-  background: #15803d;
-  border-color: #15803d;
-  color: #ffffff;
-}
-
-/* 미검토(참고용) 버튼 — 검토된 시공 단계 버튼과 구별되게 흐린 베이지 배경 + 점선 테두리.
-   기능은 유지하되 "아직 실제 환경 검토 안 됨"을 시각적으로 표시(검토되는대로 하나씩 삭제 예정). */
-button.unreviewed {
-  background: #f3ecd9;
-  border-style: dashed;
-  border-color: #c9b582;
+.menu-group.reference .menu-title {
   color: #6b5d36;
-}
-button.unreviewed:hover {
-  background: #ece2c8;
-}
-button.unreviewed.active {        /* 미검토라도 켜지면 식별되게(단, 검토 버튼의 검정/초록과 구분되는 황토) */
-  background: #b8902f;
-  border-color: #9a7720;
-  border-style: solid;
-  color: #ffffff;
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-button:disabled:hover {
-  background: #ffffff;
+  border-bottom-color: #d8c79a;
 }

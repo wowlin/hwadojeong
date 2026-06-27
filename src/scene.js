@@ -5,34 +5,44 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 const app = document.querySelector('#app');
 app.innerHTML = `
   <main class="shell">
+    <aside class="sidebar">
+      <section class="menu-group">
+        <h2 class="menu-title">기초</h2>
+        <button id="vPlan" type="button" class="view-btn">배치도 (부감)</button>
+        <label class="chk"><input id="cFoundation" type="checkbox"><span>기초</span></label>
+        <label class="chk"><input id="cFrame" type="checkbox"><span>바닥틀</span></label>
+        <label class="chk"><input id="cFloor" type="checkbox"><span>바닥</span></label>
+      </section>
+      <section class="menu-group">
+        <h2 class="menu-title">집</h2>
+        <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
+        <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
+        <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
+        <label class="chk"><input id="cExtWall" type="checkbox"><span>1층 외벽</span></label>
+        <label class="chk"><input id="cFirstRoom" type="checkbox"><span>1층 골조·실내</span></label>
+        <label class="chk"><input id="cAnno" type="checkbox"><span>방·치수 도면</span></label>
+        <label class="chk"><input id="cLoft" type="checkbox"><span>다락 바닥</span></label>
+        <label class="chk"><input id="cRoof" type="checkbox"><span>지붕</span></label>
+        <label class="chk"><input id="cOutlet" type="checkbox"><span>콘센트</span></label>
+      </section>
+      <section class="menu-group">
+        <h2 class="menu-title">썬룸</h2>
+        <label class="chk"><input id="cDeck" type="checkbox"><span>데크</span></label>
+        <label class="chk"><input id="cSun" type="checkbox"><span>썬룸</span></label>
+        <label class="chk"><input id="cSunWall" type="checkbox"><span>외벽</span></label>
+        <label class="chk"><input id="cFolding" type="checkbox"><span>폴딩도어</span></label>
+        <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
+      </section>
+      <section class="menu-group reference">
+        <h2 class="menu-title">참고 (임시)</h2>
+        <button id="vAll" type="button" class="view-btn">현재 전체 모델</button>
+        <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
+        <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
+      </section>
+    </aside>
     <section class="stage-wrap">
       <div id="stage" aria-label="주말주택 3D 개념 모형"></div>
     </section>
-    <aside class="panel">
-      <div class="controls">
-        <!-- 검토된 시공 단계(누적): 배치도 › 기초 › 바닥틀 › 바닥 › 1층 › 다락 › 지붕 -->
-        <button id="viewPlan" type="button">배치도</button>
-        <button id="viewFoundation" type="button">기초<span class="btn-sub">KC금강컨테이너</span><span class="btn-sub btn-sub-xs">시스템말뚝기초 주택용</span></button>
-        <button id="toggleFrame" type="button">바닥틀</button>
-        <button id="stageFloor" type="button">바닥</button>
-        <button id="stageStair" type="button">계단</button>
-        <button id="stageFirst" type="button">1층</button>
-        <button id="stageAttic" type="button">다락</button>
-        <button id="stageRoof" type="button">지붕</button>
-        <!-- 미검토(참고용) — 검토되는대로 하나씩 삭제 예정 -->
-        <button id="viewFirst" type="button" class="unreviewed">+1층</button>
-        <button id="viewSecond" type="button" class="unreviewed">+다락</button>
-        <button id="viewAll" type="button" class="unreviewed">+지붕<span class="btn-sub">태연남(태양광)</span><span class="btn-sub btn-sub-xs">010-4567-2450</span></button>
-        <button id="toggleDeck" type="button" class="toggle unreviewed">데크<span class="btn-sub">포세린</span><span class="btn-sub btn-sub-xs">1644-6472</span></button>
-        <button id="toggle썬룸" type="button" class="toggle unreviewed">썬룸</button>
-        <button id="toggleWall" type="button" class="toggle unreviewed">외벽<span class="btn-sub">주식회사 단우</span><span class="btn-sub btn-sub-xs">1811-8179</span><span class="btn-sub btn-sub-xs">010-5382-8179</span></button>
-        <button id="toggleFolding" type="button" class="toggle unreviewed">폴딩도어<span class="btn-sub">JJ시스템</span><span class="btn-sub btn-sub-xs">1899-9043</span></button>
-        <button id="toggleAccessory" type="button" class="toggle unreviewed">악세사리</button>
-        <button id="toggleOutlet" type="button" class="toggle unreviewed">콘센트</button>
-        <button id="toggleHedge" type="button" class="toggle unreviewed">측백담장<span class="btn-sub">뒤·좌 생울타리</span></button>
-        <button id="toggleFence" type="button" class="toggle unreviewed">옆집담장<span class="btn-sub">우측 경계벽</span></button>
-      </div>
-    </aside>
   </main>
 `;
 

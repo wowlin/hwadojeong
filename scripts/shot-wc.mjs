@@ -23,7 +23,7 @@ const setCam = (p, t) => page.evaluate(({ p, t }) => {
   controls.update();
 }, { p, t });
 const shotAt = async (file, p, t) => { await setCam(p, t); await page.waitForTimeout(450); await page.screenshot({ path: root + '/scratchpad/' + file }); };
-await page.click('#stageFirst');
+for (const id of ['cStair','cFirstRoom','cFamilyWall']) { await page.click('#' + id); await page.waitForTimeout(100); }
 await page.waitForTimeout(700);
 // 문 안쪽(z>0.74) 높은 곳에서 방 길이방향 바닥을 내려다봄 — 세면대(안방쪽 앞)·변기(맨안쪽) 한 화면
 await shotAt('wc-A.png', [4.78, 2.35, 0.95], [4.95, 0.65, 2.3]);

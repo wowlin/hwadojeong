@@ -4,9 +4,11 @@
 //   목적: 빌드·유닛테스트는 통과해도 화면이 백지인 경우(ReferenceError·캔버스 0높이)를 자동으로 잡는다.
 //         → '새로고침해서 확인해' 식으로 사용자에게 검증을 떠넘기지 않게 하네스가 강제.
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import { chromium } from 'playwright';
 
-const root = '/Users/aine/work/three-house';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const port = 5199;
 const url = `http://127.0.0.1:${port}/`;
 
@@ -37,7 +39,7 @@ const diag = await page.evaluate(() => {
     w: c ? c.width : 0,
     h: c ? c.height : 0,
     stageH: document.querySelector('#stage')?.clientHeight || 0,
-    buttons: document.querySelectorAll('.controls button').length
+    buttons: document.querySelectorAll('.sidebar button, .sidebar input').length
   };
 });
 

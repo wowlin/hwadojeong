@@ -39,33 +39,28 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push(`console.error
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1500);
 
-// 컨트롤 패널의 모든 버튼 id를 DOM에서 수집(향후 버튼 추가에도 자동 대응).
-const ids = await page.$$eval('.controls button', (els) => els.map((b) => b.id).filter(Boolean));
-if (ids.length === 0) { console.error('버튼 0개 — 패널 선택자 확인'); cleanup(); process.exit(1); }
-console.log(`버튼 ${ids.length}개 검출:`, ids.join(', '));
+// 사이드바의 모든 부품 토글(체크박스)·뷰 버튼 id를 DOM에서 수집(향후 부품 추가에도 자동 대응).
+const ids = await page.$$eval('.sidebar input, .sidebar button', (els) => els.map((b) => b.id).filter(Boolean));
+if (ids.length === 0) { console.error('토글 0개 — 사이드바 선택자 확인'); cleanup(); process.exit(1); }
+console.log(`토글 ${ids.length}개 검출:`, ids.join(', '));
 
-const isActive = (id) => page.$eval('#' + id, (b) => b.classList.contains('active'));
+const violations = [];
 
-// 1) 전 버튼을 순차 클릭(켜기) → 다시 클릭(끄기) — 상호작용 중 런타임 에러 0 확인.
+// 1) 전 부품 토글·뷰 버튼을 순차 클릭(켜기) → 역순 클릭(끄기) — 상호작용 중 런타임 에러 0 확인.
 for (const id of ids) {
-  await page.click('#' + id); await page.waitForTimeout(120);
+  await page.click('#' + id); await page.waitForTimeout(80);
 }
 for (const id of [...ids].reverse()) {
-  await page.click('#' + id); await page.waitForTimeout(120);
+  await page.click('#' + id); await page.waitForTimeout(80);
 }
 
-// 2) 상호배타 규칙: 외벽(toggleWall) ↔ 폴딩(toggleFolding)은 동시 active 금지.
-//    데크·썬룸을 켜 전제를 만든 뒤 둘을 차례로 눌러 동시 활성 안 됨을 확인.
-const violations = [];
-if (ids.includes('toggleDeck') && ids.includes('toggle썬룸') && ids.includes('toggleWall') && ids.includes('toggleFolding')) {
-  await page.click('#toggleDeck'); await page.waitForTimeout(120);
-  await page.click('#toggle썬룸'); await page.waitForTimeout(120);
-  await page.click('#toggleWall'); await page.waitForTimeout(120);
-  await page.click('#toggleFolding'); await page.waitForTimeout(120);
-  if (await isActive('toggleWall') && await isActive('toggleFolding')) {
-    violations.push('상호배타 위반: toggleWall·toggleFolding 동시 active');
-  }
-}
+// 2) 프리셋 뷰: 현재 전체 모델(vAll)은 모든 부품 체크박스를 켜고, 배치도(vPlan)는 모두 끈다.
+await page.click('#vAll'); await page.waitForTimeout(200);
+const allOn = await page.$$eval('.sidebar input[type=checkbox]', (els) => els.every((c) => c.checked));
+if (!allOn) violations.push('전체 모델(vAll) 클릭 후 일부 부품이 꺼져 있음');
+await page.click('#vPlan'); await page.waitForTimeout(200);
+const allOff = await page.$$eval('.sidebar input[type=checkbox]', (els) => els.every((c) => !c.checked));
+if (!allOff) violations.push('배치도(vPlan) 클릭 후 일부 부품이 켜져 있음');
 
 await browser.close();
 cleanup();
@@ -76,4 +71,4 @@ if (problems.length) {
   for (const p of problems) console.error('  -', p);
   process.exit(1);
 }
-console.log('\n✓ 버튼 검증 통과 — JS 에러 0, 상호배타 위반 0');
+console.log('\n✓ 토글 검증 통과 — JS 에러 0, 프리셋(전체/배치도) 일관성 OK');
