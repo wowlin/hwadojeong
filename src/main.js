@@ -549,7 +549,7 @@ hedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY
 
 // 1층 바닥(바닥 시공 10cm) — 골조(장선) 위 마감층. '1층 바닥' 토글(firstFloorFinishObjects). 1층 벽·계단·가구는 이 위(firstFloorY)에서 시작.
 captureInto(firstFloorFinishObjects, () => {
-  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY + 0.20, h: floorFinishH, mat: materials.floorFinish });
+  box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY + 0.10, h: floorFinishH, mat: materials.floorFinish });
 });
 
 // 1층 외벽(반투명) — 방 바닥 테두리선(집 발자국 0~buildingW / buildingFrontZ~+buildingD)에 맞춰 바깥면을 두고, 막대는 모두 안쪽으로만(밖으로 안 튀어나옴). 두께 0.2·높이 2.4·firstFloorY에서 시작. 1층·다락·지붕 단계 표시.

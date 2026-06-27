@@ -13,7 +13,7 @@ import {
 
 export const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
 export const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단(0.58) = 바닥재 하단
-export const firstFloorY = foundationTopY + 0.20 + floorFinishH; // 기초 상단(0.58) + 장선(0.20) + 바닥(0.10) = 0.88
+export const firstFloorY = foundationTopY + 0.10 + floorFinishH; // 기초 상단 + 장선(0.10) + 바닥(0.10) = 기초면에서 1층 바닥 20cm
 export const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단(0.48) = 집 기초 상단(0.58)보다 0.1m 낮음
 export const lotX1 = lotX0 + lotW;
 export const lotZ1 = buildingBackZ + 1;        // 후면 경계(집 뒤 1m)

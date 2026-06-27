@@ -29,7 +29,7 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 const page = await browser.newPage({ viewport: { width: 1600, height: 1100 }, deviceScaleFactor: 2 });
 await page.goto(url, { waitUntil: 'networkidle' });
 // 바닥틀+바닥+데크+계단 부품을 켜 계단틀·단차가 측면으로 보이게 한다(부품별 체크박스 토글).
-for (const id of ['cFrame', 'cFloor', 'cDeck', 'cStair']) { await page.click('#' + id); await page.waitForTimeout(120); }
+for (const id of ['cFoundation', 'cFirstFloorFinish', 'cDeck', 'cStair']) { await page.click('#' + id); await page.waitForTimeout(120); }
 await page.waitForTimeout(800);
 
 // 시점은 카메라 핸들(window.__cc)로 직접 잡는다 — 이 환경에선 마우스 드래그 회전이 안 먹어서.
