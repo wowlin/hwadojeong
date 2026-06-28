@@ -17,9 +17,9 @@ app.innerHTML = `
       </section>
       <section class="menu-group">
         <h2 class="menu-title">계단</h2>
+        <label class="chk"><input id="cFirstFloorFinish" type="checkbox"><span>1층 바닥</span></label>
         <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
         <label class="chk"><input id="cBath" type="checkbox"><span>계단하부 WC</span></label>
-        <label class="chk"><input id="cFirstFloorFinish" type="checkbox"><span>1층 바닥</span></label>
         <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
         <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
       </section>
