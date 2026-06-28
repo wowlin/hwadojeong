@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2StairSampleObjects, s2FrameObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1692,14 +1692,31 @@ captureInto(s2FrameObjects, () => {
   label('둘레 기둥(중앙 무주)', 4.0, baseY + 1.5, 0.3, 'struct');
   label('2층 바닥(전이보 포함 0.6m)', 5.2, colTop + 0.35, s2FrontZ + 0.2, 'struct');
   label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
-  // 1층 식탁 2개(윗판 110×72cm) + 의자 4개씩 — 라벨. 기둥·코어 피한 개방부(x≈5.5), 앞뒤 중심 간 2.4m(의자+통행 확보).
-  const fTop = baseY + S2_STAIR.slabT;                         // 1층 바닥 표면(층참 윗면)
-  const tx = 5.5;                                              // 코어(≤2.2)·중앙기둥(x=4.0)·안방측기둥(x=7.85) 사이 개방부
-  for (const tz of [-0.9, 1.5]) {                             // 식탁 2개 — 중심 간 2.4m
-    label('테이블 110×72', tx, fTop + 0.78, tz, 'furniture');
-    for (const cx of [-0.32, 0.32]) for (const cz of [-0.56, 0.56])   // 의자 4개(긴 변 양쪽)
-      label('의자', tx + cx, fTop + 0.48, tz + cz, 'furniture');
-  }
+});
+
+// ── s2 1층 가구(식탁·의자) — '1층 식탁·의자' 토글(구조 섹션) ───────────────────────
+// 식탁 2개(윗판 110×72cm·높이 0.72) + 의자 4개씩 실제 3D. 기둥·코어 피한 개방부(x≈5.5), 앞뒤 중심 간 2.4m.
+captureInto(s2FurnitureObjects, () => {
+  const fTop = groundTopY + MAT_H + S2_STAIR.slabT;            // 1층 바닥 표면(층참 윗면)
+  const TW = 1.10, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;   // 윗판 110×72, 다리높이 0.72
+  const seatH = 0.45, seatS = 0.42, sLeg = 0.04, backH = 0.45;     // 의자: 좌판 42×42·높이 0.45·등받이 0.45
+  const woodT = materials.woodFrame, woodC = materials.deckFloorFrame;   // 식탁(밝은 목재) / 의자(짙은 목재)
+  const drawChair = (sx, sz, side) => {                       // side: -1(앞)·+1(뒤) — 등받이는 바깥쪽
+    box({ x: sx - seatS / 2, z: sz - seatS / 2, w: seatS, d: seatS, y: fTop + seatH - sLeg, h: sLeg, mat: woodC });   // 좌판
+    for (const dx of [sx - seatS / 2 + 0.01, sx + seatS / 2 - 0.01 - sLeg])
+      for (const dz of [sz - seatS / 2 + 0.01, sz + seatS / 2 - 0.01 - sLeg])
+        box({ x: dx, z: dz, w: sLeg, d: sLeg, y: fTop, h: seatH - sLeg, mat: woodC });                               // 다리 4
+    box({ x: sx - seatS / 2, z: sz + side * (seatS / 2 - sLeg), w: seatS, d: sLeg, y: fTop + seatH, h: backH, mat: woodC });  // 등받이(바깥쪽)
+  };
+  const drawTable = (cx, cz) => {
+    box({ x: cx - TW / 2, z: cz - TD / 2, w: TW, d: TD, y: fTop + TH - top, h: top, mat: woodT });                   // 윗판
+    for (const lx of [cx - TW / 2 + 0.02, cx + TW / 2 - 0.02 - leg])
+      for (const lz of [cz - TD / 2 + 0.02, cz + TD / 2 - 0.02 - leg])
+        box({ x: lx, z: lz, w: leg, d: leg, y: fTop, h: TH - top, mat: woodT });                                     // 다리 4
+    for (const sx of [cx - 0.28, cx + 0.28]) for (const side of [-1, 1]) drawChair(sx, cz + side * 0.56, side);      // 의자 4(긴 변 양쪽)
+  };
+  drawTable(5.5, -0.9);
+  drawTable(5.5, 1.5);
 });
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
@@ -2254,6 +2271,7 @@ const view = {
   s2Stair: false,        // s2 계단(U자·1→3층 적층)
   s2Stairs: false,       // s2 계단 샘플(유형 비교)
   s2Frame: false,        // s2 1층 골조(기둥·전이보·코어 전단벽)
+  s2Furniture: false,    // s2 1층 가구(식탁·의자)
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2288,6 +2306,7 @@ const PARTS = [
   { key: 's2Stair', arrays: [s2StairObjects] },
   { key: 's2Stairs', arrays: [s2StairSampleObjects] },
   { key: 's2Frame', arrays: [s2FrameObjects] },
+  { key: 's2Furniture', arrays: [s2FurnitureObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2299,7 +2318,7 @@ const CHECKS = [
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
