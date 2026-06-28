@@ -1744,23 +1744,25 @@ captureInto(s2FurnitureObjects, () => {
   const fTop = groundTopY + MAT_H + S2_STAIR.slabT;            // 1층 바닥 표면(층참 윗면)
   const TW = 1.10, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;   // 윗판 110×72, 다리높이 0.72
   const woodT = materials.woodFrame;
-  const cz0 = 0.3;                                            // 테이블 행 중심 z(앞뒤 가운데)
-  const cxs = [3.95, 5.05, 6.15];                            // 3개를 좌우로 이어 옆으로 길게(코어·기둥 피함)
+  const off = TD / 2 + 0.30;                                  // 테이블 가장자리→의자 중심
+  const chairBack = off + 0.33, aisle = 0.9, endGap = 0.9;    // 의자 등받이 뒤끝 · 의자 뒤 통로 0.9 · 테이블 끝 0.9
+  // 식탁 세트(이동공간 포함)를 바닥 왼쪽(高x=7.7 벽)·앞쪽(低z=−2.4 벽) 안쪽에 붙임.
+  const inXL = s2X0 + s2W - s2WallT, inZF = s2FrontZ + s2WallT;   // 좌(高x)·앞(低z) 외벽 안쪽 면
+  const cxC = inXL - endGap - 1.5 * TW;                       // 식탁 행 중심 x(좌벽에서 끝여유 + 행 절반 1.5·TW)
+  const cz0 = inZF + aisle + chairBack;                       // 식탁 중심 z(앞벽에서 통로 + 의자 등받이 뒤)
+  const cxs = [cxC - TW, cxC, cxC + TW];                      // 3개를 좌우로 이어 옆으로 길게
   for (const cx of cxs) {
     box({ x: cx - TW / 2, z: cz0 - TD / 2, w: TW, d: TD, y: fTop + TH - top, h: top, mat: woodT });               // 윗판
     for (const lx of [cx - TW / 2 + 0.02, cx + TW / 2 - 0.02 - leg])
       for (const lz of [cz0 - TD / 2 + 0.02, cz0 + TD / 2 - 0.02 - leg])
         box({ x: lx, z: lz, w: leg, d: leg, y: fTop, h: TH - top, mat: woodT });                                  // 다리 4
   }
-  const off = TD / 2 + 0.30;                                  // 테이블 가장자리에서 의자 중심까지
   for (const cx of cxs) {
     campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: fTop });          // 앞쪽 — 테이블(+z) 향함
     campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: fTop });    // 뒤쪽 — 테이블(−z) 향함
   }
   // 사람 이동(여유) 통로 — '의자 등받이 뒤'에서부터 잰다(테이블 가장자리 아님). 햄프턴 DLX는 깊은 리클라이너라
   //  테이블 기준으론 의자가 통로를 먹는다. 의자 뒤 통로 0.9m(편한 통행)·테이블 끝 0.9m 둘레로.
-  const chairBack = off + 0.33;                                // 테이블 중심→의자 등받이 뒤끝(의자 중심 off + 등받이 0.33)
-  const aisle = 0.9, endGap = 0.9;                             // 의자 뒤 통로 0.9 · 테이블 끝 0.9
   const zx0 = (cxs[0] - TW / 2) - endGap, zx1 = (cxs[cxs.length - 1] + TW / 2) + endGap;
   const zz0 = (cz0 - chairBack) - aisle, zz1 = (cz0 + chairBack) + aisle;
   box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: fTop + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
