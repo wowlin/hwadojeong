@@ -56,6 +56,7 @@ app.innerHTML = `
         <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
         <label class="chk"><input id="cS2Stair" type="checkbox"><span>계단 (U자 1→3층)</span></label>
         <label class="chk"><input id="cS2Stair2" type="checkbox"><span>계단2 (1층 L+U·계단참 2)</span></label>
+        <label class="chk"><input id="cS2Stair3" type="checkbox"><span>계단3 (1층 L자·정사각참)</span></label>
         <label class="chk"><input id="cS2Wall1" type="checkbox"><span>외벽 1층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Wall2" type="checkbox"><span>외벽 2층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Wall3" type="checkbox"><span>외벽 3층 (0.3m)</span></label>

@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2Stair3Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1736,6 +1736,68 @@ captureInto(s2Stair2Objects, () => {
   }
 });
 
+// ── s2 계단3 (대안·1층 L자 정사각 코너참) — 'cS2Stair3' 토글 ──────────────────────────
+// 계단을 복사해 변형. 1층=L자: 싱크대 쪽(x0)에서 +X로 가로 하부런 → 정사각 코너참 → 세로 상부런(앞으로 내려 2층 착지).
+//   2→3층=U자(코너참 오른쪽 옆 축). 바닥(1층 전체+2·3층 계단실 구멍)·층고/천장고 치수표기 포함.
+captureInto(s2Stair3Objects, () => {
+  const baseY = groundTopY + MAT_H;
+  const { T, R, W, g, tTh } = S2_STAIR;
+  const x0 = s2WallT;
+  const zR1 = s2BackZ - s2WallT, zR0 = zR1 - W;            // 뒤벽 밴드 [zR0,zR1]
+  const inX0 = s2X0 + s2WallT, inZ0 = s2FrontZ + s2WallT;  // 외벽 안쪽(좌·앞)
+  const inX1 = s2W - s2WallT, inZ1 = s2BackZ - s2WallT;    // 외벽 안쪽(우·뒤)
+  const treadX = (x, z, topY) => box({ x, z, w: T, d: W, y: topY - tTh, h: tTh, mat: materials.stair });   // +X로 오르는 단(가로런)
+  const treadZ = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });   // ±Z로 오르는 단(앞뒤런)
+  const land = (x, z, w, d, topY) => box({ x, z, w, d, y: topY - tTh, h: tTh, mat: materials.landing });
+  const frontU = (fl, done, nL, nU, xc) => {
+    for (let j = 1; j <= nL; j += 1) treadZ(xc, zR0 - j * T, fl + (done + j) * R);
+    const zF = zR0 - nL * T;
+    land(xc, zF - W, 2 * W + g, W, fl + (done + nL + 1) * R);
+    for (let i = 1; i <= nU; i += 1) treadZ(xc + W + g, zF + (i - 1) * T, fl + (done + nL + 1 + i) * R);
+    return [xc, xc + 2 * W + g, zF - W, zR0];
+  };
+  const floorRing = ([hx0, hx1, hz0, hz1], topY, th) => {
+    const m = materials.floorSlab;
+    if (hx0 - inX0 > 0.001) box({ x: inX0, z: inZ0, w: hx0 - inX0, d: inZ1 - inZ0, y: topY - th, h: th, mat: m });   // 좌
+    if (inX1 - hx1 > 0.001) box({ x: hx1, z: inZ0, w: inX1 - hx1, d: inZ1 - inZ0, y: topY - th, h: th, mat: m });    // 우
+    if (hz0 - inZ0 > 0.001) box({ x: hx0, z: inZ0, w: hx1 - hx0, d: hz0 - inZ0, y: topY - th, h: th, mat: m });      // 앞
+    if (inZ1 - hz1 > 0.001) box({ x: hx0, z: hz1, w: hx1 - hx0, d: inZ1 - hz1, y: topY - th, h: th, mat: m });       // 뒤
+  };
+  const f1Top = baseY + S2_STAIR.slabT;
+  let acc = f1Top; const levels = [f1Top];
+  for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
+
+  // 1→2층 L자: 가로 하부런(싱크대 쪽 x0→+X, 뒤벽) + 정사각 코너참 + 세로 상부런(앞으로 내려 2층 착지)
+  const N1 = Math.round((levels[1] - levels[0]) / R);   // 22단
+  const nL1 = (N1 - 2) / 2, nU1 = (N1 - 2) / 2;          // 하부=상부=10
+  for (let k = 1; k <= nL1; k += 1) treadX(x0 + (k - 1) * T, zR0, levels[0] + k * R);          // 하부런(가로 +X)
+  const xc1 = x0 + nL1 * T;                                                                    // 코너 X
+  land(xc1, zR0, W, W, levels[0] + (nL1 + 1) * R);                                             // 정사각 코너참(W×W)
+  for (let m = 1; m <= nU1; m += 1) treadZ(xc1, zR0 - m * T, levels[0] + (nL1 + 1 + m) * R);   // 상부런(세로 -Z, 2층 착지)
+  const hole1 = [x0, xc1 + W, zR0 - nU1 * T, zR1];
+  label('1층: L자 · 정사각 코너참', x0 + 1.6, levels[0] + 1.4, zR0 + 0.45, 'struct');
+
+  // 2→3층 U자 — 코너참 오른쪽 옆 축
+  const N2 = Math.round((levels[2] - levels[1]) / R);   // 20단
+  const nL2 = (N2 - 2) / 2, nU2 = (N2 - 2) / 2;         // 앞=뒤=9
+  const hole2 = frontU(levels[1], 0, nL2, nU2, xc1 + W);
+  label('2→3층: U자', xc1 + W + 1.2, levels[1] + 1.4, zR0 - nL2 * T - 0.5, 'struct');
+
+  // 바닥(층참) — 1층 전체 + 2·3층은 각 계단실만 비움
+  const floor2T = 0.6, floor3T = 0.3;
+  box({ x: inX0, z: inZ0, w: inX1 - inX0, d: inZ1 - inZ0, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });   // 1층 바닥(전체)
+  floorRing(hole1, levels[1], floor2T);   // 2층 바닥(L자 계단실 비움)
+  floorRing(hole2, levels[2], floor3T);   // 3층 바닥(U자 계단실 비움)
+  // 각 층 층고·천장고 — 계단 화면과 동일한 치수표기(planYDim)
+  const slabTs = [S2_STAIR.slabT, floor2T, floor3T];
+  for (let f = 0; f < levels.length - 1; f += 1) {
+    const fH = levels[f + 1] - levels[f];
+    const cH = (levels[f + 1] - slabTs[f + 1]) - levels[f];
+    planYDim(inX1 + 0.9, inZ0 + 0.3, levels[f], levels[f + 1], `${f + 1}층 층고 ${fH.toFixed(2)}m`);
+    planYDim(inX1 + 0.35, inZ0 + 0.3, levels[f], levels[f + 1] - slabTs[f + 1], `천장고 ${cH.toFixed(2)}m`);
+  }
+});
+
 // ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
 // 1층은 벽 없는 포치 → 기둥-보(라멘조)로 상부 하중 지지. 오른쪽 계단·물코어를 1층까지
 //   전단벽으로 내려 횡력(지진·바람) 전담 → 약층(soft-story) 방지. 2층 바닥엔 전이보 격자.
@@ -2408,6 +2470,7 @@ const PARTS = [
   { key: 's2Wall3', arrays: [s2Wall3Objects] },
   { key: 's2Stair', arrays: [s2StairObjects] },
   { key: 's2Stair2', arrays: [s2Stair2Objects] },
+  { key: 's2Stair3', arrays: [s2Stair3Objects] },
   { key: 's2Stairs', arrays: [s2StairSampleObjects] },
   { key: 's2Frame', arrays: [s2FrameObjects] },
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
@@ -2422,7 +2485,7 @@ const CHECKS = [
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stair2', 's2Stair2'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stair2', 's2Stair2'], ['cS2Stair3', 's2Stair3'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
