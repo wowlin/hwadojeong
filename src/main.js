@@ -1662,22 +1662,27 @@ captureInto(s2FrameObjects, () => {
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
 // 외벽 두께 0.3m(외단열·마감 포함 기준). 층마다 따로 켜고 끌 수 있게 1·2·3층 분리. 반투명 — 내부 보이게.
-// 각 층 바닥(RC 슬래브) 두께: 일반 0.2m, 2층만 0.6m(1층 개방 포치 위 전이층, 골조 전이보 포함과 동일).
-const s2WallRing = (arr, floorNo, y, h, ts) => captureInto(arr, () => {
-  const t = s2WallT;
-  box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: y - ts, h: ts, mat: materials.houseFloorFrame });        // 해당 층 바닥 슬래브(슬래브 윗면=바닥 레벨, 외벽이 그 위에 앉음)
-  box({ x: s2X0, z: s2FrontZ, w: s2W, d: t, y, h, mat: materials.exteriorWall });                       // 앞벽(현관 쪽)
-  box({ x: s2X0, z: s2BackZ - t, w: s2W, d: t, y, h, mat: materials.exteriorWall });                     // 뒤벽(측백 쪽)
-  box({ x: s2X0, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });             // 거실측(오른쪽) 옆벽
-  box({ x: s2X0 + s2W - t, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });   // 안방측(왼쪽) 옆벽
-  planYDim(-0.4, s2FrontZ + 0.2, y, y + h, `층고 ${fmtDim(h)}m`);                                         // 해당 층 외벽 높이 치수
-  label(`외벽 ${floorNo}층 0.3m`, s2X0 + s2W / 2, y + h * 0.5, s2FrontZ + 0.2, 'struct');
-  label(`${floorNo}층 바닥 ${fmtDim(ts)}m`, s2X0 + s2W * 0.7, y - ts / 2, s2BackZ - 0.5, 'struct');       // 바닥 슬래브 두께
+// 공사 가능하게: 외벽은 그 층 바닥 레벨에서 시작해 '위층 바닥판 밑면'까지만(겹침 0). 바닥판은 그 층
+//   바닥 레벨에서 아래로(아래층 벽 위에 얹힘). 1층 바닥은 0.5m 매트기초가 겸하므로 따로 안 그림.
+// 바닥(RC 슬래브) 두께: 일반 0.2m, 2층만 0.6m(1층 개방 포치 위 전이층, 골조 전이보 포함과 동일).
+const s2WallFloor = (arr, floorNo, flY, wallTopY, ftf, slabTs) => captureInto(arr, () => {
+  const t = s2WallT, h = wallTopY - flY;
+  if (slabTs) box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: flY - slabTs, h: slabTs, mat: materials.houseFloorFrame });   // 바닥 슬래브(윗면=바닥 레벨, 아래층 벽 위에 얹힘)
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: t, y: flY, h, mat: materials.exteriorWall });                     // 앞벽(현관 쪽)
+  box({ x: s2X0, z: s2BackZ - t, w: s2W, d: t, y: flY, h, mat: materials.exteriorWall });                   // 뒤벽(측백 쪽)
+  box({ x: s2X0, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y: flY, h, mat: materials.exteriorWall });           // 거실측(오른쪽) 옆벽
+  box({ x: s2X0 + s2W - t, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y: flY, h, mat: materials.exteriorWall });  // 안방측(왼쪽) 옆벽
+  planYDim(-0.4, s2FrontZ + 0.2, flY, flY + ftf, `층고 ${fmtDim(ftf)}m`);                                   // 층고(바닥~윗층 바닥)
+  label(`외벽 ${floorNo}층 0.3m`, s2X0 + s2W / 2, flY + h * 0.5, s2FrontZ + 0.2, 'struct');
+  label(slabTs ? `${floorNo}층 바닥 ${fmtDim(slabTs)}m` : '1층 바닥=매트기초 0.5m 겸함',
+    s2X0 + s2W * 0.7, slabTs ? flY - slabTs / 2 : flY + 0.3, s2BackZ - 0.5, 'struct');                      // 바닥 슬래브 두께(1층은 기초가 겸함)
 });
-const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0;   // 1층 층고 3.3 · 2·3층 3.0
-s2WallRing(s2Wall1Objects, 1, _wBase, _wFh1, 0.2);                 // 1층 외벽 + 1층 바닥 0.2(매트기초가 겸하는 자리)
-s2WallRing(s2Wall2Objects, 2, _wBase + _wFh1, _wFh, 0.6);          // 2층 외벽 + 2층 바닥 0.6(전이층)
-s2WallRing(s2Wall3Objects, 3, _wBase + _wFh1 + _wFh, _wFh, 0.2);   // 3층 외벽 + 3층 바닥 0.2
+const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0;       // 1층 층고 3.3 · 2·3층 3.0
+const F2 = _wBase + _wFh1, F3 = _wBase + _wFh1 + _wFh, roofY = _wBase + _wFh1 + 2 * _wFh;   // 2·3층 바닥·지붕 레벨
+const ts2 = 0.6, ts3 = 0.2;                                       // 2층(전이) 0.6 · 3층 0.2
+s2WallFloor(s2Wall1Objects, 1, _wBase, F2 - ts2, _wFh1, 0);       // 1층 외벽(2층 바닥 밑면까지) — 바닥은 매트기초가 겸함
+s2WallFloor(s2Wall2Objects, 2, F2, F3 - ts3, _wFh, ts2);          // 2층 외벽(3층 바닥 밑면까지) + 2층 바닥 0.6(전이)
+s2WallFloor(s2Wall3Objects, 3, F3, roofY, _wFh, ts3);             // 3층 외벽(지붕까지) + 3층 바닥 0.2
 
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
