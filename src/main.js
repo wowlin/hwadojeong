@@ -1694,29 +1694,26 @@ captureInto(s2FrameObjects, () => {
   label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
 });
 
-// ── s2 1층 가구(식탁·의자) — '1층 식탁·의자' 토글(구조 섹션) ───────────────────────
-// 식탁 2개(윗판 110×72cm·높이 0.72) + 의자 4개씩 실제 3D. 기둥·코어 피한 개방부(x≈5.5), 앞뒤 중심 간 2.4m.
+// ── s2 1층 가구(식탁·의자) — '테이블·의자' 토글(구조 섹션) ─────────────────────────
+// 식탁 3개(윗판 110×72cm·높이 0.72)를 좌우(x)로 이어 옆으로 길게(약 3.3m). 의자=반고 햄프턴 DLX(campingChair,
+//  폭~0.6·깊이~0.55·좌고 0.42 — 실제 햄프턴 DLX 폭 60·좌고 45와 부합). 앞·뒤 긴 변에 테이블당 1개씩 여유있게.
 captureInto(s2FurnitureObjects, () => {
   const fTop = groundTopY + MAT_H + S2_STAIR.slabT;            // 1층 바닥 표면(층참 윗면)
   const TW = 1.10, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;   // 윗판 110×72, 다리높이 0.72
-  const seatH = 0.45, seatS = 0.42, sLeg = 0.04, backH = 0.45;     // 의자: 좌판 42×42·높이 0.45·등받이 0.45
-  const woodT = materials.woodFrame, woodC = materials.deckFloorFrame;   // 식탁(밝은 목재) / 의자(짙은 목재)
-  const drawChair = (sx, sz, side) => {                       // side: -1(앞)·+1(뒤) — 등받이는 바깥쪽
-    box({ x: sx - seatS / 2, z: sz - seatS / 2, w: seatS, d: seatS, y: fTop + seatH - sLeg, h: sLeg, mat: woodC });   // 좌판
-    for (const dx of [sx - seatS / 2 + 0.01, sx + seatS / 2 - 0.01 - sLeg])
-      for (const dz of [sz - seatS / 2 + 0.01, sz + seatS / 2 - 0.01 - sLeg])
-        box({ x: dx, z: dz, w: sLeg, d: sLeg, y: fTop, h: seatH - sLeg, mat: woodC });                               // 다리 4
-    box({ x: sx - seatS / 2, z: sz + side * (seatS / 2 - sLeg), w: seatS, d: sLeg, y: fTop + seatH, h: backH, mat: woodC });  // 등받이(바깥쪽)
-  };
-  const drawTable = (cx, cz) => {
-    box({ x: cx - TW / 2, z: cz - TD / 2, w: TW, d: TD, y: fTop + TH - top, h: top, mat: woodT });                   // 윗판
+  const woodT = materials.woodFrame;
+  const cz0 = 0.3;                                            // 테이블 행 중심 z(앞뒤 가운데)
+  const cxs = [3.95, 5.05, 6.15];                            // 3개를 좌우로 이어 옆으로 길게(코어·기둥 피함)
+  for (const cx of cxs) {
+    box({ x: cx - TW / 2, z: cz0 - TD / 2, w: TW, d: TD, y: fTop + TH - top, h: top, mat: woodT });               // 윗판
     for (const lx of [cx - TW / 2 + 0.02, cx + TW / 2 - 0.02 - leg])
-      for (const lz of [cz - TD / 2 + 0.02, cz + TD / 2 - 0.02 - leg])
-        box({ x: lx, z: lz, w: leg, d: leg, y: fTop, h: TH - top, mat: woodT });                                     // 다리 4
-    for (const sx of [cx - 0.28, cx + 0.28]) for (const side of [-1, 1]) drawChair(sx, cz + side * 0.56, side);      // 의자 4(긴 변 양쪽)
-  };
-  drawTable(5.5, -0.9);
-  drawTable(5.5, 1.5);
+      for (const lz of [cz0 - TD / 2 + 0.02, cz0 + TD / 2 - 0.02 - leg])
+        box({ x: lx, z: lz, w: leg, d: leg, y: fTop, h: TH - top, mat: woodT });                                  // 다리 4
+  }
+  const off = TD / 2 + 0.30;                                  // 테이블 가장자리에서 의자 중심까지
+  for (const cx of cxs) {
+    campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: fTop });          // 앞쪽 — 테이블(+z) 향함
+    campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: fTop });    // 뒤쪽 — 테이블(−z) 향함
+  }
 });
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
