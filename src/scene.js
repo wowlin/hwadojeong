@@ -100,7 +100,7 @@ stage.appendChild(renderer.domElement);
 export const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.target.set(4.55, 2.55, 0.65);
-controls.maxPolarAngle = Math.PI * 0.48;
+controls.maxPolarAngle = Math.PI * 2 / 3;   // 120°(수평 너머 30°까지 올려다봄) — 천장 보기
 controls.minDistance = 4;
 controls.maxDistance = 32;
 
