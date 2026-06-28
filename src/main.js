@@ -1660,6 +1660,13 @@ captureInto(s2StairObjects, () => {
   box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });  // 계단 옆 영역 전체
   box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });      // 계단 앞 영역(계단실은 비움)
   label('층참(1·2·3층 바닥 기준면)', x0 + wF / 2, levels[1] + 0.05, meta[0].upperFrontZ - W / 2, 'struct');
+  // 각 층 천장고·층고 (계단 화면) — 단일 출처: 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께
+  const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
+  for (let f = 0; f < levels.length - 1; f += 1) {
+    const fH = levels[f + 1] - levels[f];                            // 층고
+    const cH = (levels[f + 1] - slabTs[f + 1]) - levels[f];          // 천장고 = 윗층 바닥 밑면 − 이 층 바닥 윗면
+    label(`${f + 1}층  층고 ${fH.toFixed(2)}m · 천장고 ${cH.toFixed(2)}m`, inX0 + inW - 0.1, levels[f] + fH / 2, inZ0 + 0.3, 'struct');
+  }
 });
 
 // ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
