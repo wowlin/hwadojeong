@@ -32,6 +32,7 @@ export const materials = {
   landing: new THREE.MeshLambertMaterial({ color: 0xffd166 }),
   floorSlab: new THREE.MeshLambertMaterial({ color: 0xc9a877 }),   // 각 층 바닥(2·3층 층참) — 계단참(노랑)과 구별되는 마루색
   clearZone: new THREE.MeshLambertMaterial({ color: 0x2ec4b6, transparent: true, opacity: 0.4, depthWrite: false }),   // 가구 둘레 여유 이동공간 표시(반투명 청록) — 바닥색과 구별
+  leftZone: new THREE.MeshLambertMaterial({ color: 0xd84a3b, transparent: true, opacity: 0.42, depthWrite: false }),   // 왼쪽 예약 공간(반투명 붉은색)
   loftHeadFill: new THREE.MeshLambertMaterial({ color: 0x7fbf9b }),   // 1층계단 위 헤드룸 한계까지 메운 다락바닥 — 일반 다락바닥(노랑)과 구별(청록)
   stairWall: new THREE.MeshLambertMaterial({ color: 0xf2f0e8 }),
   stairSpineWall: new THREE.MeshLambertMaterial({ color: 0x8fb0cc }),   // 두 런 사이 칸막이벽 — 디딤판·세로막이와 구별되는 청색
