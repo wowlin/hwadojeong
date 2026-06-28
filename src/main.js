@@ -1608,31 +1608,36 @@ captureInto(s2StairSampleObjects, () => {
   })(5.5);
 });
 
-// ── s2 계단(U자·계단참 오른쪽 뒤벽 밀착·1→3층 적층) — '계단' 토글 ────────────────
-// 채택안 C(U자·중간참)를 실제 배치: 두 직선런이 나란히, 180° 반환하는 계단참을 오른쪽
-//   뒤 코너(거실측 x=0·측백측 뒤벽 z=뒤)에 밀착. 각 층고만큼 두 비행을 적층해 1→2→3층을 오름.
+// ── s2 계단(U자 스위치백·단높이 0.15 통일·중간참+층참, 1→3층) — '계단' 토글 ─────────
+// 두 직선런이 나란히 180° 반환(뒤 중간참), 오른쪽 뒤 코너(거실측·측백 뒤벽) 외벽 안쪽에 밀착.
+// 단높이(R)는 전 구간 0.15m로 통일 → 1→2층 22단·2→3층 20단, 각 층 바닥에 정확히 맞음.
+// 층참(계단참)을 1·2·3층 바닥 레벨에 둠 — 이 윗면이 바닥·층고·천장고 산정의 기준면(3층 꼭대기 포함).
 captureInto(s2StairObjects, () => {
-  const baseY = groundTopY + MAT_H;                 // 기초 상단(1층 바닥)
-  const T = 0.27, W = 1.0, g = 0.1, tTh = 0.06;     // 디딤판·유효폭·런 사이 틈·디딤두께
-  const x0 = s2WallT;                                // 오른쪽(거실측) 외벽 안쪽 면 — 하부런 X(벽과 겹침 없게 들임)
-  const bx = x0 + W + g;                              // 상부런 X(=1.1)
-  const landZ1 = s2BackZ - s2WallT, landZ0 = landZ1 - W;   // 계단참 뒷면=뒤 외벽 안쪽 면, 앞면=거기−1.0(벽과 겹침 없게 들임)
-  const fhs = [3.3, 3.0];                            // 1→2층 3.3 · 2→3층 3.0
-  const tread = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });   // 디딤(윗면=topY)
-  let floorY = baseY;
-  for (let f = 0; f < fhs.length; f += 1) {
-    const h = fhs[f];
-    const N = Math.round(h / 0.167);                 // 총 라이저(단높이≈0.167)
-    const R = h / N;                                 // 실제 단높이
-    const nLow = Math.ceil((N - 2) / 2), nUp = (N - 2) - nLow;   // 하부런·상부런 디딤 수(참 1·도착 1 제외)
-    for (let k = 1; k <= nLow; k += 1) tread(x0, landZ0 - (nLow - k + 1) * T, floorY + k * R);   // 하부런: 앞→뒤(오름)
-    const landTopY = floorY + (nLow + 1) * R;
-    box({ x: x0, z: landZ0, w: 2 * W + g, d: W, y: landTopY - tTh, h: tTh, mat: materials.landing });   // 계단참(뒤벽 밀착)
-    for (let m = 1; m <= nUp; m += 1) tread(bx, landZ0 - m * T, landTopY + m * R);   // 상부런: 뒤→앞(오름)
-    label(`U자 계단(${f + 1}→${f + 2}층)`, x0 + W + g / 2, floorY + h * 0.5, landZ0 - nLow * T * 0.5, 'struct');
-    floorY += h;
+  const baseY = groundTopY + MAT_H;                       // 1층 바닥 레벨
+  const T = 0.27, R = 0.15, W = 1.0, g = 0.1, tTh = 0.06; // 디딤 0.27 · 단높이 0.15(통일) · 폭 1.0
+  const x0 = s2WallT, bx = x0 + W + g;                    // 두 런 X열(콜A=x0·콜B=bx) — 외벽 안쪽
+  const wF = 2 * W + g;                                   // 참 너비(두 런+틈)
+  const zR1 = s2BackZ - s2WallT, zR0 = zR1 - W;           // 뒤 중간참 밴드 [zR0,zR1] (뒤 외벽 안쪽 밀착)
+  const tread = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });
+  const landing = (z, d, topY) => box({ x: x0, z, w: wF, d, y: topY - tTh, h: tTh, mat: materials.landing });
+
+  const levels = [baseY, baseY + 3.3, baseY + 6.3];       // 1·2·3층 바닥 레벨(층참 윗면=이 면)
+  const meta = [];
+  for (let f = 0; f < levels.length - 1; f += 1) {        // 각 비행: levels[f] → levels[f+1]
+    const fl = levels[f], rise = levels[f + 1] - fl;
+    const risers = Math.round(rise / R);                  // 22(3.3) · 20(3.0)
+    const nL = Math.ceil((risers - 2) / 2), nU = (risers - 2) - nL;
+    for (let k = 1; k <= nL; k += 1) tread(x0, zR0 - (nL - k + 1) * T, fl + k * R);          // 하부런(콜A, 앞→뒤)
+    landing(zR0, W, fl + (nL + 1) * R);                                                       // 뒤 중간참
+    for (let m = 1; m <= nU; m += 1) tread(bx, zR0 - m * T, fl + (nL + 1 + m) * R);           // 상부런(콜B, 뒤→앞)
+    meta.push({ lowerFrontZ: zR0 - nL * T, upperFrontZ: zR0 - nU * T });
+    label(`계단 ${f + 1}→${f + 2}층 (단높이 0.15·전구간 동일)`, x0 + wF / 2, fl + rise * 0.5, zR0 - 0.4, 'struct');
   }
-  label('계단참(오른쪽 뒤벽 밀착)', x0 + W + g / 2, baseY + 1.0, (landZ0 + landZ1) / 2, 'struct');
+  // 층참 — 각 바닥 레벨 앞쪽. 윗면=바닥 레벨(바닥·층고·천장고 기준면).
+  landing(meta[0].lowerFrontZ - W, W, levels[0]);                                             // 1층 시작참
+  landing(Math.max(meta[0].upperFrontZ, meta[1].lowerFrontZ) - W, W, levels[1]);              // 2층 층참(비행 사이)
+  landing(meta[1].upperFrontZ - W, W, levels[2]);                                             // 3층 도착참(가장 위)
+  label('층참(1·2·3층 바닥 기준면)', x0 + wF / 2, levels[1] + 0.05, meta[0].upperFrontZ - W / 2, 'struct');
 });
 
 // ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
@@ -2297,8 +2302,9 @@ function applyVisibility() {
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
+  s2Stair: { title: '계단 (U자·1→3층)', body: '- 형식: U자 스위치백 — 두 직선런이 나란히, 뒤 중간참에서 180° 반환.\n- 계단폭(한 런 너비): 1.0 m\n- 단높이(R): 0.15 m (전 구간 동일)\n- 디딤(T, 발 딛는 깊이): 0.27 m\n- 디딤판 두께: 0.06 m\n- 두 런 사이 틈: 0.1 m\n- 계단참(중간참·층참) 크기: 2.1 m(너비) × 1.0 m(깊이)\n- 단 수: 1→2층 22단(층고 3.3 m) · 2→3층 20단(층고 3.0 m)' },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Stair'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
