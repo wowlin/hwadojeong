@@ -1549,6 +1549,7 @@ const s2W = 8.0, s2D = 6.0;                 // s2 집 너비(X)·깊이(Z)
 const s2X0 = 0;                             // 거실측 외벽 — s1과 동일(x=0, 옆집 이격 0.5 유지)
 const s2BackZ = buildingBackZ;             // 뒤벽 — s1과 동일(3.3, 측백 이격 1.0 유지)
 const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (= -2.7)
+const s2WallT = 0.3;                        // s2 외벽 두께(단일 출처) — 외벽·계단 들임 기준
 // 배치도 발자국(납작) — s2 탭에서만 표시
 s2FootprintObjects.push(box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
 // 기초(온통 0.5m 슬래브) — 's2 기초' 토글
@@ -1613,9 +1614,9 @@ captureInto(s2StairSampleObjects, () => {
 captureInto(s2StairObjects, () => {
   const baseY = groundTopY + MAT_H;                 // 기초 상단(1층 바닥)
   const T = 0.27, W = 1.0, g = 0.1, tTh = 0.06;     // 디딤판·유효폭·런 사이 틈·디딤두께
-  const x0 = 0;                                      // 오른쪽(거실측) 벽 밀착 — 하부런 X
+  const x0 = s2WallT;                                // 오른쪽(거실측) 외벽 안쪽 면 — 하부런 X(벽과 겹침 없게 들임)
   const bx = x0 + W + g;                              // 상부런 X(=1.1)
-  const landZ1 = s2BackZ, landZ0 = s2BackZ - W;      // 계단참 뒷면=측백 뒤벽 밀착, 앞면=뒤벽−1.0
+  const landZ1 = s2BackZ - s2WallT, landZ0 = landZ1 - W;   // 계단참 뒷면=뒤 외벽 안쪽 면, 앞면=거기−1.0(벽과 겹침 없게 들임)
   const fhs = [3.3, 3.0];                            // 1→2층 3.3 · 2→3층 3.0
   const tread = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });   // 디딤(윗면=topY)
   let floorY = baseY;
@@ -1661,7 +1662,6 @@ captureInto(s2FrameObjects, () => {
 
 // ── s2 외벽(층별 둘레 0.3m) — '외벽 1·2·3층' 토글 ──────────────────────────────
 // 외벽 두께 0.3m(외단열·마감 포함 기준). 층마다 따로 켜고 끌 수 있게 1·2·3층 분리. 반투명 — 내부 보이게.
-const s2WallT = 0.3;
 const s2WallRing = (arr, floorNo, y, h) => captureInto(arr, () => {
   const t = s2WallT;
   box({ x: s2X0, z: s2FrontZ, w: s2W, d: t, y, h, mat: materials.exteriorWall });                       // 앞벽(현관 쪽)
