@@ -15,13 +15,13 @@ await page.click('#tabS2'); await page.waitForTimeout(200);
 for (const id of ['cS2Stair2']) { try { await page.click('#' + id); } catch {} await page.waitForTimeout(150); }
 await page.waitForTimeout(400);
 const setCam = (p, t) => page.evaluate(({ p, t }) => { const { camera, controls } = window.__cc; controls.target.set(...t); camera.position.set(...p); controls.update(); }, { p, t });
-// 위에서 거의 평면 — L자(가로런+코너참)+U자 배치 확인
-await setCam([2.2, 14, 0.4], [2.2, 2.5, 0.3]);
-await page.waitForTimeout(400);
-await page.screenshot({ path: root + '/shot-s2st2-top.png' });
-// 비스듬 3D — 입체로 계단참 2개·런 구성 확인
-await setCam([9.0, 7.0, 9.0], [2.4, 3.2, 0.3]);
+// 비스듬 3D — 바닥 구멍·계단 착지·U턴 확인(걸어다닐 수 있나)
+await setCam([9.0, 7.0, 9.5], [1.6, 3.4, -0.2]);
 await page.waitForTimeout(400);
 await page.screenshot({ path: root + '/shot-s2st2-iso.png' });
+// 좌측에서 본 단면(-X→+X) — 계단이 앞, 바닥 가림 없음. 층간 연결·착지·U턴 확인.
+await setCam([-13, 4.6, 0.3], [1.3, 4.6, 0.3]);
+await page.waitForTimeout(400);
+await page.screenshot({ path: root + '/shot-s2st2-secL.png' });
 await browser.close();
 console.log('saved');
