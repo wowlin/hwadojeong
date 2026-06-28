@@ -2352,6 +2352,7 @@ const PARTS = [
   { key: 's2Wall2', arrays: [s2Wall2Objects] },
   { key: 's2Wall3', arrays: [s2Wall3Objects] },
   { key: 's2Stair', arrays: [s2StairObjects] },
+  { key: 's2Stair2', arrays: [s2Stair2Objects] },
   { key: 's2Stairs', arrays: [s2StairSampleObjects] },
   { key: 's2Frame', arrays: [s2FrameObjects] },
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
@@ -2366,7 +2367,7 @@ const CHECKS = [
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stair2', 's2Stair2'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
