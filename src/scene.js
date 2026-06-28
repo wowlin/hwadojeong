@@ -12,7 +12,6 @@ app.innerHTML = `
       </nav>
       <section class="menu-group" data-scheme="shared">
         <h2 class="menu-title">대지·담장 (공통)</h2>
-        <button id="vPlan" type="button" class="view-btn">배치도 (부감)</button>
         <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
         <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
       </section>

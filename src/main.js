@@ -2214,7 +2214,6 @@ function applyVisibility() {
   for (const item of stairWallObjects) item.visible = false;
   // 체크박스 상태 동기화(단일 출처)
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
-  const planBtn = document.querySelector('#vPlan'); if (planBtn) planBtn.classList.toggle('active', isPlan);
   updateNotes();
 }
 
@@ -2258,9 +2257,6 @@ for (const title of document.querySelectorAll('.menu-group .menu-title')) {
   title.addEventListener('click', () => title.parentElement.classList.toggle('collapsed'));
 }
 
-// 뷰 버튼(배치도)
-document.querySelector('#vPlan').addEventListener('click', showPlan);
-
 // 부품 체크박스 — 켜면 배치도(부감) 모드 자동 해제하고 해당 부품을 입체 모델 위에 표시.
 for (const [id, key] of CHECKS) {
   const el = document.querySelector('#' + id);
@@ -2277,22 +2273,19 @@ for (const [id, key] of CHECKS) {
 }
 
 // ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
-// 페이지 가장 바깥 선택: 탭마다 별도 설계안. 배치도·측백담·옆집담(='shared')은 모든 탭 공유.
-// 탭 전환 시 다른 탭 부품은 끄고, 해당 탭 메뉴 그룹만 사이드바에 노출.
-// 탭 추가: ① scene.js에 <button class="scheme-tab" data-scheme="sN"> + <section data-scheme="sN"> 추가
-//          ② 새 부품을 SCHEME_OF에 'sN'으로 등록(미등록 키는 's1'로 귀속).
-const SCHEME_OF = { hedge: 'shared', fence: 'shared', s2Foundation: 's2' };   // 공통(담장) / s2 부품. 미등록 키는 's1'(1층·다락·포치).
-const partScheme = (key) => SCHEME_OF[key] || 's1';
+// 페이지 가장 바깥 선택: 탭마다 별도 설계안. 대지·측백담·옆집담·이격은 모든 탭 공유.
+// 탭 클릭 = 그 설계안의 배치도(부감)부터(켠 부품 전부 리셋). 같은 탭을 다시 눌러도 배치도로 복귀.
+// 탭 추가: ① scene.js에 <button class="scheme-tab" data-scheme="sN"> + <section data-scheme="sN"> 그룹
+//          ② 그 탭 전용 부재는 applyVisibility에서 currentScheme==='sN'으로 게이팅(s2 예시 참고).
 let currentScheme = 's1';
 function setScheme(id) {
   currentScheme = id;
-  for (const p of PARTS) { const sc = partScheme(p.key); if (sc !== 'shared' && sc !== id) view[p.key] = false; }   // 다른 탭 부품 끔
   for (const sec of document.querySelectorAll('.menu-group[data-scheme]')) {
     const ds = sec.dataset.scheme;
     sec.hidden = !(ds === 'shared' || ds === id);   // 공통+현재 탭 그룹만 노출
   }
   for (const t of document.querySelectorAll('.scheme-tab')) t.classList.toggle('active', t.dataset.scheme === id);
-  applyVisibility();
+  showPlan();   // 그 탭의 배치도(부감)로 — 켠 부품 리셋 + 부감 카메라
 }
 for (const t of document.querySelectorAll('.scheme-tab')) {
   t.addEventListener('click', () => setScheme(t.dataset.scheme));
@@ -2541,8 +2534,7 @@ buildStair();
   for (const arr of HOUSE_ARRAYS) for (const o of arr) { if (!seen.has(o)) { seen.add(o); houseGroup.add(o); } }   // add = scene→houseGroup 재부모(로컬좌표 보존)
 }
 
-showPlan();      // 초기 화면 = 배치도(부감)
-setScheme('s1'); // 초기 탭 = 1층·다락·포치(현재까지 만든 모든 것)
+setScheme('s1'); // 초기 탭 = 1층·다락·포치 + 그 배치도(부감) — setScheme가 showPlan 호출
 
 // 모든 컨트롤 버튼 높이를 '가장 큰 버튼'에 맞춰 통일 — 라벨 줄이 늘어도, 몇 줄로 줄바꿈돼도 항상 동일.
 function equalizeButtonHeights() {
