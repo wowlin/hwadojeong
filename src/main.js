@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2BuildObjects, s2StairSampleObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2BuildObjects, s2StairSampleObjects, s2FrameObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
   conceptObjects,
 } from './groups.js';
@@ -1714,6 +1714,27 @@ captureInto(s2StairSampleObjects, () => {
   })(5.5);
 });
 
+// ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
+// 1층은 벽 없는 포치 → 기둥-보(라멘조)로 상부 하중 지지. 오른쪽 계단·물코어를 1층까지
+//   전단벽으로 내려 횡력(지진·바람) 전담 → 약층(soft-story) 방지. 2층 바닥엔 전이보 격자.
+captureInto(s2FrameObjects, () => {
+  const baseY = groundTopY + MAT_H, fh = 3.0, L2 = baseY + fh;   // 1층(0.5~3.5)
+  const cs = 0.25, bh = 0.4;                                     // 기둥 단면·전이보 높이
+  const xs = [0.15, 4.0, 7.85], zs = [s2FrontZ + 0.15, 0.3, s2BackZ - 0.15];   // 기둥 격자(외곽 안쪽 + 8m변 중간)
+  for (const x of xs) for (const z of zs) box({ x: x - cs / 2, z: z - cs / 2, w: cs, d: cs, y: baseY, h: fh, mat: materials.steelFrame });   // 1층 기둥 9본
+  // 2층 바닥 전이보 — 기둥머리 잇는 격자(X·Z 방향)
+  for (const z of zs) box({ x: xs[0], z: z - cs / 2, w: xs[2] - xs[0], d: cs, y: L2 - bh, h: bh, mat: materials.houseFloorFrame });
+  for (const x of xs) box({ x: x - cs / 2, z: zs[0], w: cs, d: zs[2] - zs[0], y: L2 - bh, h: bh, mat: materials.houseFloorFrame });
+  // 오른쪽 뒤 코어 전단벽(ㄷ자) — 계단·물코어 둘레, 1층까지 콘크리트. 횡력 전담.
+  const wt = 0.2, cx1 = 2.2, cz0 = 1.0;
+  box({ x: 0, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: fh, mat: materials.matFoundation });          // 오른쪽 외벽면(x=0)
+  box({ x: 0, z: s2BackZ - wt, w: cx1, d: wt, y: baseY, h: fh, mat: materials.matFoundation });            // 뒤 외벽면(z=뒤)
+  box({ x: cx1 - wt, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: fh, mat: materials.matFoundation });    // 코어 안쪽면(x=2.2)
+  label('1층 기둥(포치 개방)', 4.0, baseY + 1.7, 0.3, 'struct');
+  label('전이보(2층 바닥)', 5.2, L2 - 0.15, s2FrontZ + 0.15, 'struct');
+  label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.7, 2.2, 'struct');
+});
+
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
@@ -2240,6 +2261,7 @@ const view = {
   s2Foundation: false,   // s2 집 기초(온통 0.5m 슬래브 8×6)
   s2Build: false,        // s2 3층 구조 제안(개념 매스)
   s2Stairs: false,       // s2 계단 샘플(유형 비교)
+  s2Frame: false,        // s2 1층 골조(기둥·전이보·코어 전단벽)
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2271,6 +2293,7 @@ const PARTS = [
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
   { key: 's2Build', arrays: [s2BuildObjects] },
   { key: 's2Stairs', arrays: [s2StairSampleObjects] },
+  { key: 's2Frame', arrays: [s2FrameObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2283,7 +2306,7 @@ const CHECKS = [
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
   ['cConcept', 'concept'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Build', 's2Build'], ['cS2Stairs', 's2Stairs'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Build', 's2Build'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
