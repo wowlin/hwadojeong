@@ -9,7 +9,7 @@ export const foundationHeight = 0.35;         // 집 기초 높이(지면~받침
 export const pileR = 0.075;                    // 강관 말뚝 외경 Ø150 (반지름)
 export const pileCapW = 0.2;                   // 두부 헤드 브래킷 한 변
 export const pileCapH = 0.12;                  // 두부 헤드 브래킷 높이(스틸 골조 볼트 체결부)
-export const floorFinishH = 0.10;                              // 바닥(바닥 시공) 두께 10cm — 골조 위 마감층
+export const floorFinishH = 0.20;                              // 1층 바닥 두께 20cm — 기초 윗면에서 시작(바닥 표면=기초 윗면+0.20)
 export const deckFinishT = 0.02;   // 포세린 마감 두께 20t=2cm(데크 기초 위에 얹힘 — 건식)
 export const deckFoundationH = 0.25;   // 데크/썬룸 기초 높이 25cm(0.4에서 15cm 낮춤, 집 0.35보다 10cm 낮게 — 단차). 말뚝기초라 높이 자유.
 export const lotW = 9.95;                      // 대지 가로 — 왼쪽(가족방) 측백 여유 포함(슬랙 쪽, 변수성)
