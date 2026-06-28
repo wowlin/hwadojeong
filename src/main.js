@@ -1570,12 +1570,16 @@ captureInto(dimObjects, () => {
   const gridMat = new THREE.MeshBasicMaterial({ color: 0x5b7185 });   // 회청색 보조선(무광 — 조명 영향 없이 또렷)
   const gw = 0.02, gy = 0.009, gh = 0.002;   // 기준선 — 바닥에 붙임(색면 위 1mm), 두께 2mm
   const gz0 = lotZ0 - 0.6, gz1 = lotZ1 + 0.6, gx0 = lotX0 - 0.6, gx1 = lotX1 + 0.6;
-  for (const x of [lotX0, 0, dL.x + dL.w, buildingW, lotX1]) {   // dL.x+dL.w = 거실 데크 왼쪽(안방쪽) 끝 세로 기준선(복구)
-    box({ x: x - gw / 2, z: gz0, w: gw, d: gz1 - gz0, y: gy, h: gh, mat: gridMat, cast: false, name: 'ground' });
-  }
-  for (const z of [dL.z, buildingFrontZ, buildingBackZ, lotZ1]) {   // lotZ0(맨 아래) 가로 가이드라인 제거. 전부 동일 회청색 가이드.
-    box({ x: gx0, z: z - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat, cast: false, name: 'ground' });
-  }
+  const vGuide = (x) => box({ x: x - gw / 2, z: gz0, w: gw, d: gz1 - gz0, y: gy, h: gh, mat: gridMat, cast: false, name: 'ground' });   // 세로 보조선
+  const hGuide = (z) => box({ x: gx0, z: z - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat, cast: false, name: 'ground' });   // 가로 보조선
+  // 측백·이격 치수의 기준선 — 공통(모든 탭). 끝점: X=대지 좌/우·거실0 / Z=집 뒤벽·대지 뒤.
+  captureInto(gapDimObjects, () => {
+    for (const x of [lotX0, 0, lotX1]) vGuide(x);
+    for (const z of [buildingBackZ, lotZ1]) hGuide(z);
+  });
+  // 집·데크 크기 치수의 기준선 — 현재 탭(s1)만. (dL.x+dL.w = 거실 데크 안방쪽 끝)
+  for (const x of [dL.x + dL.w, buildingW]) vGuide(x);
+  for (const z of [dL.z, buildingFrontZ]) hGuide(z);
 });
 // 집 말뚝 X열 간격 치수 — 뒤쪽(+Z) 말뚝 줄에서 약간 뒤로 비켜 표시(기초 위 겹침 방지). 기초 뷰 전용.
 captureInto(foundationDimObjects, () => {
