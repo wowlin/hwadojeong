@@ -20,9 +20,9 @@ const setCam = (p, t) => page.evaluate(({ p, t }) => { const { camera, controls 
 await setCam([22, 4.5, 0.3], [0.85, 4.5, 0.3]);
 await page.waitForTimeout(400);
 await page.screenshot({ path: root + '/shot-s2sec.png' });
-// 뒤쪽(z=3.0 안쪽 면) 확대 — 중간참 뒷면이 바닥판 뒷면과 맞닿았는지. 위(z=back) 가장자리 줌.
-await setCam([9, 5.2, 2.7], [0.85, 5.2, 2.6]);
+// 2→3 비행만 확대 — 하부런 단 수(=1→2와 동일)·상부런 단 수(짧음)·참 뒷벽 밀착·바닥 접합 확인.
+await setCam([12, 6.6, 1.0], [0.85, 6.3, 1.2]);
 await page.waitForTimeout(400);
-await page.screenshot({ path: root + '/shot-s2sec-back.png' });
+await page.screenshot({ path: root + '/shot-s2sec-u23.png' });
 await browser.close();
 console.log('saved');
