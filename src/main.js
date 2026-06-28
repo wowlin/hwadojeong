@@ -49,9 +49,9 @@ import {
   addStairRailingSegment, yzWallPrism, gableEndWallThicknessCap, slopedWallTopCap, wallEndThicknessFace, roofSlab,
 } from './builders.js';
 import {
-  buildingW, buildingFrontZ, buildingBackZ, groundTopY, pileR,
+  buildingW, buildingD, buildingBackZ, groundTopY, pileR,
   pileCapW, pileCapH, floorFinishH, deckFinishT, deckFoundationH, lotW,
-  lotD, lotX0, roadW, firstWallHeight, exteriorWall, interiorWall,
+  lotD, roadW, firstWallHeight, exteriorWall, interiorWall,
   stairRunW, entryDoorLeafW, entryFrameOuterW, entryFrameH, interiorDoorW, interiorDoorH,
   yardSashW, yardSashH, secondFloorThickness, secondWallHeight, roofSlopeDeg,
   roofThickness, stairRiserCount, lowerStraightTreadCount, winderTreadCount, stairTreadDepth, floorSurfaceH,
@@ -60,10 +60,11 @@ import {
   atticVentWindowW, atticSkyWindowW, atticSkyWindowH, atticSkyWindowSillOffset, atticRearWindowW, atticRearWindowH,
   atticRearWindowSillOffset, sideGableWindowW, sideGableWindowH, sideGableWindowSillOffset, STUD_SPACING,
   FRAME_WEB, FRAME_FLANGE, TRACK_H, frEaveOverhang, frSideOverhang, FRAME_ROOM_W,
-  FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_RIM_W, DECK_RIM_W, FLOOR_JOIST_SPACING, planMarkW
+  FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_RIM_W, DECK_RIM_W, FLOOR_JOIST_SPACING, planMarkW,
+  hedgeThickness, deckW, deckD
 } from './constants.js';
 import {
-  buildingD, foundationTopY, firstFloorY, deckTopY0, lotX1, lotZ1,
+  buildingFrontZ, lotX0, foundationTopY, firstFloorY, deckTopY0, lotX1, lotZ1,
   lotZ0, firstWallY, insideX0, insideZ0, insideX1, insideZ1,
   insideD, stairGap, stairClearW, sideRoomW,
   stairClearX, stairLowXRunX, stairHighXRunX, stairLowXWallX, stairHighXWallX,
@@ -541,8 +542,8 @@ siteBaseObjects.push(box({ x: lotX0, z: lotZ1, w: lotW + roadW, d: roadW, h: 0.0
 const fenceMat = new THREE.MeshLambertMaterial({ color: 0xb0a692 });
 fenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: groundTopY, h: 1.0, mat: fenceMat, name: 'ground' }));
 // 측백나무 생울타리(상록) — 뒤쪽 + 왼쪽(가족방 쪽, 높은 X) 경계 안쪽 50cm, 높이 1.8m.
-hedgeObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
-hedgeObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 왼쪽(가족방) 생울타리
+hedgeObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
+hedgeObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: groundTopY, h: 1.8, mat: materials.hedge, name: 'ground' }));   // 왼쪽(가족방) 생울타리
 
 // 입체 집 기초(시스템말뚝 + 두부)는 1층 벽·실 좌표가 정의된 뒤(아래)에서 만든다 — 하중 경로에 말뚝 정렬.
 // 기초 가로/세로 길이 치수 — 제거(라벨 정리)
@@ -1425,9 +1426,9 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
 
 // 거실 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 5.5m(fX1=5.5, 좌측 끝 x=5.7)
 //   지붕면은 거실+안방을 덮는 단일 패널 하나로 그린다(전체 폭 8.9m, 중심 x=4.25 — −0.2~8.7).
-const living썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: 8.9, roofPanelCenterX: 4.25, deckDepth: 3.8 });   // 데크 깊이 3.8m 고정(지붕 4m 경사와 분리 — 실제 시공)
+const living썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: 8.9, roofPanelCenterX: 4.25, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭(고-X 끝 fX1=deckW=5.5)은 roofW:5.9에서 파생(지붕 프레임 공유) — deckW 바꾸려면 roofW도 함께
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 거실 썬룸의 단일 패널이 이미 덮음.
-const 안방썬룸 = 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: 5.5, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
+const 안방썬룸 = 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: deckW, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
 
 // 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 두부). 두부 위에 둘레 토대보(바닥 골조)가 얹히고, 그 위에 포세린·폴딩/외벽이 올라간다.
 // 데크 기초 발자국 — 집 너비(0~8.5) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 8.5가 되게.
@@ -1502,17 +1503,17 @@ PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHea
 PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
 // 담장 발자국(측백·옆집) — footprintObjects에 넣어 토글 무관 모든 화면에 표시.
 footprintObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
-footprintObjects.push(box({ x: lotX0, z: lotZ1 - 0.5, w: lotW, d: 0.5, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
-footprintObjects.push(box({ x: lotX1 - 0.5, z: lotZ0, w: 0.5, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
+footprintObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
+footprintObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
 // 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인. 바닥+기초 공통(dimObjects).
 captureInto(dimObjects, () => {
   const dL = deckFootprints[0];   // 거실 데크 기초(안방 앞 데크 제거됨)
   // 가로 — 위쪽: 기초 8.5 / 가족방 측백 0.5 (거실 0.5는 아래쪽으로 이동)
   planXDim(lotZ1 + 0.4, 0, buildingW, '8.5m');
-  captureInto(planOnlyDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - 0.5, lotX1, '측백 0.5m'));   // 가족방 측백 0.5(좌상단) — 바닥 전용(기초 뷰 숨김)
+  captureInto(planOnlyDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - hedgeThickness, lotX1, `측백 ${fmtDim(hedgeThickness)}m`));   // 가족방 측백(좌상단) — 바닥 전용(기초 뷰 숨김)
   // 세로 — 가족방(왼쪽) 건물 깊이 4 / 거실(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
   planZDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m');          // 가족방 건물 깊이
-  captureInto(planOnlyDimObjects, () => planZDim(lotX1 + 0.35, lotZ1 - 0.5, lotZ1, '측백 0.5m'));   // 뒤(가로) 측백 0.5 — 바닥 전용(기초 뷰 숨김)
+  captureInto(planOnlyDimObjects, () => planZDim(lotX1 + 0.35, lotZ1 - hedgeThickness, lotZ1, `측백 ${fmtDim(hedgeThickness)}m`));   // 뒤(가로) 측백 — 바닥 전용(기초 뷰 숨김)
   planZDim(lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m');                    // 뒤 이격 합 1m(우상단)
   planZDim(lotX0 - 0.4, buildingFrontZ, buildingBackZ, '4.0m');          // 거실 건물 깊이
   planZDim(lotX0 - 0.4, dL.z, buildingFrontZ, `${fmtDim(dL.d)}m`);   // 거실 데크 깊이(오른쪽 가장자리)

@@ -2,8 +2,8 @@
 // 의존: constants.js만. scene/THREE/materials/빌드순서에 얽힌 값은 main.js에 그대로 둠.
 
 import {
-  buildingBackZ, buildingFrontZ, groundTopY, foundationHeight, floorFinishH, deckFoundationH,
-  lotX0, lotW, lotD, exteriorWall, buildingW, interiorWall,
+  buildingBackZ, buildingD, groundTopY, foundationHeight, floorFinishH, deckFoundationH,
+  neighborSetback, hedgeBoundaryGap, lotW, lotD, exteriorWall, buildingW, interiorWall,
   stairRunW, entryFrameOuterW, yardDeckH, stairRiserCount, lowerStraightTreadCount, winderTreadCount,
   stairTreadDepth, interiorDoorW, interiorDoorH, firstWallHeight, yardSashW, yardSashH,
   familyWindowW, kitchenSinkD, kitchenSinkH, kitchenSinkW, livingRearWindowW, familyRearWindowW,
@@ -11,12 +11,13 @@ import {
   atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang, FRAME_ROOM_W
 } from './constants.js';
 
-export const buildingD = buildingBackZ - buildingFrontZ;   // 집 깊이(=4.0, 파생)
+export const buildingFrontZ = buildingBackZ - buildingD;   // 정면(북) 외벽 Z — 깊이 상수로 파생(=-0.7)
 export const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단(0.58) = 바닥재 하단
 export const firstFloorY = foundationTopY + 0.10 + floorFinishH; // 기초 상단 + 장선(0.10) + 바닥(0.10) = 기초면에서 1층 바닥 20cm
 export const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단(0.48) = 집 기초 상단(0.58)보다 0.1m 낮음
+export const lotX0 = -neighborSetback;         // 거실(저X) 외벽(x=0)에서 옆집 이격만큼 — 고정 이격에서 파생
 export const lotX1 = lotX0 + lotW;
-export const lotZ1 = buildingBackZ + 1;        // 후면 경계(집 뒤 1m)
+export const lotZ1 = buildingBackZ + hedgeBoundaryGap;   // 후면 경계 = 집 뒤 + 측백 경계 이격(고정 상수)
 export const lotZ0 = lotZ1 - lotD;             // 전면 경계
 export const firstWallY = firstFloorY;
 export const insideX0 = exteriorWall;

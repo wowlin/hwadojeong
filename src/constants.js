@@ -1,9 +1,9 @@
 // constants.js — main.js에서 추출한 리터럴 치수 상수(파생·식 제외, 순수 리터럴만).
 // 의존: 없음. 변경 시 영향 범위가 넓으니 단일 출처로 관리.
 
-export const buildingW = 8.5;                 // 집 가로(동서)
-export const buildingFrontZ = -0.7;           // 정면(북) 외벽 Z
-export const buildingBackZ = 3.3;             // 후면(남) 외벽 Z
+export const buildingW = 8.5;                 // 집 가로(동서) — 고정 상수
+export const buildingD = 4.0;                 // 집 깊이(남북) — 고정 상수. 앞 벽 Z(buildingFrontZ)는 layout에서 buildingBackZ−buildingD로 파생
+export const buildingBackZ = 3.3;             // 후면(남) 외벽 Z — 집 Z 위치 앵커(집+이격 고정, 대지 경계 파생)
 export const groundTopY = 0;                  // 지면 상단(0 기준 — 높이 계산 단순화)
 export const foundationHeight = 0.35;         // 집 기초 높이(지면~받침보 상단) — 0.5에서 15cm 낮춤
 export const pileR = 0.075;                    // 강관 말뚝 외경 Ø150 (반지름)
@@ -12,9 +12,13 @@ export const pileCapH = 0.12;                  // 두부 헤드 브래킷 높이
 export const floorFinishH = 0.10;                              // 바닥(바닥 시공) 두께 10cm — 골조 위 마감층
 export const deckFinishT = 0.02;   // 포세린 마감 두께 20t=2cm(데크 기초 위에 얹힘 — 건식)
 export const deckFoundationH = 0.25;   // 데크/썬룸 기초 높이 25cm(0.4에서 15cm 낮춤, 집 0.35보다 10cm 낮게 — 단차). 말뚝기초라 높이 자유.
-export const lotW = 9.95;
-export const lotD = 9;
-export const lotX0 = -0.50;                    // 거실(정면 오른쪽, 낮은 X) 외벽(x=0)에서 50cm 이격 — 민법 242조(경계 반미터 이상)
+export const lotW = 9.95;                      // 대지 가로 — 왼쪽(가족방) 측백 여유 포함(슬랙 쪽, 변수성)
+export const lotD = 9;                         // 대지 깊이 — 앞(입구) 여유 포함(슬랙 쪽, 변수성)
+export const neighborSetback = 0.5;            // 옆집벽(거실쪽, 저X)에서 집 이격 — 법적 규제(민법 242조). 고정 상수
+export const hedgeBoundaryGap = 1.0;           // 집 뒤 벽 → 측백 뒤 대지 경계선 거리 — 고정 상수(측백 0.5 + 집~측백 0.5 = 1.0)
+export const hedgeThickness = 0.5;             // 측백담장 두께 — 고정 상수(가지치기로 조정 가능하나 일단 고정)
+export const deckW = 5.5;                       // 데크 폭(가로) — 고정 상수
+export const deckD = 3.8;                       // 데크 깊이 — 고정 상수
 export const roadW = 1.1;
 export const firstWallHeight = 2.59;           // 1층 벽 높이 = 계단 총높이(17×0.17=2.89) − 다락 바닥 30cm → 다락 바닥 윗면이 계단 꼭대기(loftY)에 맞음
 export const exteriorWall = 0.2;               // 외벽 두께
