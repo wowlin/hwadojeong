@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
   conceptObjects,
 } from './groups.js';
@@ -1547,10 +1547,10 @@ PILE_POS.decks.forEach((d) => planPileMarks(d.x0, d.z0, d.w, d.d, d.sx, d.sz, ()
 PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHead));                    // 안방 말뚝(0.4m) — 청색
 // 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
 PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
-// 담장 발자국(측백·옆집) — footprintObjects에 넣어 토글 무관 모든 화면에 표시.
-footprintObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
-footprintObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
-footprintObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
+// 담장 발자국(측백·옆집) — siteBaseObjects(공통, 항상 표시)에 넣어 모든 탭이 공유.
+siteBaseObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
+siteBaseObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
+siteBaseObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
 // 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인. 바닥+기초 공통(dimObjects).
 captureInto(dimObjects, () => {
   const dL = deckFootprints[0];   // 거실 데크 기초(안방 앞 데크 제거됨)
@@ -1560,12 +1560,12 @@ captureInto(dimObjects, () => {
   // 세로 — 가족방(왼쪽) 건물 깊이 4 / 거실(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
   planZDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m');          // 가족방 건물 깊이
   captureInto(planOnlyDimObjects, () => planZDim(lotX1 + 0.35, lotZ1 - hedgeThickness, lotZ1, `측백 ${fmtDim(hedgeThickness)}m`));   // 뒤(가로) 측백 — 바닥 전용(기초 뷰 숨김)
-  planZDim(lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m');                    // 뒤 이격 합 1m(우상단)
+  captureInto(gapDimObjects, () => planZDim(lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m'));   // 뒤 이격 합 1m — 공통(집-담장 이격)
   planZDim(lotX0 - 0.4, buildingFrontZ, buildingBackZ, '4.0m');          // 거실 건물 깊이
   planZDim(lotX0 - 0.4, dL.z, buildingFrontZ, `${fmtDim(dL.d)}m`);   // 거실 데크 깊이(오른쪽 가장자리)
   // 아래쪽 가장자리: 거실 데크 폭 / 거실 이격 분할
   planXDim(dL.z - 0.45, 0, dL.x + dL.w, `${fmtDim(dL.w)}m`);        // 거실 데크 폭
-  planXDim(dL.z - 0.45, lotX0, 0, '0.5m');                             // 거실 이격 0.5(위쪽 → 아래쪽 이동)
+  captureInto(gapDimObjects, () => planXDim(dL.z - 0.45, lotX0, 0, '0.5m'));   // 거실 이격 0.5 — 공통(집-담장 이격)
   // 모눈 가이드라인 — 각 치수 끝점(X/Z)을 지나 전체로 얇게(드래프팅 보조선처럼)
   const gridMat = new THREE.MeshBasicMaterial({ color: 0x5b7185 });   // 회청색 보조선(무광 — 조명 영향 없이 또렷)
   const gw = 0.02, gy = 0.009, gh = 0.002;   // 기준선 — 바닥에 붙임(색면 위 1mm), 두께 2mm
@@ -2157,13 +2157,17 @@ function applyVisibility() {
   // 말뚝기초=기준(오프셋 0), 매트기초(부분/전체)=매트 윗면−말뚝 윗면 만큼 위로. 기초 높이를 바꾸면 자동 반영(하드코딩 없음).
   const activeFoundationTopY = (view.matFoundationHouse || view.matFoundationFull) ? (groundTopY + MAT_H) : foundationTopY;
   houseGroup.position.y = activeFoundationTopY - foundationTopY;
-  // 항상 표시: 바탕 대지·도로·발자국(단일 출처)
+  // 항상 표시(공통 — 모든 탭 공유): 바탕 대지·도로 + 담장 발자국
   for (const item of siteBaseObjects) item.visible = true;
-  for (const item of footprintObjects) item.visible = true;
-  // 배치도(부감) 전용: 말뚝 마커·평면 치수·측백 0.5
+  // 집·데크 발자국 = 현재 탭(설계안) 것만 — 2층 탭에선 숨겨 집 배치도 분리
+  for (const item of footprintObjects) item.visible = (currentScheme === 's1');
+  // 배치도(부감) 전용: 말뚝 마커·평면 치수
   for (const item of planObjects) item.visible = false;   // 말뚝 위치 마커 — 배치도에서 숨김(집·썬룸 배치만 표시)
-  for (const item of dimObjects) item.visible = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull;   // 평면 치수: 배치도 + 말뚝기초 + 부분/전체 매트기초
-  for (const item of planOnlyDimObjects) item.visible = isPlan;   // 측백 치수는 배치도 전용(매트기초 뷰에선 제외 — dimObjects의 측백 메시도 여기서 다시 숨김)
+  const planDimOn = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull;   // 배치도 + 말뚝기초 + 부분/전체 매트기초
+  // 집·데크 크기 치수 = 현재 탭 것만(2층 탭에선 숨김)
+  for (const item of dimObjects) item.visible = (currentScheme === 's1') && planDimOn;
+  for (const item of planOnlyDimObjects) item.visible = isPlan;   // 측백 0.5 — 공통, 배치도 전용(dimObjects의 측백 메시를 여기서 다시 덮어 숨김)
+  for (const item of gapDimObjects) item.visible = planDimOn;     // 집-담장 이격(0.5·1.0) — 공통(모든 탭), dimObjects의 s1 게이팅을 덮어 공유
   // 부품: PARTS 테이블 일괄 — 각 부품 독립 토글(배치도일 땐 모두 숨김)
   for (const p of PARTS) {
     const on = !isPlan && !!view[p.key];
