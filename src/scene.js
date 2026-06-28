@@ -57,8 +57,8 @@ app.innerHTML = `
         <label class="chk"><input id="cConcept" type="checkbox"><span>3층 신축안</span></label>
       </section>
       <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">2층·다락</h2>
-        <p class="scheme-empty">설계 예정 — 부품이 추가되면 여기에 표시됩니다.</p>
+        <h2 class="menu-title">기초</h2>
+        <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
       </section>
     </aside>
     <section class="stage-wrap">

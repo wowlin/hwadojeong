@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
   conceptObjects,
 } from './groups.js';
@@ -1589,6 +1589,32 @@ captureInto(foundationDimObjects, () => {
   }
 });
 
+// ── 2층·다락 탭(s2) 배치도/기초 — 집 발자국 너비(X) 8 × 깊이(Z) 6 ─────────────
+// 거실측 외벽(x=0)·뒤벽(buildingBackZ=3.3)을 s1과 동일 모서리로 맞추고, 너비→x=8 / 깊이→앞(z) 방향.
+const s2W = 8.0, s2D = 6.0;                 // s2 집 너비(X)·깊이(Z)
+const s2X0 = 0;                             // 거실측 외벽 — s1과 동일(x=0, 옆집 이격 0.5 유지)
+const s2BackZ = buildingBackZ;             // 뒤벽 — s1과 동일(3.3, 측백 이격 1.0 유지)
+const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (= -2.7)
+// 배치도 발자국(납작) — s2 탭에서만 표시
+s2FootprintObjects.push(box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
+// 기초(온통 0.5m 슬래브) — 's2 기초' 토글
+captureInto(s2FoundationObjects, () => {
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트 0.5m
+  planYDim(-0.1, s2BackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 남쪽 모서리 높이 치수(s1과 동일 위치)
+});
+// 치수 + 기준선 — s1과 같은 부분(너비=위, 깊이=양옆)
+captureInto(s2DimObjects, () => {
+  planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, '8.0m');          // 너비 8 — 위쪽(s1 8.5m 자리)
+  planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, '6.0m');        // 깊이 6 — 가족방측(s1 4.0m 자리)
+  planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, '6.0m');         // 깊이 6 — 거실측(s1 4.0m 자리)
+  // 기준선(회청색) — 새 끝점만: 너비 끝 x=8, 깊이 앞 z=s2FrontZ (x=0·뒤 z=3.3은 공통 기준선 사용)
+  const gridMat2 = new THREE.MeshBasicMaterial({ color: 0x5b7185 });
+  const gw = 0.02, gy = 0.009, gh = 0.002;
+  const gz0 = lotZ0 - 0.6, gz1 = lotZ1 + 0.6, gx0 = lotX0 - 0.6, gx1 = lotX1 + 0.6;
+  box({ x: (s2X0 + s2W) - gw / 2, z: gz0, w: gw, d: gz1 - gz0, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });   // 너비 끝(x=8) 세로 기준선
+  box({ x: gx0, z: s2FrontZ - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });       // 깊이 앞 가로 기준선
+});
+
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
@@ -2111,6 +2137,8 @@ const view = {
   hedge: false, fence: false,
   // 3층 신축안(별도 개념 도면)
   concept: false,
+  // 2층·다락 탭(s2)
+  s2Foundation: false,   // s2 집 기초(온통 0.5m 슬래브 8×6)
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2139,6 +2167,7 @@ const PARTS = [
   { key: 'hedge',      arrays: [hedgeObjects] },
   { key: 'fence',      arrays: [fenceObjects] },
   { key: 'concept',    arrays: [conceptObjects] },
+  { key: 's2Foundation', arrays: [s2FoundationObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2151,6 +2180,7 @@ const CHECKS = [
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
   ['cConcept', 'concept'],
+  ['cS2Foundation', 's2Foundation'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
@@ -2167,11 +2197,14 @@ function applyVisibility() {
   for (const item of footprintObjects) item.visible = (currentScheme === 's1');
   // 배치도(부감) 전용: 말뚝 마커·평면 치수
   for (const item of planObjects) item.visible = false;   // 말뚝 위치 마커 — 배치도에서 숨김(집·썬룸 배치만 표시)
-  const planDimOn = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull;   // 배치도 + 말뚝기초 + 부분/전체 매트기초
+  const planDimOn = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull || view.s2Foundation;   // 배치도 + 말뚝/매트기초(s1) + s2 기초 — 공통 치수·기준선 노출 조건
   // 집·데크 크기 치수 = 현재 탭 것만(2층 탭에선 숨김)
   for (const item of dimObjects) item.visible = (currentScheme === 's1') && planDimOn;
   for (const item of planOnlyDimObjects) item.visible = isPlan;   // 측백 0.5 — 공통, 배치도 전용(dimObjects의 측백 메시를 여기서 다시 덮어 숨김)
   for (const item of gapDimObjects) item.visible = planDimOn;     // 집-담장 이격(0.5·1.0) — 공통(모든 탭), dimObjects의 s1 게이팅을 덮어 공유
+  // s2(2층·다락) 탭 전용: 집 발자국(배치도) + 치수·기준선(배치도·기초). 기초 0.5m 슬래브는 PARTS(s2Foundation)에서 처리.
+  for (const item of s2FootprintObjects) item.visible = (currentScheme === 's2');
+  for (const item of s2DimObjects) item.visible = (currentScheme === 's2') && (isPlan || view.s2Foundation);
   // 부품: PARTS 테이블 일괄 — 각 부품 독립 토글(배치도일 땐 모두 숨김)
   for (const p of PARTS) {
     const on = !isPlan && !!view[p.key];
@@ -2248,7 +2281,7 @@ for (const [id, key] of CHECKS) {
 // 탭 전환 시 다른 탭 부품은 끄고, 해당 탭 메뉴 그룹만 사이드바에 노출.
 // 탭 추가: ① scene.js에 <button class="scheme-tab" data-scheme="sN"> + <section data-scheme="sN"> 추가
 //          ② 새 부품을 SCHEME_OF에 'sN'으로 등록(미등록 키는 's1'로 귀속).
-const SCHEME_OF = { hedge: 'shared', fence: 'shared' };   // 공통(담장). 그 외 현재 부품은 모두 's1'(1층·다락·포치).
+const SCHEME_OF = { hedge: 'shared', fence: 'shared', s2Foundation: 's2' };   // 공통(담장) / s2 부품. 미등록 키는 's1'(1층·다락·포치).
 const partScheme = (key) => SCHEME_OF[key] || 's1';
 let currentScheme = 's1';
 function setScheme(id) {
