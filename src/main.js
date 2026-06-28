@@ -1613,7 +1613,7 @@ captureInto(s2StairSampleObjects, () => {
 // 단높이(R)는 전 구간 0.15m로 통일 → 1→2층 22단·2→3층 20단, 각 층 바닥에 정확히 맞음.
 // 층참(계단참)을 1·2·3층 바닥 레벨에 둠 — 이 윗면이 바닥·층고·천장고 산정의 기준면(3층 꼭대기 포함).
 // s2 계단 사양(단일 출처) — 디딤·단높이·런폭·런틈·디딤판두께 · 층고(1→2,2→3). 메모·라벨이 이 값을 그대로 표시.
-const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, floorH: [3.3, 3.0] };
+const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFinishH, floorH: [3.3, 3.0] };  // slabT=1층 층참=바닥 마감 두께(콘크리트 기초 위 부자재+포세린, floorFinishH 0.20)
 captureInto(s2StairObjects, () => {
   const baseY = groundTopY + MAT_H;                       // 1층 바닥 레벨
   const { T, R, W, g, tTh } = S2_STAIR;                   // 디딤 · 단높이(통일) · 폭 · 런틈 · 디딤판두께
@@ -1623,7 +1623,8 @@ captureInto(s2StairObjects, () => {
   const tread = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });
   const landing = (z, d, topY) => box({ x: x0, z, w: wF, d, y: topY - tTh, h: tTh, mat: materials.landing });
 
-  let acc = baseY; const levels = [baseY];                // 1·2·3층 바닥 레벨(층참 윗면=이 면) — 층고 누적
+  const f1Top = baseY + S2_STAIR.slabT;                  // 1층 층참(=1층 바닥) 윗면 = 콘크리트 기초 위 부자재+포세린 마감 두께만큼 올린 면 → 계단 시작면
+  let acc = f1Top; const levels = [f1Top];                // 1·2·3층 바닥 레벨(층참 윗면=이 면) — 층고 누적
   for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
   const meta = [];
   for (let f = 0; f < levels.length - 1; f += 1) {        // 각 비행: levels[f] → levels[f+1]
@@ -1637,7 +1638,8 @@ captureInto(s2StairObjects, () => {
     label(`계단 ${f + 1}→${f + 2}층 (단높이 ${R}·전구간 동일)`, x0 + wF / 2, fl + rise * 0.5, zR0 - 0.4, 'struct');
   }
   // 층참 — 각 바닥 레벨 앞쪽. 윗면=바닥 레벨(바닥·층고·천장고 기준면).
-  landing(meta[0].lowerFrontZ - W, W, levels[0]);                                             // 1층 시작참
+  // 1층 층참 = 1층 바닥 슬래브: 외벽 안쪽 발자국 전체, 콘크리트 기초 윗면(baseY)에서 마감 두께(slabT)만큼 위로. 윗면=levels[0].
+  box({ x: s2X0 + s2WallT, z: s2FrontZ + s2WallT, w: s2W - 2 * s2WallT, d: s2D - 2 * s2WallT, y: baseY, h: S2_STAIR.slabT, mat: materials.landing });
   landing(Math.max(meta[0].upperFrontZ, meta[1].lowerFrontZ) - W, W, levels[1]);              // 2층 층참(비행 사이)
   landing(meta[1].upperFrontZ - W, W, levels[2]);                                             // 3층 도착참(가장 위)
   label('층참(1·2·3층 바닥 기준면)', x0 + wF / 2, levels[1] + 0.05, meta[0].upperFrontZ - W / 2, 'struct');
@@ -2316,6 +2318,7 @@ const NOTES = {
       `- 디딤판 두께: ${s.tTh} m`,
       `- 두 런 사이 틈: ${s.g} m`,
       `- 계단참(중간참·층참) 크기: ${wF.toFixed(2)} m(너비) × ${s.W} m(깊이)`,
+      `- 1층 층참=1층 바닥: 외벽 안쪽 발자국 전체, 두께 ${s.slabT} m(콘크리트 기초 위 부자재+포세린 마감) — 계단 시작면이 이만큼 올라감`,
       `- 단 수: ${steps}`,
     ].join('\n') };
   },
