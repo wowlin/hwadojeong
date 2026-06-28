@@ -1640,7 +1640,7 @@ captureInto(s2StairObjects, () => {
   for (const { f, fl, rise, nL, nU } of flights) {
     for (let k = 1; k <= nL; k += 1) tread(x0, zFront + (k - 1) * T, fl + k * R);             // 하부런(콜A) 첫 단=앞끝, 뒤로 오름
     const zLandFront = zFront + nL * T;                                                        // 중간참 앞끝(하부런 뒤)
-    landing(zLandFront, zR1 - zLandFront, fl + (nL + 1) * R);                                  // 뒤 중간참(뒤벽까지 채워 밀착)
+    landing(zLandFront, W, fl + (nL + 1) * R);                                                 // 뒤 중간참(깊이 W=1.0 통일 — 단 수 적은 비행은 뒤벽과 사이가 빔)
     for (let m = 1; m <= nU; m += 1) tread(bx, zFront + (nU - m) * T, fl + (nL + 1 + m) * R);  // 상부런(콜B) 맨 윗단=앞끝
     meta.push({ lowerFrontZ: zFront, upperFrontZ: zFront });
   }
