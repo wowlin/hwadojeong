@@ -1714,6 +1714,11 @@ captureInto(s2FurnitureObjects, () => {
     campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: fTop });          // 앞쪽 — 테이블(+z) 향함
     campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: fTop });    // 뒤쪽 — 테이블(−z) 향함
   }
+  // 사람 이동(여유) 공간 — 식탁 가장자리에서 긴 변 1.0m·끝 0.8m 둘레 여유. 바닥에 다른 색(반투명 청록)으로.
+  const zx0 = (cxs[0] - TW / 2) - 0.8, zx1 = (cxs[cxs.length - 1] + TW / 2) + 0.8;   // 끝(좌우) 여유 0.8
+  const zz0 = (cz0 - TD / 2) - 1.0, zz1 = (cz0 + TD / 2) + 1.0;                       // 긴 변(앞뒤) 여유 1.0
+  box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: fTop + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
+  label(`여유 이동공간 ${fmtDim(zx1 - zx0)}×${fmtDim(zz1 - zz0)}m (긴변 1.0·끝 0.8)`, (zx0 + zx1) / 2, fTop + 0.55, zz1 - 0.3, 'dim');
 });
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
