@@ -1795,20 +1795,28 @@ captureInto(s2FurnitureObjects, () => {
   // 왼쪽(高x) 벽쪽 1m 예약 공간(붉은색) — 식탁을 그만큼 오른쪽으로 옮겨 비움. 깊이=이동공간과 동일.
   box({ x: inXL - leftReserve, z: zz0, w: leftReserve, d: zz1 - zz0, y: fTop + 0.005, h: 0.012, mat: materials.leftZone, cast: false });
   label(`왼쪽 예약 ${fmtDim(leftReserve)}×${fmtDim(zz1 - zz0)}m`, inXL - leftReserve / 2, fTop + 0.6, (zz0 + zz1) / 2, 'dim');
-  // 뒤쪽 벽(측백 쪽) 붙박이 싱크대 — 싱크볼 950×454mm. 식탁 뒤 주방(저x 계단·코어 피함, 식탁 중심 x에 맞춤).
+  // 뒤쪽 벽(측백 쪽) 주방 — 싱크볼 하부장(중앙) + 양쪽 하부장 2개(같은 너비 CW). 모두 뒤벽 밀착.
   const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
-  const CW = 1.4, CD = 0.6, CH = 0.85, ctop = 0.04;          // 싱크대 폭·깊이·높이·상판
-  const skX = cxC - CW / 2, skZ = inZB - CD, cY = fTop + CH; // 캐비닛 시작(좌·앞)·상판 밑면 — 뒤벽 밀착
-  box({ x: skX, z: skZ, w: CW, d: CD, y: fTop, h: CH, mat: materials.sinkCabinet });             // 하부장
-  const bw = 0.95, bd = 0.454;                               // 싱크볼 950×454
-  const bx0 = cxC - bw / 2, bx1 = cxC + bw / 2, bz0 = skZ + (CD - bd) / 2, bz1 = bz0 + bd;
-  box({ x: skX, z: skZ, w: CW, d: bz0 - skZ, y: cY, h: ctop, mat: materials.counter });          // 상판 앞
-  box({ x: skX, z: bz1, w: CW, d: skZ + CD - bz1, y: cY, h: ctop, mat: materials.counter });     // 상판 뒤
-  box({ x: skX, z: bz0, w: bx0 - skX, d: bd, y: cY, h: ctop, mat: materials.counter });          // 상판 좌
-  box({ x: bx1, z: bz0, w: skX + CW - bx1, d: bd, y: cY, h: ctop, mat: materials.counter });     // 상판 우
-  box({ x: bx0, z: bz0, w: bw, d: bd, y: cY + ctop - 0.18, h: 0.18, mat: materials.sinkBasin });  // 싱크볼(상판에 묻힘)
-  box({ x: cxC - 0.04, z: skZ + CD - 0.14, w: 0.08, d: 0.08, y: cY + ctop, h: 0.3, mat: materials.entryFrame });   // 수전
-  label(`싱크대(볼 ${fmtDim(bw)}×${fmtDim(bd)})`, cxC, cY + 0.5, skZ + CD / 2, 'furniture');
+  const CW = 1.4, CD = 0.6, CH = 0.85, ctop = 0.04;          // 하부장 폭·깊이·높이·상판
+  const skZ = inZB - CD, cY = fTop + CH;                     // 캐비닛 앞끝(뒤벽 밀착)·상판 밑면
+  const drawCab = (cabCx, withBowl) => {                     // 하부장 1개(상판 포함, 옵션: 싱크볼)
+    const x0 = cabCx - CW / 2;
+    box({ x: x0, z: skZ, w: CW, d: CD, y: fTop, h: CH, mat: materials.sinkCabinet });            // 하부장
+    if (!withBowl) { box({ x: x0, z: skZ, w: CW, d: CD, y: cY, h: ctop, mat: materials.counter }); return; }   // 상판(통판)
+    const bw = 0.95, bd = 0.454;                             // 싱크볼 950×454
+    const bx0 = cabCx - bw / 2, bx1 = cabCx + bw / 2, bz0 = skZ + (CD - bd) / 2, bz1 = bz0 + bd;
+    box({ x: x0, z: skZ, w: CW, d: bz0 - skZ, y: cY, h: ctop, mat: materials.counter });         // 상판 앞
+    box({ x: x0, z: bz1, w: CW, d: skZ + CD - bz1, y: cY, h: ctop, mat: materials.counter });    // 상판 뒤
+    box({ x: x0, z: bz0, w: bx0 - x0, d: bd, y: cY, h: ctop, mat: materials.counter });          // 상판 좌
+    box({ x: bx1, z: bz0, w: x0 + CW - bx1, d: bd, y: cY, h: ctop, mat: materials.counter });    // 상판 우
+    box({ x: bx0, z: bz0, w: bw, d: bd, y: cY + ctop - 0.18, h: 0.18, mat: materials.sinkBasin }); // 싱크볼(상판에 묻힘)
+    box({ x: cabCx - 0.04, z: skZ + CD - 0.14, w: 0.08, d: 0.08, y: cY + ctop, h: 0.3, mat: materials.entryFrame });   // 수전
+  };
+  const runR = inXL;                                        // 주방 행 오른쪽 끝(高x) = 왼쪽 벽 안쪽 면 — 왼쪽 뒤 코너 밀착
+  drawCab(runR - 0.5 * CW, false);                          // 벽쪽(高x) 하부장
+  drawCab(runR - 1.5 * CW, true);                           // 싱크볼 하부장(가운데)
+  drawCab(runR - 2.5 * CW, false);                          // 안쪽(低x) 하부장
+  label(`주방 하부장 3개(각 ${fmtDim(CW)}m) · 싱크볼 0.95×0.454`, runR - 1.5 * CW, cY + 0.5, skZ + CD / 2, 'furniture');
 });
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
