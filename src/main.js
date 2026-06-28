@@ -1660,21 +1660,24 @@ captureInto(s2FrameObjects, () => {
   label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
 });
 
-// ── s2 외벽(층별 둘레 0.3m) — '외벽 1·2·3층' 토글 ──────────────────────────────
+// ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
 // 외벽 두께 0.3m(외단열·마감 포함 기준). 층마다 따로 켜고 끌 수 있게 1·2·3층 분리. 반투명 — 내부 보이게.
-const s2WallRing = (arr, floorNo, y, h) => captureInto(arr, () => {
+// 각 층 바닥(RC 슬래브) 두께: 일반 0.2m, 2층만 0.6m(1층 개방 포치 위 전이층, 골조 전이보 포함과 동일).
+const s2WallRing = (arr, floorNo, y, h, ts) => captureInto(arr, () => {
   const t = s2WallT;
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: y - ts, h: ts, mat: materials.houseFloorFrame });        // 해당 층 바닥 슬래브(슬래브 윗면=바닥 레벨, 외벽이 그 위에 앉음)
   box({ x: s2X0, z: s2FrontZ, w: s2W, d: t, y, h, mat: materials.exteriorWall });                       // 앞벽(현관 쪽)
   box({ x: s2X0, z: s2BackZ - t, w: s2W, d: t, y, h, mat: materials.exteriorWall });                     // 뒤벽(측백 쪽)
   box({ x: s2X0, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });             // 거실측(오른쪽) 옆벽
   box({ x: s2X0 + s2W - t, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });   // 안방측(왼쪽) 옆벽
   planYDim(-0.4, s2FrontZ + 0.2, y, y + h, `층고 ${fmtDim(h)}m`);                                         // 해당 층 외벽 높이 치수
   label(`외벽 ${floorNo}층 0.3m`, s2X0 + s2W / 2, y + h * 0.5, s2FrontZ + 0.2, 'struct');
+  label(`${floorNo}층 바닥 ${fmtDim(ts)}m`, s2X0 + s2W * 0.7, y - ts / 2, s2BackZ - 0.5, 'struct');       // 바닥 슬래브 두께
 });
 const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0;   // 1층 층고 3.3 · 2·3층 3.0
-s2WallRing(s2Wall1Objects, 1, _wBase, _wFh1);                 // 1층 외벽
-s2WallRing(s2Wall2Objects, 2, _wBase + _wFh1, _wFh);          // 2층 외벽
-s2WallRing(s2Wall3Objects, 3, _wBase + _wFh1 + _wFh, _wFh);   // 3층 외벽
+s2WallRing(s2Wall1Objects, 1, _wBase, _wFh1, 0.2);                 // 1층 외벽 + 1층 바닥 0.2(매트기초가 겸하는 자리)
+s2WallRing(s2Wall2Objects, 2, _wBase + _wFh1, _wFh, 0.6);          // 2층 외벽 + 2층 바닥 0.6(전이층)
+s2WallRing(s2Wall3Objects, 3, _wBase + _wFh1 + _wFh, _wFh, 0.2);   // 3층 외벽 + 3층 바닥 0.2
 
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
