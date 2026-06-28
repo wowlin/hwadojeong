@@ -1659,11 +1659,13 @@ captureInto(s2StairObjects, () => {
   box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });  // 계단 옆 영역 전체
   box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });      // 계단 앞 영역(계단실은 비움)
   // 각 층 천장고·층고 (계단 화면) — 단일 출처: 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께
+  // 치수표기(planYDim)로 그린다 — 층고는 바깥쪽 세로 치수선, 천장고는 그 안쪽 세로 치수선.
   const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
   for (let f = 0; f < levels.length - 1; f += 1) {
     const fH = levels[f + 1] - levels[f];                            // 층고
     const cH = (levels[f + 1] - slabTs[f + 1]) - levels[f];          // 천장고 = 윗층 바닥 밑면 − 이 층 바닥 윗면
-    label(`${f + 1}층  층고 ${fH.toFixed(2)}m · 천장고 ${cH.toFixed(2)}m`, inX0 + inW - 0.1, levels[f] + fH / 2, inZ0 + 0.3, 'struct');
+    planYDim(inX0 + inW + 0.9, inZ0 + 0.3, levels[f], levels[f + 1], `${f + 1}층 층고 ${fH.toFixed(2)}m`);             // 층고(바깥)
+    planYDim(inX0 + inW + 0.35, inZ0 + 0.3, levels[f], levels[f + 1] - slabTs[f + 1], `천장고 ${cH.toFixed(2)}m`);    // 천장고(안쪽)
   }
 });
 
