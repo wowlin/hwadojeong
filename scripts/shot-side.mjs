@@ -28,6 +28,8 @@ for (let i = 0; i < 60; i += 1) { try { if ((await fetch(url)).ok) break; } catc
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 1600, height: 1100 }, deviceScaleFactor: 2 });
 await page.goto(url, { waitUntil: 'networkidle' });
+// s1(1층·다락·포치) 탭으로 — 기본 탭 순서가 바뀌어도 s1 부품이 보이게 명시 전환.
+await page.click('#tabS1'); await page.waitForTimeout(200);
 // 바닥틀+바닥+데크+계단 부품을 켜 계단틀·단차가 측면으로 보이게 한다(부품별 체크박스 토글).
 for (const id of ['cFoundation', 'cFirstFloorFinish', 'cDeck', 'cStair']) { await page.click('#' + id); await page.waitForTimeout(120); }
 await page.waitForTimeout(800);
