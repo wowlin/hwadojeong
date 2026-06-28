@@ -1718,24 +1718,25 @@ captureInto(s2StairSampleObjects, () => {
 // 1층은 벽 없는 포치 → 기둥-보(라멘조)로 상부 하중 지지. 오른쪽 계단·물코어를 1층까지
 //   전단벽으로 내려 횡력(지진·바람) 전담 → 약층(soft-story) 방지. 2층 바닥엔 전이보 격자.
 captureInto(s2FrameObjects, () => {
-  const baseY = groundTopY + MAT_H, fh = 3.0, L2 = baseY + fh;   // 1층(0.5~3.5)
-  const cs = 0.25, bhX = 0.6, bhZ = 0.45;                       // 기둥 단면 / 전이보 춤: 8m방향(X) 0.6·6m방향(Z) 0.45 — 중앙 무주 위해 키움
+  const baseY = groundTopY + MAT_H, fh = 3.3, floorTh = 0.6, L2 = baseY + fh;   // 1층 층고 3.3 / 2층 바닥(전이보 포함) 두께 0.6
+  const colTop = L2 - floorTh;                                  // 기둥·코어벽 상단 = 2층 바닥판 밑면
+  const cs = 0.25;                                              // 기둥 단면
   const xs = [0.15, 4.0, 7.85], zs = [s2FrontZ + 0.15, 0.3, s2BackZ - 0.15];   // 기둥 격자(둘레만 — 정중앙 제외)
   for (const x of xs) for (const z of zs) {
-    if (x === 4.0 && z === 0.3) continue;                       // 정중앙 기둥 제거 — 포치 가운데를 비움(깊은 전이보로 대체)
-    box({ x: x - cs / 2, z: z - cs / 2, w: cs, d: cs, y: baseY, h: fh, mat: materials.steelFrame });   // 둘레 기둥 8본
+    if (x === 4.0 && z === 0.3) continue;                       // 정중앙 기둥 제거 — 포치 가운데 무주
+    box({ x: x - cs / 2, z: z - cs / 2, w: cs, d: cs, y: baseY, h: colTop - baseY, mat: materials.steelFrame });   // 둘레 기둥 8본
   }
-  // 2층 바닥 전이보 — 둘레 기둥머리를 잇는 격자(춤 키워 가운데 무주 스팬을 건넘)
-  for (const z of zs) box({ x: xs[0], z: z - cs / 2, w: xs[2] - xs[0], d: cs, y: L2 - bhX, h: bhX, mat: materials.houseFloorFrame });   // X방향(8m) 큰보
-  for (const x of xs) box({ x: x - cs / 2, z: zs[0], w: cs, d: zs[2] - zs[0], y: L2 - bhZ, h: bhZ, mat: materials.houseFloorFrame });   // Z방향(6m) 보
+  // 2층 바닥 — 전이보를 포함한 한 겹 바닥두께(0.6m)로 표현(격자 보 대신 두꺼운 슬래브가 가운데 무주 스팬을 건넘)
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: colTop, h: floorTh, mat: materials.houseFloorFrame });
   // 오른쪽 뒤 코어 전단벽(ㄷ자) — 계단·물코어 둘레, 1층까지 콘크리트. 횡력 전담.
   const wt = 0.2, cx1 = 2.2, cz0 = 1.0;
-  box({ x: 0, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: fh, mat: materials.matFoundation });          // 오른쪽 외벽면(x=0)
-  box({ x: 0, z: s2BackZ - wt, w: cx1, d: wt, y: baseY, h: fh, mat: materials.matFoundation });            // 뒤 외벽면(z=뒤)
-  box({ x: cx1 - wt, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: fh, mat: materials.matFoundation });    // 코어 안쪽면(x=2.2)
-  label('둘레 기둥(중앙 무주)', 4.0, baseY + 1.7, 0.3, 'struct');
-  label('깊은 전이보(2층 바닥)', 5.2, L2 - 0.2, s2FrontZ + 0.15, 'struct');
-  label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.7, 2.2, 'struct');
+  box({ x: 0, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: colTop - baseY, mat: materials.matFoundation });          // 오른쪽 외벽면(x=0)
+  box({ x: 0, z: s2BackZ - wt, w: cx1, d: wt, y: baseY, h: colTop - baseY, mat: materials.matFoundation });            // 뒤 외벽면(z=뒤)
+  box({ x: cx1 - wt, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: colTop - baseY, mat: materials.matFoundation });    // 코어 안쪽면(x=2.2)
+  planYDim(s2W + 0.4, s2FrontZ + 0.2, baseY, L2, '1층 3.3m');   // 1층 층고(기초상단~2층 바닥상단)
+  label('둘레 기둥(중앙 무주)', 4.0, baseY + 1.5, 0.3, 'struct');
+  label('2층 바닥(전이보 포함 0.6m)', 5.2, colTop + 0.35, s2FrontZ + 0.2, 'struct');
+  label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
 });
 
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
