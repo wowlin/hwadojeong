@@ -1643,7 +1643,6 @@ captureInto(s2StairObjects, () => {
     landing(zLandFront, zR1 - zLandFront, fl + (nL + 1) * R);                                  // 뒤 중간참(뒤벽까지 채워 밀착)
     for (let m = 1; m <= nU; m += 1) tread(bx, zFront + (nU - m) * T, fl + (nL + 1 + m) * R);  // 상부런(콜B) 맨 윗단=앞끝
     meta.push({ lowerFrontZ: zFront, upperFrontZ: zFront });
-    label(`계단 ${f + 1}→${f + 2}층 (단높이 ${R}·전구간 동일)`, x0 + wF / 2, fl + rise * 0.5, zLandFront - 0.4, 'struct');
   }
   // 층참 — 각 바닥 레벨 앞쪽. 윗면=바닥 레벨(바닥·층고·천장고 기준면).
   // 1층 층참 = 1층 바닥 슬래브: 외벽 안쪽 발자국 전체, 콘크리트 기초 윗면(baseY)에서 마감 두께(slabT)만큼 위로. 윗면=levels[0].
@@ -1659,7 +1658,6 @@ captureInto(s2StairObjects, () => {
   const floor3T = 0.3;                                                      // 3층 바닥 두께 0.3. 윗면(levels[2])은 계단 단이므로 고정, 아래로 확장
   box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });  // 계단 옆 영역 전체
   box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });      // 계단 앞 영역(계단실은 비움)
-  label('층참(1·2·3층 바닥 기준면)', x0 + wF / 2, levels[1] + 0.05, meta[0].upperFrontZ - W / 2, 'struct');
   // 각 층 천장고·층고 (계단 화면) — 단일 출처: 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께
   const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
   for (let f = 0; f < levels.length - 1; f += 1) {
