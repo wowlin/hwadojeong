@@ -1639,7 +1639,7 @@ captureInto(s2StairObjects, () => {
   }
   // 층참 — 각 바닥 레벨 앞쪽. 윗면=바닥 레벨(바닥·층고·천장고 기준면).
   // 1층 층참 = 1층 바닥 슬래브: 외벽 안쪽 발자국 전체, 콘크리트 기초 윗면(baseY)에서 마감 두께(slabT)만큼 위로. 윗면=levels[0].
-  box({ x: s2X0 + s2WallT, z: s2FrontZ + s2WallT, w: s2W - 2 * s2WallT, d: s2D - 2 * s2WallT, y: baseY, h: S2_STAIR.slabT, mat: materials.landing });
+  box({ x: s2X0 + s2WallT, z: s2FrontZ + s2WallT, w: s2W - 2 * s2WallT, d: s2D - 2 * s2WallT, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });
   landing(Math.max(meta[0].upperFrontZ, meta[1].lowerFrontZ) - W, W, levels[1]);              // 2층 층참(비행 사이)
   landing(meta[1].upperFrontZ - W, W, levels[2]);                                             // 3층 도착참(가장 위)
   label('층참(1·2·3층 바닥 기준면)', x0 + wF / 2, levels[1] + 0.05, meta[0].upperFrontZ - W / 2, 'struct');
