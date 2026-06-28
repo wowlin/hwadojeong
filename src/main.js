@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2WallObjects, s2StairObjects, s2StairSampleObjects, s2FrameObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2StairSampleObjects, s2FrameObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1659,23 +1659,22 @@ captureInto(s2FrameObjects, () => {
   label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
 });
 
-// ── s2 외벽(2·3층 둘레 0.2m, 1층 개방 포치라 외벽 없음) — '외벽' 토글 ──────────────
-// 외벽 두께는 집(s1)과 동일한 0.2m 단일값. 1층은 벽 없는 포치(기둥·전이보)라 외벽을 두지 않고
-//   2·3층 둘레에만 두른다(코어 전단벽만 1층까지 내려감). 반투명 — 내부 공간 보이게.
-captureInto(s2WallObjects, () => {
-  const baseY = groundTopY + MAT_H, fh1 = 3.3, fh = 3.0, t = exteriorWall;   // 외벽 두께=집과 동일 0.2
-  const L2 = baseY + fh1, L3 = baseY + fh1 + fh;                              // 2층·3층 바닥 윗면
-  const ring = (y, h) => {                                                     // 둘레 4벽(두께 안쪽으로)
-    box({ x: s2X0, z: s2FrontZ, w: s2W, d: t, y, h, mat: materials.exteriorWall });                       // 앞벽(현관 쪽)
-    box({ x: s2X0, z: s2BackZ - t, w: s2W, d: t, y, h, mat: materials.exteriorWall });                     // 뒤벽(측백 쪽)
-    box({ x: s2X0, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });             // 거실측(오른쪽) 옆벽
-    box({ x: s2X0 + s2W - t, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });   // 안방측(왼쪽) 옆벽
-  };
-  ring(L2, fh);   // 2층 외벽(층고 3.0)
-  ring(L3, fh);   // 3층 외벽(층고 3.0)
-  planYDim(-0.4, s2FrontZ + 0.2, L2, L2 + fh, '층고 3.0m');                    // 한 층 외벽 높이 치수
-  label('외벽 0.2m (2·3층 둘레, 1층 개방)', s2X0 + s2W / 2, L2 + fh * 0.5, s2FrontZ + 0.2, 'struct');
+// ── s2 외벽(층별 둘레 0.3m) — '외벽 1·2·3층' 토글 ──────────────────────────────
+// 외벽 두께 0.3m(외단열·마감 포함 기준). 층마다 따로 켜고 끌 수 있게 1·2·3층 분리. 반투명 — 내부 보이게.
+const s2WallT = 0.3;
+const s2WallRing = (arr, floorNo, y, h) => captureInto(arr, () => {
+  const t = s2WallT;
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: t, y, h, mat: materials.exteriorWall });                       // 앞벽(현관 쪽)
+  box({ x: s2X0, z: s2BackZ - t, w: s2W, d: t, y, h, mat: materials.exteriorWall });                     // 뒤벽(측백 쪽)
+  box({ x: s2X0, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });             // 거실측(오른쪽) 옆벽
+  box({ x: s2X0 + s2W - t, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y, h, mat: materials.exteriorWall });   // 안방측(왼쪽) 옆벽
+  planYDim(-0.4, s2FrontZ + 0.2, y, y + h, `층고 ${fmtDim(h)}m`);                                         // 해당 층 외벽 높이 치수
+  label(`외벽 ${floorNo}층 0.3m`, s2X0 + s2W / 2, y + h * 0.5, s2FrontZ + 0.2, 'struct');
 });
+const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0;   // 1층 층고 3.3 · 2·3층 3.0
+s2WallRing(s2Wall1Objects, 1, _wBase, _wFh1);                 // 1층 외벽
+s2WallRing(s2Wall2Objects, 2, _wBase + _wFh1, _wFh);          // 2층 외벽
+s2WallRing(s2Wall3Objects, 3, _wBase + _wFh1 + _wFh, _wFh);   // 3층 외벽
 
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
@@ -2199,7 +2198,9 @@ const view = {
   hedge: false, fence: false,
   // 2층·다락 탭(s2)
   s2Foundation: false,   // s2 집 기초(온통 0.5m 슬래브 8×6)
-  s2Wall: false,         // s2 외벽(2·3층 둘레 0.2m)
+  s2Wall1: false,        // s2 외벽 1층(둘레 0.3m)
+  s2Wall2: false,        // s2 외벽 2층(둘레 0.3m)
+  s2Wall3: false,        // s2 외벽 3층(둘레 0.3m)
   s2Stair: false,        // s2 계단(U자·1→3층 적층)
   s2Stairs: false,       // s2 계단 샘플(유형 비교)
   s2Frame: false,        // s2 1층 골조(기둥·전이보·코어 전단벽)
@@ -2231,7 +2232,9 @@ const PARTS = [
   { key: 'hedge',      arrays: [hedgeObjects] },
   { key: 'fence',      arrays: [fenceObjects] },
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
-  { key: 's2Wall', arrays: [s2WallObjects] },
+  { key: 's2Wall1', arrays: [s2Wall1Objects] },
+  { key: 's2Wall2', arrays: [s2Wall2Objects] },
+  { key: 's2Wall3', arrays: [s2Wall3Objects] },
   { key: 's2Stair', arrays: [s2StairObjects] },
   { key: 's2Stairs', arrays: [s2StairSampleObjects] },
   { key: 's2Frame', arrays: [s2FrameObjects] },
@@ -2246,7 +2249,7 @@ const CHECKS = [
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Wall', 's2Wall'], ['cS2Stair', 's2Stair'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];

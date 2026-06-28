@@ -55,7 +55,9 @@ app.innerHTML = `
         <h2 class="menu-title">구조</h2>
         <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
         <label class="chk"><input id="cS2Stair" type="checkbox"><span>계단 (U자 1→3층)</span></label>
-        <label class="chk"><input id="cS2Wall" type="checkbox"><span>외벽 (2·3층 0.2m)</span></label>
+        <label class="chk"><input id="cS2Wall1" type="checkbox"><span>외벽 1층 (0.3m)</span></label>
+        <label class="chk"><input id="cS2Wall2" type="checkbox"><span>외벽 2층 (0.3m)</span></label>
+        <label class="chk"><input id="cS2Wall3" type="checkbox"><span>외벽 3층 (0.3m)</span></label>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">참고</h2>
