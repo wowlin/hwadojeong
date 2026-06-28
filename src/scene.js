@@ -52,17 +52,18 @@ app.innerHTML = `
         <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
       </section>
       <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">기초</h2>
+        <h2 class="menu-title">구조</h2>
         <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
       </section>
       <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">구조</h2>
+        <h2 class="menu-title">참고</h2>
         <label class="chk"><input id="cS2Stair" type="checkbox"><span>계단 (U자 1→3층)</span></label>
         <label class="chk"><input id="cS2Stairs" type="checkbox"><span>계단 샘플 (3종)</span></label>
+        <label class="chk"><input id="cS2Frame" type="checkbox"><span>1층 골조 (포치 하중지지)</span></label>
       </section>
       <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">골조</h2>
-        <label class="chk"><input id="cS2Frame" type="checkbox"><span>1층 골조 (포치 하중지지)</span></label>
+        <h2 class="menu-title">외피</h2>
+        <label class="chk"><input id="cS2Wall" type="checkbox"><span>외벽 (2·3층 0.2m)</span></label>
       </section>
     </aside>
     <section class="stage-wrap">
