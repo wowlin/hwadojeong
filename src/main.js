@@ -2274,13 +2274,13 @@ function drawStairCore(p) {
   // 두 런(1층 하부런 ↔ 2층 상부런) 사이 gap 칸막이 — 각 단 발판 높이까지 계단모양으로 채워 양쪽 계단 하부(밑 삼각공간)를 가림.
   const gapX = laneA + W, gapW = laneB - (laneA + W);
   for (let i = 0; i < nL; i += 1) {
-    box({ x: gapX, z: zFrontL + i * T, w: gapW, d: T, y: fy, h: (i + 1) * R, mat: materials.stairWall, cast: false });        // 1층 하부런 측
+    box({ x: gapX, z: zFrontL + i * T, w: gapW, d: T, y: fy, h: (i + 1) * R, mat: materials.stairSpineWall, cast: false });        // 1층 하부런 측
   }
   for (let j = 0; j < nU; j += 1) {
-    box({ x: gapX, z: zTurn0 - (j + 1) * T, w: gapW, d: T, y: fy, h: (baseU + (j + 1) * R) - fy, mat: materials.stairWall, cast: false });   // 2층 상부런 측
+    box({ x: gapX, z: zTurn0 - (j + 1) * T, w: gapW, d: T, y: fy, h: (baseU + (j + 1) * R) - fy, mat: materials.stairSpineWall, cast: false });   // 2층 상부런 측
   }
   // 뒷부분(턴존~뒤 외벽) — 계단 아래 높이(사선 맨위 단)로 채워 칸막이를 뒤 외벽까지 연장 → 계단실을 두 공간으로 분리. 위(천장까지)는 트임.
-  box({ x: gapX, z: zTurn0, w: gapW, d: insideZ1 - zTurn0, y: fy, h: (nL + nWind) * R, mat: materials.stairWall, cast: false });
+  box({ x: gapX, z: zTurn0, w: gapW, d: insideZ1 - zTurn0, y: fy, h: (nL + nWind) * R, mat: materials.stairSpineWall, cast: false });
   // 계단하부 WC(상부런 laneB 아래·안방측 공간) 앞벽 — 트인 전면을 막아 화장실로 사용. 가운데 출입문 1개. 윗면=다락 바닥 밑면.
   {
     const wcWallH = (loftY - loftFloorThickness) - fy;
