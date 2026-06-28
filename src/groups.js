@@ -30,6 +30,7 @@ export const s2FootprintObjects = [];  // s2(2층·다락) 집 발자국(납작 
 export const s2FoundationObjects = []; // s2 기초(온통 0.5m 슬래브 8×6 + 높이 치수) — 's2 기초' 토글
 export const s2DimObjects = [];        // s2 집 치수(너비 8·깊이 6) + 기준선 — s2 탭 배치도/기초
 export const s2BuildObjects = [];      // s2 3층 구조 제안(개념 매스: 외곽·층슬래브·물코어·계단·공간색·라벨) — 's2 구조' 토글
+export const s2StairSampleObjects = []; // s2 계단 샘플(안전계단 유형 비교: 직선·L자·U자) — 's2 계단샘플' 토글
 export const siteBaseObjects = [];   // 바탕 대지(흙)·도로 — 미검토 단계(1층·다락·지붕)에선 숨겨 빈 화면
 export const deckStairFrameObjects = []; // 데크 계단틀(직선 앞·왼쪽 + 부채꼴 코너) — 바닥틀에서 분리, 썬룸 '데크계단틀' 토글
 export const stairObjects = [];        // 계단 화면 전용 주석(거실·안방 크기·라벨·층고·다락바닥) — 계단 화면에서만 표시.

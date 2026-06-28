@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2BuildObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2BuildObjects, s2StairSampleObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
   conceptObjects,
 } from './groups.js';
@@ -1682,6 +1682,44 @@ captureInto(s2BuildObjects, () => {
   lab('욕실+세면', (wetX0 + wetX1) / 2, (coreZ0 + coreZ1) / 2, L3);
 });
 
+// ── s2 계단 샘플(안전계단 유형 비교) — 's2 계단샘플' 토글 ───────────────────────
+// 집 8×6·층고 3.0m에 들어가는 실사용 안전계단 3종을 발자국 안에 나란히 비교(한 층분).
+// 공통 안전치수: 단높이 0.167m(<0.18)·디딤판 0.27m(>0.26)·유효폭 1.0m(>0.9)·총 18단·양측 난간 전제.
+captureInto(s2StairSampleObjects, () => {
+  const R = 3.0 / 18, T = 0.27, W = 1.0, tTh = 0.06;     // 단높이·디딤판·폭·디딤두께
+  const z0 = -2.4;                                        // 세 샘플 공통 앞 기준선(z)
+  const tag = (t, x, z) => label(t, x, 2.2, z, 'struct');
+  const foot = (x, z, w, d) => box({ x, z, w, d, y: 0.02, h: 0.02, mat: materials.conceptWall, cast: false });   // 평면 차지영역
+  const tread = (x, z, w, d, n, mat) => box({ x, z, w, d, y: n * R - tTh, h: tTh, mat });                        // n번째 디딤(윗면=n*R)
+
+  // A. 일자(직선) — 17단 + 위층 진입. 꺾임 없어 가장 단순·안전하나 깊이 4.6m로 큼.
+  ((x0) => {
+    foot(x0, z0, W, 17 * T);
+    for (let k = 0; k < 17; k += 1) tread(x0, z0 + k * T, W, T, k + 1, materials.stair);
+    tag('A. 일자(직선)\n17단 · 1.0×4.6m\n단높이167·디딤270·폭1000', x0 + 0.5, z0 - 0.55);
+  })(0.3);
+
+  // B. L자(90° 꺾임 + 코너참) — 하부 8단(세로) + 코너참 + 상부 8단(가로). 코너 활용, 약 3.2×3.2m.
+  ((x0) => {
+    foot(x0, z0, W + 8 * T, W);                 // 상부런(가로) 영역
+    foot(x0, z0, W, 8 * T + W);                 // 하부런+참(세로) 영역
+    for (let k = 0; k < 8; k += 1) tread(x0, z0 + k * T, W, T, k + 1, materials.stair);                 // 하부(세로, 앞→뒤)
+    box({ x: x0, z: z0 + 8 * T, w: W, d: W, y: 9 * R - tTh, h: tTh, mat: materials.landing });          // 코너참
+    for (let m = 0; m < 8; m += 1) tread(x0 + W + m * T, z0 + 8 * T, T, W, 10 + m, materials.stair);    // 상부(가로, 옆으로)
+    tag('B. L자(코너참)\n16단+참 · 3.2×3.2m\n단높이167·디딤270·폭1000', x0 + 1.6, z0 - 0.55);
+  })(2.0);
+
+  // C. U자(180° 반환 + 중간참) — 하부 8단·상부 8단 나란히. 가장 콤팩트(약 2.1×3.0m), 오른쪽 코어 적층 적합.
+  ((x0) => {
+    const bx = x0 + W + 0.1;
+    foot(x0, z0, 2 * W + 0.1, 8 * T + W);
+    for (let k = 0; k < 8; k += 1) tread(x0, z0 + k * T, W, T, k + 1, materials.stair);                 // 하부런(앞→뒤)
+    box({ x: x0, z: z0 + 8 * T, w: 2 * W + 0.1, d: W, y: 9 * R - tTh, h: tTh, mat: materials.landing }); // 중간참
+    for (let m = 0; m < 8; m += 1) tread(bx, z0 + (7 - m) * T, W, T, 10 + m, materials.stair);          // 상부런(뒤→앞)
+    tag('C. U자(중간참·추천)\n16단+참 · 2.1×3.0m\n단높이167·디딤270·폭1000', x0 + 1.05, z0 - 0.55);
+  })(5.5);
+});
+
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
@@ -2207,6 +2245,7 @@ const view = {
   // 2층·다락 탭(s2)
   s2Foundation: false,   // s2 집 기초(온통 0.5m 슬래브 8×6)
   s2Build: false,        // s2 3층 구조 제안(개념 매스)
+  s2Stairs: false,       // s2 계단 샘플(유형 비교)
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2237,6 +2276,7 @@ const PARTS = [
   { key: 'concept',    arrays: [conceptObjects] },
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
   { key: 's2Build', arrays: [s2BuildObjects] },
+  { key: 's2Stairs', arrays: [s2StairSampleObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2249,7 +2289,7 @@ const CHECKS = [
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
   ['cConcept', 'concept'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Build', 's2Build'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Build', 's2Build'], ['cS2Stairs', 's2Stairs'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];

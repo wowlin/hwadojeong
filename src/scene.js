@@ -62,6 +62,7 @@ app.innerHTML = `
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">구조</h2>
         <label class="chk"><input id="cS2Build" type="checkbox"><span>3층 구조 (개념)</span></label>
+        <label class="chk"><input id="cS2Stairs" type="checkbox"><span>계단 샘플 (3종)</span></label>
       </section>
     </aside>
     <section class="stage-wrap">
