@@ -1626,22 +1626,37 @@ captureInto(s2StairObjects, () => {
   const f1Top = baseY + S2_STAIR.slabT;                  // 1층 층참(=1층 바닥) 윗면 = 콘크리트 기초 위 부자재+포세린 마감 두께만큼 올린 면 → 계단 시작면
   let acc = f1Top; const levels = [f1Top];                // 1·2·3층 바닥 레벨(층참 윗면=이 면) — 층고 누적
   for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
-  const meta = [];
+  // 모든 비행을 '앞끝(바닥 개구부 끝)'에 정렬 — 하부런 첫 단·상부런 맨 윗단이 항상 바닥 모서리에서 시작/도착.
+  // 단 수가 다른 비행(22단·20단)이라도 앞끝이 어긋나지 않아 2→3 첫 단 빠짐·1→2 끝단이 바닥 밑에 깔리는 문제 해소.
+  const flights = [];
   for (let f = 0; f < levels.length - 1; f += 1) {        // 각 비행: levels[f] → levels[f+1]
     const fl = levels[f], rise = levels[f + 1] - fl;
     const risers = Math.round(rise / R);                  // 22(3.3) · 20(3.0)
     const nL = Math.ceil((risers - 2) / 2), nU = (risers - 2) - nL;
-    for (let k = 1; k <= nL; k += 1) tread(x0, zR0 - (nL - k + 1) * T, fl + k * R);          // 하부런(콜A, 앞→뒤)
-    landing(zR0, W, fl + (nL + 1) * R);                                                       // 뒤 중간참
-    for (let m = 1; m <= nU; m += 1) tread(bx, zR0 - m * T, fl + (nL + 1 + m) * R);           // 상부런(콜B, 뒤→앞)
-    meta.push({ lowerFrontZ: zR0 - nL * T, upperFrontZ: zR0 - nU * T });
-    label(`계단 ${f + 1}→${f + 2}층 (단높이 ${R}·전구간 동일)`, x0 + wF / 2, fl + rise * 0.5, zR0 - 0.4, 'struct');
+    flights.push({ f, fl, rise, nL, nU });
+  }
+  const zFront = zR0 - Math.max(...flights.map((v) => v.nL)) * T;   // 공통 앞끝(가장 깊은 비행 기준) = 바닥 개구부 끝
+  const meta = [];
+  for (const { f, fl, rise, nL, nU } of flights) {
+    for (let k = 1; k <= nL; k += 1) tread(x0, zFront + (k - 1) * T, fl + k * R);             // 하부런(콜A) 첫 단=앞끝, 뒤로 오름
+    const zLandFront = zFront + nL * T;                                                        // 중간참 앞끝(하부런 뒤)
+    landing(zLandFront, zR1 - zLandFront, fl + (nL + 1) * R);                                  // 뒤 중간참(뒤벽까지 채워 밀착)
+    for (let m = 1; m <= nU; m += 1) tread(bx, zFront + (nU - m) * T, fl + (nL + 1 + m) * R);  // 상부런(콜B) 맨 윗단=앞끝
+    meta.push({ lowerFrontZ: zFront, upperFrontZ: zFront });
+    label(`계단 ${f + 1}→${f + 2}층 (단높이 ${R}·전구간 동일)`, x0 + wF / 2, fl + rise * 0.5, zLandFront - 0.4, 'struct');
   }
   // 층참 — 각 바닥 레벨 앞쪽. 윗면=바닥 레벨(바닥·층고·천장고 기준면).
   // 1층 층참 = 1층 바닥 슬래브: 외벽 안쪽 발자국 전체, 콘크리트 기초 윗면(baseY)에서 마감 두께(slabT)만큼 위로. 윗면=levels[0].
   box({ x: s2X0 + s2WallT, z: s2FrontZ + s2WallT, w: s2W - 2 * s2WallT, d: s2D - 2 * s2WallT, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });
-  landing(Math.max(meta[0].upperFrontZ, meta[1].lowerFrontZ) - W, W, levels[1]);              // 2층 층참(비행 사이)
-  landing(meta[1].upperFrontZ - W, W, levels[2]);                                             // 3층 도착참(가장 위)
+  // 2층 층참 = 2층 바닥: 외벽 안쪽 발자국에서 계단(런+중간참) 밴드만 비우고 전부 채움. 윗면=levels[1].
+  const stairFrontZ = Math.min(meta[0].upperFrontZ, meta[1].lowerFrontZ);   // 계단이 2층 바닥을 점유하는 앞끝
+  const inX0 = s2X0 + s2WallT, inZ0 = s2FrontZ + s2WallT;                   // 외벽 안쪽 시작(좌·앞)
+  const inW = s2W - 2 * s2WallT, inZ1 = s2BackZ - s2WallT;                  // 외벽 안쪽 폭·뒤끝
+  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[1] - tTh, h: tTh, mat: materials.landing });  // 계단 옆 영역 전체
+  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[1] - tTh, h: tTh, mat: materials.landing });      // 계단 앞 영역(계단 밴드는 비움)
+  // 3층 층참 = 3층 바닥: 2층과 동일하게 외벽 안쪽 발자국 전체에서 계단실만 비우고 채움. 윗면=levels[2].
+  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[2] - tTh, h: tTh, mat: materials.landing });  // 계단 옆 영역 전체
+  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[2] - tTh, h: tTh, mat: materials.landing });      // 계단 앞 영역(계단실은 비움)
   label('층참(1·2·3층 바닥 기준면)', x0 + wF / 2, levels[1] + 0.05, meta[0].upperFrontZ - W / 2, 'struct');
 });
 
