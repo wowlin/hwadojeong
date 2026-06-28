@@ -6,16 +6,23 @@ const app = document.querySelector('#app');
 app.innerHTML = `
   <main class="shell">
     <aside class="sidebar">
-      <section class="menu-group">
-        <h2 class="menu-title">기초</h2>
+      <nav class="scheme-tabs">
+        <button id="tabS1" type="button" class="scheme-tab active" data-scheme="s1">1층·다락·포치</button>
+        <button id="tabS2" type="button" class="scheme-tab" data-scheme="s2">2층·다락</button>
+      </nav>
+      <section class="menu-group" data-scheme="shared">
+        <h2 class="menu-title">대지·담장 (공통)</h2>
         <button id="vPlan" type="button" class="view-btn">배치도 (부감)</button>
-        <label class="chk"><input id="cFoundation" type="checkbox"><span>말뚝기초</span></label>
-        <label class="chk"><input id="cMatFoundationHouse" type="checkbox"><span>부분 매트기초</span></label>
-        <label class="chk"><input id="cMatFoundationFull" type="checkbox"><span>전체 매트기초</span></label>
         <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
         <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
       </section>
-      <section class="menu-group">
+      <section class="menu-group" data-scheme="s1">
+        <h2 class="menu-title">기초</h2>
+        <label class="chk"><input id="cFoundation" type="checkbox"><span>말뚝기초</span></label>
+        <label class="chk"><input id="cMatFoundationHouse" type="checkbox"><span>부분 매트기초</span></label>
+        <label class="chk"><input id="cMatFoundationFull" type="checkbox"><span>전체 매트기초</span></label>
+      </section>
+      <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">계단</h2>
         <label class="chk"><input id="cFirstFloorFinish" type="checkbox"><span>1층 바닥</span></label>
         <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
@@ -23,19 +30,19 @@ app.innerHTML = `
         <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
         <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
       </section>
-      <section class="menu-group">
+      <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">1층</h2>
         <label class="chk"><input id="cExtWall" type="checkbox"><span>1층 외벽</span></label>
         <label class="chk"><input id="cFirstRoom" type="checkbox"><span>1층 골조·실내</span></label>
         <label class="chk"><input id="cAnno" type="checkbox"><span>방·치수 도면</span></label>
         <label class="chk"><input id="cOutlet" type="checkbox"><span>콘센트</span></label>
       </section>
-      <section class="menu-group">
+      <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">다락</h2>
         <label class="chk"><input id="cLoft" type="checkbox"><span>다락 바닥</span></label>
         <label class="chk"><input id="cRoof" type="checkbox"><span>지붕</span></label>
       </section>
-      <section class="menu-group">
+      <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">포치</h2>
         <label class="chk"><input id="cDeck" type="checkbox"><span>데크</span></label>
         <label class="chk"><input id="cDeckFloor" type="checkbox"><span>데크 바닥</span></label>
@@ -45,9 +52,13 @@ app.innerHTML = `
         <label class="chk"><input id="cFolding" type="checkbox"><span>폴딩도어</span></label>
         <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
       </section>
-      <section class="menu-group">
+      <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">신축안</h2>
         <label class="chk"><input id="cConcept" type="checkbox"><span>3층 신축안</span></label>
+      </section>
+      <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">2층·다락</h2>
+        <p class="scheme-empty">설계 예정 — 부품이 추가되면 여기에 표시됩니다.</p>
       </section>
     </aside>
     <section class="stage-wrap">

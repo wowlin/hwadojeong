@@ -93,10 +93,46 @@ body {
   gap: 16px;
 }
 
+/* 최상위 탭 — 설계안(scheme) 전환 */
+.scheme-tabs {
+  display: flex;
+  gap: 4px;
+}
+.scheme-tab {
+  flex: 1;
+  padding: 8px 6px;
+  border: 1px solid #9aa3af;
+  border-radius: 6px 6px 0 0;
+  background: #efece4;
+  color: #4b5563;
+  font: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+.scheme-tab:hover {
+  background: #e4e0d6;
+}
+.scheme-tab.active {
+  background: #111827;
+  border-color: #111827;
+  color: #ffffff;
+}
+.scheme-empty {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
 .menu-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+/* 비활성 탭 그룹 숨김 — display:flex 가 [hidden] 기본값을 덮으므로 명시 */
+.menu-group[hidden] {
+  display: none;
 }
 
 .menu-title {

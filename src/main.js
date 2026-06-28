@@ -2235,6 +2235,28 @@ for (const [id, key] of CHECKS) {
   });
 }
 
+// ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
+// 페이지 가장 바깥 선택: 탭마다 별도 설계안. 배치도·측백담·옆집담(='shared')은 모든 탭 공유.
+// 탭 전환 시 다른 탭 부품은 끄고, 해당 탭 메뉴 그룹만 사이드바에 노출.
+// 탭 추가: ① scene.js에 <button class="scheme-tab" data-scheme="sN"> + <section data-scheme="sN"> 추가
+//          ② 새 부품을 SCHEME_OF에 'sN'으로 등록(미등록 키는 's1'로 귀속).
+const SCHEME_OF = { hedge: 'shared', fence: 'shared' };   // 공통(담장). 그 외 현재 부품은 모두 's1'(1층·다락·포치).
+const partScheme = (key) => SCHEME_OF[key] || 's1';
+let currentScheme = 's1';
+function setScheme(id) {
+  currentScheme = id;
+  for (const p of PARTS) { const sc = partScheme(p.key); if (sc !== 'shared' && sc !== id) view[p.key] = false; }   // 다른 탭 부품 끔
+  for (const sec of document.querySelectorAll('.menu-group[data-scheme]')) {
+    const ds = sec.dataset.scheme;
+    sec.hidden = !(ds === 'shared' || ds === id);   // 공통+현재 탭 그룹만 노출
+  }
+  for (const t of document.querySelectorAll('.scheme-tab')) t.classList.toggle('active', t.dataset.scheme === id);
+  applyVisibility();
+}
+for (const t of document.querySelectorAll('.scheme-tab')) {
+  t.addEventListener('click', () => setScheme(t.dataset.scheme));
+}
+
 // ── 계단 단독 설계(ㄷ자 가변 계단) ─────────────────────────────────────────────
 // 뒤벽에 붙는 ㄷ자(반환) 계단을 가변값 4개로 그린다: 너비·단높이·계단폭(디딤 깊이)·개수.
 //   1층 바닥 → 하부 곧은계단(+Z, 뒤로 오름) → 사선 3단(부채꼴 90°) → 계단참(평평 90°)
@@ -2478,7 +2500,8 @@ buildStair();
   for (const arr of HOUSE_ARRAYS) for (const o of arr) { if (!seen.has(o)) { seen.add(o); houseGroup.add(o); } }   // add = scene→houseGroup 재부모(로컬좌표 보존)
 }
 
-showPlan();   // 초기 화면 = 배치도(부감)
+showPlan();      // 초기 화면 = 배치도(부감)
+setScheme('s1'); // 초기 탭 = 1층·다락·포치(현재까지 만든 모든 것)
 
 // 모든 컨트롤 버튼 높이를 '가장 큰 버튼'에 맞춰 통일 — 라벨 줄이 늘어도, 몇 줄로 줄바꿈돼도 항상 동일.
 function equalizeButtonHeights() {
