@@ -45,6 +45,10 @@ app.innerHTML = `
         <label class="chk"><input id="cFolding" type="checkbox"><span>폴딩도어</span></label>
         <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
       </section>
+      <section class="menu-group">
+        <h2 class="menu-title">신축안</h2>
+        <label class="chk"><input id="cConcept" type="checkbox"><span>3층 신축안</span></label>
+      </section>
     </aside>
     <section class="stage-wrap">
       <div id="stage" aria-label="주말주택 3D 개념 모형"></div>

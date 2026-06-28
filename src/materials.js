@@ -68,4 +68,6 @@ materials.deckFloorFrame = new THREE.MeshLambertMaterial({ color: 0xb5793f });  
 materials.deckStairFrame = new THREE.MeshLambertMaterial({ color: 0x5b5f66 });   // 데크 계단 프레임(앞·왼쪽 직선) — 짙은 회색(데크 둘레 틀과 구분)
 materials.deckFanFrame = new THREE.MeshLambertMaterial({ color: 0x4a78a8 });   // 계단 사이 부채꼴 연결부 — 파랑(직선 계단·데크와 구분)
 materials.firstExtWall = new THREE.MeshLambertMaterial({ color: 0xcdd5dc, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });   // 1층 외벽 — 반투명(내부 보이게)
+materials.gravel = new THREE.MeshLambertMaterial({ color: 0x9a948c });   // 파쇄석 바닥(전실) — 회색 자갈
+materials.conceptWall = new THREE.MeshLambertMaterial({ color: 0xcdd6df, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 신축안 둘레벽 — 반투명(내부 구역 보이게)
 materials.stairInnerWall = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });   // 계단실 양쪽 내벽 — 반투명(계단·1층 공유)
