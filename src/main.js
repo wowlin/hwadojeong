@@ -1769,6 +1769,12 @@ captureInto(s2Stair3Objects, () => {
   for (let m = 1; m <= nU1; m += 1) treadZ(x0, zR0 - m * T, levels[0] + (nL1 + 1 + m) * R);    // 상부런 세로(우측벽 따라 앞으로, 2층 착지)
   const hole1 = [x0, xcL + nL1 * T, zR0 - nU1 * T, zR1];
   label('1층: L자 · 정사각 코너참(뒤-우 모서리)', x0 + 1.6, levels[0] + 1.4, zR0 - nU1 * T - 0.5, 'struct');
+  // 1층 뒤쪽 계단(가로 하부런) 아래 — 계단형 수납문(계단참까지). 앞면(z=zR0)에 단 윤곽 따라 바닥(levels[0])까지 패널.
+  const usTh = 0.04;
+  for (let k = 1; k <= nL1; k += 1)
+    box({ x: xcL + (nL1 - k) * T, z: zR0 - usTh, w: T, d: usTh, y: levels[0], h: k * R, mat: materials.interiorDoor });   // 단별 문 패널(높이=단 높이)
+  box({ x: x0, z: zR0 - usTh, w: W, d: usTh, y: levels[0], h: (nL1 + 1) * R, mat: materials.interiorDoor });              // 계단참 아래 문
+  label('계단 아래 수납(계단형 문)', xcL + 1.0, levels[0] + 0.5, zR0 - 0.1, 'furniture');
 
   // 2→3층 U자: (2층에서) 뒤쪽으로 올라가 뒷쪽 직사각 계단참 → 앞쪽으로 올라와 3층 바닥. 우측벽(x0) 밀착.
   // 도는 방향: 하부런(시작)=안쪽 열(x0+W+g) → 1층 상부런(x0)과 겹치지 않게, 상부런(끝)=우측벽 열(x0).
