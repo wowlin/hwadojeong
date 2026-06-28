@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1669,6 +1669,49 @@ captureInto(s2StairObjects, () => {
   }
 });
 
+// ── s2 계단 (대안·1층 계단참 2개) — 'cS2Stair2' 토글 ────────────────────────────────
+// 현재 U자 계단(s2StairObjects)과 비교용. 샘플 B(L자 코너참)+C(U자)를 1층에, C(U자)만 2→3층에.
+//   1→2층: 뒤벽 가로런(+X) → 코너참(90°) → 앞으로 런 → 중간참(180°) → 뒤로 런(2층 도착) = 계단참 2개.
+//   2→3층: U자(하부런·중간참·상부런) = 계단참 1개(현재 계단의 비행과 동일).
+captureInto(s2Stair2Objects, () => {
+  const baseY = groundTopY + MAT_H;
+  const { T, R, W, g, tTh } = S2_STAIR;
+  const x0 = s2WallT, bx = x0 + W + g;
+  const zR1 = s2BackZ - s2WallT, zR0 = zR1 - W;            // 뒤벽 밴드 [zR0,zR1]
+  const treadX = (x, z, topY) => box({ x, z, w: T, d: W, y: topY - tTh, h: tTh, mat: materials.stair });   // +X로 오르는 단(가로런)
+  const treadZ = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });   // ±Z로 오르는 단(앞뒤런)
+  const land = (x, z, w, d, topY) => box({ x, z, w, d, y: topY - tTh, h: tTh, mat: materials.landing });
+  const f1Top = baseY + S2_STAIR.slabT;
+  let acc = f1Top; const levels = [f1Top];
+  for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
+
+  // 1→2층: L자(가로런+코너참) + U자(런·중간참·런) — 계단참 2개
+  {
+    const fl = levels[0], N = Math.round((levels[1] - fl) / R);   // 22단
+    const body = N - 3;                                           // 런 3개에 나눌 단(참2 + 마지막1 제외)
+    const nB = Math.floor(body / 3), rem = body - Math.floor(body / 3);
+    const nL = Math.ceil(rem / 2), nU = rem - nL;                 // nB 가로런 / nL 앞으로런 / nU 뒤로런
+    for (let k = 1; k <= nB; k += 1) treadX(x0 + (k - 1) * T, zR0, fl + k * R);          // 가로런(+X, 뒤벽 밴드)
+    const xc = x0 + nB * T;
+    land(xc, zR0, W, W, fl + (nB + 1) * R);                                              // 코너참(90°)
+    for (let j = 1; j <= nL; j += 1) treadZ(xc, zR0 - j * T, fl + (nB + 1 + j) * R);     // 앞으로런(-Z)
+    const zF = zR0 - nL * T;
+    land(xc, zF - W, 2 * W + g, W, fl + (nB + nL + 2) * R);                              // 중간참(앞·180°)
+    const xC2 = xc + W + g;
+    for (let i = 1; i <= nU; i += 1) treadZ(xC2, zF + (i - 1) * T, fl + (nB + nL + 2 + i) * R);   // 뒤로런(+Z, 2층 도착)
+    label('1층: L자(코너참)+U자 · 계단참 2', xc + 0.5, fl + 1.4, zF - W + 0.4, 'struct');
+  }
+  // 2→3층: U자(하부런·중간참·상부런) — 계단참 1개
+  {
+    const fl = levels[1], N = Math.round((levels[2] - fl) / R);   // 20단
+    const nL = Math.ceil((N - 2) / 2), nU = (N - 2) - nL;         // 9 · 9
+    for (let k = 1; k <= nL; k += 1) treadZ(x0, zR0 - k * T, fl + (nL - k + 1) * R);     // 하부런(콜A) 맨 윗단=참 바로 앞
+    land(x0, zR0, 2 * W + g, W, fl + (nL + 1) * R);                                      // 중간참(뒤벽 밀착)
+    for (let m = 1; m <= nU; m += 1) treadZ(bx, zR0 - m * T, fl + (nL + 1 + m) * R);     // 상부런(콜B)
+    label('2→3층: U자 · 계단참 1', x0 + 1.0, fl + 1.4, zR0 - nL * T + 0.4, 'struct');
+  }
+});
+
 // ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
 // 1층은 벽 없는 포치 → 기둥-보(라멘조)로 상부 하중 지지. 오른쪽 계단·물코어를 1층까지
 //   전단벽으로 내려 횡력(지진·바람) 전담 → 약층(soft-story) 방지. 2층 바닥엔 전이보 격자.
@@ -1714,11 +1757,14 @@ captureInto(s2FurnitureObjects, () => {
     campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: fTop });          // 앞쪽 — 테이블(+z) 향함
     campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: fTop });    // 뒤쪽 — 테이블(−z) 향함
   }
-  // 사람 이동(여유) 공간 — 식탁 가장자리에서 긴 변 1.0m·끝 0.8m 둘레 여유. 바닥에 다른 색(반투명 청록)으로.
-  const zx0 = (cxs[0] - TW / 2) - 0.8, zx1 = (cxs[cxs.length - 1] + TW / 2) + 0.8;   // 끝(좌우) 여유 0.8
-  const zz0 = (cz0 - TD / 2) - 1.0, zz1 = (cz0 + TD / 2) + 1.0;                       // 긴 변(앞뒤) 여유 1.0
+  // 사람 이동(여유) 통로 — '의자 등받이 뒤'에서부터 잰다(테이블 가장자리 아님). 햄프턴 DLX는 깊은 리클라이너라
+  //  테이블 기준으론 의자가 통로를 먹는다. 의자 뒤 통로 0.9m(편한 통행)·테이블 끝 0.9m 둘레로.
+  const chairBack = off + 0.33;                                // 테이블 중심→의자 등받이 뒤끝(의자 중심 off + 등받이 0.33)
+  const aisle = 0.9, endGap = 0.9;                             // 의자 뒤 통로 0.9 · 테이블 끝 0.9
+  const zx0 = (cxs[0] - TW / 2) - endGap, zx1 = (cxs[cxs.length - 1] + TW / 2) + endGap;
+  const zz0 = (cz0 - chairBack) - aisle, zz1 = (cz0 + chairBack) + aisle;
   box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: fTop + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
-  label(`여유 이동공간 ${fmtDim(zx1 - zx0)}×${fmtDim(zz1 - zz0)}m (긴변 1.0·끝 0.8)`, (zx0 + zx1) / 2, fTop + 0.55, zz1 - 0.3, 'dim');
+  label(`이동공간 ${fmtDim(zx1 - zx0)}×${fmtDim(zz1 - zz0)}m · 의자 뒤 통로 ${aisle}m`, (zx0 + zx1) / 2, fTop + 0.55, zz1 - 0.35, 'dim');
 });
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
