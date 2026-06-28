@@ -19,12 +19,12 @@ app.innerHTML = `
         <h2 class="menu-title">계단</h2>
         <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
         <label class="chk"><input id="cBath" type="checkbox"><span>계단하부 WC</span></label>
-      </section>
-      <section class="menu-group">
-        <h2 class="menu-title">1층</h2>
         <label class="chk"><input id="cFirstFloorFinish" type="checkbox"><span>1층 바닥</span></label>
         <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
         <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
+      </section>
+      <section class="menu-group">
+        <h2 class="menu-title">1층</h2>
         <label class="chk"><input id="cExtWall" type="checkbox"><span>1층 외벽</span></label>
         <label class="chk"><input id="cFirstRoom" type="checkbox"><span>1층 골조·실내</span></label>
         <label class="chk"><input id="cAnno" type="checkbox"><span>방·치수 도면</span></label>
