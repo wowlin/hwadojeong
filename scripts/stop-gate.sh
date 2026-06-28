@@ -28,17 +28,37 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   LAST=$(tail -n 80 "$TRANSCRIPT" 2>/dev/null | jq -r 'select(.type=="assistant") | (.message.content // []) | .[]? | select(.type=="text") | .text' 2>/dev/null | tail -n 80)
 fi
 
+# --- 이번 턴에 src 를 실제로 편집했는가 ---
+# 진짜 사용자 입력(type=user & content=문자열) 이후의 assistant tool_use 중
+# Edit/Write/NotebookEdit 의 대상이 src/ 인 것이 있으면 '이번 턴 편집'으로 본다.
+# (src 가 이전 세션부터 dirty 인 채로 Q&A만 하는 턴엔 측면 렌더를 강요하지 않기 위함)
+EDITED_THIS_TURN=0
+if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+  paths=$(jq -rs '
+    to_entries
+    | (map(select(.value.type=="user" and ((.value.message.content|type)=="string")) | .key) | last) as $u
+    | (if $u == null then . else .[($u+1):] end)
+    | map(.value)
+    | [ .[] | select(.type=="assistant")
+        | (.message.content // [])[]?
+        | select(.type=="tool_use" and (.name=="Edit" or .name=="Write" or .name=="NotebookEdit"))
+        | (.input.file_path // "") ]
+    | .[]' "$TRANSCRIPT" 2>/dev/null)
+  if printf '%s' "$paths" | grep -Eq '(^|/)src/'; then EDITED_THIS_TURN=1; fi
+fi
+
 # 완료/일치 단정 + 기하 주제가 동시에 있으면 '눈으로 확인'을 단정한 것으로 본다.
 CLAIM=0; TOPIC=0
 if printf '%s' "$LAST" | grep -Eq '맞췄|맞춰|맞습니다|맞다|맞아|이어져|연결돼|연결되|완료|됐습니다|됐어|정상|문제 ?없|이미 (맞|동일|같|되|충족)|동일합니다|일치|제대로|확인했|확인 ?완료|확인됨|읽었|보였|보임'; then CLAIM=1; fi
 if printf '%s' "$LAST" | grep -Eq '계단|높이|폭|위치|정렬|부채꼴|치수|단높이|디딤|기하|좌표|간격|튀어|어긋'; then TOPIC=1; fi
 
 NEED_SIDE=0
-[ "$SRC_DIRTY" -eq 1 ] && NEED_SIDE=1
-# 단순 질문(코드 변경 없음)에는 측면 렌더를 강제하지 않는다 — 편집했을 때(SRC_DIRTY)만 측면 확인 요구.
+# src 가 dirty 하더라도 '이번 턴에 실제로 src 를 편집했을 때'만 측면 렌더를 요구한다.
+# (이전 세션부터 dirty 인 채 Q&A만 하는 턴엔 강요하지 않음.)
+[ "$SRC_DIRTY" -eq 1 ] && [ "$EDITED_THIS_TURN" -eq 1 ] && NEED_SIDE=1
 # (CLAIM·TOPIC는 위에서 계산만 하고 트리거엔 쓰지 않음: Q&A 반복 차단 방지)
 
-# 코드 변경이 없으면 통과.
+# 이번 턴에 src 편집이 없으면 통과.
 [ "$NEED_SIDE" -eq 0 ] && exit 0
 
 fails=""
