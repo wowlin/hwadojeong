@@ -1652,11 +1652,13 @@ captureInto(s2StairObjects, () => {
   const stairFrontZ = Math.min(meta[0].upperFrontZ, meta[1].lowerFrontZ);   // 계단이 2층 바닥을 점유하는 앞끝
   const inX0 = s2X0 + s2WallT, inZ0 = s2FrontZ + s2WallT;                   // 외벽 안쪽 시작(좌·앞)
   const inW = s2W - 2 * s2WallT, inZ1 = s2BackZ - s2WallT;                  // 외벽 안쪽 폭·뒤끝
-  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[1] - tTh, h: tTh, mat: materials.landing });  // 계단 옆 영역 전체
-  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[1] - tTh, h: tTh, mat: materials.landing });      // 계단 앞 영역(계단 밴드는 비움)
+  const floor2T = 0.6;                                                      // 2층 바닥(층참) 두께 — 전이보 포함. 윗면(levels[1])은 계단 단이므로 고정, 아래로 확장
+  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });  // 계단 옆 영역 전체
+  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });      // 계단 앞 영역(계단 밴드는 비움)
   // 3층 층참 = 3층 바닥: 2층과 동일하게 외벽 안쪽 발자국 전체에서 계단실만 비우고 채움. 윗면=levels[2].
-  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[2] - tTh, h: tTh, mat: materials.landing });  // 계단 옆 영역 전체
-  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[2] - tTh, h: tTh, mat: materials.landing });      // 계단 앞 영역(계단실은 비움)
+  const floor3T = 0.3;                                                      // 3층 바닥 두께 0.3. 윗면(levels[2])은 계단 단이므로 고정, 아래로 확장
+  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });  // 계단 옆 영역 전체
+  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });      // 계단 앞 영역(계단실은 비움)
   label('층참(1·2·3층 바닥 기준면)', x0 + wF / 2, levels[1] + 0.05, meta[0].upperFrontZ - W / 2, 'struct');
 });
 
