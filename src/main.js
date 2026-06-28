@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2BuildObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
   conceptObjects,
 } from './groups.js';
@@ -1615,6 +1615,73 @@ captureInto(s2DimObjects, () => {
   box({ x: gx0, z: s2FrontZ - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });       // 깊이 앞 가로 기준선
 });
 
+// ── s2 3층 구조 제안(개념 매스) — 's2 구조' 토글 ───────────────────────────────
+// 발자국 8×6 안에 3개 층 적층: 1층 공용(타프쉘 식당·대형싱크·2층까지 뚫린 보이드) /
+//   2층 부부(안방·간단주방·욕실/샤워) / 3층 손님(방2·욕실+세면). 다음 위는 다락·지붕.
+// 물 쓰는 공간(싱크·주방·욕실·세면)은 뒤쪽 '물코어' 한 자리에 수직 적층 → 배수 단일 수직관.
+// 계단은 뒤쪽 '계단코어' 한 자리에 U자(중간참) 적층 → 안전·구조 단순. 앞쪽은 채광 좋은 생활공간.
+captureInto(s2BuildObjects, () => {
+  const baseY = groundTopY + MAT_H;            // 기초 상단(0.5)
+  const fh = 3.0, slab = 0.2, wt = 0.2;        // 층고·슬래브·벽 두께
+  const L1 = baseY, L2 = baseY + fh, L3 = baseY + 2 * fh, top = baseY + 3 * fh;   // 각 층 바닥 + 지붕바닥
+  const coreZ0 = 1.3, coreZ1 = s2BackZ;        // 서비스 코어 띠(뒤쪽 측백 쪽 2m)
+  const wetX0 = s2X0, wetX1 = 3.0;             // 물코어(거실측)
+  const stX0 = 5.0, stX1 = s2W;                // 계단코어(안방측)
+  const voX0 = 2.5, voX1 = 5.5, voZ0 = -2.0, voZ1 = 0.8;   // 보이드(1층 식당 위 → 2층까지 뚫림)
+
+  // 외곽 매스(반투명 둘레벽) — 1층바닥~지붕바닥
+  const H = top - L1;
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: wt, y: L1, h: H, mat: materials.conceptWall });          // 앞벽(현관 쪽)
+  box({ x: s2X0, z: s2BackZ - wt, w: s2W, d: wt, y: L1, h: H, mat: materials.conceptWall });        // 뒤벽(측백 쪽)
+  box({ x: s2X0, z: s2FrontZ, w: wt, d: s2D, y: L1, h: H, mat: materials.conceptWall });            // 거실측 옆벽
+  box({ x: s2W - wt, z: s2FrontZ, w: wt, d: s2D, y: L1, h: H, mat: materials.conceptWall });        // 안방측 옆벽
+
+  // 층 바닥 슬래브 — 2층(보이드 제외 4조각)·3층(전체)·지붕바닥(전체)
+  box({ x: s2X0, z: voZ1, w: s2W, d: s2BackZ - voZ1, y: L2 - slab, h: slab, mat: materials.matFoundation });                     // 2층 슬래브: 보이드 뒤
+  box({ x: s2X0, z: s2FrontZ, w: voX0 - s2X0, d: voZ1 - s2FrontZ, y: L2 - slab, h: slab, mat: materials.matFoundation });        //   보이드 거실측
+  box({ x: voX1, z: s2FrontZ, w: s2W - voX1, d: voZ1 - s2FrontZ, y: L2 - slab, h: slab, mat: materials.matFoundation });          //   보이드 안방측
+  box({ x: voX0, z: s2FrontZ, w: voX1 - voX0, d: voZ0 - s2FrontZ, y: L2 - slab, h: slab, mat: materials.matFoundation });        //   보이드 앞
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: L3 - slab, h: slab, mat: materials.matFoundation });                            // 3층 슬래브(전체)
+  box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: top - slab, h: slab, mat: materials.matFoundation });                           // 지붕바닥(전체)
+
+  // 공간 바닥 색구분(각 층 바닥 위 얇게) + 라벨
+  const fl = (x, z, w, d, y, mat) => box({ x, z, w, d, y: y + 0.01, h: 0.02, mat, cast: false });
+  const lab = (t, x, z, y) => label(t, x, y + 1.3, z, 'room');
+
+  // 1층 — 공용(캠핑 대치)
+  fl(s2X0, s2FrontZ, s2W, coreZ0 - s2FrontZ, L1, materials.living);              // 타프쉘 식당(앞 전체)
+  fl(wetX0, coreZ0, wetX1 - wetX0, coreZ1 - coreZ0, L1, materials.sinkCabinet);   // 대형 싱크대(물코어)
+  fl(stX0, coreZ0, stX1 - stX0, coreZ1 - coreZ0, L1, materials.stair);            // 계단
+  lab('1층 식당(타프쉘)', (s2X0 + s2W) / 2, s2FrontZ + 1.2, L1);
+  lab('보이드(2층까지 뚫림)', (voX0 + voX1) / 2, (voZ0 + voZ1) / 2, L1);
+  lab('대형싱크', (wetX0 + wetX1) / 2, (coreZ0 + coreZ1) / 2, L1);
+  lab('↑계단', (stX0 + stX1) / 2, (coreZ0 + coreZ1) / 2, L1);
+
+  // 2층 — 부부 전용(보이드 제외 슬래브 위)
+  fl(s2X0, s2FrontZ, voX0 - s2X0, voZ1 - s2FrontZ, L2, materials.bed);            // 안방(거실측)
+  fl(voX1, s2FrontZ, s2W - voX1, voZ1 - s2FrontZ, L2, materials.bed);             // 안방(안방측)
+  fl(voX0, s2FrontZ, voX1 - voX0, voZ0 - s2FrontZ, L2, materials.bed);            // 안방(보이드 앞)
+  fl(s2X0, voZ1, s2W, coreZ0 - voZ1, L2, materials.hall);                         // 복도(보이드~코어)
+  fl(wetX0, coreZ0, 1.6, coreZ1 - coreZ0, L2, materials.bath);                    // 욕실/샤워(물코어 거실측)
+  fl(wetX0 + 1.6, coreZ0, wetX1 - (wetX0 + 1.6), coreZ1 - coreZ0, L2, materials.counter);  // 간단주방(물코어 안방측)
+  fl(3.0, coreZ0, stX0 - 3.0, coreZ1 - coreZ0, L2, materials.hall);               // 코어 사이 홀
+  fl(stX0, coreZ0, stX1 - stX0, coreZ1 - coreZ0, L2, materials.stair);            // 계단
+  lab('안방', (s2X0 + voX0) / 2, (s2FrontZ + voZ1) / 2, L2);
+  lab('욕실/샤워', wetX0 + 0.8, (coreZ0 + coreZ1) / 2, L2);
+  lab('주방', wetX0 + 2.3, (coreZ0 + coreZ1) / 2, L2);
+  lab('↕계단', (stX0 + stX1) / 2, (coreZ0 + coreZ1) / 2, L2);
+
+  // 3층 — 손님용(전체 슬래브 위)
+  fl(s2X0, s2FrontZ, 4.0, coreZ0 - s2FrontZ, L3, materials.bed);                  // 방A(거실측 앞)
+  fl(4.0, s2FrontZ, s2W - 4.0, coreZ0 - s2FrontZ, L3, materials.bed);             // 방B(안방측 앞)
+  fl(wetX0, coreZ0, wetX1 - wetX0, coreZ1 - coreZ0, L3, materials.bath);          // 욕실+세면(물코어)
+  fl(3.0, coreZ0, stX0 - 3.0, coreZ1 - coreZ0, L3, materials.hall);               // 홀
+  fl(stX0, coreZ0, stX1 - stX0, coreZ1 - coreZ0, L3, materials.stair);            // 계단
+  lab('손님방A', 2.0, (s2FrontZ + coreZ0) / 2, L3);
+  lab('손님방B', 6.0, (s2FrontZ + coreZ0) / 2, L3);
+  lab('욕실+세면', (wetX0 + wetX1) / 2, (coreZ0 + coreZ1) / 2, L3);
+});
+
 // 데크 계단 — 안방 측면 출입문 앞에만(0.8m 폭). 거실 데크 앞·왼쪽 계단은 바닥틀 균등 3단 계단(계단틀)으로 대체(옛 디딤판 제거).
 const _stairStart = scene.children.length;
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
@@ -2139,6 +2206,7 @@ const view = {
   concept: false,
   // 2층·다락 탭(s2)
   s2Foundation: false,   // s2 집 기초(온통 0.5m 슬래브 8×6)
+  s2Build: false,        // s2 3층 구조 제안(개념 매스)
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2168,6 +2236,7 @@ const PARTS = [
   { key: 'fence',      arrays: [fenceObjects] },
   { key: 'concept',    arrays: [conceptObjects] },
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
+  { key: 's2Build', arrays: [s2BuildObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2180,7 +2249,7 @@ const CHECKS = [
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
   ['cConcept', 'concept'],
-  ['cS2Foundation', 's2Foundation'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Build', 's2Build'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];

@@ -59,6 +59,10 @@ app.innerHTML = `
         <h2 class="menu-title">기초</h2>
         <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
       </section>
+      <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">구조</h2>
+        <label class="chk"><input id="cS2Build" type="checkbox"><span>3층 구조 (개념)</span></label>
+      </section>
     </aside>
     <section class="stage-wrap">
       <div id="stage" aria-label="주말주택 3D 개념 모형"></div>
