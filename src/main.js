@@ -1784,12 +1784,13 @@ captureInto(s2Stair3Objects, () => {
   // 바닥(층참) — 1층 전체 + 2·3층은 각 계단실만 비움
   const floor2T = 0.6, floor3T = 0.3;
   box({ x: inX0, z: inZ0, w: inX1 - inX0, d: inZ1 - inZ0, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });   // 1층 바닥(전체)
-  // 2층 바닥 — L자 계단실만 비움(외접 사각형 아님, L 안쪽 코너는 채움).
+  // 2층 바닥 — 1→2 L자 계단실 + 2→3 계단실을 '한 통'으로 비움(2→3 계단도 빈 계단실 위에 얹힘).
+  //  앞쪽(z<vz0)만 솔리드 = 1→2 도착·2→3 출발 참. sx1=2→3 계단실 오른쪽 끝, hx1=1→2 가로런 오른쪽 끝.
   {
-    const m = materials.floorSlab, vx1 = xcL, hx1 = xcL + nL1 * T, vz0 = zR0 - nU1 * T, bz0 = zR0, topY = levels[1], th = floor2T;
+    const m = materials.floorSlab, sx1 = x0 + 2 * W + g, hx1 = xcL + nL1 * T, vz0 = zR0 - nU1 * T, bz0 = zR0, topY = levels[1], th = floor2T;
     box({ x: hx1, z: inZ0, w: inX1 - hx1, d: inZ1 - inZ0, y: topY - th, h: th, mat: m });   // 가로런 오른쪽 전체
-    box({ x: vx1, z: inZ0, w: hx1 - vx1, d: bz0 - inZ0, y: topY - th, h: th, mat: m });      // 가로런 앞쪽(=L 안쪽 코너)
-    box({ x: inX0, z: inZ0, w: vx1 - inX0, d: vz0 - inZ0, y: topY - th, h: th, mat: m });    // 세로런 앞쪽
+    box({ x: sx1, z: inZ0, w: hx1 - sx1, d: bz0 - inZ0, y: topY - th, h: th, mat: m });      // 가로런 앞쪽(2→3 계단실 오른쪽)
+    box({ x: inX0, z: inZ0, w: sx1 - inX0, d: vz0 - inZ0, y: topY - th, h: th, mat: m });    // 앞쪽 솔리드(도착·출발 참)
   }
   floorRing(hole2, levels[2], floor3T);   // 3층 바닥(U자 계단실 비움)
   // 각 층 층고·천장고 — 계단 화면과 동일한 치수표기(planYDim)
