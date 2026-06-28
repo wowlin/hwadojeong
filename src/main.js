@@ -1770,16 +1770,16 @@ captureInto(s2Stair3Objects, () => {
   const hole1 = [x0, xcL + nL1 * T, zR0 - nU1 * T, zR1];
   label('1층: L자 · 정사각 코너참(뒤-우 모서리)', x0 + 1.6, levels[0] + 1.4, zR0 - nU1 * T - 0.5, 'struct');
 
-  // 2→3층 U자: (2층에서) 뒤쪽으로 올라가 뒷쪽 직사각 계단참 → 앞쪽으로 올라와 3층 바닥
-  // 1층 상부런(콜 x0) 바로 위가 아니라 그 옆 열(x0+W+g)에서 시작 → 1층 계단 위가 아닌 2층 바닥에서 시작.
+  // 2→3층 U자: (2층에서) 뒤쪽으로 올라가 뒷쪽 직사각 계단참 → 앞쪽으로 올라와 3층 바닥. 우측벽(x0) 밀착.
+  // 도는 방향: 하부런(시작)=안쪽 열(x0+W+g) → 1층 상부런(x0)과 겹치지 않게, 상부런(끝)=우측벽 열(x0).
   const N2 = Math.round((levels[2] - levels[1]) / R);   // 20단
   const nL2 = (N2 - 2) / 2, nU2 = (N2 - 2) / 2;         // 하부=상부=9
-  const xb2 = x0 + W + g;                                // 2→3 시작 열(1층 상부런 옆)
-  for (let k = 1; k <= nL2; k += 1) treadZ(xb2, zR0 - k * T, levels[1] + (nL2 - k + 1) * R);    // 하부런(앞→뒤 오름)
-  land(xb2, zR0, 2 * W + g, W, levels[1] + (nL2 + 1) * R);                                      // 직사각 계단참(뒤)
-  for (let m = 1; m <= nU2; m += 1) treadZ(xb2 + W + g, zR0 - m * T, levels[1] + (nL2 + 1 + m) * R);   // 상부런(뒤→앞, 3층 착지)
-  const hole2 = [xb2, xb2 + 2 * W + g, zR0 - nL2 * T, zR1];
-  label('2→3층: U자 · 직사각 계단참', xb2 + 1.3, levels[1] + 1.4, zR0 - nL2 * T - 0.5, 'struct');
+  const xLo = x0 + W + g;                                // 하부런(시작) 열 — 안쪽(겹침 방지)
+  for (let k = 1; k <= nL2; k += 1) treadZ(xLo, zR0 - k * T, levels[1] + (nL2 - k + 1) * R);    // 하부런(앞→뒤 오름)
+  land(x0, zR0, 2 * W + g, W, levels[1] + (nL2 + 1) * R);                                       // 직사각 계단참(뒤, 두 열 덮음)
+  for (let m = 1; m <= nU2; m += 1) treadZ(x0, zR0 - m * T, levels[1] + (nL2 + 1 + m) * R);     // 상부런(뒤→앞, 우측벽 밀착, 3층 착지)
+  const hole2 = [x0, x0 + 2 * W + g, zR0 - nL2 * T, zR1];
+  label('2→3층: U자 · 직사각 계단참(우측벽)', x0 + 1.3, levels[1] + 1.4, zR0 - nL2 * T - 0.5, 'struct');
 
   // 바닥(층참) — 1층 전체 + 2·3층은 각 계단실만 비움
   const floor2T = 0.6, floor3T = 0.3;
