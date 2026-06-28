@@ -2290,6 +2290,22 @@ function setPlanView() {
   controls.update();
 }
 
+// 줌 중심(target)의 높이를 현재 보이는 구조물 높이의 '중간'에 맞춘다. 지면(바닥)에 박지 않으므로
+// 키 큰 부재(골조 등)를 켜고 확대해도 위쪽이 화면 밖으로 밀리지 않는다. x·z는 그대로 둔다.
+function centerTargetHeight() {
+  scene.updateMatrixWorld(true);
+  _fitBox.makeEmpty();
+  scene.traverse((o) => {
+    if (!o.isMesh || !o.visible) return;
+    if (o.name === 'ground') return;
+    for (let p = o.parent; p; p = p.parent) if (!p.visible) return;
+    _fitBox.expandByObject(o);
+  });
+  if (_fitBox.isEmpty()) return;
+  controls.target.y = (_fitBox.min.y + _fitBox.max.y) / 2;
+  controls.update();
+}
+
 // 프리셋 뷰 — 배치도(부감): 모든 부품 끄고 평면만.
 function showPlan() {
   for (const k of Object.keys(view)) view[k] = false;
@@ -2315,6 +2331,7 @@ for (const [id, key] of CHECKS) {
       for (const k of FOUNDATION_GROUP) if (k !== key) view[k] = false;
     }
     applyVisibility();
+    centerTargetHeight();   // 부품 켜면 줌 중심을 보이는 구조물 높이의 중간으로 — 확대 시 위쪽 잘림 방지
   });
 }
 
