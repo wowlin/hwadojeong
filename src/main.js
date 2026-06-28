@@ -1721,9 +1721,19 @@ captureInto(s2Stair2Objects, () => {
   label('2→3층: U자 · 계단참 1', x0 + 1.2, levels[1] + 1.4, zR0 - nL2 * T - 0.5, 'struct');
 
   // 바닥(층참) — 1층 전체 + 2·3층은 각 계단실만 비움
+  const floor2T = 0.6, floor3T = 0.3;   // 2·3층 바닥 두께(천장고 산정과 단일 출처)
   box({ x: inX0, z: inZ0, w: inX1 - inX0, d: inZ1 - inZ0, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });   // 1층 바닥(전체)
-  floorRing(hole1, levels[1], 0.6);   // 2층 바닥(1→2 계단실만 비움)
-  floorRing(hole2, levels[2], 0.3);   // 3층 바닥(2→3 계단실만 비움)
+  floorRing(hole1, levels[1], floor2T);   // 2층 바닥(1→2 계단실만 비움)
+  floorRing(hole2, levels[2], floor3T);   // 3층 바닥(2→3 계단실만 비움)
+
+  // 각 층 층고·천장고 — 계단 화면과 동일한 치수표기(planYDim). 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께.
+  const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
+  for (let f = 0; f < levels.length - 1; f += 1) {
+    const fH = levels[f + 1] - levels[f];                            // 층고
+    const cH = (levels[f + 1] - slabTs[f + 1]) - levels[f];          // 천장고
+    planYDim(inX1 + 0.9, inZ0 + 0.3, levels[f], levels[f + 1], `${f + 1}층 층고 ${fH.toFixed(2)}m`);             // 층고(바깥)
+    planYDim(inX1 + 0.35, inZ0 + 0.3, levels[f], levels[f + 1] - slabTs[f + 1], `천장고 ${cH.toFixed(2)}m`);    // 천장고(안쪽)
+  }
 });
 
 // ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
