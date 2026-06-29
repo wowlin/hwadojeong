@@ -67,6 +67,19 @@ app.innerHTML = `
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">2층</h2>
+        <div class="seg-row" role="group" aria-label="2층 바닥·계단">
+          <button type="button" class="seg-btn" id="bF2Floor">바닥</button>
+          <button type="button" class="seg-btn" id="bF2Stair">계단</button>
+        </div>
+      </section>
+      <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">3층</h2>
+        <div class="seg-row" role="group" aria-label="3층 바닥">
+          <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
+        </div>
+      </section>
+      <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">구조</h2>
         <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
         <div class="seg-row" role="group" aria-label="계단 표시">

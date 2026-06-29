@@ -2637,6 +2637,7 @@ function syncSegButtons() {
   // '1층' 그룹 버튼 — 구조 섹션의 같은 부품을 공유 토글(active 동기화)
   setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Stair', view.s2StairF1);
   setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove);
+  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF3Floor', view.s2Floor3);
 }
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
@@ -2776,6 +2777,9 @@ bindSegButton('bF1Stair', () => { view.s2StairF1 = !view.s2StairF1; });
 bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
 bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
 bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
+bindSegButton('bF2Floor', () => { view.s2Floor2 = !view.s2Floor2; });
+bindSegButton('bF2Stair', () => { view.s2StairF2 = !view.s2StairF2; });
+bindSegButton('bF3Floor', () => { view.s2Floor3 = !view.s2Floor3; });
 
 // ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
 // 페이지 가장 바깥 선택: 탭마다 별도 설계안. 대지·측백담·옆집담·이격은 모든 탭 공유.
