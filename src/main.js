@@ -1557,6 +1557,12 @@ const s2RoomShort = 2.8;                    // 3층 방 짧은변(깊이 방향)
 // 집 깊이(Z) = 뒤 외벽 + 계단실 깊이(두 런 행+틈) + 계단실↔방 내벽 + 방 짧은변 + 앞 외벽. 뒤벽 고정·앞벽만 이동.
 const s2D = 2 * s2WallT + (2 * S2_STAIR.W + S2_STAIR.g) + interiorWall + s2RoomShort;   // = 5.6
 const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (파생)
+// s2 층고·박공지붕 단면 — 외벽·지붕·계단실 내벽이 공유하는 단일 출처(중복 정의 금지)
+const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0, _wFh3 = 2.4;     // 1층 3.3 · 2층 3.0 · 3층 2.4(손님방 천장고)
+const F2 = _wBase + _wFh1, F3 = _wBase + _wFh1 + _wFh, roofY = F3 + _wFh3;   // 2층 바닥 · 3층 바닥 · 지붕(처마=3층 벽 상단)
+const s2RoofPitch = 30 * Math.PI / 180;                                     // 박공 30°(기준·초과 금지)
+const s2RidgeZ = (s2FrontZ + s2BackZ) / 2;                                  // 용마루 — 깊이 중앙(용마루는 너비 X를 따라감)
+const s2RoofUnderY = (z) => roofY + (s2D / 2 - Math.abs(z - s2RidgeZ)) * Math.tan(s2RoofPitch);   // 그 z의 박공지붕 밑선(처마 roofY ~ 용마루)
 // 배치도 발자국(납작) — s2 탭에서만 표시
 s2FootprintObjects.push(box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
 // 기초(온통 0.5m 슬래브) — 's2 기초' 토글
@@ -1733,6 +1739,20 @@ captureInto(s2DimObjects, () => {
     const wzT = interiorWall;   // 내벽 두께(0.1m)
     box({ x: inX0, z: zB0 - wzT, w: far3 - inX0, d: wzT, y: levels[2] + 0.007, h: 0.012, mat: materials.s3WallZone, cast: false });   // 옆면 내벽 — 계단실 앞면(zB0)에 맞춰 X방향(방 뒤벽)
     box({ x: far3 - wzT, z: inZ0, w: wzT, d: zB0 - inZ0, y: levels[2] + 0.007, h: 0.012, mat: materials.s3WallZone, cast: false });   // 끝단 내벽 — 계단실 끝(far3)에 맞춰 Z방향(방 옆벽, 앞쪽)
+    // 계단실 분리벽 — 3층을 계단 구멍(아래 개방 포치까지 뚫림)과 막아 벌레·냉난방 차단. 윗선은 박공지붕 밑선에 맞춤. 계단으로 올라서는 면에 포켓도어 1개.
+    {
+      const fy = levels[2], t = interiorWall;
+      // ① 계단실 옆 내벽(거실쪽 보는 면) — 계단 구멍 앞면(zB0) 따라, 우측벽(inX0)~도착끝(far3). 문벽 두께만큼 더 늘려 모서리를 ㄱ자로 채움. 막힌 벽. 윗면=그 z의 지붕 밑선(평탄).
+      horizontalWallWithGaps(inX0, zB0 - t, far3 + t - inX0, fy, [], s2RoofUnderY(zB0) - fy, t, materials.wall);
+      // ② 계단 올라서는 면 내벽 — 도착끝(far3) 따라 앞(zB0)~뒤벽(inZ1). 벽은 3층 바닥 위(far3 바깥)에 세워 계단 발판을 침범하지 않음. 윗선은 박공 경사를 따라 기울고(yzWallPrism), 올라서는 칸에 포켓도어 1개.
+      const dZ = zB0 + (W - interiorDoorW) / 2, dZ1 = dZ + interiorDoorW;                                                        // 도착칸(폭 W) 가운데 정렬
+      const doorTopY = fy + interiorDoorH;
+      yzWallPrism({ x: far3, thickness: t, mat: materials.wall, points: [[zB0, fy], [dZ, fy], [dZ, s2RoofUnderY(dZ)], [zB0, s2RoofUnderY(zB0)]] });             // 문 앞쪽 벽(바닥~지붕)
+      yzWallPrism({ x: far3, thickness: t, mat: materials.wall, points: [[dZ, doorTopY], [dZ1, doorTopY], [dZ1, s2RoofUnderY(dZ1)], [dZ, s2RoofUnderY(dZ)]] }); // 문 위 인방(문틀~지붕)
+      yzWallPrism({ x: far3, thickness: t, mat: materials.wall, points: [[dZ1, fy], [inZ1, fy], [inZ1, s2RoofUnderY(inZ1)], [dZ1, s2RoofUnderY(dZ1)]] });        // 문 뒤쪽 벽(바닥~지붕, 포켓 수납)
+      pocketDoorVertical(far3 + t, dZ, fy, interiorDoorH, 1);                                                                    // 포켓도어 — 바닥쪽 면, 뒤쪽 벽 속으로 슬라이드
+      label('계단실 단열 포켓도어', far3, fy + 1.0, dZ + interiorDoorW / 2, 'opening');
+    }
   });
 
   // 공유부(라벨·층고 치수) — '계단' 전체 버튼과 함께 보임.
@@ -1877,8 +1897,6 @@ const s2WallFloor = (arr, floorNo, flY, wallTopY, ftf, slabTs) => captureInto(ar
   label(slabTs ? `${floorNo}층 바닥 ${fmtDim(slabTs)}m` : '1층 바닥=매트기초 0.5m 겸함',
     s2X0 + s2W * 0.7, slabTs ? flY - slabTs / 2 : flY + 0.3, s2BackZ - 0.5, 'struct');                      // 바닥 슬래브 두께(1층은 기초가 겸함)
 });
-const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0, _wFh3 = 2.4;   // 1층 3.3 · 2층 3.0 · 3층 2.4(손님방 천장고)
-const F2 = _wBase + _wFh1, F3 = _wBase + _wFh1 + _wFh, roofY = F3 + _wFh3;   // 2층 바닥 · 3층 바닥 · 지붕(3층 천장 2.4)
 const ts2 = s2Floor2SlabT, ts3 = s2Floor3SlabT;                  // 2·3층 바닥 두께 — 치수와 동일한 모듈 단일 출처 참조
 s2WallFloor(s2Wall1Objects, 1, _wBase, F2 - ts2, _wFh1, 0);       // 1층 외벽(2층 바닥 밑면까지) — 바닥은 매트기초가 겸함
 s2WallFloor(s2Wall2Objects, 2, F2, F3 - ts3, _wFh, ts2);          // 2층 외벽(3층 바닥 밑면까지) + 2층 바닥 0.6(전이)
@@ -1890,8 +1908,7 @@ s2WallFloor(s2Wall3Objects, 3, F3, roofY, _wFh3, ts3);           // 3층 외벽(
 {
   const t = s2WallT, EW = materials.exteriorWall;
   const eaveY = roofY;                                                    // 처마 = 3층 벽 상단(지붕 안침)
-  const peakY = roofY + (s2D / 2) * Math.tan(30 * Math.PI / 180);         // 용마루(깊이 절반 × tan30°)
-  const zMid = (s2FrontZ + s2BackZ) / 2;
+  const zMid = s2RidgeZ, peakY = s2RoofUnderY(zMid);                      // 용마루(깊이 중앙·박공 밑선 단일 출처)
   captureInto(roofWallFBObjects, () => {                                  // 앞뒤(처마쪽) — 좌우벽 사이에 끼움(겹침 없음)
     box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: _wBase, h: eaveY - _wBase, mat: EW });    // 앞(현관 쪽)
     box({ x: s2X0 + t, z: s2BackZ - t, w: s2W - 2 * t, d: t, y: _wBase, h: eaveY - _wBase, mat: EW });  // 뒤(측백 쪽)
