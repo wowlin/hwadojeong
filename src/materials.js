@@ -57,6 +57,7 @@ export const materials = {
   deck: new THREE.MeshLambertMaterial({ color: 0xcaa46a }),
   door: new THREE.MeshLambertMaterial({ color: 0x31a354 }),
   interiorDoor: new THREE.MeshLambertMaterial({ color: 0x7a4f32 }),
+  interiorDoorLanding: new THREE.MeshLambertMaterial({ color: 0x9c6b45 }),   // 계단형 문 중 계단참 아래 부분 — 약간 다른(밝은) 갈색
   wcDoor: new THREE.MeshLambertMaterial({ color: 0xc2ccd0 }),
   pocketDoor: new THREE.MeshLambertMaterial({ color: 0x8b5f3d }),
   entryDoor: new THREE.MeshLambertMaterial({ color: 0x4f3422 }),
