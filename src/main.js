@@ -1617,6 +1617,7 @@ captureInto(s2DimObjects, () => {
         riserX(xRun0 + k * T - rTh, zA0, top);                  // 챌판 — 하부런 앞면(高X쪽)
       }
       landing(fl + (nL + 1) * R);                                                            // 우측벽 참(180° 반환)
+      riserX(xRun0 - rTh, zA0, fl + (nL + 1) * R);                                           // 계단참 챌판 — 참과 그 아래 마지막 하부런 발판 사이 세로판(누락분)
       for (let m = 1; m <= nU; m += 1) {
         const top = fl + (nL + 1 + m) * R;
         treadX(xRun0 + (m - 1) * T, zB0, top, -1);              // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지, 앞코 低X쪽
@@ -1653,7 +1654,7 @@ captureInto(s2DimObjects, () => {
     m(materials.wcFloor, inX1 - wcW, inZ1 - wcD, wcW, wcD);   // 화장실 자리(왼쪽-뒤 코너) — 보라
     if (big) {
       m(materials.s3Room2, inX0, inZ0, RM_L, RM_S);          // 연두 — 거실쪽·앞, 가로로 긴 직사각형
-      m(materials.s3Room1, far3 + W, inZ0, RM_S, RM_L);      // 회색(하늘) — 안방쪽, 세로로 긴 직사각형(주황 옆)
+      m(materials.s3Room1, inX1 - RM_S, inZ0, RM_S, RM_L);   // 회색(하늘) — 안방쪽, 세로로 긴 직사각형(좌측벽 밀착)
     } else {
       m(materials.s3Room1, inX1 - 1, inZ0);        // 앞벽 좌(안방쪽) 방 — 하늘
       m(materials.s3Room2, inX0, inZ0);            // 앞벽 우(거실쪽) 방 — 연두
@@ -1671,7 +1672,7 @@ captureInto(s2DimObjects, () => {
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
     placeMark(levels[2], true);
     label(`연두 ${RM_L.toFixed(2)}×${RM_S.toFixed(2)}m`, inX0 + RM_L / 2, levels[2] + 0.4, inZ0 + RM_S / 2, 'dim');   // 연두방 크기
-    label(`회색 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, far3 + W + RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 회색방 크기
+    label(`회색 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 회색방 크기
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
     box({ x: far3, z: zB0, w: W, d: W, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });
     // 연두색 방(거실쪽·앞 코너)을 분리할 벽으로 쓸 구간(내벽 10cm) 표시 — 계단실에 맞춰 ㄱ자로 방을 막음.
