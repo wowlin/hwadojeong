@@ -48,6 +48,7 @@ export const materials = {
   counter: new THREE.MeshLambertMaterial({ color: 0xf8fafc }),
   sinkBasin: new THREE.MeshLambertMaterial({ color: 0xb7c7d7 }),
   fridge: new THREE.MeshLambertMaterial({ color: 0xc5ccd2 }),   // LG 디오스 일반냉장고(스테인리스 실버)
+  fridgeDoor: new THREE.MeshLambertMaterial({ color: 0xaeb6bd }), // 냉장고 문짝(본체보다 약간 어두운 실버)
   entry: new THREE.MeshLambertMaterial({ color: 0xffdfbd }),
   deck: new THREE.MeshLambertMaterial({ color: 0xcaa46a }),
   door: new THREE.MeshLambertMaterial({ color: 0x31a354 }),
