@@ -1875,8 +1875,8 @@ captureInto(s2FurnitureObjects, () => {
   const chairBack = off + 0.33, aisle = 0.9, endGap = 0.9;    // 의자 등받이 뒤끝 · 의자 뒤 통로 0.9 · 테이블 끝 0.9
   // 식탁 세트(이동공간 포함)를 바닥 왼쪽(高x=7.7 벽)·앞쪽(低z=−2.4 벽) 안쪽에 붙임.
   const inXL = s2X0 + s2W - s2WallT, inZF = s2FrontZ + s2WallT;   // 좌(高x)·앞(低z) 외벽 안쪽 면
-  const leftReserve = 1.0;                                    // 왼쪽(高x) 벽쪽 예약 공간 폭 — 식탁을 이만큼 오른쪽으로 옮김
-  const cxC = inXL - endGap - 1.5 * TW - leftReserve;         // 식탁 행 중심 x(좌벽에서 예약 1m + 끝여유 + 행 절반 1.5·TW)
+  const reserveW = 1.0;                                       // 오른쪽(低x) 벽쪽 예약 공간 폭 — 식탁은 왼쪽 벽에 붙임
+  const cxC = inXL - endGap - 1.5 * TW;                       // 식탁 행 중심 x(좌벽에서 끝여유 + 행 절반 1.5·TW)
   const cz0 = inZF + aisle + chairBack;                       // 식탁 중심 z(앞벽에서 통로 + 의자 등받이 뒤)
   const cxs = [cxC - TW, cxC, cxC + TW];                      // 3개를 좌우로 이어 옆으로 길게
   for (const cx of cxs) {
@@ -1895,9 +1895,9 @@ captureInto(s2FurnitureObjects, () => {
   const zz0 = (cz0 - chairBack) - aisle, zz1 = (cz0 + chairBack) + aisle;
   box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: fTop + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
   label(`이동공간 ${fmtDim(zx1 - zx0)}×${fmtDim(zz1 - zz0)}m · 의자 뒤 통로 ${aisle}m`, (zx0 + zx1) / 2, fTop + 0.55, zz1 - 0.35, 'dim');
-  // 왼쪽(高x) 벽쪽 1m 예약 공간(붉은색) — 식탁을 그만큼 오른쪽으로 옮겨 비움. 깊이=이동공간과 동일.
-  box({ x: inXL - leftReserve, z: zz0, w: leftReserve, d: zz1 - zz0, y: fTop + 0.005, h: 0.012, mat: materials.leftZone, cast: false });
-  label(`왼쪽 예약 ${fmtDim(leftReserve)}×${fmtDim(zz1 - zz0)}m`, inXL - leftReserve / 2, fTop + 0.6, (zz0 + zz1) / 2, 'dim');
+  // 오른쪽(低x) 벽쪽 1m 예약 공간(붉은색) — 식탁은 왼쪽 벽에 붙여 그만큼 비움. 깊이=이동공간과 동일.
+  box({ x: s2X0 + s2WallT, z: zz0, w: reserveW, d: zz1 - zz0, y: fTop + 0.005, h: 0.012, mat: materials.leftZone, cast: false });
+  label(`오른쪽 예약 ${fmtDim(reserveW)}×${fmtDim(zz1 - zz0)}m`, s2X0 + s2WallT + reserveW / 2, fTop + 0.6, (zz0 + zz1) / 2, 'dim');
 });
 
 // ── s2 1층 싱크대(주방) — '싱크대' 토글(구조 섹션) ─────────────────────────────────
