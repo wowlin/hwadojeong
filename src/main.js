@@ -1723,7 +1723,7 @@ captureInto(s2DimObjects, () => {
     placeMark(levels[2], true, 1.5, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 1.5(X) × 왼쪽벽 따라 1.0(Z)
     const g1W = far3 - inX0, g1D = zB0 - inZ0;                                                                          // 게스트룸1 = 옆벽(far3)·계단실 앞면(zB0)·외벽 안쪽 공간
     label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'dim');   // 게스트룸1(연두) 크기 — 벽 안쪽 실측
-    label(`회색 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 회색방 크기
+    label(`게스트룸2 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 게스트룸2(회색) 크기
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·앞 회색방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
@@ -1748,8 +1748,9 @@ captureInto(s2DimObjects, () => {
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
     box({ x: far3, z: zB0, w: W, d: W, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });
     const pktWallT = 0.15;      // 포켓도어 벽 두께 15cm — 게스트룸1 옆벽도 같은 선상·같은 두께(단일 출처)
-    // 게스트룸1(연두) 옆벽 — 계단 포켓도어 벽과 같은 선상(far3)·같은 두께(15cm). 앞벽 안쪽(inZ0)~계단실 앞면(zB0), 바닥~지붕 밑선.
-    yzWallPrism({ x: far3, thickness: pktWallT, mat: materials.wall, points: [[inZ0, levels[2]], [zB0, levels[2]], [zB0, s2RoofUnderY(zB0)], [inZ0, s2RoofUnderY(inZ0)]] });
+    // 게스트룸1(연두) 옆벽 — 계단 포켓도어 벽과 같은 선상(far3)·같은 두께(15cm). 앞벽 안쪽(inZ0)~계단실 앞면(zB0).
+    //   윗선은 외벽 박공과 동일: 구간 안에 용마루(s2RidgeZ)가 지나므로 그 점을 꼭지점으로 넣어 30° 경사 양쪽으로 꺾음.
+    yzWallPrism({ x: far3, thickness: pktWallT, mat: materials.wall, points: [[inZ0, levels[2]], [zB0, levels[2]], [zB0, s2RoofUnderY(zB0)], [s2RidgeZ, s2RoofUnderY(s2RidgeZ)], [inZ0, s2RoofUnderY(inZ0)]] });
     // 계단실 분리벽 — 3층을 계단 구멍(아래 개방 포치까지 뚫림)과 막아 벌레·냉난방 차단. 윗선은 박공지붕 밑선에 맞춤. 계단으로 올라서는 면에 포켓도어 1개.
     {
       const fy = levels[2], t = interiorWall, pt = pktWallT;                                                                 // pt = 포켓도어 벽 두께 15cm(문짝 수납) — 게스트룸1 옆벽과 단일 출처
@@ -1762,6 +1763,14 @@ captureInto(s2DimObjects, () => {
       yzWallPrism({ x: far3, thickness: pt, mat: materials.wall, points: [[dZ1, fy], [inZ1, fy], [inZ1, s2RoofUnderY(inZ1)], [dZ1, s2RoofUnderY(dZ1)]] });        // 문 뒤쪽 벽(바닥~지붕, 포켓 수납)
       pocketDoorVertical(far3 + pt, dZ, fy, interiorDoorH, 1, W);                                                            // 포켓도어(폭 W=계단 너비) — 뒤쪽 벽 속으로 슬라이드
       label('계단실 단열 포켓도어', far3, fy + 1.0, dZ + W / 2, 'opening');
+    }
+    // 게스트룸2(회색) 칸막이벽 — 안방 외벽(inX1)·앞 외벽(inZ0)이 두 변을 막고, 트인 두 변에 칸막이. '회색' 자리(배경) 안쪽으로 세움.
+    {
+      const fy = levels[2], gxL = inX1 - RM_S, gz1 = inZ0 + RM_L;   // 회색 자리 저X 변(게스트룸1쪽)·高Z 변(화장실쪽)
+      // ① 화장실쪽 벽(高Z 변, z=gz1) — 10cm, 방 안쪽(-Z)으로. X: 저X 변(gxL)~안방 외벽(inX1). 그 z의 박공 밑선 높이(평탄).
+      box({ x: gxL, z: gz1 - 0.10, w: inX1 - gxL, d: 0.10, y: fy, h: s2RoofUnderY(gz1) - fy, mat: materials.wall });
+      // ② 다른쪽 벽(저X 변, x=gxL, 게스트룸1쪽) — 15cm, 방 안쪽(+X)으로. Z: 앞 외벽(inZ0)~화장실쪽 벽(gz1). 구간 안 용마루(s2RidgeZ)를 꼭지점으로 넣어 30° 경사 양쪽 꺾음.
+      yzWallPrism({ x: gxL, thickness: pktWallT, mat: materials.wall, points: [[inZ0, fy], [gz1, fy], [gz1, s2RoofUnderY(gz1)], [s2RidgeZ, s2RoofUnderY(s2RidgeZ)], [inZ0, s2RoofUnderY(inZ0)]] });
     }
   });
 
