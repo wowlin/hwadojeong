@@ -1693,10 +1693,9 @@ captureInto(s2DimObjects, () => {
       pocketDoorHorizontal(oX0, zB0, levels[1], interiorDoorW, interiorDoorH, -1, materials.stdRoomDoor);              // 왼쪽(低X)으로 슬라이드 — 포켓이 低X쪽
       label('표준 방문', oX0 + interiorDoorW / 2, levels[1] + 1.0, zB0 - 0.075, 'opening');
     }
+    // 층계참 화장실쪽(高X) 벽 — 주황 도착칸을 1.2×2.1m로 마저 둘러쌈. 10cm, 바닥~천장. 계단 올라오는 변(低X)만 개방.
+    box({ x: far2 + 1.2, z: zB0, w: 0.10, d: inZ1 - zB0, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
     placeMark(levels[1], false, 2.4, 1.6);   // 2층 화장실 = 너비 2.4 × 깊이 1.6
-    // 2층 화장실 방쪽 벽(앞 변·低Z) — 화장실 앞면을 막아 방과 분리. 막힌 변: 왼쪽·뒤 외벽 + 이 앞벽. 계단쪽(低X)만 트여 출입. 10cm, 바닥~천장.
-    { const px0 = inX1 - 2.4, pz0 = inZ1 - 1.6;
-      box({ x: px0, z: pz0 - 0.10, w: 2.4, d: 0.10, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall }); }
     // 2층 화장실(왼쪽-뒤 코너 2.4×1.6m) 권장 배치 — 샤워부스 + 변기 + 세면대 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X·안방쪽)·뒤벽 inZ1(高Z)·앞 방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
