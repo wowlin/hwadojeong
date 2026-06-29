@@ -2598,8 +2598,31 @@ const NOTES = {
       `- 단 수: ${steps}`,
     ].join('\n') };
   },
+  get s2Foundation() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 집 크기(s2W·s2D) 바뀌면 자동 반영
+    const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
+    const floors = 3;                                      // 지상 층수
+    const bldgArea = s2W * s2D;                            // 건축면적(1층 발자국)
+    const totalArea = bldgArea * floors;                  // 연면적(전 층 합)
+    const bcr = (bldgArea / lotArea) * 100;               // 건폐율
+    const far = (totalArea / lotArea) * 100;              // 용적률
+    return { title: '기초 · 대지 개요', body: [
+      '[대지 · 지역]',
+      '- 주소: 경기 포천시 이동면 장암리 639-25',
+      `- 대지면적: ${lotArea} ㎡ (지목 잡종지 → 건축 후 ‘대’)`,
+      '- 용도지역: 계획관리지역 + 성장관리계획구역',
+      '- 이격거리: 도로(건축선) 1.0 m · 옆·뒤 경계 0.5 m',
+      '',
+      '[규모 검토]',
+      `- 건물: ${s2W}×${s2D} m · 지상 ${floors}층`,
+      `- 건축면적 ${bldgArea.toFixed(0)} ㎡ · 연면적 ${totalArea.toFixed(0)} ㎡`,
+      `- 건폐율: ${bcr.toFixed(1)} %  (한도 50 %)`,
+      `- 용적률: ${far.toFixed(1)} %  (한도 125 %)`,
+      '',
+      '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
+    ].join('\n') };
+  },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Stair'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Stair'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
