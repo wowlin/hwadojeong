@@ -1708,11 +1708,11 @@ captureInto(s2DimObjects, () => {
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·앞 회색방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
-      const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - 1, pz0 = inZ1 - 1;
-      // 변기 — 뒤-좌 코너(뒤벽·좌측벽에 붙임). 물탱크=뒤벽(高Z), 앞(低Z)을 향해 착석. 문(低X) 반대편에 두어 스윙을 피함.
-      box({ x: px1 - 0.46, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
-      box({ x: px1 - 0.44, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
-      label('권장 화장실', px1 - 0.45, fy + 0.95, pz1 - 0.45, 'furniture');
+      const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - 1.5, pz0 = inZ1 - 1;
+      // 변기 — 뒤벽(高Z)에 물탱크 붙이고 앞(低Z) 착석. 옆벽(좌측 高X)에서 0.2m 띄움(문 스윙 안 닿게, 안 붙게).
+      box({ x: px1 - 0.64, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
+      box({ x: px1 - 0.62, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+      label('권장 화장실', px1 - 0.63, fy + 0.95, pz1 - 0.45, 'furniture');
       // 출입문 — 거실쪽 벽(低X, x=px0)에 폭 0.7, 앞(低Z)쪽에 둠. 안쪽(+X)으로 열림. 경첩=앞(低Z) 모서리.
       const dW = 0.7, dH = 2.0, t = interiorWall;
       box({ x: px0 - 0.03, z: pz0, w: 0.06, d: dW, y: fy, h: dH, mat: materials.wcDoor });                          // 문짝(닫힘, 거실쪽 벽)
