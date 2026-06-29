@@ -12,8 +12,10 @@ app.innerHTML = `
       </nav>
       <section class="menu-group" data-scheme="shared">
         <h2 class="menu-title">대지·담장 (공통)</h2>
-        <label class="chk"><input id="cHedge" type="checkbox"><span>측백담장</span></label>
-        <label class="chk"><input id="cFence" type="checkbox"><span>옆집담장</span></label>
+        <div class="seg-row" role="group" aria-label="담장 표시">
+          <button type="button" class="seg-btn" id="bHedge">측백</button>
+          <button type="button" class="seg-btn" id="bFence">옆집</button>
+        </div>
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">기초</h2>

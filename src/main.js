@@ -2579,7 +2579,6 @@ const CHECKS = [
   ['cBath', 'bath'],
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
-  ['cHedge', 'hedge'], ['cFence', 'fence'],
   ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stair3', 's2Stair3'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'], ['cS2Sink', 's2Sink'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
@@ -2627,6 +2626,7 @@ function syncSegButtons() {
   setActive('bS2StairAll', view.s2StairF1 && view.s2StairF2);
   setActive('bS2Floor1', view.s2Floor1); setActive('bS2Floor2', view.s2Floor2); setActive('bS2Floor3', view.s2Floor3);
   setActive('bS2FloorAll', view.s2Floor1 && view.s2Floor2 && view.s2Floor3);
+  setActive('bHedge', view.hedge); setActive('bFence', view.fence);
 }
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
@@ -2757,6 +2757,8 @@ bindSegButton('bS2Floor1', () => { view.s2Floor1 = !view.s2Floor1; });
 bindSegButton('bS2Floor2', () => { view.s2Floor2 = !view.s2Floor2; });
 bindSegButton('bS2Floor3', () => { view.s2Floor3 = !view.s2Floor3; });
 bindSegButton('bS2FloorAll', () => { const on = !(view.s2Floor1 && view.s2Floor2 && view.s2Floor3); view.s2Floor1 = on; view.s2Floor2 = on; view.s2Floor3 = on; });
+bindSegButton('bHedge', () => { view.hedge = !view.hedge; });
+bindSegButton('bFence', () => { view.fence = !view.fence; });
 
 // ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
 // 페이지 가장 바깥 선택: 탭마다 별도 설계안. 대지·측백담·옆집담·이격은 모든 탭 공유.
