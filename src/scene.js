@@ -104,6 +104,10 @@ app.innerHTML = `
         <label class="chk"><input id="cS2Wall1" type="checkbox"><span>외벽 1층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Wall2" type="checkbox"><span>외벽 2층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Wall3" type="checkbox"><span>외벽 3층 (0.3m)</span></label>
+        <div class="seg-row" role="group" aria-label="1층 정면">
+          <button type="button" class="seg-btn" id="bS2Folding">폴딩도어</button>
+          <button type="button" class="seg-btn" id="bS2FrontStair">계단</button>
+        </div>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">참고</h2>

@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, roofWallFBObjects, roofWallLRObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, roofWallFBObjects, roofWallLRObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2FoldingObjects, s2FrontStairObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1693,9 +1693,10 @@ captureInto(s2DimObjects, () => {
       pocketDoorHorizontal(oX0, zB0, levels[1], interiorDoorW, interiorDoorH, -1, materials.stdRoomDoor);              // 왼쪽(低X)으로 슬라이드 — 포켓이 低X쪽
       label('표준 방문', oX0 + interiorDoorW / 2, levels[1] + 1.0, zB0 - 0.075, 'opening');
     }
-    // 층계참 화장실쪽(高X) 벽 — 주황 도착칸을 1.2×2.1m로 마저 둘러쌈. 10cm, 바닥~천장. 계단 올라오는 변(低X)만 개방.
-    box({ x: far2 + 1.2, z: zB0, w: 0.10, d: inZ1 - zB0, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
     placeMark(levels[1], false, 2.4, 1.6);   // 2층 화장실 = 너비 2.4 × 깊이 1.6
+    // 2층 화장실 방쪽 벽(앞 변·低Z) — 화장실 앞면을 막아 방과 분리. 막힌 변: 왼쪽·뒤 외벽 + 이 앞벽. 계단쪽(低X)만 트여 출입. 10cm, 바닥~천장.
+    { const px0 = inX1 - 2.4, pz0 = inZ1 - 1.6;
+      box({ x: px0, z: pz0 - 0.10, w: 2.4, d: 0.10, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall }); }
     // 2층 화장실(왼쪽-뒤 코너 2.4×1.6m) 권장 배치 — 샤워부스 + 변기 + 세면대 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X·안방쪽)·뒤벽 inZ1(高Z)·앞 방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
@@ -1843,6 +1844,50 @@ captureInto(s2FrameObjects, () => {
   label('둘레 기둥(중앙 무주)', 4.0, baseY + 1.5, 0.3, 'struct');
   label('2층 바닥(전이보 포함 0.6m)', 5.2, colTop + 0.35, s2FrontZ + 0.2, 'struct');
   label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
+});
+
+// ── s2 1층 정면 폴딩도어 — '폴딩도어' 토글 ────────────────────────────────────
+// 양쪽 모서리 기둥(x=0.15·7.85) 사이를 정면 중앙 기둥(x=4.0)에서 반으로 갈라, 양쪽 바깥으로
+//   접히는 폴딩도어. 가운데 두 짝(중앙 분리선 양쪽)이 평소 출입문. 표준 패널폭~0.8m·표준 높이 2.1m.
+captureInto(s2FoldingObjects, () => {
+  const F = materials.entryFrame, G = materials.glass;
+  const baseY = groundTopY + MAT_H, fTop = baseY + S2_STAIR.slabT;   // 1층 바닥 표면(층참 윗면)
+  const z = s2FrontZ + 0.15;                                         // 정면 기둥 열(모서리 기둥 사이)
+  const fz = z - 0.06, fd = 0.12, gz = z - 0.03, gd = 0.05, mw = 0.05;
+  const x0 = 0.15, x1 = s2W - 0.15, midX = (x0 + x1) / 2;            // 모서리 기둥 안쪽 ~ 안쪽, 중앙=4.0
+  const sillY = fTop, headY = fTop + 2.1, h = headY - sillY;        // 표준 출입 높이 2.1m
+  const per = Math.max(2, Math.round((midX - x0) / 0.8));           // 한쪽 표준 패널 ~0.8m → 5짝
+  const nB = per * 2, panelW = (x1 - x0) / nB;                      // 양쪽 합 10짝, 1짝 폭(파생)
+  box({ x: x0, z: fz, w: x1 - x0, d: fd, y: sillY, h: 0.08, mat: F });            // 하부 문턱(전폭)
+  box({ x: x0, z: fz, w: x1 - x0, d: fd, y: headY - 0.08, h: 0.08, mat: F });     // 상부 헤드 트랙(전폭)
+  for (let i = 0; i <= nB; i += 1) {                                              // 세로 멀리언(패널 경계)
+    const mx = x0 + panelW * i, meet = (i === per), sw = meet ? mw * 1.8 : mw;    // 중앙 분리선(만남대)은 약간 두껍게
+    box({ x: mx - sw / 2, z: fz, w: sw, d: fd, y: sillY + 0.08, h: h - 0.16, mat: F, cast: false });
+  }
+  for (let i = 0; i < nB; i += 1)                                                 // 유리 패널 10짝
+    box({ x: x0 + panelW * i + mw / 2, z: gz, w: panelW - mw, d: gd, y: sillY + 0.1, h: h - 0.2, mat: G, cast: false });
+  box({ x: midX - 0.14, z: gz + 0.06, w: 0.04, d: 0.04, y: sillY + h * 0.42, h: h * 0.2, mat: materials.handle });   // 출입문짝 손잡이(중앙 양쪽)
+  box({ x: midX + 0.10, z: gz + 0.06, w: 0.04, d: 0.04, y: sillY + h * 0.42, h: h * 0.2, mat: materials.handle });
+  label(`정면 폴딩도어 — 중앙 분리·양쪽 바깥 접힘(표준 ${fmtDim(panelW)}m·${nB}짝), 가운데 두 짝 출입`, midX, headY + 0.18, z - 0.5, 'opening');
+});
+
+// ── s2 1층 정면 폴딩도어 앞 전체폭 계단(바닥→지면) — '계단' 토글 ───────────────────
+// 폴딩도어 바로 앞으로 지면까지 내려가는 콘크리트 계단. 디딤 깊이 30cm·전체폭(폴딩도어와 동일).
+//   한 단 높이 ≤15cm가 되도록 단수 = ceil(층높이/0.15) 계산 → 단높이는 파생.
+captureInto(s2FrontStairObjects, () => {
+  const baseY = groundTopY + MAT_H, fTop = baseY + S2_STAIR.slabT;   // 바닥 표면(0.7)
+  const x0 = 0.15, sw = (s2W - 0.15) - x0;                           // 폴딩도어와 같은 전체폭
+  const zTop = s2FrontZ + 0.15;                                      // 계단 맨 위(바닥 모서리=정면 기둥 열)
+  const total = fTop - groundTopY;                                   // 바닥→지면 높이
+  const risers = Math.ceil(total / 0.15);                            // 한 단 ≤15cm → 필요 단수
+  const r = total / risers, tread = 0.30;                            // 단높이(파생)·디딤 깊이 30cm
+  const M = materials.matFoundation;                                 // 콘크리트 계단
+  for (let k = 1; k < risers; k += 1) {                              // 디딤(맨 위 상승은 바닥에 닿음)
+    const treadTop = groundTopY + r * k;                             // 각 단 윗면
+    const frontZ = zTop - tread * (risers - k);                      // 아래 단일수록 더 앞(−z)으로
+    box({ x: x0, z: frontZ, w: sw, d: zTop - frontZ, y: groundTopY, h: treadTop - groundTopY, mat: M });
+  }
+  label(`정면 계단 — 전체폭 ${fmtDim(sw)}m · 디딤 30cm · ${risers}단(단높이 ${(r * 100).toFixed(0)}cm)`, x0 + sw / 2, fTop + 0.3, zTop - tread * risers - 0.3, 'dim');
 });
 
 // ── s2 1층 가구(식탁·의자) — '테이블·의자' 토글(구조 섹션) ─────────────────────────
@@ -2518,6 +2563,8 @@ const view = {
   s2Furniture: false,    // s2 1층 가구(식탁·의자)
   s2Sink: false,         // s2 1층 싱크대(주방)
   s2Stove: false,        // s2 1층 화목난로(오른쪽 붉은 예약 구획) — '난로' 버튼
+  s2Folding: false,      // s2 1층 정면 폴딩도어 — '폴딩도어' 버튼
+  s2FrontStair: false,   // s2 1층 정면 폴딩도어 앞 전체폭 계단 — '계단' 버튼
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2560,6 +2607,8 @@ const PARTS = [
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
   { key: 's2Sink', arrays: [s2SinkObjects] },
   { key: 's2Stove', arrays: [s2StoveObjects] },
+  { key: 's2Folding', arrays: [s2FoldingObjects] },
+  { key: 's2FrontStair', arrays: [s2FrontStairObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2618,6 +2667,7 @@ function syncSegButtons() {
   setActive('bS2StairAll', view.s2StairF1 && view.s2StairF2);
   setActive('bS2Floor1', view.s2Floor1); setActive('bS2Floor2', view.s2Floor2); setActive('bS2Floor3', view.s2Floor3);
   setActive('bS2FloorAll', view.s2Floor1 && view.s2Floor2 && view.s2Floor3);
+  setActive('bS2Folding', view.s2Folding); setActive('bS2FrontStair', view.s2FrontStair);
   setActive('bRoofWallFB', view.roofWallFB); setActive('bRoofWallLR', view.roofWallLR);
   setActive('bRoofWallAll', view.roofWallFB && view.roofWallLR);
   setActive('bHedge', view.hedge); setActive('bFence', view.fence);
@@ -2788,6 +2838,8 @@ bindSegButton('bS2Floor1', () => { view.s2Floor1 = !view.s2Floor1; });
 bindSegButton('bS2Floor2', () => { view.s2Floor2 = !view.s2Floor2; });
 bindSegButton('bS2Floor3', () => { view.s2Floor3 = !view.s2Floor3; });
 bindSegButton('bS2FloorAll', () => { const on = !(view.s2Floor1 && view.s2Floor2 && view.s2Floor3); view.s2Floor1 = on; view.s2Floor2 = on; view.s2Floor3 = on; });
+bindSegButton('bS2Folding', () => { view.s2Folding = !view.s2Folding; });
+bindSegButton('bS2FrontStair', () => { view.s2FrontStair = !view.s2FrontStair; });
 bindSegButton('bRoofWallFB', () => { view.roofWallFB = !view.roofWallFB; });
 bindSegButton('bRoofWallLR', () => { view.roofWallLR = !view.roofWallLR; });
 bindSegButton('bRoofWallAll', () => { const on = !(view.roofWallFB && view.roofWallLR); view.roofWallFB = on; view.roofWallLR = on; });
