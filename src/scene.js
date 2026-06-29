@@ -87,32 +87,6 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bRoofWallLR">좌우</button>
         </div>
       </section>
-      <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">구조</h2>
-        <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×5.6, 0.5m)</span></label>
-        <div class="seg-row" role="group" aria-label="계단 표시">
-          <button type="button" class="seg-btn" id="bS2StairAll">계단</button>
-          <button type="button" class="seg-btn" id="bS2StairF1">1층&gt;2층</button>
-          <button type="button" class="seg-btn" id="bS2StairF2">2층&gt;3층</button>
-        </div>
-        <div class="seg-row" role="group" aria-label="바닥 표시">
-          <button type="button" class="seg-btn" id="bS2FloorAll">바닥</button>
-          <button type="button" class="seg-btn" id="bS2Floor1">1층</button>
-          <button type="button" class="seg-btn" id="bS2Floor2">2층</button>
-          <button type="button" class="seg-btn" id="bS2Floor3">3층</button>
-        </div>
-        <label class="chk"><input id="cS2Wall1" type="checkbox"><span>외벽 1층 (0.3m)</span></label>
-        <label class="chk"><input id="cS2Wall2" type="checkbox"><span>외벽 2층 (0.3m)</span></label>
-        <label class="chk"><input id="cS2Wall3" type="checkbox"><span>외벽 3층 (0.3m)</span></label>
-        <div class="seg-row" role="group" aria-label="1층 정면">
-          <button type="button" class="seg-btn" id="bS2Folding">폴딩도어</button>
-          <button type="button" class="seg-btn" id="bS2FrontStair">계단</button>
-        </div>
-      </section>
-      <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">참고</h2>
-        <label class="chk"><input id="cS2Frame" type="checkbox"><span>1층 골조 (포치 하중지지)</span></label>
-      </section>
     </aside>
     <section class="stage-wrap">
       <div id="stage" aria-label="주말주택 3D 개념 모형"></div>

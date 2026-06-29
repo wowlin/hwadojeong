@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, roofWallFBObjects, roofWallLRObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2FoldingObjects, s2FrontStairObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, roofWallFBObjects, roofWallLRObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -923,7 +923,7 @@ captureSecond(() => {
 // 스틸 골조((주)세움스틸하우스) — 1층/다락/지붕 골조. "골조" 단일 토글로 일괄 제어.
 // 부재는 아연도금 경량형강 느낌의 얇은 회색 박스로 표현(스터드·트랙·장선·서까래·용마루).
 // ───────────────────────────────────────────────────────────────────────────
-// 골조 재질(steelFrame·woodFrame·houseFloorFrame·deckFloorFrame)은 ./materials.js에 정의됨.
+// 골조 재질(woodFrame·deckFloorFrame)은 ./materials.js에 정의됨.
 
 function captureInto(arr, fn) {
   const s = scene.children.length;
@@ -1821,74 +1821,6 @@ captureInto(s2DimObjects, () => {
   });
 })();
 
-// ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
-// 1층은 벽 없는 포치 → 기둥-보(라멘조)로 상부 하중 지지. 오른쪽 계단·물코어를 1층까지
-//   전단벽으로 내려 횡력(지진·바람) 전담 → 약층(soft-story) 방지. 2층 바닥엔 전이보 격자.
-captureInto(s2FrameObjects, () => {
-  const baseY = groundTopY + MAT_H, fh = 3.3, floorTh = 0.6, L2 = baseY + fh;   // 1층 층고 3.3 / 2층 바닥(전이보 포함) 두께 0.6
-  const colTop = L2 - floorTh;                                  // 기둥·코어벽 상단 = 2층 바닥판 밑면
-  const cs = 0.25;                                              // 기둥 단면
-  const xs = [0.15, 4.0, 7.85], zs = [s2FrontZ + 0.15, 0.3, s2BackZ - 0.15];   // 기둥 격자(둘레만 — 정중앙 제외)
-  for (const x of xs) for (const z of zs) {
-    if (x === 4.0 && z === 0.3) continue;                       // 정중앙 기둥 제거 — 포치 가운데 무주
-    box({ x: x - cs / 2, z: z - cs / 2, w: cs, d: cs, y: baseY, h: colTop - baseY, mat: materials.steelFrame });   // 둘레 기둥 8본
-  }
-  // 2층 바닥 — 전이보를 포함한 한 겹 바닥두께(0.6m)로 표현(격자 보 대신 두꺼운 슬래브가 가운데 무주 스팬을 건넘)
-  box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: colTop, h: floorTh, mat: materials.houseFloorFrame });
-  // 오른쪽 뒤 코어 전단벽(ㄷ자) — 계단·물코어 둘레, 1층까지 콘크리트. 횡력 전담.
-  const wt = 0.2, cx1 = 2.2, cz0 = 1.0;
-  box({ x: 0, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: colTop - baseY, mat: materials.matFoundation });          // 오른쪽 외벽면(x=0)
-  box({ x: 0, z: s2BackZ - wt, w: cx1, d: wt, y: baseY, h: colTop - baseY, mat: materials.matFoundation });            // 뒤 외벽면(z=뒤)
-  box({ x: cx1 - wt, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: colTop - baseY, mat: materials.matFoundation });    // 코어 안쪽면(x=2.2)
-  label('둘레 기둥(중앙 무주)', 4.0, baseY + 1.5, 0.3, 'struct');
-  label('2층 바닥(전이보 포함 0.6m)', 5.2, colTop + 0.35, s2FrontZ + 0.2, 'struct');
-  label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
-});
-
-// ── s2 1층 정면 폴딩도어 — '폴딩도어' 토글 ────────────────────────────────────
-// 양쪽 모서리 기둥(x=0.15·7.85) 사이를 정면 중앙 기둥(x=4.0)에서 반으로 갈라, 양쪽 바깥으로
-//   접히는 폴딩도어. 가운데 두 짝(중앙 분리선 양쪽)이 평소 출입문. 표준 패널폭~0.8m·표준 높이 2.1m.
-captureInto(s2FoldingObjects, () => {
-  const F = materials.entryFrame, G = materials.glass;
-  const baseY = groundTopY + MAT_H, fTop = baseY + S2_STAIR.slabT;   // 1층 바닥 표면(층참 윗면)
-  const z = s2FrontZ + 0.15;                                         // 정면 기둥 열(모서리 기둥 사이)
-  const fz = z - 0.06, fd = 0.12, gz = z - 0.03, gd = 0.05, mw = 0.05;
-  const x0 = 0.15, x1 = s2W - 0.15, midX = (x0 + x1) / 2;            // 모서리 기둥 안쪽 ~ 안쪽, 중앙=4.0
-  const sillY = fTop, headY = fTop + 2.1, h = headY - sillY;        // 표준 출입 높이 2.1m
-  const per = Math.max(2, Math.round((midX - x0) / 0.8));           // 한쪽 표준 패널 ~0.8m → 5짝
-  const nB = per * 2, panelW = (x1 - x0) / nB;                      // 양쪽 합 10짝, 1짝 폭(파생)
-  box({ x: x0, z: fz, w: x1 - x0, d: fd, y: sillY, h: 0.08, mat: F });            // 하부 문턱(전폭)
-  box({ x: x0, z: fz, w: x1 - x0, d: fd, y: headY - 0.08, h: 0.08, mat: F });     // 상부 헤드 트랙(전폭)
-  for (let i = 0; i <= nB; i += 1) {                                              // 세로 멀리언(패널 경계)
-    const mx = x0 + panelW * i, meet = (i === per), sw = meet ? mw * 1.8 : mw;    // 중앙 분리선(만남대)은 약간 두껍게
-    box({ x: mx - sw / 2, z: fz, w: sw, d: fd, y: sillY + 0.08, h: h - 0.16, mat: F, cast: false });
-  }
-  for (let i = 0; i < nB; i += 1)                                                 // 유리 패널 10짝
-    box({ x: x0 + panelW * i + mw / 2, z: gz, w: panelW - mw, d: gd, y: sillY + 0.1, h: h - 0.2, mat: G, cast: false });
-  box({ x: midX - 0.14, z: gz + 0.06, w: 0.04, d: 0.04, y: sillY + h * 0.42, h: h * 0.2, mat: materials.handle });   // 출입문짝 손잡이(중앙 양쪽)
-  box({ x: midX + 0.10, z: gz + 0.06, w: 0.04, d: 0.04, y: sillY + h * 0.42, h: h * 0.2, mat: materials.handle });
-  label(`정면 폴딩도어 — 중앙 분리·양쪽 바깥 접힘(표준 ${fmtDim(panelW)}m·${nB}짝), 가운데 두 짝 출입`, midX, headY + 0.18, z - 0.5, 'opening');
-});
-
-// ── s2 1층 정면 폴딩도어 앞 전체폭 계단(바닥→지면) — '계단' 토글 ───────────────────
-// 폴딩도어 바로 앞으로 지면까지 내려가는 콘크리트 계단. 디딤 깊이 30cm·전체폭(폴딩도어와 동일).
-//   한 단 높이 ≤15cm가 되도록 단수 = ceil(층높이/0.15) 계산 → 단높이는 파생.
-captureInto(s2FrontStairObjects, () => {
-  const baseY = groundTopY + MAT_H, fTop = baseY + S2_STAIR.slabT;   // 바닥 표면(0.7)
-  const x0 = 0.15, sw = (s2W - 0.15) - x0;                           // 폴딩도어와 같은 전체폭
-  const zTop = s2FrontZ + 0.15;                                      // 계단 맨 위(바닥 모서리=정면 기둥 열)
-  const total = fTop - groundTopY;                                   // 바닥→지면 높이
-  const risers = Math.ceil(total / 0.15);                            // 한 단 ≤15cm → 필요 단수
-  const r = total / risers, tread = 0.30;                            // 단높이(파생)·디딤 깊이 30cm
-  const M = materials.matFoundation;                                 // 콘크리트 계단
-  for (let k = 1; k < risers; k += 1) {                              // 디딤(맨 위 상승은 바닥에 닿음)
-    const treadTop = groundTopY + r * k;                             // 각 단 윗면
-    const frontZ = zTop - tread * (risers - k);                      // 아래 단일수록 더 앞(−z)으로
-    box({ x: x0, z: frontZ, w: sw, d: zTop - frontZ, y: groundTopY, h: treadTop - groundTopY, mat: M });
-  }
-  label(`정면 계단 — 전체폭 ${fmtDim(sw)}m · 디딤 30cm · ${risers}단(단높이 ${(r * 100).toFixed(0)}cm)`, x0 + sw / 2, fTop + 0.3, zTop - tread * risers - 0.3, 'dim');
-});
-
 // ── s2 1층 가구(식탁·의자) — '테이블·의자' 토글(구조 섹션) ─────────────────────────
 // 식탁 3개(윗판 110×72cm·높이 0.72)를 좌우(x)로 이어 옆으로 길게(약 3.3m). 의자=반고 햄프턴 DLX(campingChair,
 //  폭~0.6·깊이~0.55·좌고 0.42 — 실제 햄프턴 DLX 폭 60·좌고 45와 부합). 앞·뒤 긴 변에 테이블당 1개씩 여유있게.
@@ -1975,35 +1907,6 @@ captureInto(s2SinkObjects, () => {
 });
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
-// 외벽 두께 0.3m(외단열·마감 포함 기준). 층마다 따로 켜고 끌 수 있게 1·2·3층 분리. 반투명 — 내부 보이게.
-// 공사 가능하게: 외벽은 그 층 바닥 레벨에서 시작해 '위층 바닥판 밑면'까지만(겹침 0). 바닥판은 그 층
-//   바닥 레벨에서 아래로(아래층 벽 위에 얹힘). 1층 바닥은 0.5m 매트기초가 겸하므로 따로 안 그림.
-// 바닥(RC 슬래브) 두께: 일반 0.2m, 2층만 0.6m(1층 개방 포치 위 전이층, 골조 전이보 포함과 동일).
-const s2WallFloor = (arr, floorNo, flY, wallTopY, ftf, slabTs) => captureInto(arr, () => {
-  const t = s2WallT, h = wallTopY - flY;
-  if (slabTs) box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: flY - slabTs, h: slabTs, mat: materials.houseFloorFrame });   // 바닥 슬래브(윗면=바닥 레벨, 아래층 벽 위에 얹힘)
-  if (floorNo !== 1) box({ x: s2X0, z: s2FrontZ, w: s2W, d: t, y: flY, h, mat: materials.exteriorWall });    // 앞벽(현관 쪽) — 1층은 개방(포치)
-  box({ x: s2X0, z: s2BackZ - t, w: s2W, d: t, y: flY, h, mat: materials.exteriorWall });                   // 뒤벽(측백 쪽)
-  box({ x: s2X0, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y: flY, h, mat: materials.exteriorWall });           // 거실측(오른쪽) 옆벽
-  if (floorNo !== 1) box({ x: s2X0 + s2W - t, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y: flY, h, mat: materials.exteriorWall });  // 안방측(왼쪽) 옆벽 — 1층은 개방
-  // 천장고 — 윗층 바닥 슬래브와 함께 표시(층고는 표기 안 함). 이 슬래브 밑면 = 아래층 천장.
-  if (floorNo === 2) {                                                                                       // 2층 바닥 표시 → 1층 천장고
-    planYDim(-0.4, s2FrontZ + 0.2, _wBase, flY - slabTs, `1층 천장고 ${fmtDim((flY - slabTs) - _wBase)}m`);
-  } else if (floorNo === 3) {                                                                                // 3층 바닥 표시 → 2층 천장고 + 3층 천장고(최저·최고)
-    const peakY = s2RoofUnderY(s2RidgeZ);                                                                    // 박공 꼭지점(용마루) 밑선
-    planYDim(-0.4, s2FrontZ + 0.2, F2, flY - slabTs, `2층 천장고 ${fmtDim((flY - slabTs) - F2)}m`);
-    planYDim(-1.0, s2FrontZ + 0.2, flY, roofY, `3층 천장고(최저) ${fmtDim(roofY - flY)}m`);
-    planYDim(-1.6, s2FrontZ + 0.2, flY, peakY, `3층 천장고(최고) ${fmtDim(peakY - flY)}m`);
-  }
-  label(`외벽 ${floorNo}층 0.3m`, s2X0 + s2W / 2, flY + h * 0.5, s2FrontZ + 0.2, 'struct');
-  label(slabTs ? `${floorNo}층 바닥 ${fmtDim(slabTs)}m` : '1층 바닥=매트기초 0.5m 겸함',
-    s2X0 + s2W * 0.7, slabTs ? flY - slabTs / 2 : flY + 0.3, s2BackZ - 0.5, 'struct');                      // 바닥 슬래브 두께(1층은 기초가 겸함)
-});
-const ts2 = s2Floor2SlabT, ts3 = s2Floor3SlabT;                  // 2·3층 바닥 두께 — 치수와 동일한 모듈 단일 출처 참조
-s2WallFloor(s2Wall1Objects, 1, _wBase, F2 - ts2, _wFh1, 0);       // 1층 외벽(2층 바닥 밑면까지) — 바닥은 매트기초가 겸함
-s2WallFloor(s2Wall2Objects, 2, F2, F3 - ts3, _wFh, ts2);          // 2층 외벽(3층 바닥 밑면까지) + 2층 바닥 0.6(전이)
-s2WallFloor(s2Wall3Objects, 3, F3, roofY, _wFh3, ts3);           // 3층 외벽(천장고 2.4·지붕까지) + 3층 바닥 0.2
-
 // ── 박공지붕 외벽 envelope(기초 상단~지붕 아래) — '지붕' 그룹 [외벽][앞뒤][좌우] 토글 ──
 // 박공 30°(기준·초과 금지). 용마루는 긴변(X, 8.0m) 따라가고 경사는 깊이(Z, s2D) 가로지름 →
 //   앞뒤벽 = 처마(평탄 상단, roofY) │ 좌우벽 = 박공 삼각(중앙서 용마루까지) → 좌우 끝에 꼭지점.
@@ -2547,9 +2450,6 @@ const view = {
   hedge: false, fence: false,
   // 2층·다락 탭(s2)
   s2Foundation: false,   // s2 집 기초(온통 0.5m 슬래브 8×6)
-  s2Wall1: false,        // s2 외벽 1층(둘레 0.3m)
-  s2Wall2: false,        // s2 외벽 2층(둘레 0.3m)
-  s2Wall3: false,        // s2 외벽 3층(둘레 0.3m)
   roofWallFB: false,     // 박공 외벽 앞뒤(처마) — '지붕' 그룹 '앞뒤' 버튼
   roofWallLR: false,     // 박공 외벽 좌우(박공 삼각·꼭지점) — '지붕' 그룹 '좌우' 버튼
   roofWall: false,       // (메모용 파생) 앞뒤·좌우 중 하나라도 켜짐 — '외벽' 메모 노출
@@ -2558,12 +2458,9 @@ const view = {
   s2Floor1: false,       // s2 1층 바닥('1층' 버튼)
   s2Floor2: false,       // s2 2층 바닥('2층' 버튼)
   s2Floor3: false,       // s2 3층 바닥('3층' 버튼)
-  s2Frame: false,        // s2 1층 골조(기둥·전이보·코어 전단벽)
   s2Furniture: false,    // s2 1층 가구(식탁·의자)
   s2Sink: false,         // s2 1층 싱크대(주방)
   s2Stove: false,        // s2 1층 화목난로(오른쪽 붉은 예약 구획) — '난로' 버튼
-  s2Folding: false,      // s2 1층 정면 폴딩도어 — '폴딩도어' 버튼
-  s2FrontStair: false,   // s2 1층 정면 폴딩도어 앞 전체폭 계단 — '계단' 버튼
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2592,9 +2489,6 @@ const PARTS = [
   { key: 'hedge',      arrays: [hedgeObjects] },
   { key: 'fence',      arrays: [fenceObjects] },
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
-  { key: 's2Wall1', arrays: [s2Wall1Objects] },
-  { key: 's2Wall2', arrays: [s2Wall2Objects] },
-  { key: 's2Wall3', arrays: [s2Wall3Objects] },
   { key: 'roofWallFB', arrays: [roofWallFBObjects] },
   { key: 'roofWallLR', arrays: [roofWallLRObjects] },
   { key: 's2StairF1', arrays: [s2StairF1Objects] },
@@ -2602,12 +2496,9 @@ const PARTS = [
   { key: 's2Floor1', arrays: [s2Floor1Objects] },
   { key: 's2Floor2', arrays: [s2Floor2Objects] },
   { key: 's2Floor3', arrays: [s2Floor3Objects] },
-  { key: 's2Frame', arrays: [s2FrameObjects] },
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
   { key: 's2Sink', arrays: [s2SinkObjects] },
   { key: 's2Stove', arrays: [s2StoveObjects] },
-  { key: 's2Folding', arrays: [s2FoldingObjects] },
-  { key: 's2FrontStair', arrays: [s2FrontStairObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2618,7 +2509,6 @@ const CHECKS = [
   ['cBath', 'bath'],
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'], ['cS2Sink', 's2Sink'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
@@ -2662,11 +2552,6 @@ function applyVisibility() {
 // 계단·바닥 버튼 행(체크박스 대신 버튼) active 상태 동기화. '계단'·'바닥'은 하위 전부 켜졌을 때 active.
 function setActive(id, on) { const el = document.querySelector('#' + id); if (el) el.classList.toggle('active', !!on); }
 function syncSegButtons() {
-  setActive('bS2StairF1', view.s2StairF1); setActive('bS2StairF2', view.s2StairF2);
-  setActive('bS2StairAll', view.s2StairF1 && view.s2StairF2);
-  setActive('bS2Floor1', view.s2Floor1); setActive('bS2Floor2', view.s2Floor2); setActive('bS2Floor3', view.s2Floor3);
-  setActive('bS2FloorAll', view.s2Floor1 && view.s2Floor2 && view.s2Floor3);
-  setActive('bS2Folding', view.s2Folding); setActive('bS2FrontStair', view.s2FrontStair);
   setActive('bRoofWallFB', view.roofWallFB); setActive('bRoofWallLR', view.roofWallLR);
   setActive('bRoofWallAll', view.roofWallFB && view.roofWallLR);
   setActive('bHedge', view.hedge); setActive('bFence', view.fence);
@@ -2830,15 +2715,6 @@ function bindSegButton(id, onClick) {
     centerTargetHeight();
   });
 }
-bindSegButton('bS2StairF1', () => { view.s2StairF1 = !view.s2StairF1; });
-bindSegButton('bS2StairF2', () => { view.s2StairF2 = !view.s2StairF2; });
-bindSegButton('bS2StairAll', () => { const on = !(view.s2StairF1 && view.s2StairF2); view.s2StairF1 = on; view.s2StairF2 = on; });
-bindSegButton('bS2Floor1', () => { view.s2Floor1 = !view.s2Floor1; });
-bindSegButton('bS2Floor2', () => { view.s2Floor2 = !view.s2Floor2; });
-bindSegButton('bS2Floor3', () => { view.s2Floor3 = !view.s2Floor3; });
-bindSegButton('bS2FloorAll', () => { const on = !(view.s2Floor1 && view.s2Floor2 && view.s2Floor3); view.s2Floor1 = on; view.s2Floor2 = on; view.s2Floor3 = on; });
-bindSegButton('bS2Folding', () => { view.s2Folding = !view.s2Folding; });
-bindSegButton('bS2FrontStair', () => { view.s2FrontStair = !view.s2FrontStair; });
 bindSegButton('bRoofWallFB', () => { view.roofWallFB = !view.roofWallFB; });
 bindSegButton('bRoofWallLR', () => { view.roofWallLR = !view.roofWallLR; });
 bindSegButton('bRoofWallAll', () => { const on = !(view.roofWallFB && view.roofWallLR); view.roofWallFB = on; view.roofWallLR = on; });
