@@ -1875,12 +1875,12 @@ const s2WallFloor = (arr, floorNo, flY, wallTopY, ftf, slabTs) => captureInto(ar
   label(slabTs ? `${floorNo}층 바닥 ${fmtDim(slabTs)}m` : '1층 바닥=매트기초 0.5m 겸함',
     s2X0 + s2W * 0.7, slabTs ? flY - slabTs / 2 : flY + 0.3, s2BackZ - 0.5, 'struct');                      // 바닥 슬래브 두께(1층은 기초가 겸함)
 });
-const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0;       // 1층 층고 3.3 · 2·3층 3.0
-const F2 = _wBase + _wFh1, F3 = _wBase + _wFh1 + _wFh, roofY = _wBase + _wFh1 + 2 * _wFh;   // 2·3층 바닥·지붕 레벨
+const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0, _wFh3 = 2.4;   // 1층 3.3 · 2층 3.0 · 3층 2.4(손님방 천장고)
+const F2 = _wBase + _wFh1, F3 = _wBase + _wFh1 + _wFh, roofY = F3 + _wFh3;   // 2층 바닥 · 3층 바닥 · 지붕(3층 천장 2.4)
 const ts2 = 0.6, ts3 = 0.2;                                       // 2층(전이) 0.6 · 3층 0.2
 s2WallFloor(s2Wall1Objects, 1, _wBase, F2 - ts2, _wFh1, 0);       // 1층 외벽(2층 바닥 밑면까지) — 바닥은 매트기초가 겸함
 s2WallFloor(s2Wall2Objects, 2, F2, F3 - ts3, _wFh, ts2);          // 2층 외벽(3층 바닥 밑면까지) + 2층 바닥 0.6(전이)
-s2WallFloor(s2Wall3Objects, 3, F3, roofY, _wFh, ts3);             // 3층 외벽(지붕까지) + 3층 바닥 0.2
+s2WallFloor(s2Wall3Objects, 3, F3, roofY, _wFh3, ts3);           // 3층 외벽(천장고 2.4·지붕까지) + 3층 바닥 0.2
 
 // ── 박공지붕 외벽 envelope(기초 상단~지붕 아래) — '지붕' 그룹 [외벽][앞뒤][좌우] 토글 ──
 // 박공 30°(기준·초과 금지). 용마루는 긴변(X, 8.0m) 따라가고 경사는 깊이(Z, s2D) 가로지름 →
