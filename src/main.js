@@ -1709,12 +1709,13 @@ captureInto(s2Stair2Objects, () => {
   // 바닥(층참) — 1층 전체 + 2·3층은 계단실(우측벽~런 끝 × 두 행 밴드)만 비우고 채움.
   const floor2T = 0.6, floor3T = 0.3;   // 2·3층 바닥 두께(천장고 산정과 단일 출처)
   box({ x: inX0, z: inZ0, w: inW, d: inZ1 - inZ0, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });   // 1층 바닥(전체)
-  const stairFar2 = meta[0].lowerFarX;   // 2층 계단실 끝(高X) = 1→2 하부런 끝(가장 멈)
+  // 각 행은 '자기 런 끝(高X)'까지만 비우고 그 너머를 채운다 — 상부런이 짧아지면 앞 행이 그만큼 계단쪽으로 더 채워진다(단일 출처).
   box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
-  box({ x: stairFar2, z: zB0, w: inX1 - stairFar2, d: inZ1 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 행에서 高X(입구) 쪽
-  const stairFar3 = meta[1].upperFarX;   // 3층 계단실 끝(高X) = 2→3 상부런 끝(짧으면 바닥이 넓어짐)
-  box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });
-  box({ x: stairFar3, z: zB0, w: inX1 - stairFar3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });
+  box({ x: meta[0].upperFarX, z: zB0, w: inX1 - meta[0].upperFarX, d: zA0 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 상부런 행: 상부런 끝부터 채움
+  box({ x: meta[0].lowerFarX, z: zA0, w: inX1 - meta[0].lowerFarX, d: inZ1 - zA0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 하부런 행: 하부런 끝부터 채움
+  box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
+  box({ x: meta[1].upperFarX, z: zB0, w: inX1 - meta[1].upperFarX, d: zA0 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 상부런 행
+  box({ x: meta[1].lowerFarX, z: zA0, w: inX1 - meta[1].lowerFarX, d: inZ1 - zA0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 하부런 행
 
   // 각 층 층고·천장고 — '계단' 화면과 동일한 치수표기(planYDim). 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께.
   const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
@@ -1873,10 +1874,10 @@ captureInto(s2FurnitureObjects, () => {
   const woodT = materials.woodFrame;
   const off = TD / 2 + 0.30;                                  // 테이블 가장자리→의자 중심
   const chairBack = off + 0.33, aisle = 0.9, endGap = 0.9;    // 의자 등받이 뒤끝 · 의자 뒤 통로 0.9 · 테이블 끝 0.9
-  // 식탁 세트(이동공간 포함)를 바닥 왼쪽(高x=7.7 벽)·앞쪽(低z=−2.4 벽) 안쪽에 붙임.
+  // 식탁 세트(이동공간 포함)를 오른쪽(低x) 예약공간 옆·앞쪽(低z=−2.4 벽) 안쪽에 붙임.
   const inXL = s2X0 + s2W - s2WallT, inZF = s2FrontZ + s2WallT;   // 좌(高x)·앞(低z) 외벽 안쪽 면
-  const reserveW = 1.0;                                       // 오른쪽(低x) 벽쪽 예약 공간 폭 — 식탁은 왼쪽 벽에 붙임
-  const cxC = inXL - endGap - 1.5 * TW;                       // 식탁 행 중심 x(좌벽에서 끝여유 + 행 절반 1.5·TW)
+  const reserveW = 1.0;                                       // 오른쪽(低x) 벽쪽 예약 공간 폭 — 식탁은 예약공간 옆에 붙임
+  const cxC = (s2X0 + s2WallT + reserveW) + endGap + 1.5 * TW;   // 식탁 행 중심 x(우벽 예약공간 바깥 + 끝여유 + 행 절반 1.5·TW)
   const cz0 = inZF + aisle + chairBack;                       // 식탁 중심 z(앞벽에서 통로 + 의자 등받이 뒤)
   const cxs = [cxC - TW, cxC, cxC + TW];                      // 3개를 좌우로 이어 옆으로 길게
   for (const cx of cxs) {
