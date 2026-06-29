@@ -1785,11 +1785,12 @@ captureInto(s2DimObjects, () => {
       yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz1, fy], [pz1, fy], [pz1, s2RoofUnderY(pz1)], [dz1, s2RoofUnderY(dz1)]] });        // 문 뒤쪽(高Z) 막힌 벽
       yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz0, fy + dH], [dz1, fy + dH], [dz1, s2RoofUnderY(dz1)], [dz0, s2RoofUnderY(dz0)]] });   // 문 위 인방
     }
-    // 건식 세면대 — 화장실 앞 복도 모서리. 뒤(외벽 高Z)·화장실 거실쪽 벽(高X)이 만나는 코너에 등 붙임. 복도(低Z)를 향함.
+    // 건식 세면대 — 앞뒤로 연결되는 복도(게스트룸1·2 사이)의 좌우 한가운데, 뒤(외벽 高Z)에 등 붙임. 복도(低Z)를 향함.
     //   수전은 세탁기 수도처럼 뒤 외벽에서 나오고, 하부장 안에 경동 나비엔 전기온수기 15L 설치.
     {
       const fy = levels[2], vW = s2F3VanityW, vD = s2F3VanityD, vH = s2F3VanityH;
-      const vx = (inX1 - 1.5) - 0.10 - vW;        // 화장실 거실쪽 벽(高X) 바로 옆 — 복도쪽
+      const corX0 = far3 + 0.15, corX1 = inX1 - s2RoomShort;   // 앞뒤 복도 양쪽 벽 안쪽면(계단실 벽 ~ 게스트룸2 옆벽)
+      const vx = (corX0 + corX1) / 2 - vW / 2;     // 복도 좌우 한가운데
       const vz = inZ1 - vD;                        // 뒤(高Z) 외벽에 등 붙임
       box({ x: vx, z: vz, w: vW, d: vD, y: fy, h: vH, mat: materials.sinkCabinet });                              // 하부장
       box({ x: vx + 0.08, z: vz + 0.06, w: vW - 0.16, d: vD - 0.12, y: fy + vH, h: 0.04, mat: materials.sinkBasin });   // 세면볼
@@ -2674,8 +2675,8 @@ const NOTES = {
       `- 높이: 상인방 없이 바닥~천장(박공 경사 밑선) 전체. 경사라 앞쪽(데크쪽) ${fmtDim(hFront)} m ~ 계단쪽 ${fmtDim(hStair)} m.`,
       '- 즉 문틀·인방으로 막지 말 것. 열리면 개구 전체가 비어 계단실과 한 칸처럼 통해야 한다.',
       '',
-      '[복도 건식 세면대 — 화장실 앞 모서리]',
-      '- 위치: 3층 화장실 앞 복도, 뒤 외벽과 화장실 거실쪽 벽이 만나는 코너. 복도를 향함.',
+      '[복도 건식 세면대 — 앞뒤 복도 좌우 가운데]',
+      '- 위치: 3층 앞뒤로 연결되는 복도(게스트룸1·2 사이)의 좌우 한가운데, 뒤 외벽에 등 붙임. 복도를 향함.',
       `- 하부장 ${fmtDim(s2F3VanityW)}×${fmtDim(s2F3VanityD)} m · 높이 ${fmtDim(s2F3VanityH)} m + 세면볼`,
       '- 수전: 세탁기 수도처럼 뒤 외벽에서 나오는 벽수전.',
       `- 하부장 안에 경동 나비엔 전기온수기 ${s2F3HeaterL} L 설치.`,
