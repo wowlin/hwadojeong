@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, roofWallFBObjects, roofWallLRObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, roofWallFBObjects, roofWallLRObjects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1614,43 +1614,58 @@ captureInto(s2DimObjects, () => {
   }
   const nU = 9;                                                                  // 상부런(계단참 위) 단 수 — 전 비행 9단 통일
   const meta = [];
-  // 비행(1→2·2→3)을 각각 따로 캡처 → 메뉴에서 '1층>2층'·'2층>3층' 버튼으로 비행별 show/hide.
-  const flightArrays = [s2StairF1Objects, s2StairF2Objects];
+  // 비행을 런·계단참 단위로 따로 캡처 → 층별 '계단' 버튼이 그 층에 속한 부분만 보임(공유 부재는 applyVisibility서 OR).
+  //   1→2: 하부런(LowA) / 1-2참+상부런(MidA, 1·2층 공유)   ·   2→3: 하부런(LowB) / 2-3참(MidB, 2·3층 공유) / 상부런(UpB)
+  const drawLowerRun = (fl, nL) => {                            // 하부런(뒤벽 행): 멀리(高X)→참(右벽) 오름, 앞코 高X쪽
+    for (let k = 1; k <= nL; k += 1) {
+      const top = fl + (nL - k + 1) * R;
+      treadX(xRun0 + (k - 1) * T, zA0, top, 1);
+      riserX(xRun0 + k * T - rTh, zA0, top);                    // 챌판 — 하부런 앞면(高X쪽)
+    }
+  };
+  const drawUpperRun = (fl, nL) => {                            // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지, 앞코 低X쪽
+    for (let m = 1; m <= nU; m += 1) {
+      const top = fl + (nL + 1 + m) * R;
+      treadX(xRun0 + (m - 1) * T, zB0, top, -1);
+      riserX(xRun0 + (m - 1) * T, zB0, top);                    // 챌판 — 상부런 앞면(低X쪽)
+    }
+  };
   flights.forEach(({ fl, risers }, fi) => {
-    captureInto(flightArrays[fi], () => {
-      const nL = risers - 2 - nU;                                                            // 하부런(계단참 아래) 단 수 — 남는 단차 흡수(1→2:11, 2→3:9)
-      for (let k = 1; k <= nL; k += 1) {
-        const top = fl + (nL - k + 1) * R;
-        treadX(xRun0 + (k - 1) * T, zA0, top, 1);               // 하부런(뒤벽 행): 멀리(高X)→참(右벽) 오름, 앞코 高X쪽
-        riserX(xRun0 + k * T - rTh, zA0, top);                  // 챌판 — 하부런 앞면(高X쪽)
-      }
-      landing(fl + (nL + 1) * R);                                                            // 우측벽 참(180° 반환)
-      if (fi === 0)
+    const nL = risers - 2 - nU;                                                              // 하부런(계단참 아래) 단 수 — 남는 단차 흡수(1→2:11, 2→3:9)
+    if (fi === 0) {
+      // 1→2 하부런 + 1층 계단아래 수납 → LowA(1층 계단)
+      captureInto(s2StairLowA, () => {
+        drawLowerRun(fl, nL);
         box({ x: xRun0 - rTh, z: zA0, w: rTh, d: W, y: levels[0], h: fl + (nL + 1) * R - levels[0], mat: materials.landingRiser });   // 계단참 직전 챌판 — 1층 바닥까지 연장(구별용 파랑)
-      else
-        box({ x: xRun0 - rTh, z: zA0, w: rTh, d: W, y: fl + (nL + 1) * R - R, h: R, mat: materials.stairWall });   // 계단참 챌판 — 참과 그 아래 마지막 하부런 발판 사이 세로판
-      for (let m = 1; m <= nU; m += 1) {
-        const top = fl + (nL + 1 + m) * R;
-        treadX(xRun0 + (m - 1) * T, zB0, top, -1);              // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지, 앞코 低X쪽
-        riserX(xRun0 + (m - 1) * T, zB0, top);                  // 챌판 — 상부런 앞면(低X쪽)
-      }
-      meta.push({ lowerFarX: xRun0 + nL * T, upperFarX: xRun0 + nU * T });
-      // 1층 시작계단~첫 계단참: 하부런 앞면(거실쪽·低Z)을 단 윤곽 따라 바닥까지 막아 계단 아래 수납(계단형 문)
-      if (fi === 0) {
+        // 1층 시작계단~첫 계단참: 하부런 앞면(거실쪽·低Z)을 단 윤곽 따라 바닥까지 막아 계단 아래 수납(계단형 문)
         const usTh = 0.04;
         for (let k = 1; k <= nL; k += 1)
           box({ x: xRun0 + (k - 1) * T, z: zA0 - usTh, w: T, d: usTh, y: levels[0], h: (nL - k + 1) * R, mat: materials.interiorDoor });   // 단별 문 패널(높이=그 단까지)
         // 계단참 아래 문 — 세로 반 분할 쌍여닫이(양쪽으로 열림). 경첩=양 끝(우측벽쪽·런쪽), 손잡이=가운데 맞닿는 곳.
-        {
-          const lgap = 0.02, leafW = (W - lgap) / 2, doorZ = zA0 - usTh, doorH = (nL + 1) * R, hy = levels[0] + 1.0;
-          box({ x: inX0, z: doorZ, w: leafW, d: usTh, y: levels[0], h: doorH, mat: materials.interiorDoorLanding });                 // 좌 문짝
-          box({ x: inX0 + leafW + lgap, z: doorZ, w: leafW, d: usTh, y: levels[0], h: doorH, mat: materials.interiorDoorLanding });   // 우 문짝
-          box({ x: inX0 + leafW - 0.05, z: doorZ - 0.03, w: 0.05, d: 0.03, y: hy, h: 0.05, mat: materials.handle });                 // 좌 손잡이
-          box({ x: inX0 + leafW + lgap, z: doorZ - 0.03, w: 0.05, d: 0.03, y: hy, h: 0.05, mat: materials.handle });                 // 우 손잡이
-        }
+        const lgap = 0.02, leafW = (W - lgap) / 2, doorZ = zA0 - usTh, doorH = (nL + 1) * R, hy = levels[0] + 1.0;
+        box({ x: inX0, z: doorZ, w: leafW, d: usTh, y: levels[0], h: doorH, mat: materials.interiorDoorLanding });                 // 좌 문짝
+        box({ x: inX0 + leafW + lgap, z: doorZ, w: leafW, d: usTh, y: levels[0], h: doorH, mat: materials.interiorDoorLanding });   // 우 문짝
+        box({ x: inX0 + leafW - 0.05, z: doorZ - 0.03, w: 0.05, d: 0.03, y: hy, h: 0.05, mat: materials.handle });                 // 좌 손잡이
+        box({ x: inX0 + leafW + lgap, z: doorZ - 0.03, w: 0.05, d: 0.03, y: hy, h: 0.05, mat: materials.handle });                 // 우 손잡이
         label('계단 아래 수납(계단형 문)', xRun0 + 1.0, levels[0] + 0.5, zA0 - 0.1, 'furniture');
-      }
-    });
+      });
+      // 1-2계단참 + 상부런 → MidA(1·2층 공유)
+      captureInto(s2StairMidA, () => {
+        landing(fl + (nL + 1) * R);                                                          // 우측벽 참(180° 반환)
+        drawUpperRun(fl, nL);
+      });
+    } else {
+      // 2→3 하부런 → LowB(2층 계단)
+      captureInto(s2StairLowB, () => { drawLowerRun(fl, nL); });
+      // 2-3계단참 → MidB(2·3층 공유)
+      captureInto(s2StairMidB, () => {
+        landing(fl + (nL + 1) * R);                                                          // 우측벽 참(180° 반환)
+        box({ x: xRun0 - rTh, z: zA0, w: rTh, d: W, y: fl + (nL + 1) * R - R, h: R, mat: materials.stairWall });   // 계단참 챌판 — 참과 그 아래 마지막 하부런 발판 사이 세로판
+      });
+      // 2→3 상부런 → UpB(3층 계단)
+      captureInto(s2StairUpB, () => { drawUpperRun(fl, nL); });
+    }
+    meta.push({ lowerFarX: xRun0 + nL * T, upperFarX: xRun0 + nU * T });
   });
 
   // 각 층 바닥(층참) — 별도 행 [바닥][1층][2층][3층]로 토글하도록 층별로 따로 캡처.
@@ -2451,8 +2466,9 @@ const view = {
   roofWallFB: false,     // 박공 외벽 앞뒤(처마) — '지붕' 그룹 '앞뒤' 버튼
   roofWallLR: false,     // 박공 외벽 좌우(박공 삼각·꼭지점) — '지붕' 그룹 '좌우' 버튼
   roofWall: false,       // (메모용 파생) 앞뒤·좌우 중 하나라도 켜짐 — '외벽' 메모 노출
-  s2StairF1: false,      // s2 계단2 1→2층 비행('1층>2층' 버튼)
-  s2StairF2: false,      // s2 계단2 2→3층 비행('2층>3층' 버튼)
+  s2StairF1: false,      // 1층 계단 버튼 — 1→2 전체(하부런+1-2참+상부런)
+  s2StairF2: false,      // 2층 계단 버튼 — 1-2참+상부런 + 2→3 하부런 + 2-3참
+  s2StairF3: false,      // 3층 계단 버튼 — 2-3참 + 2→3 상부런
   s2Floor1: false,       // s2 1층 바닥('1층' 버튼)
   s2Floor2: false,       // s2 2층 바닥('2층' 버튼)
   s2Floor3: false,       // s2 3층 바닥('3층' 버튼)
@@ -2489,8 +2505,6 @@ const PARTS = [
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
   { key: 'roofWallFB', arrays: [roofWallFBObjects] },
   { key: 'roofWallLR', arrays: [roofWallLRObjects] },
-  { key: 's2StairF1', arrays: [s2StairF1Objects] },
-  { key: 's2StairF2', arrays: [s2StairF2Objects] },
   { key: 's2Floor1', arrays: [s2Floor1Objects] },
   { key: 's2Floor2', arrays: [s2Floor2Objects] },
   { key: 's2Floor3', arrays: [s2Floor3Objects] },
@@ -2538,8 +2552,17 @@ function applyVisibility() {
   }
   // 미사용 배열(삭제된 골조 토글 · 구 통합 계단벽[분리됨])
   for (const item of stairWallObjects) item.visible = false;
-  // 계단2 공유부(라벨·층고 치수)는 비행(1→2·2→3) 중 하나라도 켜지면 함께 보임
-  { const on = !isPlan && (view.s2StairF1 || view.s2StairF2); for (const item of s2Stair2Objects) item.visible = on; }
+  // s2 계단 런·계단참 — 층별 버튼이 그 층에 속한 부분만. 공유 부재(MidA·MidB)는 인접 층 버튼의 OR로 표시.
+  { const f1 = view.s2StairF1, f2 = view.s2StairF2, f3 = view.s2StairF3;
+    const set = (arr, on) => { for (const item of arr) item.visible = !isPlan && on; };
+    set(s2StairLowA, f1);              // 1→2 하부런 — 1층 계단
+    set(s2StairMidA, f1 || f2);        // 1-2참+상부런 — 1·2층 공유
+    set(s2StairLowB, f2);              // 2→3 하부런 — 2층 계단
+    set(s2StairMidB, f2 || f3);        // 2-3참 — 2·3층 공유
+    set(s2StairUpB,  f3);              // 2→3 상부런 — 3층 계단
+  }
+  // 계단2 공유부(라벨·층고 치수)는 계단 버튼(1·2·3층) 중 하나라도 켜지면 함께 보임
+  { const on = !isPlan && (view.s2StairF1 || view.s2StairF2 || view.s2StairF3); for (const item of s2Stair2Objects) item.visible = on; }
   // 체크박스 상태 동기화(단일 출처)
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
   view.roofWall = view.roofWallFB || view.roofWallLR;   // '외벽' 메모(앞뒤·좌우 어느 쪽이든 켜지면 노출)
@@ -2557,7 +2580,7 @@ function syncSegButtons() {
   // '1층' 그룹 버튼 — 구조 섹션의 같은 부품을 공유 토글(active 동기화)
   setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Stair', view.s2StairF1);
   setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove);
-  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF1 && view.s2StairF2); setActive('bF3Floor', view.s2Floor3);
+  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF3Floor', view.s2Floor3); setActive('bF3Stair', view.s2StairF3);
 }
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
@@ -2689,7 +2712,7 @@ const SEG_KEYS = {                              // 버튼 id → 제어하는 vi
   bHedge: ['hedge'], bFence: ['fence'],
   bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Stair: ['s2StairF1'],
   bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'],
-  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF1', 's2StairF2'], bF3Floor: ['s2Floor3'],
+  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF3Floor: ['s2Floor3'], bF3Stair: ['s2StairF3'],
 };
 const groupControls = [];   // [{ btn, keys }] — 각 그룹의 전체버튼 + 제어 키 목록(초기 1회 산출)
 for (const sec of document.querySelectorAll('.menu-group')) {
@@ -2764,8 +2787,9 @@ bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
 bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
 bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
 bindSegButton('bF2Floor', () => { view.s2Floor2 = !view.s2Floor2; });
-bindSegButton('bF2Stair', () => { const on = !(view.s2StairF1 && view.s2StairF2); view.s2StairF1 = on; view.s2StairF2 = on; });   // 2층 계단 = 1→2층 + 2→3층 비행 함께
+bindSegButton('bF2Stair', () => { view.s2StairF2 = !view.s2StairF2; });   // 2층 계단 = 1-2참+상부런 + 2→3 하부런 + 2-3참
 bindSegButton('bF3Floor', () => { view.s2Floor3 = !view.s2Floor3; });
+bindSegButton('bF3Stair', () => { view.s2StairF3 = !view.s2StairF3; });   // 3층 계단 = 2-3참 + 2→3 상부런
 
 // ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
 // 페이지 가장 바깥 선택: 탭마다 별도 설계안. 대지·측백담·옆집담·이격은 모든 탭 공유.
