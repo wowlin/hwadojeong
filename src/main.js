@@ -1686,12 +1686,14 @@ captureInto(s2DimObjects, () => {
   const RM_S = s2RoomShort;                  // 짧은변 = 고정 상수(2.8) — 집 깊이가 이 값에서 파생(연두 깊이 = 회색 너비)
   const RM_L = (inZ1 - 1) - inZ0;            // 긴변 = 앞벽 안쪽 ~ 화장실 앞면 (연두 너비 = 회색 깊이)
   const g2ClosetD = 0.8;                     // 게스트룸2 화장실쪽 붙박이장 깊이(단일 출처) — 방 표기 크기는 이만큼 뺀 실사용 바닥
+  const g2RoomW = inX1 - far3 - 1.15;        // 게스트룸2 너비(3층) — 복도 1.0m 되도록 옆벽(gxL) 도출(far3 옆벽 안쪽면 0.15 + 복도 1.0). 집 깊이 상수 RM_S와 분리.
+  const wcW3 = 1.5 + s2F3VanityW;            // 3층 화장실 너비 — 건식 세면대가 안으로 들어온 만큼(vanity 폭) 거실쪽으로 키움(px0·문·벽 동반 이동)
   const placeMark = (fy, big, wcW = 1.0, wcD = 1.0) => {
     const m = (mat, x0, z0, w = 1.0, d = 1.0) => box({ x: x0, z: z0, w, d, y: fy + 0.006, h: 0.012, mat, cast: false });
     m(materials.wcFloor, inX1 - wcW, inZ1 - wcD, wcW, wcD);   // 화장실 자리(왼쪽-뒤 코너) — 보라
     if (big) {
       m(materials.s3Room2, inX0, inZ0, far3 - inX0, zB0 - inZ0);   // 게스트룸1(연두) — 옆벽(far3)·앞/거실쪽 외벽 안쪽의 실제 공간
-      m(materials.s3Room1, inX1 - RM_S, inZ0, RM_S, RM_L);   // 회색(하늘) — 안방쪽, 세로로 긴 직사각형(좌측벽 밀착)
+      m(materials.s3Room1, inX1 - g2RoomW, inZ0, g2RoomW, RM_L);   // 회색(하늘) — 안방쪽, 세로로 긴 직사각형(좌측벽 밀착). 복도 1.0m 되도록 너비 g2RoomW
     } else {
       m(materials.s3Room2, inX0, inZ0, inW, zB0 - 0.15 - inZ0);   // 앞쪽 길쭉한 방 — 분리벽(zB0-0.15) 앞 전체 폭
     }
@@ -1752,15 +1754,15 @@ captureInto(s2DimObjects, () => {
   captureInto(s2Floor3Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
-    placeMark(levels[2], true, 1.5, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 1.5(X) × 왼쪽벽 따라 1.0(Z)
+    placeMark(levels[2], true, wcW3, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 wcW3(X, 세면대만큼 키움) × 왼쪽벽 따라 1.0(Z)
     const g1W = far3 - inX0, g1D = (zB0 - interiorWall) - inZ0;                                                         // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~계단실 분리벽(10cm) 안쪽
     label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'dim');   // 게스트룸1(연두) — 벽 두께 뺀 실사용 바닥
-    const g2W = RM_S - 0.15, g2D = (RM_L - interiorWall) - g2ClosetD;                                                   // 게스트룸2 실사용 바닥 — 폭=옆벽(15cm) 뺌, 깊이=화장실쪽 벽(10cm)·붙박이장 뺌
-    label(`게스트룸2 ${g2W.toFixed(2)}×${g2D.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + (RM_L - g2ClosetD) / 2, 'dim');   // 게스트룸2(회색) — 벽 두께·붙박이장 뺀 실사용 바닥
+    const g2W = g2RoomW - 0.15, g2D = (RM_L - interiorWall) - g2ClosetD;                                                // 게스트룸2 실사용 바닥 — 폭=옆벽(15cm) 뺌, 깊이=화장실쪽 벽(10cm)·붙박이장 뺌
+    label(`게스트룸2 ${g2W.toFixed(2)}×${g2D.toFixed(2)}m`, inX1 - g2RoomW / 2, levels[2] + 0.4, inZ0 + (RM_L - g2ClosetD) / 2, 'dim');   // 게스트룸2(회색) — 벽 두께·붙박이장 뺀 실사용 바닥
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·앞 회색방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
-      const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - 1.5, pz0 = inZ1 - 1;
+      const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - wcW3, pz0 = inZ1 - 1;
       // 변기 — 뒤벽(高Z)에 물탱크 붙이고 앞(低Z) 착석. 옆벽(좌측 高X)에서 0.2m 띄움(문 스윙 안 닿게, 안 붙게).
       box({ x: px1 - 0.64, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
       box({ x: px1 - 0.62, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
