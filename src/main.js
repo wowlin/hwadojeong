@@ -1585,9 +1585,10 @@ const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFini
   const wF = 2 * W + g;                                     // 참 Z폭(두 행 + 틈)
   const zA0 = inZ1 - W, zB0 = inZ1 - wF;                    // 하부런 행(뒤벽 밀착)·상부런 행(앞쪽)
   const xRun0 = inX0 + W;                                   // 런 시작 X(우측벽 참 바로 옆)
-  const treadX = (x, z, topY) => box({ x, z, w: T, d: W, y: topY - tTh, h: tTh, mat: materials.stair });   // 좌우(±X)로 오르는 단
+  const nosing = 0.02;                                                                                    // 계단코 — 디딤판 앞코가 챌판 위로 돌출하는 길이
+  const treadX = (x, z, topY, dir) => box({ x: dir < 0 ? x - nosing : x, z, w: T + nosing, d: W, y: topY - tTh, h: tTh, mat: materials.stair });   // 좌우(±X)로 오르는 단(앞코 nosing 돌출, dir=오름 앞방향)
   const rTh = 0.03;                                                                                       // 챌판 두께
-  const riserX = (xMin, z, topY) => box({ x: xMin, z, w: rTh, d: W, y: topY - R, h: R, mat: materials.stair });   // 챌판 — 디딤판 앞면 수직판(한 단높이 R)
+  const riserX = (xMin, z, topY) => box({ x: xMin, z, w: rTh, d: W, y: topY - R, h: R, mat: materials.stairWall });   // 챌판 — 디딤판 앞면 수직판(한 단높이 R, 발판과 다른 색)
   const landing = (topY) => box({ x: inX0, z: zB0, w: W, d: wF, y: topY - tTh, h: tTh, mat: materials.landing });   // 우측벽 참(두 행 덮음)
 
   const f1Top = baseY + S2_STAIR.slabT;
@@ -1609,13 +1610,13 @@ const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFini
       const nL = risers - 2 - nU;                                                            // 하부런(계단참 아래) 단 수 — 남는 단차 흡수(1→2:11, 2→3:9)
       for (let k = 1; k <= nL; k += 1) {
         const top = fl + (nL - k + 1) * R;
-        treadX(xRun0 + (k - 1) * T, zA0, top);                  // 하부런(뒤벽 행): 멀리(高X)→참(右벽) 오름
+        treadX(xRun0 + (k - 1) * T, zA0, top, 1);               // 하부런(뒤벽 행): 멀리(高X)→참(右벽) 오름, 앞코 高X쪽
         riserX(xRun0 + k * T - rTh, zA0, top);                  // 챌판 — 하부런 앞면(高X쪽)
       }
       landing(fl + (nL + 1) * R);                                                            // 우측벽 참(180° 반환)
       for (let m = 1; m <= nU; m += 1) {
         const top = fl + (nL + 1 + m) * R;
-        treadX(xRun0 + (m - 1) * T, zB0, top);                  // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지
+        treadX(xRun0 + (m - 1) * T, zB0, top, -1);              // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지, 앞코 低X쪽
         riserX(xRun0 + (m - 1) * T, zB0, top);                  // 챌판 — 상부런 앞면(低X쪽)
       }
       meta.push({ lowerFarX: xRun0 + nL * T, upperFarX: xRun0 + nU * T });
