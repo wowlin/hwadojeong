@@ -1693,8 +1693,7 @@ captureInto(s2DimObjects, () => {
       m(materials.s3Room2, inX0, inZ0, far3 - inX0, zB0 - inZ0);   // 게스트룸1(연두) — 옆벽(far3)·앞/거실쪽 외벽 안쪽의 실제 공간
       m(materials.s3Room1, inX1 - RM_S, inZ0, RM_S, RM_L);   // 회색(하늘) — 안방쪽, 세로로 긴 직사각형(좌측벽 밀착)
     } else {
-      m(materials.s3Room1, inX1 - 1, inZ0);        // 앞벽 좌(안방쪽) 방 — 하늘
-      m(materials.s3Room2, inX0, inZ0);            // 앞벽 우(거실쪽) 방 — 연두
+      m(materials.s3Room2, inX0, inZ0, inW, zB0 - 0.15 - inZ0);   // 앞쪽 길쭉한 방 — 분리벽(zB0-0.15) 앞 전체 폭
     }
   };
   captureInto(s2Floor2Objects, () => {
@@ -1706,14 +1705,14 @@ captureInto(s2DimObjects, () => {
       const wz = zB0 - 0.15, wt = 0.15, wTop = (levels[2] - floor3T) - levels[1];
       const oX0 = far2 + (1.2 - interiorDoorW) / 2, oX1 = oX0 + interiorDoorW;            // 개구 = 도착칸 1.2m 가운데, 폭 0.9
       box({ x: inX0, z: wz, w: oX0 - inX0, d: wt, y: levels[1], h: wTop, mat: materials.wall });                       // 왼쪽 벽(低X·포켓 수납)
-      box({ x: oX1, z: wz, w: (far2 + 1.2 + 0.10) - oX1, d: wt, y: levels[1], h: wTop, mat: materials.wall });         // 오른쪽 벽(高X·모서리까지)
+      box({ x: oX1, z: wz, w: inX1 - oX1, d: wt, y: levels[1], h: wTop, mat: materials.wall });         // 오른쪽 벽 — 방문 벽을 안방 외벽(inX1)까지 곧게 연장(화장실 앞벽 대체, 칸막이선 일직선)
       box({ x: oX0, z: wz, w: interiorDoorW, d: wt, y: levels[1] + interiorDoorH, h: wTop - interiorDoorH, mat: materials.wall });   // 문 위 인방
       pocketDoorHorizontal(oX0, zB0, levels[1], interiorDoorW, interiorDoorH, -1, materials.stdRoomDoor);              // 왼쪽(低X)으로 슬라이드 — 포켓이 低X쪽
       label('표준 방문', oX0 + interiorDoorW / 2, levels[1] + 1.0, zB0 - 0.075, 'opening');
     }
     // 층계참 화장실쪽(高X) 벽 — 주황 도착칸을 1.2×2.1m로 마저 둘러쌈. 10cm, 바닥~천장. 계단 올라오는 변(低X)만 개방.
     box({ x: far2 + 1.2, z: zB0, w: 0.10, d: inZ1 - zB0, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
-    placeMark(levels[1], false, 2.4, 1.6);   // 2층 화장실 = 너비 2.4 × 깊이 1.6
+    placeMark(levels[1], false, inX1 - (far2 + 1.2), wF + 0.15);   // 2층 화장실 = 벽 안쪽 전체(계단실벽~안방외벽 × 분리벽~뒤벽)
     // 2층 화장실(왼쪽-뒤 코너 2.4×1.6m) 권장 배치 — 샤워부스 + 변기 + 세면대 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X·안방쪽)·뒤벽 inZ1(高Z)·앞 방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
@@ -1745,9 +1744,7 @@ captureInto(s2DimObjects, () => {
       );
       swing.position.set(px0, fy + 0.02, pz0);   // 0~PI/2 사분면 = +Z(닫힘,벽)~+X(안쪽 열림)
       scene.add(swing);   // captureInto가 s2Floor2Objects로 자동 수집
-      // 화장실 앞벽(低Z) — 안쪽면을 화장실 경계(pz0)에 맞추고 벽 몸통은 공간 바깥(앞·-Z)으로. 거실쪽은 계단실 옆 세로벽(far2+1.2)까지 연장, 안방쪽은 외벽(px1)까지.
-      const wcWallT = 0.10, wcWallTop = (levels[2] - floor3T) - levels[1];
-      box({ x: far2 + 1.2, z: pz0 - wcWallT, w: px1 - (far2 + 1.2), d: wcWallT, y: fy, h: wcWallTop, mat: materials.wall });
+      // 화장실 앞벽 제거 — 대신 방문 벽(계단실 옆벽)을 안방 외벽까지 곧게 연장해 칸막이선을 일직선으로 함.
     }
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
@@ -2663,6 +2660,16 @@ const NOTES = {
       `- 높이(바닥~계단참 하부): ${fmtDim(height)} m`,
     ].join('\n') };
   },
+  get s2Floor2() {                                         // 2층 — 화장실·앞방 크기. 계단 상수·집 치수서 자동 계산
+    const { W, T, g } = S2_STAIR, wF = 2 * W + g, nU = 9;   // 계단 런 폭·디딤 깊이·상부런 단수(far2 = 계단실 끝 = inX0 + W + nU·T)
+    const inW = s2W - 2 * s2WallT, inD = s2D - 2 * s2WallT;
+    const bathW = inW - W - nU * T - 1.2, bathD = wF + 0.15;   // 화장실: 거실쪽 계단실벽(far2+1.2)~안방 외벽 · 분리벽(zB0-0.15)~뒤벽
+    const roomW = inW, roomD = inD - wF - 0.15;                // 앞방: 분리벽 앞 전체(전폭 × 앞 외벽~분리벽)
+    return { title: '2층 — 화장실 · 앞방', body: [
+      `- 화장실(벽 안쪽 전체): ${fmtDim(bathW)} × ${fmtDim(bathD)} m`,
+      `- 앞쪽 방(벽으로 분리, 길쭉): ${fmtDim(roomW)} × ${fmtDim(roomD)} m`,
+    ].join('\n') };
+  },
   get s2Floor3() {                                         // 3층 — 계단앞(계단실 단열) 문 요구사항. 계단 상수·박공 단면서 자동 계산
     const W = S2_STAIR.W, wF = 2 * W + S2_STAIR.g;          // 계단 런 폭 · 계단참 깊이
     const inZ1 = s2BackZ - s2WallT, zB0 = inZ1 - wF;        // 계단실 앞면(개구 시작 Z)
@@ -2706,7 +2713,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor3', 's2Wall3'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor2', 's2Floor3', 's2Wall3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
