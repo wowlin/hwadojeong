@@ -1670,7 +1670,7 @@ captureInto(s2DimObjects, () => {
   captureInto(s2Floor3Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
-    placeMark(levels[2], true);
+    placeMark(levels[2], true, 1.0, 1.5);   // 3층 화장실 = 왼쪽벽 1.0 × 뒤쪽벽 1.5
     label(`연두 ${RM_L.toFixed(2)}×${RM_S.toFixed(2)}m`, inX0 + RM_L / 2, levels[2] + 0.4, inZ0 + RM_S / 2, 'dim');   // 연두방 크기
     label(`회색 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 회색방 크기
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
