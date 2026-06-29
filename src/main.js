@@ -1667,6 +1667,7 @@ captureInto(s2DimObjects, () => {
   // 3층 두 방 크기(연두·회색=하늘) — 같은 직사각형을 90° 돌려 배치, 서로·주황(계단 도착칸)·계단실과 안 겹침. 좌표는 단일 출처로 도출.
   const RM_S = s2RoomShort;                  // 짧은변 = 고정 상수(2.8) — 집 깊이가 이 값에서 파생(연두 깊이 = 회색 너비)
   const RM_L = (inZ1 - 1) - inZ0;            // 긴변 = 앞벽 안쪽 ~ 화장실 앞면 (연두 너비 = 회색 깊이)
+  const g2ClosetD = 0.6;                     // 게스트룸2 화장실쪽 붙박이장 깊이(단일 출처) — 방 표기 크기는 이만큼 뺀 실사용 바닥
   const placeMark = (fy, big, wcW = 1.0, wcD = 1.0) => {
     const m = (mat, x0, z0, w = 1.0, d = 1.0) => box({ x: x0, z: z0, w, d, y: fy + 0.006, h: 0.012, mat, cast: false });
     m(materials.wcFloor, inX1 - wcW, inZ1 - wcD, wcW, wcD);   // 화장실 자리(왼쪽-뒤 코너) — 보라
@@ -1723,7 +1724,7 @@ captureInto(s2DimObjects, () => {
     placeMark(levels[2], true, 1.5, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 1.5(X) × 왼쪽벽 따라 1.0(Z)
     const g1W = far3 - inX0, g1D = zB0 - inZ0;                                                                          // 게스트룸1 = 옆벽(far3)·계단실 앞면(zB0)·외벽 안쪽 공간
     label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'dim');   // 게스트룸1(연두) 크기 — 벽 안쪽 실측
-    label(`게스트룸2 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 게스트룸2(회색) 크기
+    label(`게스트룸2 ${RM_S.toFixed(2)}×${(RM_L - g2ClosetD).toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + (RM_L - g2ClosetD) / 2, 'dim');   // 게스트룸2(회색) 크기 — 붙박이장 제외 실사용 바닥
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·앞 회색방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
@@ -1771,6 +1772,10 @@ captureInto(s2DimObjects, () => {
       box({ x: gxL, z: gz1 - 0.10, w: inX1 - gxL, d: 0.10, y: fy, h: s2RoofUnderY(gz1) - fy, mat: materials.wall });
       // ② 다른쪽 벽(저X 변, x=gxL, 게스트룸1쪽) — 15cm, 방 안쪽(+X)으로. Z: 앞 외벽(inZ0)~화장실쪽 벽(gz1). 구간 안 용마루(s2RidgeZ)를 꼭지점으로 넣어 30° 경사 양쪽 꺾음.
       yzWallPrism({ x: gxL, thickness: pktWallT, mat: materials.wall, points: [[inZ0, fy], [gz1, fy], [gz1, s2RoofUnderY(gz1)], [s2RidgeZ, s2RoofUnderY(s2RidgeZ)], [inZ0, s2RoofUnderY(inZ0)]] });
+      // 붙박이장 — 화장실쪽 벽(① z=gz1, 안쪽면 gz1-0.10)에 등 붙이고 방 안쪽(-Z)으로 깊이 60cm. 폭은 두 옆벽 안쪽면(gxL+pktWallT ~ 안방 외벽 inX1) 전체.
+      const clD = g2ClosetD, clX0 = gxL + pktWallT, clW = inX1 - clX0, clZ1 = gz1 - 0.10, clH = 2.3;
+      box({ x: clX0, z: clZ1 - clD, w: clW, d: clD, y: fy, h: clH, mat: materials.sinkCabinet });
+      label(`붙박이장 깊이 0.6m`, clX0 + clW / 2, fy + 1.2, clZ1 - clD / 2, 'furniture');
     }
   });
 
