@@ -1731,16 +1731,17 @@ captureInto(s2DimObjects, () => {
       box({ x: px1 - 0.64, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
       box({ x: px1 - 0.62, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
       label('권장 화장실', px1 - 0.63, fy + 0.95, pz1 - 0.45, 'furniture');
-      // 출입문 — 거실쪽 벽(低X, x=px0)에 폭 0.7, 앞(低Z)쪽에 둠. 안쪽(+X)으로 열림. 경첩=앞(低Z) 모서리.
+      // 출입문 — 거실쪽 벽(低X, x=px0) 가로 중앙에 폭 0.7. 안쪽(+X)으로 열림(오른손 밀기). 경첩=뒤(高Z) 모서리, 손잡이=앞(低Z) 자유단.
       const dW = 0.7, dH = 2.0, t = interiorWall;
-      box({ x: px0 - 0.03, z: pz0, w: 0.06, d: dW, y: fy, h: dH, mat: materials.wcDoor });                          // 문짝(닫힘, 거실쪽 벽)
-      box({ x: px0 - 0.06, z: pz0 + dW - 0.18, w: 0.05, d: 0.05, y: fy + 1.02, h: 0.05, mat: materials.handle });   // 손잡이
+      const dz0 = pz0 + (1 - dW) / 2;                                                                                // 문 시작 Z(벽 가로 중앙)
+      box({ x: px0 - 0.03, z: dz0, w: 0.06, d: dW, y: fy, h: dH, mat: materials.wcDoor });                          // 문짝(닫힘, 거실쪽 벽)
+      box({ x: px0 - 0.06, z: dz0 + 0.13, w: 0.05, d: 0.05, y: fy + 1.02, h: 0.05, mat: materials.handle });        // 손잡이(앞쪽 자유단)
       // 안여닫이 스윙 — 안쪽(+X)으로 90° 열릴 때 쓸고 가는 1/4 부채꼴. 반투명 바닥 표시.
       const swing = new THREE.Mesh(
-        new THREE.CylinderGeometry(dW, dW, 0.02, 24, 1, false, 0, Math.PI / 2),
+        new THREE.CylinderGeometry(dW, dW, 0.02, 24, 1, false, Math.PI / 2, Math.PI / 2),
         new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }),
       );
-      swing.position.set(px0, fy + 0.02, pz0);   // 0~PI/2 사분면 = +Z(닫힘,벽)~+X(안쪽 열림)
+      swing.position.set(px0, fy + 0.02, dz0 + dW);   // PI/2~PI 사분면 = +X(안쪽 열림)~-Z(닫힘,벽). 경첩=뒤(高Z) 모서리
       scene.add(swing);   // captureInto가 s2Floor3Objects로 자동 수집
     }
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
@@ -2616,6 +2617,19 @@ const NOTES = {
       `- 높이(바닥~계단참 하부): ${fmtDim(height)} m`,
     ].join('\n') };
   },
+  get s2Floor3() {                                         // 3층 — 계단앞(계단실 단열) 문 요구사항. 계단 상수·박공 단면서 자동 계산
+    const W = S2_STAIR.W, wF = 2 * W + S2_STAIR.g;          // 계단 런 폭 · 계단참 깊이
+    const inZ1 = s2BackZ - s2WallT, zB0 = inZ1 - wF;        // 계단실 앞면(개구 시작 Z)
+    const floorY = F3 + S2_STAIR.slabT;                     // 3층 바닥 표면
+    const hFront = s2RoofUnderY(zB0) - floorY;              // 개구 천장고 — 앞쪽(低Z, 데크쪽) 높은 끝
+    const hStair = s2RoofUnderY(zB0 + W) - floorY;          // 개구 천장고 — 계단쪽(高Z) 낮은 끝
+    return { title: '3층 — 계단앞 문(계단실 단열)', body: [
+      '[요구사항] 문이 열리면 계단 너비와 똑같이 트여, 문이 없을 때와 같은 크기의 홀이 생겨야 한다.',
+      `- 너비: 계단 런 폭과 동일 ${fmtDim(W)} m (양옆 문틀·벽이 폭을 잠식하지 않음 — 개구 순폭 = 계단 폭)`,
+      `- 높이: 상인방 없이 바닥~천장(박공 경사 밑선) 전체. 경사라 앞쪽(데크쪽) ${fmtDim(hFront)} m ~ 계단쪽 ${fmtDim(hStair)} m.`,
+      '- 즉 문틀·인방으로 막지 말 것. 열리면 개구 전체가 비어 계단실과 한 칸처럼 통해야 한다.',
+    ].join('\n') };
+  },
   get s2Foundation() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 집 크기(s2W·s2D) 바뀌면 자동 반영
     const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
     const floors = 3;                                      // 지상 층수
@@ -2640,7 +2654,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 'roofWall'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor3', 'roofWall'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
