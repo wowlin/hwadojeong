@@ -37,6 +37,8 @@ export const materials = {
   wcFloor: new THREE.MeshLambertMaterial({ color: 0x9b5de5, transparent: true, opacity: 0.5, depthWrite: false }),       // 3층 변기·세면대 자리(반투명 보라)
   s3Room1: new THREE.MeshLambertMaterial({ color: 0x8ecae6, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방1 바닥(반투명 하늘)
   s3Room2: new THREE.MeshLambertMaterial({ color: 0xa7d96b, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방2 바닥(반투명 연두)
+  stairUpZone2: new THREE.MeshLambertMaterial({ color: 0xf3a712, transparent: true, opacity: 0.5, depthWrite: false }),  // 2층 계단 올라오는·3층 오르는 자리(계단참 계열 호박색) — 다른 용도 불가
+  stairUpZone3: new THREE.MeshLambertMaterial({ color: 0xe85d2f, transparent: true, opacity: 0.5, depthWrite: false }),  // 3층 계단 올라오는 자리(주황) — 다른 용도 불가
   s3Hall: new THREE.MeshLambertMaterial({ color: 0xcfcfcf, transparent: true, opacity: 0.4, depthWrite: false }),        // 3층 복도·홀 바닥(반투명 회색)
   s3Door: new THREE.MeshLambertMaterial({ color: 0xff3b30 }),                                                            // 문 위치 표시(빨강 막대)
   s3Path: new THREE.MeshLambertMaterial({ color: 0xff9f1c, transparent: true, opacity: 0.9, depthWrite: false }),        // 방→화장실 동선(주황)
