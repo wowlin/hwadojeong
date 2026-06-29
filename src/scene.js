@@ -81,7 +81,7 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">구조</h2>
-        <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
+        <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×5.6, 0.5m)</span></label>
         <div class="seg-row" role="group" aria-label="계단 표시">
           <button type="button" class="seg-btn" id="bS2StairAll">계단</button>
           <button type="button" class="seg-btn" id="bS2StairF1">1층&gt;2층</button>

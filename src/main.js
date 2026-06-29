@@ -1543,13 +1543,18 @@ captureInto(foundationDimObjects, () => {
   }
 });
 
-// ── 2층·다락 탭(s2) 배치도/기초 — 집 발자국 너비(X) 8 × 깊이(Z) 6 ─────────────
+// ── 2층·다락 탭(s2) 배치도/기초 — 집 발자국 너비(X) 8 × 깊이(Z)는 3층 방 짧은변에서 파생 ─────────────
 // 거실측 외벽(x=0)·뒤벽(buildingBackZ=3.3)을 s1과 동일 모서리로 맞추고, 너비→x=8 / 깊이→앞(z) 방향.
-const s2W = 8.0, s2D = 6.0;                 // s2 집 너비(X)·깊이(Z)
+// s2 계단 사양(단일 출처) — 디딤·단높이·런폭·런틈·디딤판두께 · 층고(1→2,2→3). 메모·라벨이 이 값을 그대로 표시.
+const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFinishH, floorH: [3.3, 3.0] };  // slabT=1층 층참=바닥 마감 두께(콘크리트 기초 위 부자재+포세린, floorFinishH 0.20)
+const s2W = 8.0;                            // s2 집 너비(X) — 고정 상수
 const s2X0 = 0;                             // 거실측 외벽 — s1과 동일(x=0, 옆집 이격 0.5 유지)
-const s2BackZ = buildingBackZ;             // 뒤벽 — s1과 동일(3.3, 측백 이격 1.0 유지)
-const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (= -2.7)
+const s2BackZ = buildingBackZ;             // 뒤벽 — s1과 동일(3.3, 측백 이격 1.0 유지, 부지 경계서 1m 고정)
 const s2WallT = 0.3;                        // s2 외벽 두께(단일 출처) — 외벽·계단 들임 기준
+const s2RoomShort = 2.8;                    // 3층 방 짧은변(깊이 방향) — 고정 상수. 집 깊이가 여기서 파생
+// 집 깊이(Z) = 뒤 외벽 + 계단실 깊이(두 런 행+틈) + 계단실↔방 내벽 + 방 짧은변 + 앞 외벽. 뒤벽 고정·앞벽만 이동.
+const s2D = 2 * s2WallT + (2 * S2_STAIR.W + S2_STAIR.g) + interiorWall + s2RoomShort;   // = 5.6
+const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (파생)
 // 배치도 발자국(납작) — s2 탭에서만 표시
 s2FootprintObjects.push(box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
 // 기초(온통 0.5m 슬래브) — 's2 기초' 토글
@@ -1560,8 +1565,8 @@ captureInto(s2FoundationObjects, () => {
 // 치수 + 기준선 — s1과 같은 부분(너비=위, 깊이=양옆)
 captureInto(s2DimObjects, () => {
   planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, '8.0m');          // 너비 8 — 위쪽(s1 8.5m 자리)
-  planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, '6.0m');        // 깊이 6 — 가족방측(s1 4.0m 자리)
-  planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, '6.0m');         // 깊이 6 — 거실측(s1 4.0m 자리)
+  planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);        // 깊이(파생) — 가족방측(s1 4.0m 자리)
+  planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);         // 깊이(파생) — 거실측(s1 4.0m 자리)
   // 기준선(회청색) — 새 끝점만: 너비 끝 x=8, 깊이 앞 z=s2FrontZ (x=0·뒤 z=3.3은 공통 기준선 사용)
   const gridMat2 = new THREE.MeshBasicMaterial({ color: 0x5b7185 });
   const gw = 0.02, gy = 0.009, gh = 0.002;
@@ -1570,8 +1575,6 @@ captureInto(s2DimObjects, () => {
   box({ x: gx0, z: s2FrontZ - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });       // 깊이 앞 가로 기준선
 });
 
-// s2 계단 사양(단일 출처) — 디딤·단높이·런폭·런틈·디딤판두께 · 층고(1→2,2→3). 메모·라벨이 이 값을 그대로 표시.
-const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFinishH, floorH: [3.3, 3.0] };  // slabT=1층 층참=바닥 마감 두께(콘크리트 기초 위 부자재+포세린, floorFinishH 0.20)
 // ── s2 계단(현행·좌우런·우측벽 스위치백, 1→3층) — 'cS2Stair2' 토글 = 구조 '계단' ──────
 // 구안(s2Stair3: 앞뒤런·뒷벽 참)을 90° 돌린 현행안. 두 직선런이 좌우(±X)로 오르고,
 //   180° 스위치백 참을 우측벽(低X)에 밀착 → 화장실·방배치 자유도 확보. 입구·층 연결은 반대편(高X·안방쪽).
@@ -1643,7 +1646,7 @@ const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFini
   // 공간 자리 표시(1m 정사각, 추후 화장실·방으로 크기 조정 예정) — 바닥 위에 색칠. 2·3층 동일 배치.
   //   화장실=왼쪽(高X)-뒤(高Z) 코너 / 방=앞벽(低Z) 좌(高X)·우(低X). 셋 다 서로 다른 색·바닥색과 구별.
   // 3층 두 방 크기(연두·회색=하늘) — 같은 직사각형을 90° 돌려 배치, 서로·주황(계단 도착칸)·계단실과 안 겹침. 좌표는 단일 출처로 도출.
-  const RM_S = inX1 - (far3 + W);            // 짧은변 = 안방벽 안쪽 ~ 주황칸 끝 (연두 깊이 = 회색 너비; 깊이가 계단실 앞면을 안 넘음)
+  const RM_S = s2RoomShort;                  // 짧은변 = 고정 상수(2.8) — 집 깊이가 이 값에서 파생(연두 깊이 = 회색 너비)
   const RM_L = (inZ1 - 1) - inZ0;            // 긴변 = 앞벽 안쪽 ~ 화장실 앞면 (연두 너비 = 회색 깊이)
   const placeMark = (fy, big, wcW = 1.0, wcD = 1.0) => {
     const m = (mat, x0, z0, w = 1.0, d = 1.0) => box({ x: x0, z: z0, w, d, y: fy + 0.006, h: 0.012, mat, cast: false });
