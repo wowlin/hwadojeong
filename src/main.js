@@ -1715,7 +1715,15 @@ captureInto(s2DimObjects, () => {
       box({ x: bdX1, z: wz, w: inX1 - bdX1, d: wt, y: levels[1], h: wTop, mat: materials.wall });                      // 오른쪽 벽(화장실문~안방 외벽)
       box({ x: oX0, z: wz, w: interiorDoorW, d: wt, y: levels[1] + interiorDoorH, h: wTop - interiorDoorH, mat: materials.wall });   // 방문 위 인방
       box({ x: bdX0, z: wz, w: bdW, d: wt, y: levels[1] + interiorDoorH, h: wTop - interiorDoorH, mat: materials.wall });            // 화장실문 위 인방
-      pocketDoorHorizontal(oX0, zB0, levels[1], interiorDoorW, interiorDoorH, -1, materials.stdRoomDoor);              // 왼쪽(低X)으로 슬라이드 — 포켓이 低X쪽
+      // 표준 방문 — 계단(도착칸)쪽에서 앞방쪽(-Z)으로 열리는 여닫이 0.9×2.1. 경첩=高X(oX1) 모서리, 손잡이=低X 자유단.
+      box({ x: oX0, z: zB0 - 0.10, w: interiorDoorW, d: 0.04, y: levels[1], h: interiorDoorH, mat: materials.stdRoomDoor });   // 문짝(닫힘, 분리벽 방쪽 면)
+      box({ x: oX0 + 0.18, z: zB0 - 0.13, w: 0.05, d: 0.05, y: levels[1] + 1.02, h: 0.05, mat: materials.handle });           // 손잡이(低X 자유단, 계단쪽)
+      const rswing = new THREE.Mesh(
+        new THREE.CylinderGeometry(interiorDoorW, interiorDoorW, 0.02, 24, 1, false, Math.PI, Math.PI / 2),
+        new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }),
+      );
+      rswing.position.set(oX1, levels[1] + 0.02, zB0 - 0.10);   // PI~3PI/2 = -Z(앞방 열림)~-X(닫힘,벽). 경첩 高X
+      scene.add(rswing);   // captureInto가 s2Floor2Objects로 자동 수집
       label('표준 방문', oX0 + interiorDoorW / 2, levels[1] + 1.0, zB0 - 0.075, 'opening');
       // 화장실 문짝 — 앞 분리벽에 폭 0.7. 앞방서 밀면 화장실 안(+Z)으로 90° 열림. 경첩=低X(bdX0) 모서리.
       box({ x: bdX0, z: zB0 - 0.04, w: bdW, d: 0.04, y: levels[1], h: interiorDoorH, mat: materials.wcDoor });         // 문짝(닫힘, 분리벽)
