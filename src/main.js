@@ -1599,7 +1599,7 @@ captureInto(s2DimObjects, () => {
   const nosing = 0.02;                                                                                    // 계단코 — 디딤판 앞코가 챌판 위로 돌출하는 길이
   const treadX = (x, z, topY, dir) => box({ x: dir < 0 ? x - nosing : x, z, w: T + nosing, d: W, y: topY - tTh, h: tTh, mat: materials.stair });   // 좌우(±X)로 오르는 단(앞코 nosing 돌출, dir=오름 앞방향)
   const rTh = 0.03;                                                                                       // 챌판 두께
-  const riserX = (xMin, z, topY) => box({ x: xMin, z, w: rTh, d: W, y: topY - R, h: R, mat: materials.stairWall });   // 챌판 — 디딤판 앞면 수직판(한 단높이 R, 발판과 다른 색)
+  const riserX = (xMin, z, topY) => box({ x: xMin, z, w: rTh, d: W, y: topY - tTh - R, h: R, mat: materials.stairWall });   // 챌판 — 디딤판 앞면 수직판(한 단높이 R, 발판과 다른 색). 윗면을 발판 밑면(topY-tTh)에 맞춰 겹침 제거
   const landing = (topY) => box({ x: inX0, z: zB0, w: W, d: wF, y: topY - tTh, h: tTh, mat: materials.landing });   // 우측벽 참(두 행 덮음)
 
   const f1Top = baseY + S2_STAIR.slabT;
