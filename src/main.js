@@ -2591,14 +2591,24 @@ const NOTES = {
       `- 용마루가 처마보다 ${fmtDim(rise)} m 높음 (깊이 ${fmtDim(s2D)} m의 절반 × tan${deg}°)`,
     ].join('\n') };
   },
-  get s2StairF1() {                                        // 1층 계단참 아래 옷장 — 치수는 계단 상수서 자동 계산
-    const { W, R, tTh, floorH } = S2_STAIR;
-    const nL = Math.round(floorH[0] / R) - 2 - 9;          // 하부런 단 수(상부 9단 통일)
-    const width = W - 0.03;                                // 너비: 우측 외벽 안쪽~계단참 챌판(챌판 두께 제외)
-    const depth = W + 0.04;                                // 깊이: 문 앞면~뒤벽 안쪽
-    const height = (nL + 1) * R - tTh;                     // 높이: 1층 바닥~계단참 하부
-    return { title: '계단참 아래 옷장', body: [
-      '- 계단참 아래 쌍여닫이 옷장(챌판+우측 외벽으로 분리, 위 가로봉)',
+  get s2StairF1() {                                        // 계단 사양 + 1층 계단참 아래 옷장 — 모두 계단 상수서 자동 계산
+    const { T, R, W, g, tTh, floorH } = S2_STAIR;
+    const wF = 2 * W + g;                                  // 계단참 깊이(두 런 + 틈)
+    const nosing = 0.02;                                   // 계단코 — 디딤판 앞코 돌출(본체와 동일 값)
+    const n1 = Math.round(floorH[0] / R), n2 = Math.round(floorH[1] / R);   // 비행별 단 수
+    const nL = n1 - 2 - 9;                                 // 1→2 하부런 단 수(상부 9단 통일)
+    const width = W - 0.03;                                // 옷장 너비: 우측 외벽 안쪽~계단참 챌판(챌판 두께 제외)
+    const depth = W + 0.04;                                // 옷장 깊이: 문 앞면~뒤벽 안쪽
+    const height = (nL + 1) * R - tTh;                     // 옷장 높이: 1층 바닥~계단참 하부
+    return { title: '계단 사양 · 계단참 아래 옷장', body: [
+      '[계단 — 좌우런·우측벽 스위치백]',
+      `- 단높이: ${fmtDim(R)} m · 디딤 깊이: ${fmtDim(T)} m`,
+      `- 발판(디딤판): ${fmtDim(T)}×${fmtDim(W)} m, 두께 ${fmtDim(tTh)} m · 계단코 ${fmtDim(nosing)} m`,
+      `- 런 폭: ${fmtDim(W)} m · 두 런 틈: ${fmtDim(g)} m`,
+      `- 계단참: ${fmtDim(W)}×${fmtDim(wF)} m`,
+      `- 층고·단수: 1→2층 ${fmtDim(floorH[0])} m ${n1}단 · 2→3층 ${fmtDim(floorH[1])} m ${n2}단`,
+      '',
+      '[계단참 아래 옷장 — 쌍여닫이]',
       `- 너비(외벽~챌판): ${fmtDim(width)} m`,
       `- 깊이(문~뒤벽): ${fmtDim(depth)} m`,
       `- 높이(바닥~계단참 하부): ${fmtDim(height)} m`,
