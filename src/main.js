@@ -1799,6 +1799,16 @@ captureInto(s2Stair3Objects, () => {
     box({ x: inX0, z: inZ0, w: sx1 - inX0, d: vz0 - inZ0, y: topY - th, h: th, mat: m });    // 앞쪽 솔리드(도착·출발 참)
   }
   floorRing(hole2, levels[2], floor3T);   // 3층 바닥(U자 계단실 비움)
+  // ── 2·3층 화장실 자리 표시(바닥 색) — 뒤-왼(高x 측백) 코너에 적층 ────────────────
+  // 1층 싱크·외부수전·오수관이 이미 시공된 뒤-왼 코너 바로 위로 2·3층 물공간을 수직 정렬
+  //   → 급수·오수 배관이 한 줄로 짧게 내려와 하자·소음 최소. 계단은 반대편(거실측 低x)이라 안 겹침.
+  const bathX1 = inX1, bathZ1 = inZ1;                                     // 뒤-왼 코너(高x 옆벽·측백 뒤벽 안쪽)
+  const b2W = 2.0, b2D = 2.2, b2x0 = bathX1 - b2W, b2z0 = bathZ1 - b2D;   // 2층 샤워욕실 2.0×2.2(샤워+변기+세면)
+  box({ x: b2x0, z: b2z0, w: b2W, d: b2D, y: levels[1] + 0.006, h: 0.012, mat: materials.showerFloor, cast: false });
+  label(`2층 샤워욕실 ${fmtDim(b2W)}×${fmtDim(b2D)}m`, b2x0 + b2W / 2, levels[1] + 0.45, b2z0 + b2D / 2, 'room');
+  const b3W = 1.4, b3D = 1.6, b3x0 = bathX1 - b3W, b3z0 = bathZ1 - b3D;   // 3층 변기+세면대 1.4×1.6(같은 코너)
+  box({ x: b3x0, z: b3z0, w: b3W, d: b3D, y: levels[2] + 0.006, h: 0.012, mat: materials.wcFloor, cast: false });
+  label(`3층 WC ${fmtDim(b3W)}×${fmtDim(b3D)}m`, b3x0 + b3W / 2, levels[2] + 0.45, b3z0 + b3D / 2, 'room');
   // 각 층 층고·천장고 — 계단 화면과 동일한 치수표기(planYDim)
   const slabTs = [S2_STAIR.slabT, floor2T, floor3T];
   for (let f = 0; f < levels.length - 1; f += 1) {
