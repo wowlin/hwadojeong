@@ -2599,7 +2599,7 @@ function syncSegButtons() {
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
-  roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
+  roof: { title: '지붕', body: '- 박공 지붕 경사: 32도 (태양광 설치 시 28~34도가 최적 경사대)' },
   get s2Wall3() {                                          // 박공 외벽 envelope — 높이·각도(기초 상단 기준, 단일 출처서 계산)
     const deg = s2RoofPitch * 180 / Math.PI;                 // 박공 각도 단일 출처(s2RoofPitch)에서 읽음
     const rise = (s2D / 2) * Math.tan(s2RoofPitch);          // 처마→용마루 상승(깊이 절반 × tan(박공각))
