@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, roofWallFBObjects, roofWallLRObjects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1742,6 +1742,10 @@ captureInto(s2DimObjects, () => {
       );
       swing.position.set(px0, fy + 0.02, pz0);   // 0~PI/2 사분면 = +Z(닫힘,벽)~+X(안쪽 열림)
       scene.add(swing);   // captureInto가 s2Floor2Objects로 자동 수집
+      // 거실쪽(低X, x=px0) 칸막이벽 — 화장실을 트인 공간과 분리. 문(앞쪽 pz0~pz0+dW)만 비우고 막음 + 문 위 인방. 10cm, 바닥~천장.
+      const wcWallT = 0.10, wcWallTop = (levels[2] - floor3T) - levels[1];
+      box({ x: px0 - wcWallT / 2, z: pz0 + dW, w: wcWallT, d: pz1 - (pz0 + dW), y: fy, h: wcWallTop, mat: materials.wall });   // 문 뒤(高Z) 벽
+      box({ x: px0 - wcWallT / 2, z: pz0, w: wcWallT, d: dW, y: fy + dH, h: wcWallTop - dH, mat: materials.wall });            // 문 위 인방
     }
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
@@ -1921,23 +1925,31 @@ captureInto(s2SinkObjects, () => {
   label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, skX + CD / 2, cY + 0.5, cSink, 'furniture');
 });
 
-// ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
-// ── 박공지붕 외벽 envelope(기초 상단~지붕 아래) — '지붕' 그룹 [외벽][앞뒤][좌우] 토글 ──
+// ── s2 외벽 — 층별 분리(각 층 바닥 슬래브 밑면 ~ 그 층 천장). 층마다 '외벽' 버튼, 모든 층 켜면 연결 ──
 // 박공 30°(기준·초과 금지). 용마루는 긴변(X, 8.0m) 따라가고 경사는 깊이(Z, s2D) 가로지름 →
 //   앞뒤벽 = 처마(평탄 상단, roofY) │ 좌우벽 = 박공 삼각(중앙서 용마루까지) → 좌우 끝에 꼭지점.
+//   층 경계(슬래브 밑면)에서 끊어 그려, 인접 층 외벽이 위·아래로 정확히 맞물림(켜면 연결).
 {
   const t = s2WallT, EW = materials.exteriorWall;
   const eaveY = roofY;                                                    // 처마 = 3층 벽 상단(지붕 안침)
   const zMid = s2RidgeZ, peakY = s2RoofUnderY(zMid);                      // 용마루(깊이 중앙·박공 밑선 단일 출처)
-  captureInto(roofWallFBObjects, () => {                                  // 앞뒤(처마쪽) — 좌우벽 사이에 끼움(겹침 없음)
-    box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: _wBase, h: eaveY - _wBase, mat: EW });    // 앞(현관 쪽)
-    box({ x: s2X0 + t, z: s2BackZ - t, w: s2W - 2 * t, d: t, y: _wBase, h: eaveY - _wBase, mat: EW });  // 뒤(측백 쪽)
-  });
-  captureInto(roofWallLRObjects, () => {                                  // 좌우(박공) — 기초~처마 사각 + 처마~용마루 삼각(꼭지점)
-    const profile = [[s2FrontZ, _wBase], [s2BackZ, _wBase], [s2BackZ, eaveY], [zMid, peakY], [s2FrontZ, eaveY]];
-    yzWallPrism({ x: s2X0, points: profile, thickness: t, mat: EW });     // 거실측(오른쪽, x=0)
-    yzWallPrism({ x: s2W - t, points: profile, thickness: t, mat: EW });  // 안방측(왼쪽, x=8.0−t)
-    // 외벽 표시 시 — 외벽 가장 낮은 높이(처마)와 가장 높은 꼭지점(용마루) 높이를 기초 상단부터 표기.
+  // 사각 둘레 4벽(y0~y1) — 앞·뒤는 좌우벽 사이에 끼우고, 좌·우는 전체 깊이(겹침·틈 없음)
+  const rectWalls = (y0, y1) => {
+    box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: y0, h: y1 - y0, mat: EW });       // 앞(현관 쪽)
+    box({ x: s2X0 + t, z: s2BackZ - t, w: s2W - 2 * t, d: t, y: y0, h: y1 - y0, mat: EW });     // 뒤(측백 쪽)
+    box({ x: s2X0, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });     // 우(거실, x=0)
+    box({ x: s2W - t, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });  // 좌(안방, x=8.0−t)
+  };
+  const y1 = F2 - s2Floor2SlabT, y2 = F3 - s2Floor3SlabT;                 // 1층 천장(2층 슬래브 밑면) · 2층 천장(3층 슬래브 밑면)
+  captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1));               // 1층 외벽 — 기초 상단~1층 천장
+  captureInto(s2Wall2Objects, () => rectWalls(y1, y2));                   // 2층 외벽 — 2층 슬래브 밑면~2층 천장
+  captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
+    box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });     // 앞(처마까지)
+    box({ x: s2X0 + t, z: s2BackZ - t, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });   // 뒤(처마까지)
+    const profile = [[s2FrontZ, y2], [s2BackZ, y2], [s2BackZ, eaveY], [zMid, peakY], [s2FrontZ, eaveY]];
+    yzWallPrism({ x: s2X0, points: profile, thickness: t, mat: EW });     // 우(거실, 박공 꼭지점)
+    yzWallPrism({ x: s2W - t, points: profile, thickness: t, mat: EW });  // 좌(안방, 박공 꼭지점)
+    // 외벽 가장 낮은 높이(처마)와 가장 높은 꼭지점(용마루) 높이를 기초 상단부터 표기.
     planYDim(s2W + 0.4, s2BackZ - 0.2, _wBase, eaveY, `외벽 최저 ${fmtDim(eaveY - _wBase)}m`);
     planYDim(s2W + 0.4, zMid, _wBase, peakY, `외벽 꼭지점 ${fmtDim(peakY - _wBase)}m`);
   });
@@ -2465,9 +2477,9 @@ const view = {
   hedge: false, fence: false,
   // 2층·다락 탭(s2)
   s2Foundation: false,   // s2 집 기초(온통 0.5m 슬래브 8×6)
-  roofWallFB: false,     // 박공 외벽 앞뒤(처마) — '지붕' 그룹 '앞뒤' 버튼
-  roofWallLR: false,     // 박공 외벽 좌우(박공 삼각·꼭지점) — '지붕' 그룹 '좌우' 버튼
-  roofWall: false,       // (메모용 파생) 앞뒤·좌우 중 하나라도 켜짐 — '외벽' 메모 노출
+  s2Wall1: false,        // s2 1층 외벽 — '1층' 그룹 '외벽' 버튼
+  s2Wall2: false,        // s2 2층 외벽 — '2층' 그룹 '외벽' 버튼
+  s2Wall3: false,        // s2 3층 외벽(박공 포함) — '3층' 그룹 '외벽' 버튼
   s2StairF1: false,      // 1층 계단 버튼 — 1→2 전체(하부런+1-2참+상부런)
   s2StairF2: false,      // 2층 계단 버튼 — 1-2참+상부런 + 2→3 하부런 + 2-3참
   s2StairF3: false,      // 3층 계단 버튼 — 2-3참 + 2→3 상부런
@@ -2505,8 +2517,9 @@ const PARTS = [
   { key: 'hedge',      arrays: [hedgeObjects] },
   { key: 'fence',      arrays: [fenceObjects] },
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
-  { key: 'roofWallFB', arrays: [roofWallFBObjects] },
-  { key: 'roofWallLR', arrays: [roofWallLRObjects] },
+  { key: 's2Wall1', arrays: [s2Wall1Objects] },
+  { key: 's2Wall2', arrays: [s2Wall2Objects] },
+  { key: 's2Wall3', arrays: [s2Wall3Objects] },
   { key: 's2Floor1', arrays: [s2Floor1Objects] },
   { key: 's2Floor2', arrays: [s2Floor2Objects] },
   { key: 's2Floor3', arrays: [s2Floor3Objects] },
@@ -2567,7 +2580,6 @@ function applyVisibility() {
   { const on = !isPlan && (view.s2StairF1 || view.s2StairF2 || view.s2StairF3); for (const item of s2Stair2Objects) item.visible = on; }
   // 체크박스 상태 동기화(단일 출처)
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
-  view.roofWall = view.roofWallFB || view.roofWallLR;   // '외벽' 메모(앞뒤·좌우 어느 쪽이든 켜지면 노출)
   syncSegButtons();   // 계단/바닥 버튼 행 active 상태 동기화
   syncAllButtons();   // 그룹 전체 on/off 버튼 라벨·상태 동기화
   updateNotes();
@@ -2576,19 +2588,18 @@ function applyVisibility() {
 // 계단·바닥 버튼 행(체크박스 대신 버튼) active 상태 동기화. '계단'·'바닥'은 하위 전부 켜졌을 때 active.
 function setActive(id, on) { const el = document.querySelector('#' + id); if (el) el.classList.toggle('active', !!on); }
 function syncSegButtons() {
-  setActive('bRoofWallFB', view.roofWallFB); setActive('bRoofWallLR', view.roofWallLR);
-  setActive('bRoofWallAll', view.roofWallFB && view.roofWallLR);
   setActive('bHedge', view.hedge); setActive('bFence', view.fence);
   // '1층' 그룹 버튼 — 구조 섹션의 같은 부품을 공유 토글(active 동기화)
-  setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Stair', view.s2StairF1);
+  setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Stair', view.s2StairF1); setActive('bF1Wall', view.s2Wall1);
   setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove);
-  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF3Floor', view.s2Floor3); setActive('bF3Stair', view.s2StairF3);
+  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF2Wall', view.s2Wall2);
+  setActive('bF3Floor', view.s2Floor3); setActive('bF3Stair', view.s2StairF3); setActive('bF3Wall', view.s2Wall3);
 }
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
-  get roofWall() {                                          // 박공 외벽 envelope — 높이·각도(기초 상단 기준, 단일 출처서 계산)
+  get s2Wall3() {                                          // 박공 외벽 envelope — 높이·각도(기초 상단 기준, 단일 출처서 계산)
     const deg = 30;
     const rise = (s2D / 2) * Math.tan(deg * Math.PI / 180);  // 처마→용마루 상승(깊이 절반 × tan30°)
     const wallH = roofY - _wBase;                            // 앞뒤벽: 기초 상단~처마
@@ -2660,7 +2671,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor3', 'roofWall'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor3', 's2Wall3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
@@ -2710,11 +2721,11 @@ function showPlan() {
 // 메뉴 그룹 전체 on/off — 제목 오른쪽 버튼. 그룹에 속한 부품 키 전체를 한 번에 켜고/끈다.
 const CHECK_MAP = Object.fromEntries(CHECKS);   // 체크박스 id → view 키
 const SEG_KEYS = {                              // 버튼 id → 제어하는 view 키(집계 버튼은 leaf 키들의 합집합)
-  bRoofWallFB: ['roofWallFB'], bRoofWallLR: ['roofWallLR'], bRoofWallAll: ['roofWallFB', 'roofWallLR'],
   bHedge: ['hedge'], bFence: ['fence'],
-  bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Stair: ['s2StairF1'],
+  bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Stair: ['s2StairF1'], bF1Wall: ['s2Wall1'],
   bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'],
-  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF3Floor: ['s2Floor3'], bF3Stair: ['s2StairF3'],
+  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF2Wall: ['s2Wall2'],
+  bF3Floor: ['s2Floor3'], bF3Stair: ['s2StairF3'], bF3Wall: ['s2Wall3'],
 };
 const groupControls = [];   // [{ btn, keys }] — 각 그룹의 전체버튼 + 제어 키 목록(초기 1회 산출)
 for (const sec of document.querySelectorAll('.menu-group')) {
@@ -2776,22 +2787,22 @@ function bindSegButton(id, onClick) {
     centerTargetHeight();
   });
 }
-bindSegButton('bRoofWallFB', () => { view.roofWallFB = !view.roofWallFB; });
-bindSegButton('bRoofWallLR', () => { view.roofWallLR = !view.roofWallLR; });
-bindSegButton('bRoofWallAll', () => { const on = !(view.roofWallFB && view.roofWallLR); view.roofWallFB = on; view.roofWallLR = on; });
 bindSegButton('bHedge', () => { view.hedge = !view.hedge; });
 bindSegButton('bFence', () => { view.fence = !view.fence; });
 // '1층' 그룹 버튼 — 구조 섹션의 같은 부품(기초·1층바닥·1>2층계단·식탁·주방·난로)을 공유 토글
 bindSegButton('bF1Foundation', () => { view.s2Foundation = !view.s2Foundation; });
 bindSegButton('bF1Floor', () => { view.s2Floor1 = !view.s2Floor1; });
 bindSegButton('bF1Stair', () => { view.s2StairF1 = !view.s2StairF1; });
+bindSegButton('bF1Wall', () => { view.s2Wall1 = !view.s2Wall1; });
 bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
 bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
 bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
 bindSegButton('bF2Floor', () => { view.s2Floor2 = !view.s2Floor2; });
 bindSegButton('bF2Stair', () => { view.s2StairF2 = !view.s2StairF2; });   // 2층 계단 = 1-2참+상부런 + 2→3 하부런 + 2-3참
+bindSegButton('bF2Wall', () => { view.s2Wall2 = !view.s2Wall2; });
 bindSegButton('bF3Floor', () => { view.s2Floor3 = !view.s2Floor3; });
 bindSegButton('bF3Stair', () => { view.s2StairF3 = !view.s2StairF3; });   // 3층 계단 = 2-3참 + 2→3 상부런
+bindSegButton('bF3Wall', () => { view.s2Wall3 = !view.s2Wall3; });
 
 // ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
 // 페이지 가장 바깥 선택: 탭마다 별도 설계안. 대지·측백담·옆집담·이격은 모든 탭 공유.
