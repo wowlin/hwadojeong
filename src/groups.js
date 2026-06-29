@@ -38,6 +38,7 @@ export const s2Stair3Objects = [];     // s2 계단(대안·1층 L자 정사각 
 export const s2StairSampleObjects = []; // s2 계단 샘플(안전계단 유형 비교: 직선·L자·U자) — 's2 계단샘플' 토글
 export const s2FrameObjects = [];       // s2 1층 골조(포치 개방 하중지지: 기둥·전이보·코어 전단벽) — 's2 골조' 토글
 export const s2FurnitureObjects = [];   // s2 1층 가구(식탁·의자 라벨) — '1층 식탁·의자' 토글
+export const s2SinkObjects = [];        // s2 1층 싱크대(주방) — '싱크대' 토글
 export const siteBaseObjects = [];   // 바탕 대지(흙)·도로 — 미검토 단계(1층·다락·지붕)에선 숨겨 빈 화면
 export const deckStairFrameObjects = []; // 데크 계단틀(직선 앞·왼쪽 + 부채꼴 코너) — 바닥틀에서 분리, 썬룸 '데크계단틀' 토글
 export const stairObjects = [];        // 계단 화면 전용 주석(거실·안방 크기·라벨·층고·다락바닥) — 계단 화면에서만 표시.

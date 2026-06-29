@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2Stair3Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2Stair3Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1907,31 +1907,37 @@ captureInto(s2FurnitureObjects, () => {
   // 왼쪽(高x) 벽쪽 1m 예약 공간(붉은색) — 식탁을 그만큼 오른쪽으로 옮겨 비움. 깊이=이동공간과 동일.
   box({ x: inXL - leftReserve, z: zz0, w: leftReserve, d: zz1 - zz0, y: fTop + 0.005, h: 0.012, mat: materials.leftZone, cast: false });
   label(`왼쪽 예약 ${fmtDim(leftReserve)}×${fmtDim(zz1 - zz0)}m`, inXL - leftReserve / 2, fTop + 0.6, (zz0 + zz1) / 2, 'dim');
-  // 뒤쪽 벽(측백 쪽) 주방 — 싱크 하부장 1.2m(백조 대형 사각볼 950×454 수용) + 양옆 표준 0.6m. 총 2.4m, 왼쪽 뒤 코너 밀착.
+});
+
+// ── s2 1층 싱크대(주방) — '싱크대' 토글(구조 섹션) ─────────────────────────────────
+// 싱크 하부장 1.2m(백조 대형 사각볼 950×454 수용) + 양옆 표준 0.6m. 총 2.4m, 왼쪽(高x) 벽 따라 세로(Z)로, 뒤(高z) 코너 밀착.
+captureInto(s2SinkObjects, () => {
+  const fTop = groundTopY + MAT_H + S2_STAIR.slabT;          // 1층 바닥 표면(층참 윗면)
+  const inXL = s2X0 + s2W - s2WallT;                          // 좌(高x) 외벽 안쪽 면
   const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
   const SINKW = 1.2, SIDEW = 0.6, CD = 0.6, CH = 0.85, ctop = 0.04;   // 싱크 하부장·옆 하부장·깊이·높이·상판
-  const skZ = inZB - CD, cY = fTop + CH;                     // 캐비닛 앞끝(뒤벽 밀착)·상판 밑면
-  const drawCab = (cabCx, cw, withBowl) => {                // 하부장 1개(폭 cw, 상판 포함, 옵션: 싱크볼)
-    const x0 = cabCx - cw / 2;
-    box({ x: x0, z: skZ, w: cw, d: CD, y: fTop, h: CH, mat: materials.sinkCabinet });            // 하부장
-    if (!withBowl) { box({ x: x0, z: skZ, w: cw, d: CD, y: cY, h: ctop, mat: materials.counter }); return; }   // 상판(통판)
-    const bw = 0.95, bd = 0.454;                             // 백조 대형 사각볼 950×454
-    const bx0 = cabCx - bw / 2, bx1 = cabCx + bw / 2, bz0 = skZ + (CD - bd) / 2, bz1 = bz0 + bd;
-    box({ x: x0, z: skZ, w: cw, d: bz0 - skZ, y: cY, h: ctop, mat: materials.counter });         // 상판 앞
-    box({ x: x0, z: bz1, w: cw, d: skZ + CD - bz1, y: cY, h: ctop, mat: materials.counter });    // 상판 뒤
-    box({ x: x0, z: bz0, w: bx0 - x0, d: bd, y: cY, h: ctop, mat: materials.counter });          // 상판 좌
-    box({ x: bx1, z: bz0, w: x0 + cw - bx1, d: bd, y: cY, h: ctop, mat: materials.counter });    // 상판 우
-    box({ x: bx0, z: bz0, w: bw, d: bd, y: cY + ctop - 0.18, h: 0.18, mat: materials.sinkBasin }); // 싱크볼(상판에 묻힘)
-    box({ x: cabCx - 0.04, z: skZ + CD - 0.14, w: 0.08, d: 0.08, y: cY + ctop, h: 0.3, mat: materials.entryFrame });   // 수전
+  const skX = inXL - CD, cY = fTop + CH;                     // 캐비닛 안쪽끝(좌벽 밀착)·상판 밑면
+  const drawCab = (cabCz, cw, withBowl) => {                // 하부장 1개(폭 cw=Z방향, 상판 포함, 옵션: 싱크볼)
+    const z0 = cabCz - cw / 2;
+    box({ x: skX, z: z0, w: CD, d: cw, y: fTop, h: CH, mat: materials.sinkCabinet });            // 하부장
+    if (!withBowl) { box({ x: skX, z: z0, w: CD, d: cw, y: cY, h: ctop, mat: materials.counter }); return; }   // 상판(통판)
+    const bw = 0.95, bd = 0.454;                             // 백조 대형 사각볼 950×454 (길이=Z, 깊이=X)
+    const bz0 = cabCz - bw / 2, bz1 = cabCz + bw / 2, bx0 = skX + (CD - bd) / 2, bx1 = bx0 + bd;
+    box({ x: skX, z: z0, w: bx0 - skX, d: cw, y: cY, h: ctop, mat: materials.counter });         // 상판 안쪽
+    box({ x: bx1, z: z0, w: skX + CD - bx1, d: cw, y: cY, h: ctop, mat: materials.counter });    // 상판 벽쪽
+    box({ x: bx0, z: z0, w: bd, d: bz0 - z0, y: cY, h: ctop, mat: materials.counter });          // 상판 앞
+    box({ x: bx0, z: bz1, w: bd, d: z0 + cw - bz1, y: cY, h: ctop, mat: materials.counter });    // 상판 뒤
+    box({ x: bx0, z: bz0, w: bd, d: bw, y: cY + ctop - 0.18, h: 0.18, mat: materials.sinkBasin }); // 싱크볼(상판에 묻힘)
+    box({ x: inXL - 0.14, z: cabCz - 0.04, w: 0.08, d: 0.08, y: cY + ctop, h: 0.3, mat: materials.entryFrame });   // 수전(벽쪽)
   };
-  // 왼쪽 뒤 코너(高x)부터: 옆 0.6 · 싱크 1.2 · 옆 0.6
-  const cWall = inXL - SIDEW / 2;                           // 벽쪽(高x) 옆 하부장
+  // 왼쪽 뒤 코너(高z)부터: 옆 0.6 · 싱크 1.2 · 옆 0.6
+  const cWall = inZB - SIDEW / 2;                           // 뒤벽쪽(高z) 옆 하부장
   const cSink = cWall - SIDEW / 2 - SINKW / 2;              // 싱크 하부장(가운데)
-  const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 안쪽(低x) 옆 하부장
+  const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 앞쪽(低z) 옆 하부장
   drawCab(cWall, SIDEW, false);
   drawCab(cSink, SINKW, true);
   drawCab(cInner, SIDEW, false);
-  label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, cSink, cY + 0.5, skZ + CD / 2, 'furniture');
+  label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, skX + CD / 2, cY + 0.5, cSink, 'furniture');
 });
 
 // ── s2 외벽(층별 둘레 0.3m) + 각 층 바닥 슬래브 — '외벽 1·2·3층' 토글 ───────────────
@@ -2487,6 +2493,7 @@ const view = {
   s2Stairs: false,       // s2 계단 샘플(유형 비교)
   s2Frame: false,        // s2 1층 골조(기둥·전이보·코어 전단벽)
   s2Furniture: false,    // s2 1층 가구(식탁·의자)
+  s2Sink: false,         // s2 1층 싱크대(주방)
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2524,6 +2531,7 @@ const PARTS = [
   { key: 's2Stairs', arrays: [s2StairSampleObjects] },
   { key: 's2Frame', arrays: [s2FrameObjects] },
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
+  { key: 's2Sink', arrays: [s2SinkObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2535,7 +2543,7 @@ const CHECKS = [
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
   ['cHedge', 'hedge'], ['cFence', 'fence'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stair2', 's2Stair2'], ['cS2Stair3', 's2Stair3'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stair2', 's2Stair2'], ['cS2Stair3', 's2Stair3'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'], ['cS2Sink', 's2Sink'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];

@@ -59,6 +59,7 @@ app.innerHTML = `
         <label class="chk"><input id="cS2Wall2" type="checkbox"><span>외벽 2층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Wall3" type="checkbox"><span>외벽 3층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Furniture" type="checkbox"><span>테이블·의자</span></label>
+        <label class="chk"><input id="cS2Sink" type="checkbox"><span>싱크대</span></label>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">참고</h2>
