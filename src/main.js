@@ -1688,17 +1688,17 @@ captureInto(s2Stair2Objects, () => {
   const f1Top = baseY + S2_STAIR.slabT;
   let acc = f1Top; const levels = [f1Top];
   for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
-  // 하부런(뒤벽 행) 단 수를 모든 비행 통일 → 멀리(高X)서 시작해 우측벽 참으로 오름. 남는 단차는 상부런(앞 행)에서 줄임.
-  //   → 하부런 끝이 모든 비행 동일 → 짧아진 상부런 비행은 위층 바닥을 그만큼 더(高X쪽으로) 채워 개구부를 메움.
+  // 상부런(계단참 위·앞 행) 단 수를 모든 비행 9단으로 통일 → 남는 단차는 하부런(계단참 아래·뒤벽 행)에서 흡수.
+  //   → 2→3층은 위·아래 9·9로 같고, 1→2층은 위 9·아래 11. 짧아진 상부런만큼 위층 바닥을 더(高X쪽으로) 채워 개구부를 메움.
   const flights = [];
   for (let f = 0; f < levels.length - 1; f += 1) {
     const fl = levels[f], rise = levels[f + 1] - fl;
     flights.push({ fl, risers: Math.round(rise / R) });    // 22(3.3) · 20(3.0)
   }
-  const nL = Math.max(...flights.map((v) => Math.ceil((v.risers - 2) / 2)));   // 하부런 단 수(통일) = 가장 깊은 비행 기준
+  const nU = 9;                                                                  // 상부런(계단참 위) 단 수 — 전 비행 9단 통일
   const meta = [];
   for (const { fl, risers } of flights) {
-    const nU = risers - 2 - nL;                                                            // 상부런 단 수 — 비행마다 다름
+    const nL = risers - 2 - nU;                                                            // 하부런(계단참 아래) 단 수 — 남는 단차 흡수(1→2:11, 2→3:9)
     for (let k = 1; k <= nL; k += 1) treadX(xRun0 + (k - 1) * T, zA0, fl + (nL - k + 1) * R);   // 하부런(뒤벽 행): 멀리(高X)→참(右벽) 오름
     landing(fl + (nL + 1) * R);                                                            // 우측벽 참(180° 반환)
     for (let m = 1; m <= nU; m += 1) treadX(xRun0 + (m - 1) * T, zB0, fl + (nL + 1 + m) * R);   // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지
