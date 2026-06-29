@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2Stair3Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2Stair3Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1891,7 +1891,8 @@ captureInto(s2FrameObjects, () => {
 // ── s2 1층 가구(식탁·의자) — '테이블·의자' 토글(구조 섹션) ─────────────────────────
 // 식탁 3개(윗판 110×72cm·높이 0.72)를 좌우(x)로 이어 옆으로 길게(약 3.3m). 의자=반고 햄프턴 DLX(campingChair,
 //  폭~0.6·깊이~0.55·좌고 0.42 — 실제 햄프턴 DLX 폭 60·좌고 45와 부합). 앞·뒤 긴 변에 테이블당 1개씩 여유있게.
-captureInto(s2FurnitureObjects, () => {
+{
+  const _furnStart = scene.children.length;
   const fTop = groundTopY + MAT_H + S2_STAIR.slabT;            // 1층 바닥 표면(층참 윗면)
   const TW = 0.85, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;   // 윗판 85×72, 다리높이 0.72
   const woodT = materials.woodFrame;
@@ -1919,10 +1920,14 @@ captureInto(s2FurnitureObjects, () => {
   const zz0 = (cz0 - chairBack) - aisle, zz1 = (cz0 + chairBack) + aisle;
   box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: fTop + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
   label(`이동공간 ${fmtDim(zx1 - zx0)}×${fmtDim(zz1 - zz0)}m · 의자 뒤 통로 ${aisle}m`, (zx0 + zx1) / 2, fTop + 0.55, zz1 - 0.35, 'dim');
-  // 오른쪽(低x) 벽쪽 1m 예약 공간(붉은색) — 식탁은 왼쪽 벽에 붙여 그만큼 비움. 깊이=이동공간과 동일.
+  // 식탁·의자·이동공간까지가 '테이블·의자' 토글. 오른쪽 예약 구획(화목난로)은 아래에서 별도 토글로 분리.
+  s2FurnitureObjects.push(...scene.children.slice(_furnStart));
+  // 오른쪽(低x) 벽쪽 1m 예약 공간(붉은색) = 화목난로 자리 — '난로' 버튼 토글. 깊이=이동공간과 동일.
+  const _stoveStart = scene.children.length;
   box({ x: s2X0 + s2WallT, z: zz0, w: reserveW, d: zz1 - zz0, y: fTop + 0.005, h: 0.012, mat: materials.leftZone, cast: false });
-  label(`오른쪽 예약 ${fmtDim(reserveW)}×${fmtDim(zz1 - zz0)}m`, s2X0 + s2WallT + reserveW / 2, fTop + 0.6, (zz0 + zz1) / 2, 'dim');
-});
+  label(`화목난로 예약 ${fmtDim(reserveW)}×${fmtDim(zz1 - zz0)}m`, s2X0 + s2WallT + reserveW / 2, fTop + 0.6, (zz0 + zz1) / 2, 'dim');
+  s2StoveObjects.push(...scene.children.slice(_stoveStart));
+}
 
 // ── s2 1층 싱크대(주방) — '싱크대' 토글(구조 섹션) ─────────────────────────────────
 // 싱크 하부장 1.2m(백조 대형 사각볼 950×454 수용) + 양옆 표준 0.6m. 총 2.4m, 왼쪽(高x) 벽 따라 세로(Z)로, 뒤(高z) 코너 밀착.
@@ -2527,6 +2532,7 @@ const view = {
   s2Frame: false,        // s2 1층 골조(기둥·전이보·코어 전단벽)
   s2Furniture: false,    // s2 1층 가구(식탁·의자)
   s2Sink: false,         // s2 1층 싱크대(주방)
+  s2Stove: false,        // s2 1층 화목난로(오른쪽 붉은 예약 구획) — '난로' 버튼
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2569,6 +2575,7 @@ const PARTS = [
   { key: 's2Frame', arrays: [s2FrameObjects] },
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
   { key: 's2Sink', arrays: [s2SinkObjects] },
+  { key: 's2Stove', arrays: [s2StoveObjects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2627,6 +2634,9 @@ function syncSegButtons() {
   setActive('bS2Floor1', view.s2Floor1); setActive('bS2Floor2', view.s2Floor2); setActive('bS2Floor3', view.s2Floor3);
   setActive('bS2FloorAll', view.s2Floor1 && view.s2Floor2 && view.s2Floor3);
   setActive('bHedge', view.hedge); setActive('bFence', view.fence);
+  // '1층' 그룹 버튼 — 구조 섹션의 같은 부품을 공유 토글(active 동기화)
+  setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Stair', view.s2StairF1);
+  setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove);
 }
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
@@ -2759,6 +2769,13 @@ bindSegButton('bS2Floor3', () => { view.s2Floor3 = !view.s2Floor3; });
 bindSegButton('bS2FloorAll', () => { const on = !(view.s2Floor1 && view.s2Floor2 && view.s2Floor3); view.s2Floor1 = on; view.s2Floor2 = on; view.s2Floor3 = on; });
 bindSegButton('bHedge', () => { view.hedge = !view.hedge; });
 bindSegButton('bFence', () => { view.fence = !view.fence; });
+// '1층' 그룹 버튼 — 구조 섹션의 같은 부품(기초·1층바닥·1>2층계단·식탁·주방·난로)을 공유 토글
+bindSegButton('bF1Foundation', () => { view.s2Foundation = !view.s2Foundation; });
+bindSegButton('bF1Floor', () => { view.s2Floor1 = !view.s2Floor1; });
+bindSegButton('bF1Stair', () => { view.s2StairF1 = !view.s2StairF1; });
+bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
+bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
+bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
 
 // ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
 // 페이지 가장 바깥 선택: 탭마다 별도 설계안. 대지·측백담·옆집담·이격은 모든 탭 공유.

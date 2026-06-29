@@ -54,6 +54,19 @@ app.innerHTML = `
         <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
       </section>
       <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">1층</h2>
+        <div class="seg-row" role="group" aria-label="1층 기초·바닥·계단">
+          <button type="button" class="seg-btn" id="bF1Foundation">기초</button>
+          <button type="button" class="seg-btn" id="bF1Floor">바닥</button>
+          <button type="button" class="seg-btn" id="bF1Stair">계단</button>
+        </div>
+        <div class="seg-row" role="group" aria-label="1층 식탁·주방·난로">
+          <button type="button" class="seg-btn" id="bF1Furniture">식탁</button>
+          <button type="button" class="seg-btn" id="bF1Sink">주방</button>
+          <button type="button" class="seg-btn" id="bF1Stove">난로</button>
+        </div>
+      </section>
+      <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">구조</h2>
         <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
         <div class="seg-row" role="group" aria-label="계단 표시">
