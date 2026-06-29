@@ -1768,15 +1768,7 @@ captureInto(s2DimObjects, () => {
   // 공유부(라벨·층고 치수) — '계단' 전체 버튼과 함께 보임.
   captureInto(s2Stair2Objects, () => {
     label('계단2: 좌우런 · 우측벽 스위치백 참', xRun0 + 1.0, levels[0] + 1.4, zA0 - 0.4, 'struct');
-
-    // 각 층 층고·천장고 — '계단' 화면과 동일한 치수표기(planYDim). 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께.
-    const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
-    for (let f = 0; f < levels.length - 1; f += 1) {
-      const fH = levels[f + 1] - levels[f];                            // 층고
-      const cH = (levels[f + 1] - slabTs[f + 1]) - levels[f];          // 천장고
-      planYDim(inX1 + 0.9, inZ0 + 0.3, levels[f], levels[f + 1], `${f + 1}층 층고 ${fH.toFixed(2)}m`);             // 층고(바깥)
-      planYDim(inX1 + 0.35, inZ0 + 0.3, levels[f], levels[f + 1] - slabTs[f + 1], `천장고 ${cH.toFixed(2)}m`);    // 천장고(안쪽)
-    }
+    // 층고·천장고 치수는 여기 표기하지 않음 — 천장고는 윗층 바닥 슬래브(외벽 토글)와 함께 표시.
   });
 })();
 
@@ -1799,7 +1791,6 @@ captureInto(s2FrameObjects, () => {
   box({ x: 0, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: colTop - baseY, mat: materials.matFoundation });          // 오른쪽 외벽면(x=0)
   box({ x: 0, z: s2BackZ - wt, w: cx1, d: wt, y: baseY, h: colTop - baseY, mat: materials.matFoundation });            // 뒤 외벽면(z=뒤)
   box({ x: cx1 - wt, z: cz0, w: wt, d: s2BackZ - cz0, y: baseY, h: colTop - baseY, mat: materials.matFoundation });    // 코어 안쪽면(x=2.2)
-  planYDim(s2W + 0.4, s2FrontZ + 0.2, baseY, L2, '1층 3.3m');   // 1층 층고(기초상단~2층 바닥상단)
   label('둘레 기둥(중앙 무주)', 4.0, baseY + 1.5, 0.3, 'struct');
   label('2층 바닥(전이보 포함 0.6m)', 5.2, colTop + 0.35, s2FrontZ + 0.2, 'struct');
   label('코어 전단벽(횡력 전담)', 1.1, baseY + 1.5, 2.2, 'struct');
@@ -1902,7 +1893,15 @@ const s2WallFloor = (arr, floorNo, flY, wallTopY, ftf, slabTs) => captureInto(ar
   box({ x: s2X0, z: s2BackZ - t, w: s2W, d: t, y: flY, h, mat: materials.exteriorWall });                   // 뒤벽(측백 쪽)
   box({ x: s2X0, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y: flY, h, mat: materials.exteriorWall });           // 거실측(오른쪽) 옆벽
   if (floorNo !== 1) box({ x: s2X0 + s2W - t, z: s2FrontZ + t, w: t, d: s2D - 2 * t, y: flY, h, mat: materials.exteriorWall });  // 안방측(왼쪽) 옆벽 — 1층은 개방
-  planYDim(-0.4, s2FrontZ + 0.2, flY, flY + ftf, `층고 ${fmtDim(ftf)}m`);                                   // 층고(바닥~윗층 바닥)
+  // 천장고 — 윗층 바닥 슬래브와 함께 표시(층고는 표기 안 함). 이 슬래브 밑면 = 아래층 천장.
+  if (floorNo === 2) {                                                                                       // 2층 바닥 표시 → 1층 천장고
+    planYDim(-0.4, s2FrontZ + 0.2, _wBase, flY - slabTs, `1층 천장고 ${fmtDim((flY - slabTs) - _wBase)}m`);
+  } else if (floorNo === 3) {                                                                                // 3층 바닥 표시 → 2층 천장고 + 3층 천장고(최저·최고)
+    const peakY = s2RoofUnderY(s2RidgeZ);                                                                    // 박공 꼭지점(용마루) 밑선
+    planYDim(-0.4, s2FrontZ + 0.2, F2, flY - slabTs, `2층 천장고 ${fmtDim((flY - slabTs) - F2)}m`);
+    planYDim(-1.0, s2FrontZ + 0.2, flY, roofY, `3층 천장고(최저) ${fmtDim(roofY - flY)}m`);
+    planYDim(-1.6, s2FrontZ + 0.2, flY, peakY, `3층 천장고(최고) ${fmtDim(peakY - flY)}m`);
+  }
   label(`외벽 ${floorNo}층 0.3m`, s2X0 + s2W / 2, flY + h * 0.5, s2FrontZ + 0.2, 'struct');
   label(slabTs ? `${floorNo}층 바닥 ${fmtDim(slabTs)}m` : '1층 바닥=매트기초 0.5m 겸함',
     s2X0 + s2W * 0.7, slabTs ? flY - slabTs / 2 : flY + 0.3, s2BackZ - 0.5, 'struct');                      // 바닥 슬래브 두께(1층은 기초가 겸함)
@@ -1927,6 +1926,9 @@ s2WallFloor(s2Wall3Objects, 3, F3, roofY, _wFh3, ts3);           // 3층 외벽(
     const profile = [[s2FrontZ, _wBase], [s2BackZ, _wBase], [s2BackZ, eaveY], [zMid, peakY], [s2FrontZ, eaveY]];
     yzWallPrism({ x: s2X0, points: profile, thickness: t, mat: EW });     // 거실측(오른쪽, x=0)
     yzWallPrism({ x: s2W - t, points: profile, thickness: t, mat: EW });  // 안방측(왼쪽, x=8.0−t)
+    // 외벽 표시 시 — 외벽 가장 낮은 높이(처마)와 가장 높은 꼭지점(용마루) 높이를 기초 상단부터 표기.
+    planYDim(s2W + 0.4, s2BackZ - 0.2, _wBase, eaveY, `외벽 최저 ${fmtDim(eaveY - _wBase)}m`);
+    planYDim(s2W + 0.4, zMid, _wBase, peakY, `외벽 꼭지점 ${fmtDim(peakY - _wBase)}m`);
   });
 }
 
