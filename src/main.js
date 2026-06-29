@@ -1664,13 +1664,45 @@ captureInto(s2DimObjects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far2, z: zB0, w: inX1 - far2, d: inZ1 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
     placeMark(levels[1], false, 2.4, 1.6);   // 2층 화장실 = 너비 2.4 × 깊이 1.6
+    // 2층 화장실(왼쪽-뒤 코너 2.4×1.6m) 권장 배치 — 샤워부스 + 변기 + 세면대 + 안여닫이 문 + 문 스윙.
+    //   막힌 변: 좌측벽 inX1(高X·안방쪽)·뒤벽 inZ1(高Z)·앞 방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
+    {
+      const fy = levels[1], px1 = inX1, pz1 = inZ1, px0 = inX1 - 2.4, pz0 = inZ1 - 1.6;
+      // 변기 — 안방쪽-뒤 코너(좌측벽 高X·뒤벽 高Z에 붙임). 물탱크=뒤벽, 앞(低Z)을 향해 착석. 문(低X) 반대편.
+      box({ x: px1 - 0.46, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
+      box({ x: px1 - 0.44, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+      label('변기', px1 - 0.45, fy + 0.95, pz1 - 0.45, 'furniture');
+      // 샤워부스 — 거실쪽-뒤 코너(低X·高Z). 방수 트레이 0.9×0.8 + 열린 두 면(+X·-Z)에 유리 칸막이.
+      const shW = 0.9, shD = 0.8;
+      box({ x: px0, z: pz1 - shD, w: shW, d: shD, y: fy, h: 0.06, mat: materials.shower });                       // 방수 트레이
+      box({ x: px0 + shW - 0.04, z: pz1 - shD, w: 0.04, d: shD, y: fy, h: 2.0, mat: materials.glass });           // +X 유리벽(세로)
+      box({ x: px0, z: pz1 - shD - 0.04, w: shW, d: 0.04, y: fy, h: 2.0, mat: materials.glass });                 // -Z 유리벽(가로)
+      box({ x: px0 + 0.1, z: pz1 - 0.12, w: 0.06, d: 0.06, y: fy + 1.9, h: 0.08, mat: materials.handle });        // 샤워헤드(벽쪽)
+      label('샤워부스', px0 + shW / 2, fy + 1.05, pz1 - shD / 2, 'furniture');
+      // 세면대 — 앞벽(低Z) 안방쪽(高X). 하부장 + 세면볼. 문 스윙(거실쪽 앞) 반대편.
+      const skW = 0.6;
+      box({ x: px1 - skW, z: pz0, w: skW, d: 0.45, y: fy, h: 0.8, mat: materials.sinkCabinet });                  // 하부장
+      box({ x: px1 - skW + 0.08, z: pz0 + 0.06, w: skW - 0.16, d: 0.32, y: fy + 0.8, h: 0.04, mat: materials.sinkBasin });   // 세면볼
+      label('세면대', px1 - skW / 2, fy + 1.05, pz0 + 0.25, 'furniture');
+      // 출입문 — 거실쪽 벽(低X, x=px0)에 폭 0.7, 앞(低Z)쪽에 둠. 안쪽(+X)으로 열림. 경첩=앞(低Z) 모서리.
+      const dW = 0.7, dH = 2.0;
+      box({ x: px0 - 0.03, z: pz0, w: 0.06, d: dW, y: fy, h: dH, mat: materials.wcDoor });                          // 문짝(닫힘, 거실쪽 벽)
+      box({ x: px0 - 0.06, z: pz0 + dW - 0.18, w: 0.05, d: 0.05, y: fy + 1.02, h: 0.05, mat: materials.handle });   // 손잡이
+      // 안여닫이 스윙 — 안쪽(+X)으로 90° 열릴 때 쓸고 가는 1/4 부채꼴. 반투명 바닥 표시.
+      const swing = new THREE.Mesh(
+        new THREE.CylinderGeometry(dW, dW, 0.02, 24, 1, false, 0, Math.PI / 2),
+        new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }),
+      );
+      swing.position.set(px0, fy + 0.02, pz0);   // 0~PI/2 사분면 = +Z(닫힘,벽)~+X(안쪽 열림)
+      scene.add(swing);   // captureInto가 s2Floor2Objects로 자동 수집
+    }
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
   });
   captureInto(s2Floor3Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
-    placeMark(levels[2], true, 1.0, 1.5);   // 3층 화장실 = 왼쪽벽 1.0 × 뒤쪽벽 1.5
+    placeMark(levels[2], true, 1.5, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 1.5(X) × 왼쪽벽 따라 1.0(Z)
     label(`연두 ${RM_L.toFixed(2)}×${RM_S.toFixed(2)}m`, inX0 + RM_L / 2, levels[2] + 0.4, inZ0 + RM_S / 2, 'dim');   // 연두방 크기
     label(`회색 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 회색방 크기
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
