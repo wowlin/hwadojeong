@@ -188,6 +188,34 @@ body {
   color: #14532d;
 }
 
+/* 계단·바닥 토글 버튼 행(체크박스 대신 한 줄 버튼들) */
+.seg-row {
+  display: flex;
+  gap: 4px;
+  padding: 2px 4px 4px;
+}
+.seg-btn {
+  flex: 1;
+  padding: 6px 4px;
+  border: 1px solid #9aa3af;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.seg-btn:hover {
+  background: #eef2f7;
+}
+.seg-btn.active {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
+}
+
 /* 뷰 전환 버튼(배치도·전체모델) */
 .view-btn {
   margin-bottom: 4px;

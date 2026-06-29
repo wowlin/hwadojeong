@@ -54,7 +54,17 @@ app.innerHTML = `
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">구조</h2>
         <label class="chk"><input id="cS2Foundation" type="checkbox"><span>기초 (8×6, 0.5m)</span></label>
-        <label class="chk"><input id="cS2Stair2" type="checkbox"><span>계단</span></label>
+        <div class="seg-row" role="group" aria-label="계단 표시">
+          <button type="button" class="seg-btn" id="bS2StairAll">계단</button>
+          <button type="button" class="seg-btn" id="bS2StairF1">1층&gt;2층</button>
+          <button type="button" class="seg-btn" id="bS2StairF2">2층&gt;3층</button>
+        </div>
+        <div class="seg-row" role="group" aria-label="바닥 표시">
+          <button type="button" class="seg-btn" id="bS2FloorAll">바닥</button>
+          <button type="button" class="seg-btn" id="bS2Floor1">1층</button>
+          <button type="button" class="seg-btn" id="bS2Floor2">2층</button>
+          <button type="button" class="seg-btn" id="bS2Floor3">3층</button>
+        </div>
         <label class="chk"><input id="cS2Wall1" type="checkbox"><span>외벽 1층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Wall2" type="checkbox"><span>외벽 2층 (0.3m)</span></label>
         <label class="chk"><input id="cS2Wall3" type="checkbox"><span>외벽 3층 (0.3m)</span></label>
