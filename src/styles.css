@@ -143,23 +143,30 @@ body {
   letter-spacing: 0.02em;
   border-bottom: 1px solid #e3e1da;
   padding-bottom: 4px;
-  cursor: pointer;
   user-select: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-/* 접기/펼치기 캐럿 */
-.menu-title::after {
-  content: '▾';
-  font-size: 10px;
-  color: #9ca3af;
+/* 그룹 전체 on/off 버튼 — 제목 오른쪽 */
+.menu-all {
+  border: 1px solid #9aa3af;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font: inherit;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
 }
-.menu-group.collapsed .menu-title::after {
-  content: '▸';
+.menu-all:hover {
+  background: #eef2f7;
 }
-.menu-group.collapsed > :not(.menu-title) {
-  display: none;
+.menu-all.on {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
 }
 
 /* 부품 토글(체크박스) */

@@ -2546,6 +2546,7 @@ function applyVisibility() {
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
   view.roofWall = view.roofWallFB || view.roofWallLR;   // '외벽' 메모(앞뒤·좌우 어느 쪽이든 켜지면 노출)
   syncSegButtons();   // 계단/바닥 버튼 행 active 상태 동기화
+  syncAllButtons();   // 그룹 전체 on/off 버튼 라벨·상태 동기화
   updateNotes();
 }
 
@@ -2683,9 +2684,46 @@ function showPlan() {
   setPlanView();
 }
 
-// 메뉴 그룹 접기/펼치기 — 제목 클릭 시 해당 그룹 토글
-for (const title of document.querySelectorAll('.menu-group .menu-title')) {
-  title.addEventListener('click', () => title.parentElement.classList.toggle('collapsed'));
+// 메뉴 그룹 전체 on/off — 제목 오른쪽 버튼. 그룹에 속한 부품 키 전체를 한 번에 켜고/끈다.
+const CHECK_MAP = Object.fromEntries(CHECKS);   // 체크박스 id → view 키
+const SEG_KEYS = {                              // 버튼 id → 제어하는 view 키(집계 버튼은 leaf 키들의 합집합)
+  bRoofWallFB: ['roofWallFB'], bRoofWallLR: ['roofWallLR'], bRoofWallAll: ['roofWallFB', 'roofWallLR'],
+  bHedge: ['hedge'], bFence: ['fence'],
+  bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Stair: ['s2StairF1'],
+  bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'],
+  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF3Floor: ['s2Floor3'],
+};
+const groupControls = [];   // [{ btn, keys }] — 각 그룹의 전체버튼 + 제어 키 목록(초기 1회 산출)
+for (const sec of document.querySelectorAll('.menu-group')) {
+  const keys = new Set();
+  for (const inp of sec.querySelectorAll('.chk input')) { const k = CHECK_MAP[inp.id]; if (k) keys.add(k); }
+  for (const b of sec.querySelectorAll('.seg-btn')) for (const k of (SEG_KEYS[b.id] || [])) keys.add(k);
+  if (!keys.size) continue;
+  const keyList = [...keys];
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'menu-all';
+  sec.querySelector('.menu-title').appendChild(btn);
+  btn.addEventListener('click', () => {
+    const target = !keyList.every((k) => view[k]);   // 하나라도 꺼졌으면 모두 켜고, 다 켜졌으면 모두 끔
+    for (const k of keyList) view[k] = target;
+    if (target) {   // 기초 3종(상호배타)은 동시에 못 켜므로 마지막 하나(전체 매트)만 남김
+      const fk = keyList.filter((k) => FOUNDATION_GROUP.includes(k));
+      for (let i = 0; i < fk.length - 1; i += 1) view[fk[i]] = false;
+    }
+    if (target && view.plan) view.plan = false;   // 켜면 부감에서 빠져나옴
+    applyVisibility();
+    if (target) centerTargetHeight();
+  });
+  groupControls.push({ btn, keys: keyList });
+}
+// 전체버튼 라벨·상태 동기화 — 개별 토글로 view가 바뀌어도 버튼이 따라오게 applyVisibility서 호출.
+function syncAllButtons() {
+  for (const { btn, keys } of groupControls) {
+    const allOn = keys.every((k) => view[k]);
+    btn.textContent = allOn ? '끄기' : '켜기';
+    btn.classList.toggle('on', allOn);
+  }
 }
 
 // 부품 체크박스 — 켜면 배치도(부감) 모드 자동 해제하고 해당 부품을 입체 모델 위에 표시.
