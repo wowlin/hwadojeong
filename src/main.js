@@ -1625,7 +1625,10 @@ captureInto(s2DimObjects, () => {
         riserX(xRun0 + k * T - rTh, zA0, top);                  // 챌판 — 하부런 앞면(高X쪽)
       }
       landing(fl + (nL + 1) * R);                                                            // 우측벽 참(180° 반환)
-      box({ x: xRun0 - rTh, z: zA0, w: rTh, d: W, y: fl + (nL + 1) * R - R, h: R, mat: fi === 0 ? materials.landingRiser : materials.stairWall });   // 계단참 챌판 — 참과 그 아래 마지막 하부런 발판 사이 세로판(1층만 구별용 파랑)
+      if (fi === 0)
+        box({ x: xRun0 - rTh, z: zA0, w: rTh, d: W, y: levels[0], h: fl + (nL + 1) * R - levels[0], mat: materials.landingRiser });   // 계단참 직전 챌판 — 1층 바닥까지 연장(구별용 파랑)
+      else
+        box({ x: xRun0 - rTh, z: zA0, w: rTh, d: W, y: fl + (nL + 1) * R - R, h: R, mat: materials.stairWall });   // 계단참 챌판 — 참과 그 아래 마지막 하부런 발판 사이 세로판
       for (let m = 1; m <= nU; m += 1) {
         const top = fl + (nL + 1 + m) * R;
         treadX(xRun0 + (m - 1) * T, zB0, top, -1);              // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지, 앞코 低X쪽
@@ -1639,8 +1642,6 @@ captureInto(s2DimObjects, () => {
           box({ x: xRun0 + (k - 1) * T, z: zA0 - usTh, w: T, d: usTh, y: levels[0], h: (nL - k + 1) * R, mat: materials.interiorDoor });   // 단별 문 패널(높이=그 단까지)
         box({ x: inX0, z: zA0 - usTh, w: W, d: usTh, y: levels[0], h: (nL + 1) * R, mat: materials.interiorDoor });                         // 계단참 아래 문 — 런 앞면(zA0)과 같은 면으로 이어 우측벽(inX0)까지
         label('계단 아래 수납(계단형 문)', xRun0 + 1.0, levels[0] + 0.5, zA0 - 0.1, 'furniture');
-        // 계단참 앞면(거실쪽·低Z) 세로벽을 바닥까지 연장 — 계단참 아래(우측벽~런시작, 앞면) 공간을 거실과 분리
-        box({ x: inX0, z: zB0, w: W, d: interiorWall, y: levels[0], h: (nL + 1) * R - tTh, mat: materials.stairWall });
       }
     });
   });
