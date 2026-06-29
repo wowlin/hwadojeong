@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -2543,6 +2543,8 @@ const view = {
   s2Floor1: false,       // s2 1층 바닥('1층' 버튼)
   s2Floor2: false,       // s2 2층 바닥('2층' 버튼)
   s2Floor3: false,       // s2 3층 바닥('3층' 버튼)
+  s2Roof3: false,        // s2 지붕(징크 박공·처마·눈막이) — '3층' 그룹 '지붕' 버튼
+  s2Solar3: false,       // s2 뒤 지붕 태양광 3kW — '3층' 그룹 '태양광' 버튼
   s2Furniture: false,    // s2 1층 가구(식탁·의자)
   s2Sink: false,         // s2 1층 싱크대(주방)
   s2Stove: false,        // s2 1층 화목난로(오른쪽 붉은 예약 구획) — '난로' 버튼
@@ -2580,6 +2582,8 @@ const PARTS = [
   { key: 's2Floor1', arrays: [s2Floor1Objects] },
   { key: 's2Floor2', arrays: [s2Floor2Objects] },
   { key: 's2Floor3', arrays: [s2Floor3Objects] },
+  { key: 's2Roof3', arrays: [s2Roof3Objects] },
+  { key: 's2Solar3', arrays: [s2Solar3Objects] },
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
   { key: 's2Sink', arrays: [s2SinkObjects] },
   { key: 's2Stove', arrays: [s2StoveObjects] },
@@ -2651,6 +2655,7 @@ function syncSegButtons() {
   setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove);
   setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF2Wall', view.s2Wall2);
   setActive('bF3Floor', view.s2Floor3); setActive('bF3Stair', view.s2StairF3); setActive('bF3Wall', view.s2Wall3);
+  setActive('bF3Roof', view.s2Roof3); setActive('bF3Solar', view.s2Solar3);
 }
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
@@ -2745,7 +2750,7 @@ const NOTES = {
       '- 이격거리: 도로(건축선) 1.0 m · 옆·뒤 경계 0.5 m',
       '',
       '[규모 검토]',
-      `- 건물: ${s2W}×${s2D} m · 지상 ${floors}층`,
+      `- 건물: ${s2W}×${s2D.toFixed(1)} m · 지상 ${floors}층`,
       `- 건축면적 ${bldgArea.toFixed(0)} ㎡ · 연면적 ${totalArea.toFixed(0)} ㎡`,
       `- 건폐율: ${bcr.toFixed(1)} %  (한도 50 %)`,
       `- 용적률: ${far.toFixed(1)} %  (한도 125 %)`,
@@ -2754,7 +2759,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor2', 's2Floor3', 's2Wall3'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
@@ -2809,6 +2814,7 @@ const SEG_KEYS = {                              // 버튼 id → 제어하는 vi
   bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'],
   bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF2Wall: ['s2Wall2'],
   bF3Floor: ['s2Floor3'], bF3Stair: ['s2StairF3'], bF3Wall: ['s2Wall3'],
+  bF3Roof: ['s2Roof3'], bF3Solar: ['s2Solar3'],
 };
 const groupControls = [];   // [{ btn, keys }] — 각 그룹의 전체버튼 + 제어 키 목록(초기 1회 산출)
 for (const sec of document.querySelectorAll('.menu-group')) {
@@ -2886,6 +2892,8 @@ bindSegButton('bF2Wall', () => { view.s2Wall2 = !view.s2Wall2; });
 bindSegButton('bF3Floor', () => { view.s2Floor3 = !view.s2Floor3; });
 bindSegButton('bF3Stair', () => { view.s2StairF3 = !view.s2StairF3; });   // 3층 계단 = 2-3참 + 2→3 상부런
 bindSegButton('bF3Wall', () => { view.s2Wall3 = !view.s2Wall3; });
+bindSegButton('bF3Roof', () => { view.s2Roof3 = !view.s2Roof3; });       // 3층 지붕 = 징크 박공 슬래브 + 처마 + 눈막이
+bindSegButton('bF3Solar', () => { view.s2Solar3 = !view.s2Solar3; });    // 3층 태양광 = 뒤 지붕 3kW 패널
 
 // ── 최상위 탭(설계안 scheme) ───────────────────────────────────────────────────
 // 페이지 가장 바깥 선택: 탭마다 별도 설계안. 대지·측백담·옆집담·이격은 모든 탭 공유.
