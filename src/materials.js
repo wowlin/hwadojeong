@@ -35,6 +35,11 @@ export const materials = {
   leftZone: new THREE.MeshLambertMaterial({ color: 0xd84a3b, transparent: true, opacity: 0.42, depthWrite: false }),   // 왼쪽 예약 공간(반투명 붉은색)
   showerFloor: new THREE.MeshLambertMaterial({ color: 0x2f6fd8, transparent: true, opacity: 0.5, depthWrite: false }),   // 2층 샤워욕실 자리(반투명 파랑)
   wcFloor: new THREE.MeshLambertMaterial({ color: 0x9b5de5, transparent: true, opacity: 0.5, depthWrite: false }),       // 3층 변기·세면대 자리(반투명 보라)
+  s3Room1: new THREE.MeshLambertMaterial({ color: 0x8ecae6, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방1 바닥(반투명 하늘)
+  s3Room2: new THREE.MeshLambertMaterial({ color: 0xa7d96b, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방2 바닥(반투명 연두)
+  s3Hall: new THREE.MeshLambertMaterial({ color: 0xcfcfcf, transparent: true, opacity: 0.4, depthWrite: false }),        // 3층 복도·홀 바닥(반투명 회색)
+  s3Door: new THREE.MeshLambertMaterial({ color: 0xff3b30 }),                                                            // 문 위치 표시(빨강 막대)
+  s3Path: new THREE.MeshLambertMaterial({ color: 0xff9f1c, transparent: true, opacity: 0.9, depthWrite: false }),        // 방→화장실 동선(주황)
   loftHeadFill: new THREE.MeshLambertMaterial({ color: 0x7fbf9b }),   // 1층계단 위 헤드룸 한계까지 메운 다락바닥 — 일반 다락바닥(노랑)과 구별(청록)
   stairWall: new THREE.MeshLambertMaterial({ color: 0xf2f0e8 }),
   stairSpineWall: new THREE.MeshLambertMaterial({ color: 0x8fb0cc }),   // 두 런 사이 칸막이벽 — 디딤판·세로막이와 구별되는 청색

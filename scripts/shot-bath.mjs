@@ -15,13 +15,13 @@ await page.click('#tabS2'); await page.waitForTimeout(200);
 for (const id of ['cS2Stair3']) { try { await page.click('#' + id); } catch {} await page.waitForTimeout(150); }
 await page.waitForTimeout(400);
 const setCam = (p, t) => page.evaluate(({ p, t }) => { const { camera, controls } = window.__cc; controls.target.set(...t); camera.position.set(...p); controls.update(); }, { p, t });
-// 高x(왼쪽)·뒤(측백) 코너 바깥에서 비스듬히 — 2·3층 화장실 바닥색 적층 확인(계단3엔 벽 없음)
+// 3층 평면 — 바로 위에서 내려다봄(방2·공용화장실·복도·문·동선 읽기)
+await setCam([4.0, 17, 0.31], [4.0, 7.08, 0.3]);
+await page.waitForTimeout(400);
+await page.screenshot({ path: root + '/shot-bath-top3.png' });
+// 高x(왼쪽)·뒤(측백) 코너 바깥에서 비스듬히 — 2·3층 적층 확인(계단3엔 벽 없음)
 await setCam([14, 9, 9], [6.5, 5.0, 1.5]);
 await page.waitForTimeout(400);
 await page.screenshot({ path: root + '/shot-bath-iso.png' });
-// 더 수평·근접 — 2층/3층 바닥 마커를 층 사이 개방고로 들여다봄
-await setCam([13, 6.5, 6.5], [6.6, 5.6, 1.8]);
-await page.waitForTimeout(400);
-await page.screenshot({ path: root + '/shot-bath-side.png' });
 await browser.close();
 console.log('saved');

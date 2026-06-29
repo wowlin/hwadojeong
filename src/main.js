@@ -1799,16 +1799,45 @@ captureInto(s2Stair3Objects, () => {
     box({ x: inX0, z: inZ0, w: sx1 - inX0, d: vz0 - inZ0, y: topY - th, h: th, mat: m });    // 앞쪽 솔리드(도착·출발 참)
   }
   floorRing(hole2, levels[2], floor3T);   // 3층 바닥(U자 계단실 비움)
-  // ── 2·3층 화장실 자리 표시(바닥 색) — 왼쪽(高x) 벽에 적층, 1층 싱크 위는 피함 ──────────
-  // 왼쪽 외벽(高x)·뒤-왼 오수관은 쓰되, 뒤벽 싱크(뒤 0.6m 띠) 위를 피해 앞쪽(식탁·개방부 위)으로 당김.
-  //   → 변기·오수는 코너 오수관에서 짧게 분기, 2·3층은 같은 코너에 수직 적층. 계단은 반대편(低x)이라 안 겹침.
-  const bathX1 = inX1, bathZ1 = inZ1 - 0.6;                               // 왼쪽 벽 + 싱크 앞끝(뒤벽 −0.6) — 싱크 위 회피
-  const b2W = 2.0, b2D = 2.2, b2x0 = bathX1 - b2W, b2z0 = bathZ1 - b2D;   // 2층 샤워욕실 2.0×2.2(샤워+변기+세면)
+  // ── 2·3층 화장실 자리 표시(바닥 색) — 1층 하수구·수전(뒤벽) 바로 앞에 적층, 싱크 위는 회피 ──
+  // 1층 하수구=싱크 오른쪽 끝(거실쪽 x≈5.3)·수전=싱크 가운데, 둘 다 뒤벽 근처. 변기·배수를 그 앞에 두면
+  //   오수관이 뒤벽까지 0.6m로 짧게 빠지고, 싱크 위(뒤 0.6m 띠)는 안 덮는다. 2·3층 같은 줄에 수직 적층.
+  const drainX = 5.3, bathBackZ = inZ1 - 0.6;                              // 1층 하수구 X(싱크 오른쪽 끝)·싱크 앞끝(뒤벽 −0.6)
+  const b2W = 2.0, b2D = 2.2, b2x0 = drainX - 0.4, b2z0 = bathBackZ - b2D; // 2층 샤워욕실 2.0×2.2 — 하수구가 뒤-오른쪽 안에
   box({ x: b2x0, z: b2z0, w: b2W, d: b2D, y: levels[1] + 0.006, h: 0.012, mat: materials.showerFloor, cast: false });
   label(`2층 샤워욕실 ${fmtDim(b2W)}×${fmtDim(b2D)}m`, b2x0 + b2W / 2, levels[1] + 0.45, b2z0 + b2D / 2, 'room');
-  const b3W = 1.4, b3D = 1.6, b3x0 = bathX1 - b3W, b3z0 = bathZ1 - b3D;   // 3층 변기+세면대 1.4×1.6(같은 코너)
-  box({ x: b3x0, z: b3z0, w: b3W, d: b3D, y: levels[2] + 0.006, h: 0.012, mat: materials.wcFloor, cast: false });
-  label(`3층 WC ${fmtDim(b3W)}×${fmtDim(b3D)}m`, b3x0 + b3W / 2, levels[2] + 0.45, b3z0 + b3D / 2, 'room');
+  // ── 3층 평면: 방2개 + 공용화장실 1 + 복도 — 각 방→화장실 동선 표시 ─────────────────
+  // 계단은 거실쪽(低x) 앞에서 올라옴 → 그 옆 N-S 복도가 척추. 방1=앞(넓음)·방2=뒤-왼, 화장실=뒤-가운데(1층 하수구 x≈5.3 위).
+  // 두 방 모두 복도→복도참을 거쳐 공용화장실로. 바닥 자투리 없이 꽉 채움.
+  {
+    const fy = levels[2] + 0.006, dy = levels[2] + 0.02, py = levels[2] + 0.035;   // 방바닥·문·동선(겹침 순서)
+    const flr = (x0, z0, x1, z1, mat) => box({ x: x0, z: z0, w: x1 - x0, d: z1 - z0, y: fy, h: 0.012, mat, cast: false });
+    const door = (x0, z0, x1, z1) => box({ x: x0, z: z0, w: x1 - x0, d: z1 - z0, y: dy, h: 0.07, mat: materials.s3Door, cast: false });
+    const path = (x0, z0, x1, z1) => box({ x: x0, z: z0, w: x1 - x0, d: z1 - z0, y: py, h: 0.012, mat: materials.s3Path, cast: false });
+    const stairEX = 2.4, cX = 3.5, mX = 5.6, vZ = 0.2, wZ = 1.5, stairFZ = -0.43;   // 계단실 동쪽·복도폭·방2|화장실·복도참 경계·화장실 앞끝·계단 도착선
+    flr(cX, inZ0, inX1, vZ, materials.s3Room1);                                       // 방1(앞·거실쪽 넓은 방)
+    label(`방1 ${fmtDim(inX1 - cX)}×${fmtDim(vZ - inZ0)}m`, (cX + inX1) / 2, fy + 0.4, (inZ0 + vZ) / 2, 'room');
+    flr(mX, vZ, inX1, inZ1, materials.s3Room2);                                       // 방2(뒤-왼)
+    label(`방2 ${fmtDim(inX1 - mX)}×${fmtDim(inZ1 - vZ)}m`, (mX + inX1) / 2, fy + 0.4, (vZ + inZ1) / 2, 'room');
+    flr(cX, wZ, mX, inZ1, materials.wcFloor);                                         // 공용 화장실(뒤-가운데, 1층 하수구 위)
+    label(`공용 화장실 ${fmtDim(mX - cX)}×${fmtDim(inZ1 - wZ)}m`, (cX + mX) / 2, fy + 0.4, (wZ + inZ1) / 2, 'room');
+    flr(inX0, inZ0, cX, stairFZ, materials.s3Hall);                                   // 계단 도착 홀(앞-우)
+    flr(stairEX, inZ0, cX, inZ1, materials.s3Hall);                                   // N-S 복도(계단실 동쪽, 전 깊이)
+    flr(cX, vZ, mX, wZ, materials.s3Hall);                                            // 복도참(방2·화장실 문 앞)
+    label('복도·홀', (stairEX + cX) / 2, fy + 0.4, 0.0, 'room');
+    door(cX - 0.06, -1.45, cX + 0.06, -0.55);                                         // 방1 문(복도쪽)
+    door(mX - 0.06, 0.45, mX + 0.06, 1.35);                                           // 방2 문(복도참쪽)
+    door(4.0, wZ - 0.06, 4.9, wZ + 0.06);                                             // 화장실 문(복도참쪽)
+    label('문', cX, dy + 0.3, -1.0, 'dim'); label('문', mX, dy + 0.3, 0.9, 'dim'); label('문', 4.45, dy + 0.3, wZ, 'dim');
+    const w = 0.18, cc = (stairEX + cX) / 2, vc = (vZ + wZ) / 2, wc = 4.45;           // 동선 폭·복도중심·복도참중심·화장실문 X
+    path(cc - w / 2, -1.0 - w / 2, cX, -1.0 + w / 2);                                 // 방1문→복도
+    path(cc - w / 2, -1.0, cc + w / 2, vc + w / 2);                                   // 복도 북상
+    path(cc - w / 2, vc - w / 2, wc + w / 2, vc + w / 2);                             // 복도참 동진
+    path(wc - w / 2, vc, wc + w / 2, wZ);                                             // 화장실 문 진입
+    path(wc + w / 2, vc - w / 2, mX, vc + w / 2);                                     // 방2문→복도참
+    label('방1→화장실', (cc + wc) / 2, py + 0.3, vc - 0.5, 'dim');
+    label('방2→화장실', (wc + mX) / 2, py + 0.3, vc + 0.45, 'dim');
+  }
   // 각 층 층고·천장고 — 계단 화면과 동일한 치수표기(planYDim)
   const slabTs = [S2_STAIR.slabT, floor2T, floor3T];
   for (let f = 0; f < levels.length - 1; f += 1) {
