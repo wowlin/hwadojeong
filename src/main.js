@@ -1776,6 +1776,11 @@ captureInto(s2DimObjects, () => {
       );
       swing.position.set(px0, fy + 0.02, dz0 + dW);   // PI/2~PI 사분면 = +X(안쪽 열림)~-Z(닫힘,벽). 경첩=뒤(高Z) 모서리
       scene.add(swing);   // captureInto가 s2Floor3Objects로 자동 수집
+      // 화장실 거실쪽 벽(低X 면, x=px0) — 10cm, 안쪽면을 화장실 경계(px0)에 맞추고 몸통은 바깥(복도·-X)으로. 문 개구만 비우고 박공 밑선까지. 윗선은 지붕 경사를 따라 기움.
+      const dz1 = dz0 + dW, wx = px0 - 0.10;
+      yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[pz0, fy], [dz0, fy], [dz0, s2RoofUnderY(dz0)], [pz0, s2RoofUnderY(pz0)]] });        // 문 앞쪽(低Z) 막힌 벽
+      yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz1, fy], [pz1, fy], [pz1, s2RoofUnderY(pz1)], [dz1, s2RoofUnderY(dz1)]] });        // 문 뒤쪽(高Z) 막힌 벽
+      yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz0, fy + dH], [dz1, fy + dH], [dz1, s2RoofUnderY(dz1)], [dz0, s2RoofUnderY(dz0)]] });   // 문 위 인방
     }
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
     box({ x: far3, z: zB0, w: W, d: W, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });
