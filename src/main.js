@@ -1687,7 +1687,8 @@ captureInto(s2DimObjects, () => {
   const RM_L = (inZ1 - 1) - inZ0;            // 긴변 = 앞벽 안쪽 ~ 화장실 앞면 (연두 너비 = 회색 깊이)
   const g2ClosetD = 0.8;                     // 게스트룸2 화장실쪽 붙박이장 깊이(단일 출처) — 방 표기 크기는 이만큼 뺀 실사용 바닥
   const g2RoomW = inX1 - far3 - 1.15;        // 게스트룸2 너비(3층) — 복도 1.0m 되도록 옆벽(gxL) 도출(far3 옆벽 안쪽면 0.15 + 복도 1.0). 집 깊이 상수 RM_S와 분리.
-  const wcW3 = 1.5 + s2F3VanityW;            // 3층 화장실 너비 — 건식 세면대가 안으로 들어온 만큼(vanity 폭) 거실쪽으로 키움(px0·문·벽 동반 이동)
+  const wcSinkGap = 0.75;                    // 변기↔세면대 중심 표준 간격(주택 욕실)
+  const wcW3 = 0.42 + 0.7 + s2F3VanityW / 2 + wcSinkGap;   // 3층 화장실 너비 — 변기 중심(inX1-0.42) + 문스윙 0.7 + 세면대 반폭 + 표준 간격. 세면대는 px0+0.7. ≈2.17
   const placeMark = (fy, big, wcW = 1.0, wcD = 1.0) => {
     const m = (mat, x0, z0, w = 1.0, d = 1.0) => box({ x: x0, z: z0, w, d, y: fy + 0.006, h: 0.012, mat, cast: false });
     m(materials.wcFloor, inX1 - wcW, inZ1 - wcD, wcW, wcD);   // 화장실 자리(왼쪽-뒤 코너) — 보라
@@ -1714,7 +1715,7 @@ captureInto(s2DimObjects, () => {
     }
     // 층계참 화장실쪽(高X) 벽 — 주황 도착칸을 1.2×2.1m로 마저 둘러쌈. 10cm, 바닥~천장. 계단 올라오는 변(低X)만 개방.
     box({ x: far2 + 1.2, z: zB0, w: 0.10, d: inZ1 - zB0, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
-    placeMark(levels[1], false, inX1 - (far2 + 1.2), wF + 0.15);   // 2층 화장실 = 벽 안쪽 전체(계단실벽~안방외벽 × 분리벽~뒤벽)
+    placeMark(levels[1], false, inX1 - (far2 + 1.3), wF);   // 2층 화장실 = 벽 뺀 실사용 바닥(계단실벽 안쪽 far2+1.3~안방외벽 × 분리벽 안쪽 zB0~뒤벽)
     // 2층 화장실(왼쪽-뒤 코너 2.4×1.6m) 권장 배치 — 샤워부스 + 변기 + 세면대 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X·안방쪽)·뒤벽 inZ1(高Z)·앞 방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
@@ -2665,10 +2666,10 @@ const NOTES = {
   get s2Floor2() {                                         // 2층 — 화장실·앞방 크기. 계단 상수·집 치수서 자동 계산
     const { W, T, g } = S2_STAIR, wF = 2 * W + g, nU = 9;   // 계단 런 폭·디딤 깊이·상부런 단수(far2 = 계단실 끝 = inX0 + W + nU·T)
     const inW = s2W - 2 * s2WallT, inD = s2D - 2 * s2WallT;
-    const bathW = inW - W - nU * T - 1.2, bathD = wF + 0.15;   // 화장실: 거실쪽 계단실벽(far2+1.2)~안방 외벽 · 분리벽(zB0-0.15)~뒤벽
+    const bathW = inW - W - nU * T - 1.2 - 0.10, bathD = wF;   // 화장실 실사용: 계단실벽 안쪽(far2+1.3)~안방 외벽 · 분리벽 안쪽(zB0)~뒤벽
     const roomW = inW, roomD = inD - wF - 0.15;                // 앞방: 분리벽 앞 전체(전폭 × 앞 외벽~분리벽)
     return { title: '2층 — 화장실 · 앞방', body: [
-      `- 화장실(벽 안쪽 전체): ${fmtDim(bathW)} × ${fmtDim(bathD)} m`,
+      `- 화장실(벽 뺀 실사용 바닥): ${fmtDim(bathW)} × ${fmtDim(bathD)} m`,
       `- 앞쪽 방(벽으로 분리, 길쭉): ${fmtDim(roomW)} × ${fmtDim(roomD)} m`,
     ].join('\n') };
   },
@@ -2686,6 +2687,7 @@ const NOTES = {
       '',
       '[화장실 건식 세면대]',
       '- 위치: 3층 화장실 안, 뒤 외벽에 등 붙임(변기 옆). 세면대가 들어온 만큼 화장실을 거실쪽으로 넓혀 벽·문을 이동.',
+      '- 변기↔세면대 중심 간격 0.75 m(주택 욕실 표준)에 맞춰 화장실 너비를 잡음.',
       `- 하부장 ${fmtDim(s2F3VanityW)}×${fmtDim(s2F3VanityD)} m · 높이 ${fmtDim(s2F3VanityH)} m + 세면볼`,
       '- 수전: 세탁기 수도처럼 뒤 외벽에서 나오는 벽수전.',
       `- 하부장 안에 경동 나비엔 전기온수기 ${s2F3HeaterL} L 설치.`,
