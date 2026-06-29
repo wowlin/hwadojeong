@@ -1940,7 +1940,9 @@ captureInto(s2SinkObjects, () => {
     box({ x: s2X0, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });     // 우(거실, x=0)
     box({ x: s2W - t, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });  // 좌(안방, x=8.0−t)
   };
-  const y1 = F2 - s2Floor2SlabT, y2 = F3 - s2Floor3SlabT;                 // 1층 천장(2층 슬래브 밑면) · 2층 천장(3층 슬래브 밑면)
+  // 층 경계 = 실제 윗층 바닥 슬래브 아랫면(계단·바닥과 단일 출처). 바닥 표면 = F_n + 1층 마감두께.
+  const lvl2 = F2 + S2_STAIR.slabT, lvl3 = F3 + S2_STAIR.slabT;           // 2·3층 바닥 표면(계단 levels[1]·[2]와 동일)
+  const y1 = lvl2 - s2Floor2SlabT, y2 = lvl3 - s2Floor3SlabT;            // 1층 천장(2층 슬래브 밑면) · 2층 천장(3층 슬래브 밑면)
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1));               // 1층 외벽 — 기초 상단~1층 천장
   captureInto(s2Wall2Objects, () => rectWalls(y1, y2));                   // 2층 외벽 — 2층 슬래브 밑면~2층 천장
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
