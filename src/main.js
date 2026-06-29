@@ -1785,12 +1785,11 @@ captureInto(s2DimObjects, () => {
       yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz1, fy], [pz1, fy], [pz1, s2RoofUnderY(pz1)], [dz1, s2RoofUnderY(dz1)]] });        // 문 뒤쪽(高Z) 막힌 벽
       yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz0, fy + dH], [dz1, fy + dH], [dz1, s2RoofUnderY(dz1)], [dz0, s2RoofUnderY(dz0)]] });   // 문 위 인방
     }
-    // 건식 세면대 — 앞뒤로 연결되는 복도(게스트룸1·2 사이)의 좌우 한가운데, 뒤(외벽 高Z)에 등 붙임. 복도(低Z)를 향함.
+    // 건식 세면대 — 화장실 안, 뒤(외벽 高Z)에 등 붙임. 문 스윙(거실쪽 低X)을 비키고 변기(안방쪽 高X) 사이에 둠.
     //   수전은 세탁기 수도처럼 뒤 외벽에서 나오고, 하부장 안에 경동 나비엔 전기온수기 15L 설치.
     {
       const fy = levels[2], vW = s2F3VanityW, vD = s2F3VanityD, vH = s2F3VanityH;
-      const corX0 = far3 + 0.15, corX1 = inX1 - s2RoomShort;   // 앞뒤 복도 양쪽 벽 안쪽면(계단실 벽 ~ 게스트룸2 옆벽)
-      const vx = (corX0 + corX1) / 2 - vW / 2;     // 복도 좌우 한가운데
+      const vx = (inX1 - wcW3) + 0.7;              // 화장실 안 — 거실쪽 벽(px0=inX1-wcW3)에서 0.7m(문 스윙 비킴)
       const vz = inZ1 - vD;                        // 뒤(高Z) 외벽에 등 붙임
       box({ x: vx, z: vz, w: vW, d: vD, y: fy, h: vH, mat: materials.sinkCabinet });                              // 하부장
       box({ x: vx + 0.08, z: vz + 0.06, w: vW - 0.16, d: vD - 0.12, y: fy + vH, h: 0.04, mat: materials.sinkBasin });   // 세면볼
@@ -1843,7 +1842,7 @@ captureInto(s2DimObjects, () => {
     }
     // 게스트룸2(회색) 칸막이벽 — 안방 외벽(inX1)·앞 외벽(inZ0)이 두 변을 막고, 트인 두 변에 칸막이. '회색' 자리(배경) 안쪽으로 세움.
     {
-      const fy = levels[2], gxL = inX1 - RM_S, gz1 = inZ0 + RM_L;   // 회색 자리 저X 변(게스트룸1쪽)·高Z 변(화장실쪽)
+      const fy = levels[2], gxL = inX1 - g2RoomW, gz1 = inZ0 + RM_L;   // 회색 자리 저X 변(게스트룸1쪽, 복도 1.0m)·高Z 변(화장실쪽)
       // ① 화장실쪽 벽(高Z 변, z=gz1) — 10cm, 방 안쪽(-Z)으로. X: 저X 변(gxL)~안방 외벽(inX1). 그 z의 박공 밑선 높이(평탄).
       box({ x: gxL, z: gz1 - 0.10, w: inX1 - gxL, d: 0.10, y: fy, h: s2RoofUnderY(gz1) - fy, mat: materials.wall });
       // ② 다른쪽 벽(저X 변, x=gxL, 게스트룸1쪽) — 15cm, 방 안쪽(+X)으로. Z: 앞 외벽(inZ0)~화장실쪽 벽(gz1).
@@ -2685,8 +2684,8 @@ const NOTES = {
       `- 높이: 상인방 없이 바닥~천장(박공 경사 밑선) 전체. 경사라 앞쪽(데크쪽) ${fmtDim(hFront)} m ~ 계단쪽 ${fmtDim(hStair)} m.`,
       '- 즉 문틀·인방으로 막지 말 것. 열리면 개구 전체가 비어 계단실과 한 칸처럼 통해야 한다.',
       '',
-      '[복도 건식 세면대 — 앞뒤 복도 좌우 가운데]',
-      '- 위치: 3층 앞뒤로 연결되는 복도(게스트룸1·2 사이)의 좌우 한가운데, 뒤 외벽에 등 붙임. 복도를 향함.',
+      '[화장실 건식 세면대]',
+      '- 위치: 3층 화장실 안, 뒤 외벽에 등 붙임(변기 옆). 세면대가 들어온 만큼 화장실을 거실쪽으로 넓혀 벽·문을 이동.',
       `- 하부장 ${fmtDim(s2F3VanityW)}×${fmtDim(s2F3VanityD)} m · 높이 ${fmtDim(s2F3VanityH)} m + 세면볼`,
       '- 수전: 세탁기 수도처럼 뒤 외벽에서 나오는 벽수전.',
       `- 하부장 안에 경동 나비엔 전기온수기 ${s2F3HeaterL} L 설치.`,
