@@ -41,6 +41,7 @@ export const materials = {
   stairUpZone3: new THREE.MeshLambertMaterial({ color: 0xe85d2f, transparent: true, opacity: 0.5, depthWrite: false }),  // 3층 계단 올라오는 자리(주황) — 다른 용도 불가
   s3Hall: new THREE.MeshLambertMaterial({ color: 0xcfcfcf, transparent: true, opacity: 0.4, depthWrite: false }),        // 3층 복도·홀 바닥(반투명 회색)
   s3Door: new THREE.MeshLambertMaterial({ color: 0xff3b30 }),                                                            // 문 위치 표시(빨강 막대)
+  s3WallZone: new THREE.MeshLambertMaterial({ color: 0x6b4f3a, transparent: true, opacity: 0.6, depthWrite: false }),   // 3층 계단실 옆 벽으로 쓸 구간 표시(반투명 진갈색)
   s3Path: new THREE.MeshLambertMaterial({ color: 0xff9f1c, transparent: true, opacity: 0.9, depthWrite: false }),        // 방→화장실 동선(주황)
   loftHeadFill: new THREE.MeshLambertMaterial({ color: 0x7fbf9b }),   // 1층계단 위 헤드룸 한계까지 메운 다락바닥 — 일반 다락바닥(노랑)과 구별(청록)
   stairWall: new THREE.MeshLambertMaterial({ color: 0xf2f0e8 }),

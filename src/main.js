@@ -1661,6 +1661,10 @@ const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFini
     placeMark(levels[2]);
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
     box({ x: far3, z: zB0, w: W, d: W, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });
+    // 계단실 옆 벽으로 쓸 구간(내벽 10cm) 표시 — 계단실 구멍의 안쪽 두 면(옆면·끝단)에 맞춰.
+    const wzT = interiorWall;   // 내벽 두께(0.1m)
+    box({ x: inX0, z: zB0 - wzT, w: far3 - inX0, d: wzT, y: levels[2] + 0.007, h: 0.012, mat: materials.s3WallZone, cast: false });   // 옆면 내벽 — 계단실 앞면(zB0)에 맞춰 X방향
+    box({ x: far3, z: zB0, w: wzT, d: inZ1 - zB0, y: levels[2] + 0.007, h: 0.012, mat: materials.s3WallZone, cast: false });          // 끝단 내벽 — 계단실 끝(far3)에 맞춰 Z방향
   });
 
   // 공유부(라벨·층고 치수) — '계단' 전체 버튼과 함께 보임.
