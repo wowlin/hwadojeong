@@ -1742,9 +1742,9 @@ captureInto(s2DimObjects, () => {
       );
       swing.position.set(px0, fy + 0.02, pz0);   // 0~PI/2 사분면 = +Z(닫힘,벽)~+X(안쪽 열림)
       scene.add(swing);   // captureInto가 s2Floor2Objects로 자동 수집
-      // 화장실 앞벽(低Z) — 안쪽면을 화장실 경계(pz0)에 맞추고 벽 몸통은 공간 바깥(앞·-Z)으로. 거실쪽 모서리(px0)~안방쪽 외벽(px1).
+      // 화장실 앞벽(低Z) — 안쪽면을 화장실 경계(pz0)에 맞추고 벽 몸통은 공간 바깥(앞·-Z)으로. 거실쪽은 계단실 옆 세로벽(far2+1.2)까지 연장, 안방쪽은 외벽(px1)까지.
       const wcWallT = 0.10, wcWallTop = (levels[2] - floor3T) - levels[1];
-      box({ x: px0, z: pz0 - wcWallT, w: px1 - px0, d: wcWallT, y: fy, h: wcWallTop, mat: materials.wall });
+      box({ x: far2 + 1.2, z: pz0 - wcWallT, w: px1 - (far2 + 1.2), d: wcWallT, y: fy, h: wcWallTop, mat: materials.wall });
     }
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
