@@ -2591,6 +2591,19 @@ const NOTES = {
       `- 용마루가 처마보다 ${fmtDim(rise)} m 높음 (깊이 ${fmtDim(s2D)} m의 절반 × tan${deg}°)`,
     ].join('\n') };
   },
+  get s2StairF1() {                                        // 1층 계단참 아래 옷장 — 치수는 계단 상수서 자동 계산
+    const { W, R, tTh, floorH } = S2_STAIR;
+    const nL = Math.round(floorH[0] / R) - 2 - 9;          // 하부런 단 수(상부 9단 통일)
+    const width = W - 0.03;                                // 너비: 우측 외벽 안쪽~계단참 챌판(챌판 두께 제외)
+    const depth = W + 0.04;                                // 깊이: 문 앞면~뒤벽 안쪽
+    const height = (nL + 1) * R - tTh;                     // 높이: 1층 바닥~계단참 하부
+    return { title: '계단참 아래 옷장', body: [
+      '- 계단참 아래 쌍여닫이 옷장(챌판+우측 외벽으로 분리, 위 가로봉)',
+      `- 너비(외벽~챌판): ${fmtDim(width)} m`,
+      `- 깊이(문~뒤벽): ${fmtDim(depth)} m`,
+      `- 높이(바닥~계단참 하부): ${fmtDim(height)} m`,
+    ].join('\n') };
+  },
   get s2Foundation() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 집 크기(s2W·s2D) 바뀌면 자동 반영
     const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
     const floors = 3;                                      // 지상 층수
@@ -2615,7 +2628,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 'roofWall'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 'roofWall'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
