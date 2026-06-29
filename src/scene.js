@@ -65,6 +65,7 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bF1Furniture">식탁</button>
           <button type="button" class="seg-btn" id="bF1Sink">주방</button>
           <button type="button" class="seg-btn" id="bF1Stove">난로</button>
+          <button type="button" class="seg-btn" id="bF1Fan">실링팬</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
@@ -73,6 +74,7 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bF2Floor">바닥</button>
           <button type="button" class="seg-btn" id="bF2Stair">계단</button>
           <button type="button" class="seg-btn" id="bF2Wall">외벽</button>
+          <button type="button" class="seg-btn" id="bF2Fan">실링팬</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">

@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1980,6 +1980,23 @@ captureInto(s2SinkObjects, () => {
   label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, skX + CD / 2, cY + 0.5, cSink, 'furniture');
 });
 
+// ── s2 실링팬 — 1층 천장 2개 · 2층 방 천장 2개. 각 공간 중심선에 맞추고 폭(X) 방향 균등 분산 ──
+// 긴변(X 폭)을 따라 두 대를 1/4·3/4 지점(중심 기준 ±폭/4)에 둬 각 대가 절반씩 담당 → 골고루 송풍.
+// 두 대 모두 공간 깊이(Z) 중심선 위 → 좌우·앞뒤 중심 동시 정렬.
+{
+  const inX0 = s2X0 + s2WallT, inX1 = s2W - s2WallT;          // 외벽 안쪽 폭(X)
+  const inZ0 = s2FrontZ + s2WallT, inZ1 = s2BackZ - s2WallT;
+  const zB0 = inZ1 - (2 * S2_STAIR.W + S2_STAIR.g);           // 계단실 앞 경계(트인 공간 뒤끝)
+  const lvl2 = F2 + S2_STAIR.slabT, lvl3 = F3 + S2_STAIR.slabT;
+  const ceil1Y = lvl2 - s2Floor2SlabT;                       // 1층 천장(2층 슬래브 밑면)
+  const ceil2Y = lvl3 - s2Floor3SlabT;                       // 2층 천장(3층 슬래브 밑면)
+  const fanX = [inX0 + (inX1 - inX0) * 0.25, inX0 + (inX1 - inX0) * 0.75];   // 폭 1/4·3/4(중심 대칭)
+  const cz1 = (inZ0 + zB0) / 2;                              // 1층 트인 거실 깊이 중심(앞벽~계단실)
+  const cz2 = (inZ0 + (zB0 - 0.10)) / 2;                     // 2층 앞방 깊이 중심(앞벽~분리벽)
+  captureInto(s2Fan1Objects, () => { for (const x of fanX) ceilingFan({ x, z: cz1, ceilingY: ceil1Y }); });
+  captureInto(s2Fan2Objects, () => { for (const x of fanX) ceilingFan({ x, z: cz2, ceilingY: ceil2Y }); });
+}
+
 // ── s2 외벽 — 층별 분리(각 층 바닥 슬래브 밑면 ~ 그 층 천장). 층마다 '외벽' 버튼, 모든 층 켜면 연결 ──
 // 박공 30°(기준·초과 금지). 용마루는 긴변(X, 8.0m) 따라가고 경사는 깊이(Z, s2D) 가로지름 →
 //   앞뒤벽 = 처마(평탄 상단, roofY) │ 좌우벽 = 박공 삼각(중앙서 용마루까지) → 좌우 끝에 꼭지점.
@@ -2622,6 +2639,8 @@ const view = {
   s2Furniture: false,    // s2 1층 가구(식탁·의자)
   s2Sink: false,         // s2 1층 싱크대(주방)
   s2Stove: false,        // s2 1층 화목난로(오른쪽 붉은 예약 구획) — '난로' 버튼
+  s2Fan1: false,         // s2 1층 천장 실링팬 2개 — '실링팬' 버튼
+  s2Fan2: false,         // s2 2층 방 천장 실링팬 2개 — '실링팬' 버튼
 };
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
@@ -2661,6 +2680,8 @@ const PARTS = [
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
   { key: 's2Sink', arrays: [s2SinkObjects] },
   { key: 's2Stove', arrays: [s2StoveObjects] },
+  { key: 's2Fan1', arrays: [s2Fan1Objects] },
+  { key: 's2Fan2', arrays: [s2Fan2Objects] },
 ];
 // 체크박스 id → view 키 (사이드바 토글 단일 출처)
 const CHECKS = [
@@ -2726,8 +2747,8 @@ function syncSegButtons() {
   setActive('bHedge', view.hedge); setActive('bFence', view.fence);
   // '1층' 그룹 버튼 — 구조 섹션의 같은 부품을 공유 토글(active 동기화)
   setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Stair', view.s2StairF1); setActive('bF1Wall', view.s2Wall1);
-  setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove);
-  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF2Wall', view.s2Wall2);
+  setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove); setActive('bF1Fan', view.s2Fan1);
+  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF2Wall', view.s2Wall2); setActive('bF2Fan', view.s2Fan2);
   setActive('bF3Floor', view.s2Floor3); setActive('bF3Stair', view.s2StairF3); setActive('bF3Wall', view.s2Wall3);
   setActive('bF3Roof', view.s2Roof3); setActive('bF3Solar', view.s2Solar3);
 }
@@ -2910,8 +2931,8 @@ const CHECK_MAP = Object.fromEntries(CHECKS);   // 체크박스 id → view 키
 const SEG_KEYS = {                              // 버튼 id → 제어하는 view 키(집계 버튼은 leaf 키들의 합집합)
   bHedge: ['hedge'], bFence: ['fence'],
   bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Stair: ['s2StairF1'], bF1Wall: ['s2Wall1'],
-  bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'],
-  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF2Wall: ['s2Wall2'],
+  bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'], bF1Fan: ['s2Fan1'],
+  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF2Wall: ['s2Wall2'], bF2Fan: ['s2Fan2'],
   bF3Floor: ['s2Floor3'], bF3Stair: ['s2StairF3'], bF3Wall: ['s2Wall3'],
   bF3Roof: ['s2Roof3'], bF3Solar: ['s2Solar3'],
 };
@@ -2985,9 +3006,11 @@ bindSegButton('bF1Wall', () => { view.s2Wall1 = !view.s2Wall1; });
 bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
 bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
 bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
+bindSegButton('bF1Fan', () => { view.s2Fan1 = !view.s2Fan1; });
 bindSegButton('bF2Floor', () => { view.s2Floor2 = !view.s2Floor2; });
 bindSegButton('bF2Stair', () => { view.s2StairF2 = !view.s2StairF2; });   // 2층 계단 = 1-2참+상부런 + 2→3 하부런 + 2-3참
 bindSegButton('bF2Wall', () => { view.s2Wall2 = !view.s2Wall2; });
+bindSegButton('bF2Fan', () => { view.s2Fan2 = !view.s2Fan2; });
 bindSegButton('bF3Floor', () => { view.s2Floor3 = !view.s2Floor3; });
 bindSegButton('bF3Stair', () => { view.s2StairF3 = !view.s2StairF3; });   // 3층 계단 = 2-3참 + 2→3 상부런
 bindSegButton('bF3Wall', () => { view.s2Wall3 = !view.s2Wall3; });
