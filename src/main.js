@@ -1722,10 +1722,11 @@ captureInto(s2DimObjects, () => {
     //   막힌 변: 좌측벽 inX1(高X·안방쪽)·뒤벽 inZ1(高Z)·앞 방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
       const fy = levels[1], px1 = inX1, pz1 = inZ1, px0 = inX1 - 2.4, pz0 = inZ1 - 1.6;
-      // 변기 — 안방쪽-뒤 코너(좌측벽 高X·뒤벽 高Z에 붙임). 물탱크=뒤벽, 앞(低Z)을 향해 착석. 문(低X) 반대편.
-      box({ x: px1 - 0.46, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
-      box({ x: px1 - 0.44, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
-      label('변기', px1 - 0.45, fy + 0.95, pz1 - 0.45, 'furniture');
+      // 변기 — 안방쪽-뒤 코너. 물탱크=뒤벽, 앞(低Z)을 향해 착석. 문(低X) 반대편.
+      //   X·Z를 3층 변기와 동일하게(inX1·inZ1 기준 같은 오프셋) → 오수 입상관이 곧게 직하. 옆벽(高X)에서 0.2m 띄움.
+      box({ x: px1 - 0.64, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
+      box({ x: px1 - 0.62, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+      label('변기', px1 - 0.63, fy + 0.95, pz1 - 0.45, 'furniture');
       // 샤워부스 — 거실쪽-뒤 코너(低X·高Z). 방수 트레이 0.9×0.8 + 열린 두 면(+X·-Z)에 유리 칸막이.
       const shW = 0.9, shD = 0.8;
       box({ x: px0, z: pz1 - shD, w: shW, d: shD, y: fy, h: 0.06, mat: materials.shower });                       // 방수 트레이
@@ -2670,7 +2671,9 @@ const NOTES = {
     const inW = s2W - 2 * s2WallT, inD = s2D - 2 * s2WallT;
     const bathW = inW - W - nU * T - 1.2 - 0.10, bathD = wF;   // 화장실 실사용: 계단실벽 안쪽(far2+1.3)~안방 외벽 · 분리벽 안쪽(zB0)~뒤벽
     const roomW = inW, roomD = inD - wF - 0.15;                // 앞방: 분리벽 앞 전체(전폭 × 앞 외벽~분리벽)
+    const landW = 1.2, landD = wF;                            // 층계참(도착칸): 계단 끝(far2)~화장실 벽(far2+1.2) · 분리벽(zB0)~뒤 외벽
     return { title: '2층 — 화장실 · 앞방', body: [
+      `- 층계참(계단 올라와 방 들기 전 평평한 바닥, 벽 뺀): ${fmtDim(landW)} × ${fmtDim(landD)} m`,
       `- 화장실(벽 뺀 실사용 바닥): ${fmtDim(bathW)} × ${fmtDim(bathD)} m`,
       `- 앞쪽 방(벽으로 분리, 길쭉): ${fmtDim(roomW)} × ${fmtDim(roomD)} m`,
     ].join('\n') };
