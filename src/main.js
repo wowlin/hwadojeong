@@ -2826,6 +2826,13 @@ const NOTES = {
     const totalArea = bldgArea * floors;                  // 연면적(전 층 합)
     const bcr = (bldgArea / lotArea) * 100;               // 건폐율
     const far = (totalArea / lotArea) * 100;              // 용적률
+    const deckRoofArea = deckW * deckD;                   // 데크 위 지붕(포치) 수평투영 — 보수적 산입 대상
+    const bldgAreaC = bldgArea + deckRoofArea;            // 보수적 건축면적(본체 + 데크 지붕)
+    const totalAreaC = totalArea + deckRoofArea;          // 보수적 연면적(데크 지붕 1개층 가산)
+    const bcrC = (bldgAreaC / lotArea) * 100;             // 보수적 건폐율
+    const farC = (totalAreaC / lotArea) * 100;            // 보수적 용적률
+    const shedArea = 4 * 2.5;                             // 창고(가설건축물 신고 대상) 10㎡
+    const shedPct = (shedArea / lotArea) * 100;           // 창고 산입 시 비율 가산(%p)
     return { title: '기초 · 대지 개요', body: [
       '[대지 · 지역]',
       '- 주소: 경기 포천시 이동면 장암리 639-25',
@@ -2838,6 +2845,14 @@ const NOTES = {
       `- 건축면적 ${bldgArea.toFixed(0)} ㎡ · 연면적 ${totalArea.toFixed(0)} ㎡`,
       `- 건폐율: ${bcr.toFixed(1)} %  (한도 50 %)`,
       `- 용적률: ${far.toFixed(1)} %  (한도 125 %)`,
+      '',
+      '[보수적 산정 — 포치(데크 위 지붕)까지 면적 산입]',
+      `- 건축면적 ${bldgAreaC.toFixed(0)} ㎡ · 건폐율 ${bcrC.toFixed(1)} %  (한도 50 %)`,
+      `- 연면적 ${totalAreaC.toFixed(0)} ㎡ · 용적률 ${farC.toFixed(1)} %  (한도 125 %)`,
+      '',
+      '[창고 4×2.5 m(10 ㎡) 가설건축물 신고 시]',
+      '- 신고 가설건축물(존치 3년·연장 가능)은 원칙적으로 건폐율·용적률 산정에서 제외 → 위 비율 변동 없음.',
+      `- 만약 산입한다면 건폐율·용적률 각 +${shedPct.toFixed(1)} %p (건폐율 ${(bcr + shedPct).toFixed(1)} %, 보수 기준 ${(bcrC + shedPct).toFixed(1)} %).`,
       '',
       '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
     ].join('\n') };
