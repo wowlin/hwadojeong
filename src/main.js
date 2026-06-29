@@ -1673,6 +1673,25 @@ captureInto(s2DimObjects, () => {
     placeMark(levels[2], true);
     label(`연두 ${RM_L.toFixed(2)}×${RM_S.toFixed(2)}m`, inX0 + RM_L / 2, levels[2] + 0.4, inZ0 + RM_S / 2, 'dim');   // 연두방 크기
     label(`회색 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 회색방 크기
+    // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙. 좌측벽=inX1(高X)·뒤벽=inZ1(高Z).
+    {
+      const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - 1, pz0 = inZ1 - 1;
+      // 변기 — 뒤-좌 코너(좌측벽·뒤벽에 붙임). 물탱크=뒤벽(高Z), 앞(低Z)을 향해 착석. 1층 변기와 동형.
+      box({ x: px1 - 0.5, z: pz1 - 0.12, w: 0.46, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
+      box({ x: px1 - 0.48, z: pz1 - 0.62, w: 0.42, d: 0.5, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+      label('권장 화장실', px1 - 0.5, fy + 0.95, pz1 - 0.4, 'furniture');
+      // 출입문 — 앞벽(低Z, pz0)·거실쪽(低X) 측에 폭 0.7. 변기 반대편으로 두어 스윙이 변기를 피함.
+      const dW = 0.7, dH = 2.0, hingeX = px0 + 0.05;
+      interiorDoorHorizontal(hingeX, pz0, fy, dW, dH, materials.wcDoor);   // 닫힘 위치(앞벽)
+      // 안여닫이 스윙 — 안쪽(+Z)으로 90° 열릴 때 쓸고 가는 1/4 부채꼴. 경첩=문 거실측(低X) 모서리. 반투명 바닥 표시.
+      const swing = new THREE.Mesh(
+        new THREE.CylinderGeometry(dW, dW, 0.02, 24, 1, false, 0, Math.PI / 2),
+        new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }),
+      );
+      swing.position.set(hingeX, fy + 0.02, pz0);   // 0~PI/2 사분면 = +Z(안쪽 열림)~+X(앞벽 닫힘)
+      scene.add(swing);
+      s2Floor3Objects.push(swing);
+    }
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
     box({ x: far3, z: zB0, w: W, d: W, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });
     // 연두색 방(거실쪽·앞 코너)을 분리할 벽으로 쓸 구간(내벽 10cm) 표시 — 계단실에 맞춰 ㄱ자로 방을 막음.
