@@ -99,9 +99,6 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">참고</h2>
-        <label class="chk"><input id="cS2Stair" type="checkbox"><span>계단 (U자 1→3층)</span></label>
-        <label class="chk"><input id="cS2Stair3" type="checkbox"><span>계단(구안·앞뒤런 L+U)</span></label>
-        <label class="chk"><input id="cS2Stairs" type="checkbox"><span>계단 샘플 (3종)</span></label>
         <label class="chk"><input id="cS2Frame" type="checkbox"><span>1층 골조 (포치 하중지지)</span></label>
       </section>
     </aside>

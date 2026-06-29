@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2StairObjects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2Stair3Objects, s2StairSampleObjects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairF1Objects, s2StairF2Objects, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2FrameObjects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1570,105 +1570,8 @@ captureInto(s2DimObjects, () => {
   box({ x: gx0, z: s2FrontZ - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });       // 깊이 앞 가로 기준선
 });
 
-// ── s2 계단 샘플(안전계단 유형 비교) — 's2 계단샘플' 토글 ───────────────────────
-// 집 8×6·층고 3.0m에 들어가는 실사용 안전계단 3종을 발자국 안에 나란히 비교(한 층분).
-// 공통 안전치수: 단높이 0.167m(<0.18)·디딤판 0.27m(>0.26)·유효폭 1.0m(>0.9)·총 18단·양측 난간 전제.
-captureInto(s2StairSampleObjects, () => {
-  const R = 3.0 / 18, T = 0.27, W = 1.0, tTh = 0.06;     // 단높이·디딤판·폭·디딤두께
-  const z0 = -2.4;                                        // 세 샘플 공통 앞 기준선(z)
-  const tag = (t, x, z) => label(t, x, 2.2, z, 'struct');
-  const foot = (x, z, w, d) => box({ x, z, w, d, y: 0.02, h: 0.02, mat: materials.conceptWall, cast: false });   // 평면 차지영역
-  const tread = (x, z, w, d, n, mat) => box({ x, z, w, d, y: n * R - tTh, h: tTh, mat });                        // n번째 디딤(윗면=n*R)
-
-  // A. 일자(직선) — 17단 + 위층 진입. 꺾임 없어 가장 단순·안전하나 깊이 4.6m로 큼.
-  ((x0) => {
-    foot(x0, z0, W, 17 * T);
-    for (let k = 0; k < 17; k += 1) tread(x0, z0 + k * T, W, T, k + 1, materials.stair);
-    tag('A. 일자(직선)\n17단 · 1.0×4.6m\n단높이167·디딤270·폭1000', x0 + 0.5, z0 - 0.55);
-  })(0.3);
-
-  // B. L자(90° 꺾임 + 코너참) — 하부 8단(세로) + 코너참 + 상부 8단(가로). 코너 활용, 약 3.2×3.2m.
-  ((x0) => {
-    foot(x0, z0, W + 8 * T, W);                 // 상부런(가로) 영역
-    foot(x0, z0, W, 8 * T + W);                 // 하부런+참(세로) 영역
-    for (let k = 0; k < 8; k += 1) tread(x0, z0 + k * T, W, T, k + 1, materials.stair);                 // 하부(세로, 앞→뒤)
-    box({ x: x0, z: z0 + 8 * T, w: W, d: W, y: 9 * R - tTh, h: tTh, mat: materials.landing });          // 코너참
-    for (let m = 0; m < 8; m += 1) tread(x0 + W + m * T, z0 + 8 * T, T, W, 10 + m, materials.stair);    // 상부(가로, 옆으로)
-    tag('B. L자(코너참)\n16단+참 · 3.2×3.2m\n단높이167·디딤270·폭1000', x0 + 1.6, z0 - 0.55);
-  })(2.0);
-
-  // C. U자(180° 반환 + 중간참) — 하부 8단·상부 8단 나란히. 가장 콤팩트(약 2.1×3.0m), 오른쪽 코어 적층 적합.
-  ((x0) => {
-    const bx = x0 + W + 0.1;
-    foot(x0, z0, 2 * W + 0.1, 8 * T + W);
-    for (let k = 0; k < 8; k += 1) tread(x0, z0 + k * T, W, T, k + 1, materials.stair);                 // 하부런(앞→뒤)
-    box({ x: x0, z: z0 + 8 * T, w: 2 * W + 0.1, d: W, y: 9 * R - tTh, h: tTh, mat: materials.landing }); // 중간참
-    for (let m = 0; m < 8; m += 1) tread(bx, z0 + (7 - m) * T, W, T, 10 + m, materials.stair);          // 상부런(뒤→앞)
-    tag('C. U자(중간참·추천)\n16단+참 · 2.1×3.0m\n단높이167·디딤270·폭1000', x0 + 1.05, z0 - 0.55);
-  })(5.5);
-});
-
-// ── s2 계단(U자 스위치백·단높이 0.15 통일·중간참+층참, 1→3층) — '계단' 토글 ─────────
-// 두 직선런이 나란히 180° 반환(뒤 중간참), 오른쪽 뒤 코너(거실측·측백 뒤벽) 외벽 안쪽에 밀착.
-// 단높이(R)는 전 구간 0.15m로 통일 → 1→2층 22단·2→3층 20단, 각 층 바닥에 정확히 맞음.
-// 층참(계단참)을 1·2·3층 바닥 레벨에 둠 — 이 윗면이 바닥·층고·천장고 산정의 기준면(3층 꼭대기 포함).
 // s2 계단 사양(단일 출처) — 디딤·단높이·런폭·런틈·디딤판두께 · 층고(1→2,2→3). 메모·라벨이 이 값을 그대로 표시.
 const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFinishH, floorH: [3.3, 3.0] };  // slabT=1층 층참=바닥 마감 두께(콘크리트 기초 위 부자재+포세린, floorFinishH 0.20)
-captureInto(s2StairObjects, () => {
-  const baseY = groundTopY + MAT_H;                       // 1층 바닥 레벨
-  const { T, R, W, g, tTh } = S2_STAIR;                   // 디딤 · 단높이(통일) · 폭 · 런틈 · 디딤판두께
-  const x0 = s2WallT, bx = x0 + W + g;                    // 두 런 X열(콜A=x0·콜B=bx) — 외벽 안쪽
-  const wF = 2 * W + g;                                   // 참 너비(두 런+틈)
-  const zR1 = s2BackZ - s2WallT, zR0 = zR1 - W;           // 뒤 중간참 밴드 [zR0,zR1] (뒤 외벽 안쪽 밀착)
-  const tread = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });
-  const landing = (z, d, topY) => box({ x: x0, z, w: wF, d, y: topY - tTh, h: tTh, mat: materials.landing });
-
-  const f1Top = baseY + S2_STAIR.slabT;                  // 1층 층참(=1층 바닥) 윗면 = 콘크리트 기초 위 부자재+포세린 마감 두께만큼 올린 면 → 계단 시작면
-  let acc = f1Top; const levels = [f1Top];                // 1·2·3층 바닥 레벨(층참 윗면=이 면) — 층고 누적
-  for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
-  // 중간참을 '뒤벽([zR0,zR1])에 밀착' 고정 + 하부런(콜A) 단 수를 모든 비행 통일.
-  //   → 하부런 앞끝이 모두 같아 중간에 빠지는 단 없이 참이 뒷벽에 붙는다. 남는 단차는 상부런(콜B)에서 줄인다.
-  //   → 상부런이 짧아진 비행은 위층 바닥을 그만큼 더 넓게(앞으로) 채워 개구부를 메운다.
-  const flights = [];
-  for (let f = 0; f < levels.length - 1; f += 1) {        // 각 비행: levels[f] → levels[f+1]
-    const fl = levels[f], rise = levels[f + 1] - fl;
-    flights.push({ f, fl, rise, risers: Math.round(rise / R) });   // 22(3.3) · 20(3.0)
-  }
-  const nL = Math.max(...flights.map((v) => Math.ceil((v.risers - 2) / 2)));   // 하부런 단 수(통일) = 가장 깊은 비행 기준
-  const meta = [];
-  for (const { fl, risers } of flights) {
-    const nU = risers - 2 - nL;                                                       // 상부런 단 수 — 비행마다 다름(짧은 비행은 줄어듦)
-    for (let k = 1; k <= nL; k += 1) tread(x0, zR0 - k * T, fl + (nL - k + 1) * R);   // 하부런(콜A) 맨 윗단=참 바로 앞 — 앞끝 모든 비행 동일
-    landing(zR0, W, fl + (nL + 1) * R);                                               // 중간참 — 뒤벽 밴드 [zR0,zR1] 고정(벽 밀착)
-    for (let m = 1; m <= nU; m += 1) tread(bx, zR0 - m * T, fl + (nL + 1 + m) * R);   // 상부런(콜B) 참→앞 오름, 맨 윗단=위층 바닥
-    meta.push({ lowerFrontZ: zR0 - nL * T, upperFrontZ: zR0 - nU * T });
-  }
-  // 층참 — 각 바닥 레벨 앞쪽. 윗면=바닥 레벨(바닥·층고·천장고 기준면).
-  // 1층 층참 = 1층 바닥 슬래브: 외벽 안쪽 발자국 전체, 콘크리트 기초 윗면(baseY)에서 마감 두께(slabT)만큼 위로. 윗면=levels[0].
-  box({ x: s2X0 + s2WallT, z: s2FrontZ + s2WallT, w: s2W - 2 * s2WallT, d: s2D - 2 * s2WallT, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });
-  // 2층 층참 = 2층 바닥: 외벽 안쪽 발자국에서 계단(런+중간참) 밴드만 비우고 전부 채움. 윗면=levels[1].
-  const stairFrontZ2 = zR0 - nL * T;                                       // 2층 계단실 앞끝 = 하부런 앞끝(모든 비행 동일)
-  const stairFrontZ3 = meta[1].upperFrontZ;                               // 3층 계단실 앞끝 = 2→3 상부런 앞끝 → 상부런이 짧으면 3층 바닥이 넓어짐
-  const inX0 = s2X0 + s2WallT, inZ0 = s2FrontZ + s2WallT;                   // 외벽 안쪽 시작(좌·앞)
-  const inW = s2W - 2 * s2WallT, inZ1 = s2BackZ - s2WallT;                  // 외벽 안쪽 폭·뒤끝
-  const floor2T = 0.6;                                                      // 2층 바닥(층참) 두께 — 전이보 포함. 윗면(levels[1])은 계단 단이므로 고정, 아래로 확장
-  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });  // 계단 옆 영역 전체
-  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ2 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });     // 계단 앞 영역(계단 밴드는 비움)
-  // 3층 층참 = 3층 바닥: 2층과 동일하게 외벽 안쪽 발자국 전체에서 계단실만 비우고 채움. 윗면=levels[2].
-  const floor3T = 0.3;                                                      // 3층 바닥 두께 0.3. 윗면(levels[2])은 계단 단이므로 고정, 아래로 확장
-  box({ x: inX0 + wF, z: inZ0, w: inW - wF, d: inZ1 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });  // 계단 옆 영역 전체
-  box({ x: inX0, z: inZ0, w: wF, d: stairFrontZ3 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });     // 계단 앞 영역(계단실은 비움 — 2→3 비행만이라 더 넓음)
-  // 각 층 천장고·층고 (계단 화면) — 단일 출처: 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께
-  // 치수표기(planYDim)로 그린다 — 층고는 바깥쪽 세로 치수선, 천장고는 그 안쪽 세로 치수선.
-  const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
-  for (let f = 0; f < levels.length - 1; f += 1) {
-    const fH = levels[f + 1] - levels[f];                            // 층고
-    const cH = (levels[f + 1] - slabTs[f + 1]) - levels[f];          // 천장고 = 윗층 바닥 밑면 − 이 층 바닥 윗면
-    planYDim(inX0 + inW + 0.9, inZ0 + 0.3, levels[f], levels[f + 1], `${f + 1}층 층고 ${fH.toFixed(2)}m`);             // 층고(바깥)
-    planYDim(inX0 + inW + 0.35, inZ0 + 0.3, levels[f], levels[f + 1] - slabTs[f + 1], `천장고 ${cH.toFixed(2)}m`);    // 천장고(안쪽)
-  }
-});
-
 // ── s2 계단(현행·좌우런·우측벽 스위치백, 1→3층) — 'cS2Stair2' 토글 = 구조 '계단' ──────
 // 구안(s2Stair3: 앞뒤런·뒷벽 참)을 90° 돌린 현행안. 두 직선런이 좌우(±X)로 오르고,
 //   180° 스위치백 참을 우측벽(低X)에 밀착 → 화장실·방배치 자유도 확보. 입구·층 연결은 반대편(高X·안방쪽).
@@ -1749,119 +1652,6 @@ captureInto(s2StairObjects, () => {
     }
   });
 })();
-
-// ── s2 계단(구안·참고·1층 L자 정사각 코너참) — 'cS2Stair3' 토글 = 참고 '계단(구안·앞뒤런 L+U)' ─
-// 현행 좌우런 계단(s2Stair2)으로 교체되기 전 안. 3층 방배치·2층 욕실·수납 등 종전 검토가 여기 남아 있음.
-// 1층=L자: 싱크대 쪽(x0)에서 +X로 가로 하부런 → 정사각 코너참 → 세로 상부런(앞으로 내려 2층 착지).
-//   2→3층=U자(코너참 오른쪽 옆 축). 바닥(1층 전체+2·3층 계단실 구멍)·층고/천장고 치수표기 포함.
-captureInto(s2Stair3Objects, () => {
-  const baseY = groundTopY + MAT_H;
-  const { T, R, W, g, tTh } = S2_STAIR;
-  const x0 = s2WallT;
-  const zR1 = s2BackZ - s2WallT, zR0 = zR1 - W;            // 뒤벽 밴드 [zR0,zR1]
-  const inX0 = s2X0 + s2WallT, inZ0 = s2FrontZ + s2WallT;  // 외벽 안쪽(좌·앞)
-  const inX1 = s2W - s2WallT, inZ1 = s2BackZ - s2WallT;    // 외벽 안쪽(우·뒤)
-  const treadX = (x, z, topY) => box({ x, z, w: T, d: W, y: topY - tTh, h: tTh, mat: materials.stair });   // +X로 오르는 단(가로런)
-  const treadZ = (x, z, topY) => box({ x, z, w: W, d: T, y: topY - tTh, h: tTh, mat: materials.stair });   // ±Z로 오르는 단(앞뒤런)
-  const land = (x, z, w, d, topY) => box({ x, z, w, d, y: topY - tTh, h: tTh, mat: materials.landing });
-  const floorRing = ([hx0, hx1, hz0, hz1], topY, th) => {
-    const m = materials.floorSlab;
-    if (hx0 - inX0 > 0.001) box({ x: inX0, z: inZ0, w: hx0 - inX0, d: inZ1 - inZ0, y: topY - th, h: th, mat: m });   // 좌
-    if (inX1 - hx1 > 0.001) box({ x: hx1, z: inZ0, w: inX1 - hx1, d: inZ1 - inZ0, y: topY - th, h: th, mat: m });    // 우
-    if (hz0 - inZ0 > 0.001) box({ x: hx0, z: inZ0, w: hx1 - hx0, d: hz0 - inZ0, y: topY - th, h: th, mat: m });      // 앞
-    if (inZ1 - hz1 > 0.001) box({ x: hx0, z: hz1, w: hx1 - hx0, d: inZ1 - hz1, y: topY - th, h: th, mat: m });       // 뒤
-  };
-  const f1Top = baseY + S2_STAIR.slabT;
-  let acc = f1Top; const levels = [f1Top];
-  for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
-
-  // 1→2층 L자: 뒷벽 타고 우측(→x0)으로 가로 하부런 → 뒤-우 모서리 정사각 코너참 → 우측벽(x0) 타고 앞으로 세로 상부런 → 2층 바닥
-  const N1 = Math.round((levels[1] - levels[0]) / R);   // 22단
-  const nL1 = (N1 - 2) / 2 + 1, nU1 = (N1 - 2) / 2 - 1;  // 가로 하부런 +1(11) / 세로 상부런 −1(9) → 2층 닿는 면이 2→3 시작과 같은 z로 정렬(끊김 제거)
-  const xcL = x0 + W;                                     // 코너참 오른쪽 끝(=하부런 시작 경계)
-  for (let k = 1; k <= nL1; k += 1) treadX(xcL + (nL1 - k) * T, zR0, levels[0] + k * R);       // 하부런 가로(우측=−X로 코너까지 오름)
-  land(x0, zR0, W, W, levels[0] + (nL1 + 1) * R);                                              // 정사각 코너참 — 뒤-우 모서리 밀착
-  for (let m = 1; m <= nU1; m += 1) treadZ(x0, zR0 - m * T, levels[0] + (nL1 + 1 + m) * R);    // 상부런 세로(우측벽 따라 앞으로, 2층 착지)
-  const hole1 = [x0, xcL + nL1 * T, zR0 - nU1 * T, zR1];
-  label('1층: L자 · 정사각 코너참(뒤-우 모서리)', x0 + 1.6, levels[0] + 1.4, zR0 - nU1 * T - 0.5, 'struct');
-  // 1층 뒤쪽 계단(가로 하부런) 아래 — 계단형 수납문(계단참까지). 앞면(z=zR0)에 단 윤곽 따라 바닥(levels[0])까지 패널.
-  const usTh = 0.04;
-  for (let k = 1; k <= nL1; k += 1)
-    box({ x: xcL + (nL1 - k) * T, z: zR0 - usTh, w: T, d: usTh, y: levels[0], h: k * R, mat: materials.interiorDoor });   // 단별 문 패널(높이=단 높이)
-  box({ x: x0, z: zR0 - usTh, w: W, d: usTh, y: levels[0], h: (nL1 + 1) * R, mat: materials.interiorDoor });              // 계단참 아래 문
-  label('계단 아래 수납(계단형 문)', xcL + 1.0, levels[0] + 0.5, zR0 - 0.1, 'furniture');
-
-  // 2→3층 U자: (2층에서) 뒤쪽으로 올라가 뒷쪽 직사각 계단참 → 앞쪽으로 올라와 3층 바닥. 우측벽(x0) 밀착.
-  // 도는 방향: 하부런(시작)=안쪽 열(x0+W+g) → 1층 상부런(x0)과 겹치지 않게, 상부런(끝)=우측벽 열(x0).
-  const N2 = Math.round((levels[2] - levels[1]) / R);   // 20단
-  const nL2 = (N2 - 2) / 2, nU2 = (N2 - 2) / 2;         // 하부=상부=9
-  const xLo = x0 + W + g;                                // 하부런(시작) 열 — 안쪽(겹침 방지)
-  for (let k = 1; k <= nL2; k += 1) treadZ(xLo, zR0 - k * T, levels[1] + (nL2 - k + 1) * R);    // 하부런(앞→뒤 오름)
-  land(x0, zR0, 2 * W + g, W, levels[1] + (nL2 + 1) * R);                                       // 직사각 계단참(뒤, 두 열 덮음)
-  for (let m = 1; m <= nU2; m += 1) treadZ(x0, zR0 - m * T, levels[1] + (nL2 + 1 + m) * R);     // 상부런(뒤→앞, 우측벽 밀착, 3층 착지)
-  const hole2 = [x0, x0 + 2 * W + g, zR0 - nL2 * T, zR1];
-  label('2→3층: U자 · 직사각 계단참(우측벽)', x0 + 1.3, levels[1] + 1.4, zR0 - nL2 * T - 0.5, 'struct');
-
-  // 바닥(층참) — 1층 전체 + 2·3층은 각 계단실만 비움
-  const floor2T = 0.6, floor3T = 0.3;
-  box({ x: inX0, z: inZ0, w: inX1 - inX0, d: inZ1 - inZ0, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });   // 1층 바닥(전체)
-  // 2층 바닥 — 1→2 L자 계단실 + 2→3 계단실을 '한 통'으로 비움(2→3 계단도 빈 계단실 위에 얹힘).
-  //  앞쪽(z<vz0)만 솔리드 = 1→2 도착·2→3 출발 참. sx1=2→3 계단실 오른쪽 끝, hx1=1→2 가로런 오른쪽 끝.
-  {
-    const m = materials.floorSlab, sx1 = x0 + 2 * W + g, hx1 = xcL + nL1 * T, vz0 = zR0 - nU1 * T, bz0 = zR0, topY = levels[1], th = floor2T;
-    box({ x: hx1, z: inZ0, w: inX1 - hx1, d: inZ1 - inZ0, y: topY - th, h: th, mat: m });   // 가로런 오른쪽 전체
-    box({ x: sx1, z: inZ0, w: hx1 - sx1, d: bz0 - inZ0, y: topY - th, h: th, mat: m });      // 가로런 앞쪽(2→3 계단실 오른쪽)
-    box({ x: inX0, z: inZ0, w: sx1 - inX0, d: vz0 - inZ0, y: topY - th, h: th, mat: m });    // 앞쪽 솔리드(도착·출발 참)
-  }
-  floorRing(hole2, levels[2], floor3T);   // 3층 바닥(U자 계단실 비움)
-  // ── 2·3층 화장실 자리 표시(바닥 색) — 1층 하수구·수전(뒤벽) 바로 앞에 적층, 싱크 위는 회피 ──
-  // 1층 하수구=싱크 오른쪽 끝(거실쪽 x≈5.3)·수전=싱크 가운데, 둘 다 뒤벽 근처. 변기·배수를 그 앞에 두면
-  //   오수관이 뒤벽까지 0.6m로 짧게 빠지고, 싱크 위(뒤 0.6m 띠)는 안 덮는다. 2·3층 같은 줄에 수직 적층.
-  const drainX = 5.3, bathBackZ = inZ1 - 0.6;                              // 1층 하수구 X(싱크 오른쪽 끝)·싱크 앞끝(뒤벽 −0.6)
-  const b2W = 2.0, b2D = 2.2, b2x0 = drainX - 0.4, b2z0 = bathBackZ - b2D; // 2층 샤워욕실 2.0×2.2 — 하수구가 뒤-오른쪽 안에
-  box({ x: b2x0, z: b2z0, w: b2W, d: b2D, y: levels[1] + 0.006, h: 0.012, mat: materials.showerFloor, cast: false });
-  label(`2층 샤워욕실 ${fmtDim(b2W)}×${fmtDim(b2D)}m`, b2x0 + b2W / 2, levels[1] + 0.45, b2z0 + b2D / 2, 'room');
-  // ── 3층 평면: 방2개 + 공용화장실 1 + 복도 — 각 방→화장실 동선 표시 ─────────────────
-  // 계단은 거실쪽(低x) 앞에서 올라옴 → 그 옆 N-S 복도가 척추. 방1=앞(넓음)·방2=뒤-가운데, 화장실=뒤-안방쪽 코너(1층 싱크·오수관 코너 스택 위, x≈7.4·z≈1.8).
-  // 두 방 모두 복도→복도참(E-W)을 거쳐 공용화장실로. 바닥 자투리 없이 꽉 채움.
-  {
-    const fy = levels[2] + 0.006, dy = levels[2] + 0.02, py = levels[2] + 0.035;   // 방바닥·문·동선(겹침 순서)
-    const flr = (x0, z0, x1, z1, mat) => box({ x: x0, z: z0, w: x1 - x0, d: z1 - z0, y: fy, h: 0.012, mat, cast: false });
-    const door = (x0, z0, x1, z1) => box({ x: x0, z: z0, w: x1 - x0, d: z1 - z0, y: dy, h: 0.07, mat: materials.s3Door, cast: false });
-    const path = (x0, z0, x1, z1) => box({ x: x0, z: z0, w: x1 - x0, d: z1 - z0, y: py, h: 0.012, mat: materials.s3Path, cast: false });
-    const stairEX = 2.4, cX = 3.5, mX = 6.0, vZ = 0.2, wZ = 1.0, stairFZ = -0.43;   // 계단실 동쪽·복도|방 경계·방2|화장실 경계·방1 뒤끝·복도참 뒤끝·계단 도착선
-    flr(cX, inZ0, inX1, vZ, materials.s3Room1);                                       // 방1(앞·거실쪽 넓은 방)
-    label(`방1 ${fmtDim(inX1 - cX)}×${fmtDim(vZ - inZ0)}m`, (cX + inX1) / 2, fy + 0.4, (inZ0 + vZ) / 2, 'room');
-    flr(cX, wZ, mX, inZ1, materials.s3Room2);                                         // 방2(뒤-가운데)
-    label(`방2 ${fmtDim(mX - cX)}×${fmtDim(inZ1 - wZ)}m`, (cX + mX) / 2, fy + 0.4, (wZ + inZ1) / 2, 'room');
-    flr(mX, wZ, inX1, inZ1, materials.wcFloor);                                       // 공용 화장실(뒤-안방쪽 코너, 1층 싱크·오수관 위)
-    label(`공용 화장실 ${fmtDim(inX1 - mX)}×${fmtDim(inZ1 - wZ)}m`, (mX + inX1) / 2, fy + 0.4, (wZ + inZ1) / 2, 'room');
-    flr(inX0, inZ0, cX, stairFZ, materials.s3Hall);                                   // 계단 도착 홀(앞-우)
-    flr(stairEX, stairFZ, cX, inZ1, materials.s3Hall);                                // N-S 복도(계단실 동쪽, 도착선~뒤)
-    flr(cX, vZ, inX1, wZ, materials.s3Hall);                                          // 복도참(E-W, 방2·화장실 문 앞)
-    label('복도·홀', (stairEX + cX) / 2, fy + 0.4, 0.3, 'room');
-    door(cX - 0.06, -0.95, cX + 0.06, -0.05);                                         // 방1 문(복도쪽)
-    door(4.2, wZ - 0.06, 5.1, wZ + 0.06);                                             // 방2 문(복도참쪽)
-    door(6.2, wZ - 0.06, 7.0, wZ + 0.06);                                             // 화장실 문(복도참쪽)
-    label('문', cX, dy + 0.3, -0.5, 'dim'); label('문', 4.65, dy + 0.3, wZ, 'dim'); label('문', 6.6, dy + 0.3, wZ, 'dim');
-    const w = 0.18, cc = (stairEX + cX) / 2, hc = (vZ + wZ) / 2, wc = 6.6, r2 = 4.65; // 동선 폭·복도중심X·복도참중심Z·화장실문X·방2문X
-    path(cc - w / 2, -0.5 - w / 2, cX, -0.5 + w / 2);                                 // 방1문→복도
-    path(cc - w / 2, -0.5, cc + w / 2, hc + w / 2);                                   // 복도 북상
-    path(cc - w / 2, hc - w / 2, wc + w / 2, hc + w / 2);                             // 복도참 동진
-    path(wc - w / 2, hc, wc + w / 2, wZ);                                             // 화장실 문 진입
-    path(r2 - w / 2, hc, r2 + w / 2, wZ);                                             // 방2 문 진입
-    label('방1→화장실', (cc + wc) / 2, py + 0.3, hc - 0.4, 'dim');
-    label('방2→화장실', (r2 + wc) / 2, py + 0.3, hc + 0.35, 'dim');
-  }
-  // 각 층 층고·천장고 — 계단 화면과 동일한 치수표기(planYDim)
-  const slabTs = [S2_STAIR.slabT, floor2T, floor3T];
-  for (let f = 0; f < levels.length - 1; f += 1) {
-    const fH = levels[f + 1] - levels[f];
-    const cH = (levels[f + 1] - slabTs[f + 1]) - levels[f];
-    planYDim(inX1 + 0.9, inZ0 + 0.3, levels[f], levels[f + 1], `${f + 1}층 층고 ${fH.toFixed(2)}m`);
-    planYDim(inX1 + 0.35, inZ0 + 0.3, levels[f], levels[f + 1] - slabTs[f + 1], `천장고 ${cH.toFixed(2)}m`);
-  }
-});
 
 // ── s2 1층 골조(포치 개방 하중지지) — 's2 골조' 토글 ───────────────────────────
 // 1층은 벽 없는 포치 → 기둥-보(라멘조)로 상부 하중 지지. 오른쪽 계단·물코어를 1층까지
@@ -2522,13 +2312,11 @@ const view = {
   s2Wall1: false,        // s2 외벽 1층(둘레 0.3m)
   s2Wall2: false,        // s2 외벽 2층(둘레 0.3m)
   s2Wall3: false,        // s2 외벽 3층(둘레 0.3m)
-  s2Stair: false,        // s2 계단(U자·1→3층 적층)
   s2StairF1: false,      // s2 계단2 1→2층 비행('1층>2층' 버튼)
   s2StairF2: false,      // s2 계단2 2→3층 비행('2층>3층' 버튼)
   s2Floor1: false,       // s2 1층 바닥('1층' 버튼)
   s2Floor2: false,       // s2 2층 바닥('2층' 버튼)
   s2Floor3: false,       // s2 3층 바닥('3층' 버튼)
-  s2Stairs: false,       // s2 계단 샘플(유형 비교)
   s2Frame: false,        // s2 1층 골조(기둥·전이보·코어 전단벽)
   s2Furniture: false,    // s2 1층 가구(식탁·의자)
   s2Sink: false,         // s2 1층 싱크대(주방)
@@ -2564,14 +2352,11 @@ const PARTS = [
   { key: 's2Wall1', arrays: [s2Wall1Objects] },
   { key: 's2Wall2', arrays: [s2Wall2Objects] },
   { key: 's2Wall3', arrays: [s2Wall3Objects] },
-  { key: 's2Stair', arrays: [s2StairObjects] },
   { key: 's2StairF1', arrays: [s2StairF1Objects] },
   { key: 's2StairF2', arrays: [s2StairF2Objects] },
   { key: 's2Floor1', arrays: [s2Floor1Objects] },
   { key: 's2Floor2', arrays: [s2Floor2Objects] },
   { key: 's2Floor3', arrays: [s2Floor3Objects] },
-  { key: 's2Stair3', arrays: [s2Stair3Objects] },
-  { key: 's2Stairs', arrays: [s2StairSampleObjects] },
   { key: 's2Frame', arrays: [s2FrameObjects] },
   { key: 's2Furniture', arrays: [s2FurnitureObjects] },
   { key: 's2Sink', arrays: [s2SinkObjects] },
@@ -2586,7 +2371,7 @@ const CHECKS = [
   ['cBath', 'bath'],
   ['cLoft', 'loft'], ['cRoof', 'roof'],
   ['cDeck', 'deck'], ['cDeckFloor', 'deckFloor'], ['cDeckStairFrame', 'deckStairFrame'], ['cSun', 'sun'], ['cSunWall', 'sunWall'], ['cFolding', 'folding'], ['cAccessory', 'accessory'],
-  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Stair', 's2Stair'], ['cS2Stair3', 's2Stair3'], ['cS2Stairs', 's2Stairs'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'], ['cS2Sink', 's2Sink'],
+  ['cS2Foundation', 's2Foundation'], ['cS2Wall1', 's2Wall1'], ['cS2Wall2', 's2Wall2'], ['cS2Wall3', 's2Wall3'], ['cS2Frame', 's2Frame'], ['cS2Furniture', 's2Furniture'], ['cS2Sink', 's2Sink'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
 const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
@@ -2643,21 +2428,6 @@ function syncSegButtons() {
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
-  get s2Stair() {                                          // 계단 사양은 S2_STAIR(단일 출처)에서 계산 — 사양 변경 시 자동 반영
-    const s = S2_STAIR, wF = 2 * s.W + s.g;
-    const steps = s.floorH.map((h, i) => `${i + 1}→${i + 2}층 ${Math.round(h / s.R)}단(층고 ${h} m)`).join(' · ');
-    return { title: '계단 (U자·1→3층)', body: [
-      '- 형식: U자 스위치백 — 두 직선런이 나란히, 뒤 중간참에서 180° 반환.',
-      `- 계단폭(한 런 너비): ${s.W} m`,
-      `- 단높이(R): ${s.R} m (전 구간 동일)`,
-      `- 디딤(T, 발 딛는 깊이): ${s.T} m`,
-      `- 디딤판 두께: ${s.tTh} m`,
-      `- 두 런 사이 틈: ${s.g} m`,
-      `- 계단참(중간참·층참) 크기: ${wF.toFixed(2)} m(너비) × ${s.W} m(깊이)`,
-      `- 1층 층참=1층 바닥: 외벽 안쪽 발자국 전체, 두께 ${s.slabT} m(콘크리트 기초 위 부자재+포세린 마감) — 계단 시작면이 이만큼 올라감`,
-      `- 단 수: ${steps}`,
-    ].join('\n') };
-  },
   get s2Foundation() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 집 크기(s2W·s2D) 바뀌면 자동 반영
     const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
     const floors = 3;                                      // 지상 층수
@@ -2682,7 +2452,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Stair'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
