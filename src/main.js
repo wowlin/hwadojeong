@@ -1952,9 +1952,9 @@ captureInto(s2SinkObjects, () => {
     const profile = [[s2FrontZ, y2], [s2BackZ, y2], [s2BackZ, eaveY], [zMid, peakY], [s2FrontZ, eaveY]];
     yzWallPrism({ x: s2X0, points: profile, thickness: t, mat: EW });     // 우(거실, 박공 꼭지점)
     yzWallPrism({ x: s2W - t, points: profile, thickness: t, mat: EW });  // 좌(안방, 박공 꼭지점)
-    // 외벽 가장 낮은 높이(처마)와 가장 높은 꼭지점(용마루) 높이를 기초 상단부터 표기.
-    planYDim(s2W + 0.4, s2BackZ - 0.2, _wBase, eaveY, `외벽 최저 ${fmtDim(eaveY - _wBase)}m`);
-    planYDim(s2W + 0.4, zMid, _wBase, peakY, `외벽 꼭지점 ${fmtDim(peakY - _wBase)}m`);
+    // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
+    planYDim(s2W + 0.4, s2BackZ - 0.2, lvl3, eaveY, `외벽 최저 ${fmtDim(eaveY - lvl3)}m`);
+    planYDim(s2W + 0.4, zMid, lvl3, peakY, `외벽 꼭지점 ${fmtDim(peakY - lvl3)}m`);
   });
 }
 
