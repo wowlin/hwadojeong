@@ -1560,7 +1560,7 @@ const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (파생)
 // s2 층고·박공지붕 단면 — 외벽·지붕·계단실 내벽이 공유하는 단일 출처(중복 정의 금지)
 const _wBase = groundTopY + MAT_H, _wFh1 = 3.3, _wFh = 3.0, _wFh3 = 2.4;     // 1층 3.3 · 2층 3.0 · 3층 2.4(손님방 천장고)
 const F2 = _wBase + _wFh1, F3 = _wBase + _wFh1 + _wFh, roofY = F3 + _wFh3;   // 2층 바닥 · 3층 바닥 · 지붕(처마=3층 벽 상단)
-const s2RoofPitch = 30 * Math.PI / 180;                                     // 박공 30°(기준·초과 금지)
+const s2RoofPitch = 32 * Math.PI / 180;                                     // 박공 32°(용마루 높이가 이 각도서 자동 계산)
 const s2RidgeZ = (s2FrontZ + s2BackZ) / 2;                                  // 용마루 — 깊이 중앙(용마루는 너비 X를 따라감)
 const s2RoofUnderY = (z) => roofY + (s2D / 2 - Math.abs(z - s2RidgeZ)) * Math.tan(s2RoofPitch);   // 그 z의 박공지붕 밑선(처마 roofY ~ 용마루)
 // 배치도 발자국(납작) — s2 탭에서만 표시
@@ -2601,15 +2601,15 @@ function syncSegButtons() {
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕의 각도는 30도를 기준으로 설계 적용하고, 30도보다 커지지 않게 해야 한다.\n  (태양광 설치: 28~30도가 최적 경사)' },
   get s2Wall3() {                                          // 박공 외벽 envelope — 높이·각도(기초 상단 기준, 단일 출처서 계산)
-    const deg = 30;
-    const rise = (s2D / 2) * Math.tan(deg * Math.PI / 180);  // 처마→용마루 상승(깊이 절반 × tan30°)
+    const deg = s2RoofPitch * 180 / Math.PI;                 // 박공 각도 단일 출처(s2RoofPitch)에서 읽음
+    const rise = (s2D / 2) * Math.tan(s2RoofPitch);          // 처마→용마루 상승(깊이 절반 × tan(박공각))
     const wallH = roofY - _wBase;                            // 앞뒤벽: 기초 상단~처마
     const peakH = wallH + rise;                              // 좌우 꼭지점: 기초 상단~용마루
     return { title: '외벽 · 박공지붕', body: [
-      `- 박공지붕 경사: ${deg}° (기준 · 초과 금지)`,
+      `- 박공지붕 경사: ${Math.round(deg)}°`,
       `- 앞뒤벽 높이(기초 상단~처마): ${fmtDim(wallH)} m`,
       `- 좌우 꼭지점 높이(기초 상단~용마루): ${fmtDim(peakH)} m`,
-      `- 용마루가 처마보다 ${fmtDim(rise)} m 높음 (깊이 ${fmtDim(s2D)} m의 절반 × tan${deg}°)`,
+      `- 용마루가 처마보다 ${fmtDim(rise)} m 높음 (깊이 ${fmtDim(s2D)} m의 절반 × tan${Math.round(deg)}°)`,
     ].join('\n') };
   },
   get s2StairF1() {                                        // 계단 사양 + 1층 계단참 아래 옷장 — 모두 계단 상수서 자동 계산
