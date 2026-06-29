@@ -1682,6 +1682,8 @@ captureInto(s2DimObjects, () => {
   captureInto(s2Floor2Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far2, z: zB0, w: inX1 - far2, d: inZ1 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
+    // 계단실 옆벽 — 1→2 상부런 오를 때 왼쪽(앞쪽·저Z) 열린 변. 2층 바닥~천장(3층 바닥 밑면)까지 15cm 두께. 끝(계단 도착·高X)에서 1.2m 더 연장.
+    box({ x: inX0, z: zB0 - 0.15, w: (far2 - inX0) + 1.2, d: 0.15, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
     placeMark(levels[1], false, 2.4, 1.6);   // 2층 화장실 = 너비 2.4 × 깊이 1.6
     // 2층 화장실(왼쪽-뒤 코너 2.4×1.6m) 권장 배치 — 샤워부스 + 변기 + 세면대 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X·안방쪽)·뒤벽 inZ1(高Z)·앞 방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
