@@ -433,13 +433,13 @@ function pocketDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH, sli
   box({ x, z: z - 0.065, w, d: 0.02, y: y + 0.08, h: 0.035, mat: materials.openingEdge });
 }
 
-function pocketDoorVertical(x, z, y, h = interiorDoorH, slideDir = 1, dw = interiorDoorW) {
+function pocketDoorVertical(x, z, y, h = interiorDoorH, slideDir = 1, dw = interiorDoorW, mat = materials.pocketDoor) {
   const pocketD = dw;
   const trackZ = slideDir > 0 ? z : z - pocketD;
   const panelZ = slideDir > 0 ? z + dw + 0.04 : z - pocketD + 0.04;
   const panelD = Math.max(0.12, pocketD - 0.08);
   box({ x: x - 0.055, z: trackZ, w: 0.03, d: dw + pocketD, y: y + h + 0.03, h: 0.035, mat: materials.entryFrame });
-  box({ x: x - 0.035, z: panelZ, w: 0.045, d: panelD, y, h, mat: materials.pocketDoor });
+  box({ x: x - 0.035, z: panelZ, w: 0.045, d: panelD, y, h, mat });
   box({ x: x - 0.065, z: panelZ + (slideDir > 0 ? 0.08 : panelD - 0.13), w: 0.03, d: 0.05, y: y + Math.min(0.95, h * 0.5), h: 0.05, mat: materials.handle });
   box({ x: x - 0.065, z, w: 0.02, d: dw, y: y + 0.08, h: 0.035, mat: materials.openingEdge });
 }
@@ -1753,9 +1753,26 @@ captureInto(s2DimObjects, () => {
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
     box({ x: far3, z: zB0, w: W, d: W, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });
     const pktWallT = 0.15;      // 포켓도어 벽 두께 15cm — 게스트룸1 옆벽도 같은 선상·같은 두께(단일 출처)
-    // 게스트룸1(연두) 옆벽 — 계단 포켓도어 벽과 같은 선상(far3)·같은 두께(15cm). 앞벽 안쪽(inZ0)~계단실 앞면(zB0).
-    //   윗선은 외벽 박공과 동일: 구간 안에 용마루(s2RidgeZ)가 지나므로 그 점을 꼭지점으로 넣어 30° 경사 양쪽으로 꺾음.
-    yzWallPrism({ x: far3, thickness: pktWallT, mat: materials.wall, points: [[inZ0, levels[2]], [zB0, levels[2]], [zB0, s2RoofUnderY(zB0)], [s2RidgeZ, s2RoofUnderY(s2RidgeZ)], [inZ0, s2RoofUnderY(inZ0)]] });
+    const fy3 = levels[2];
+    // x벽(far3·gxL) 한 구간(za~zb)을 바닥(또는 인방 by)부터 박공 밑선까지 세움 — 구간 안 용마루(s2RidgeZ)는 꼭지점으로 꺾음
+    const xWallSeg = (x, za, zb, by) => {
+      const pts = [[za, by], [zb, by], [zb, s2RoofUnderY(zb)]];
+      if (za < s2RidgeZ && s2RidgeZ < zb) pts.push([s2RidgeZ, s2RoofUnderY(s2RidgeZ)]);
+      pts.push([za, s2RoofUnderY(za)]);
+      yzWallPrism({ x, thickness: pktWallT, mat: materials.wall, points: pts });
+    };
+    // 마주보는 두 방문(게스트룸1 옆벽 far3 ↔ 게스트룸2 옆벽 gxL) — 전체폭 1.8(표준 개구 0.9 + 문짝 주차 0.9)로 같은 위치(마주봄).
+    //   둘 다 각 방에서 '오른→왼' 슬라이드 → 두 방이 서로 반대편을 보므로 열린 구멍이 한쪽은 앞·한쪽은 뒤로 어긋나 서로 안 보임.
+    const dUnitW = 2 * interiorDoorW, dTopY = fy3 + interiorDoorH;
+    const dUz0 = inZ0 + (zB0 - inZ0 - dUnitW) / 2;   // 문 유닛 시작 z — 짧은 쪽(게스트룸1 벽) 길이 안 가운데
+    const dUmid = dUz0 + interiorDoorW;              // 유닛 가운데(개구/포켓 경계)
+    const dUz1 = dUz0 + dUnitW;                      // 유닛 끝
+    // 게스트룸1(연두) 옆벽 — far3 선상·15cm. 구멍=앞쪽 절반[dUz0,dUmid](문짝은 +Z 포켓으로 주차). 앞·뒤 막힌벽 + 개구 위 인방.
+    xWallSeg(far3, inZ0, dUz0, fy3);
+    xWallSeg(far3, dUz0, dUmid, dTopY);
+    xWallSeg(far3, dUmid, zB0, fy3);
+    pocketDoorVertical(far3 + pktWallT, dUz0, fy3, interiorDoorH, 1, interiorDoorW, materials.stdRoomDoor);
+    label('표준 방문', far3, fy3 + 1.0, dUz0 + interiorDoorW / 2, 'opening');
     // 계단실 분리벽 — 3층을 계단 구멍(아래 개방 포치까지 뚫림)과 막아 벌레·냉난방 차단. 윗선은 박공지붕 밑선에 맞춤. 계단으로 올라서는 면에 포켓도어 1개.
     {
       const fy = levels[2], t = interiorWall, pt = pktWallT;                                                                 // pt = 포켓도어 벽 두께 15cm(문짝 수납) — 게스트룸1 옆벽과 단일 출처
@@ -1774,8 +1791,13 @@ captureInto(s2DimObjects, () => {
       const fy = levels[2], gxL = inX1 - RM_S, gz1 = inZ0 + RM_L;   // 회색 자리 저X 변(게스트룸1쪽)·高Z 변(화장실쪽)
       // ① 화장실쪽 벽(高Z 변, z=gz1) — 10cm, 방 안쪽(-Z)으로. X: 저X 변(gxL)~안방 외벽(inX1). 그 z의 박공 밑선 높이(평탄).
       box({ x: gxL, z: gz1 - 0.10, w: inX1 - gxL, d: 0.10, y: fy, h: s2RoofUnderY(gz1) - fy, mat: materials.wall });
-      // ② 다른쪽 벽(저X 변, x=gxL, 게스트룸1쪽) — 15cm, 방 안쪽(+X)으로. Z: 앞 외벽(inZ0)~화장실쪽 벽(gz1). 구간 안 용마루(s2RidgeZ)를 꼭지점으로 넣어 30° 경사 양쪽 꺾음.
-      yzWallPrism({ x: gxL, thickness: pktWallT, mat: materials.wall, points: [[inZ0, fy], [gz1, fy], [gz1, s2RoofUnderY(gz1)], [s2RidgeZ, s2RoofUnderY(s2RidgeZ)], [inZ0, s2RoofUnderY(inZ0)]] });
+      // ② 다른쪽 벽(저X 변, x=gxL, 게스트룸1쪽) — 15cm, 방 안쪽(+X)으로. Z: 앞 외벽(inZ0)~화장실쪽 벽(gz1).
+      //   마주보는 표준 방문: 구멍=뒤쪽 절반[dUmid,dUz1](문짝은 -Z 포켓으로 주차) → 게스트룸1 구멍(앞쪽)과 어긋나 서로 안 보임. 앞·뒤 막힌벽 + 개구 위 인방.
+      xWallSeg(gxL, inZ0, dUmid, fy);
+      xWallSeg(gxL, dUmid, dUz1, dTopY);
+      xWallSeg(gxL, dUz1, gz1, fy);
+      pocketDoorVertical(gxL + pktWallT, dUmid, fy, interiorDoorH, -1, interiorDoorW, materials.stdRoomDoor);
+      label('표준 방문', gxL, fy + 1.0, dUmid + interiorDoorW / 2, 'opening');
       // 붙박이장 — 화장실쪽 벽(① z=gz1, 안쪽면 gz1-0.10)에 등 붙이고 방 안쪽(-Z)으로 깊이 60cm. 폭은 두 옆벽 안쪽면(gxL+pktWallT ~ 안방 외벽 inX1) 전체.
       const clD = g2ClosetD, clX0 = gxL + pktWallT, clW = inX1 - clX0, clZ1 = gz1 - 0.10, clH = 2.3;
       box({ x: clX0, z: clZ1 - clD, w: clW, d: clD, y: fy, h: clH, mat: materials.sinkCabinet });

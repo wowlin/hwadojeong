@@ -60,6 +60,7 @@ export const materials = {
   interiorDoorLanding: new THREE.MeshLambertMaterial({ color: 0x9c6b45 }),   // 계단형 문 중 계단참 아래 부분 — 약간 다른(밝은) 갈색
   wcDoor: new THREE.MeshLambertMaterial({ color: 0xc2ccd0 }),
   pocketDoor: new THREE.MeshLambertMaterial({ color: 0x8b5f3d }),
+  stdRoomDoor: new THREE.MeshLambertMaterial({ color: 0x2f9e8f }),   // 표준 방문(슬라이딩 0.9×2.1) 전용색 — 어디 쓰여도 같은 표준 크기임을 색으로 구별
   entryDoor: new THREE.MeshLambertMaterial({ color: 0x4f3422 }),
   entryFrame: new THREE.MeshLambertMaterial({ color: 0x2f343a }),
   handle: new THREE.MeshLambertMaterial({ color: 0xd4af37 }),
