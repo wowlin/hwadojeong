@@ -1753,9 +1753,10 @@ captureInto(s2DimObjects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
     placeMark(levels[2], true, 1.5, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 1.5(X) × 왼쪽벽 따라 1.0(Z)
-    const g1W = far3 - inX0, g1D = zB0 - inZ0;                                                                          // 게스트룸1 = 옆벽(far3)·계단실 앞면(zB0)·외벽 안쪽 공간
-    label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'dim');   // 게스트룸1(연두) 크기 — 벽 안쪽 실측
-    label(`게스트룸2 ${RM_S.toFixed(2)}×${(RM_L - g2ClosetD).toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + (RM_L - g2ClosetD) / 2, 'dim');   // 게스트룸2(회색) 크기 — 붙박이장 제외 실사용 바닥
+    const g1W = far3 - inX0, g1D = (zB0 - interiorWall) - inZ0;                                                         // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~계단실 분리벽(10cm) 안쪽
+    label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'dim');   // 게스트룸1(연두) — 벽 두께 뺀 실사용 바닥
+    const g2W = RM_S - 0.15, g2D = (RM_L - interiorWall) - g2ClosetD;                                                   // 게스트룸2 실사용 바닥 — 폭=옆벽(15cm) 뺌, 깊이=화장실쪽 벽(10cm)·붙박이장 뺌
+    label(`게스트룸2 ${g2W.toFixed(2)}×${g2D.toFixed(2)}m`, inX1 - RM_S / 2, levels[2] + 0.4, inZ0 + (RM_L - g2ClosetD) / 2, 'dim');   // 게스트룸2(회색) — 벽 두께·붙박이장 뺀 실사용 바닥
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·앞 회색방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
