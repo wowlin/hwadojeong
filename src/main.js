@@ -1709,13 +1709,14 @@ captureInto(s2Stair2Objects, () => {
   // 바닥(층참) — 1층 전체 + 2·3층은 계단실(우측벽~런 끝 × 두 행 밴드)만 비우고 채움.
   const floor2T = 0.6, floor3T = 0.3;   // 2·3층 바닥 두께(천장고 산정과 단일 출처)
   box({ x: inX0, z: inZ0, w: inW, d: inZ1 - inZ0, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });   // 1층 바닥(전체)
-  // 각 행은 '자기 런 끝(高X)'까지만 비우고 그 너머를 채운다 — 상부런이 짧아지면 앞 행이 그만큼 계단쪽으로 더 채워진다(단일 출처).
+  // 계단실 구멍은 '그 층에서 실제로 오르내리는 런'까지만 비운다 — 올라와 닿는 상부런 + 거기서 올라가는 다음 비행 하부런. 그래야 다음 계단 발이 바닥에 붙는다.
+  //   1→2 아래 런(가장 긴 11단)은 1층 레벨이라 2층 구멍과 무관 → 그 길이로 깎으면 2→3 발이 구멍 위에 뜬다.
+  const far2 = Math.max(meta[0].upperFarX, meta[1].lowerFarX);   // 2층 계단실 끝 = 1→2 상부런(9)·2→3 하부런(9) 중 먼 쪽
   box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
-  box({ x: meta[0].upperFarX, z: zB0, w: inX1 - meta[0].upperFarX, d: zA0 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 상부런 행: 상부런 끝부터 채움
-  box({ x: meta[0].lowerFarX, z: zA0, w: inX1 - meta[0].lowerFarX, d: inZ1 - zA0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 하부런 행: 하부런 끝부터 채움
+  box({ x: far2, z: zB0, w: inX1 - far2, d: inZ1 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
+  const far3 = Math.max(meta[1].upperFarX, meta[1].lowerFarX);   // 최상층: 2→3 상부런(9)이 올라와 닿는 끝(하부런도 9)
   box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
-  box({ x: meta[1].upperFarX, z: zB0, w: inX1 - meta[1].upperFarX, d: zA0 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 상부런 행
-  box({ x: meta[1].lowerFarX, z: zA0, w: inX1 - meta[1].lowerFarX, d: inZ1 - zA0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 하부런 행
+  box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
 
   // 각 층 층고·천장고 — '계단' 화면과 동일한 치수표기(planYDim). 층고=윗층 바닥 윗면−이 층 바닥 윗면, 천장고=층고−윗층 바닥두께.
   const slabTs = [S2_STAIR.slabT, floor2T, floor3T];   // 1·2·3층 바닥 두께
@@ -1922,8 +1923,13 @@ captureInto(s2SinkObjects, () => {
     box({ x: bx0, z: bz0, w: bd, d: bw, y: cY + ctop - 0.18, h: 0.18, mat: materials.sinkBasin }); // 싱크볼(상판에 묻힘)
     box({ x: inXL - 0.14, z: cabCz - 0.04, w: 0.08, d: 0.08, y: cY + ctop, h: 0.3, mat: materials.entryFrame });   // 수전(벽쪽)
   };
-  // 왼쪽 뒤 코너(高z)부터: 옆 0.6 · 싱크 1.2 · 옆 0.6
-  const cWall = inZB - SIDEW / 2;                           // 뒤벽쪽(高z) 옆 하부장
+  // 뒤(高z) 코너에 LG B312DS31 냉장고(311L, 545×689×1700) — 좌벽(高x) 밀착, 문은 거실(低x)쪽. 싱크는 그만큼 앞으로.
+  const FW = 0.545, FD = 0.689, FH = 1.70, fGap = 0.05;     // 냉장고 폭(Z)·깊이(X)·높이 · 싱크와 간격
+  const frCz = inZB - FW / 2;                               // 냉장고 중심 z(뒤벽 밀착)
+  box({ x: inXL - FD, z: inZB - FW, w: FD, d: FW, y: fTop, h: FH, mat: materials.fridge });   // 냉장고 본체
+  label(`LG B312DS31 냉장고 311L · ${fmtDim(FW)}×${fmtDim(FD)}`, inXL - FD / 2, fTop + FH + 0.15, frCz, 'furniture');
+  // 싱크대(2.4m)는 냉장고 앞에서 시작 — 옆 0.6 · 싱크 1.2 · 옆 0.6
+  const cWall = (inZB - FW - fGap) - SIDEW / 2;             // 뒤벽쪽(高z) 옆 하부장 — 냉장고 바로 앞
   const cSink = cWall - SIDEW / 2 - SINKW / 2;              // 싱크 하부장(가운데)
   const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 앞쪽(低z) 옆 하부장
   drawCab(cWall, SIDEW, false);
