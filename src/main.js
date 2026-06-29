@@ -1752,15 +1752,15 @@ captureInto(s2DimObjects, () => {
     box({ x: far3 - wzT, z: inZ0, w: wzT, d: zB0 - inZ0, y: levels[2] + 0.007, h: 0.012, mat: materials.s3WallZone, cast: false });   // 끝단 내벽 — 계단실 끝(far3)에 맞춰 Z방향(방 옆벽, 앞쪽)
     // 계단실 분리벽 — 3층을 계단 구멍(아래 개방 포치까지 뚫림)과 막아 벌레·냉난방 차단. 윗선은 박공지붕 밑선에 맞춤. 계단으로 올라서는 면에 포켓도어 1개.
     {
-      const fy = levels[2], t = interiorWall;
-      // ① 계단실 옆 내벽(거실쪽 보는 면) — 계단 구멍 앞면(zB0) 따라, 우측벽(inX0)~도착끝(far3). 문벽 두께만큼 더 늘려 모서리를 ㄱ자로 채움. 막힌 벽. 윗면=그 z의 지붕 밑선(평탄).
-      horizontalWallWithGaps(inX0, zB0 - t, far3 + t - inX0, fy, [], s2RoofUnderY(zB0) - fy, t, materials.wall);
-      // ② 계단 올라서는 면 내벽 — 도착끝(far3) 따라 앞(zB0)~뒤벽(inZ1). 벽은 3층 바닥 위(far3 바깥)에 세워 계단 발판을 침범하지 않음. 윗선은 박공 경사를 따라 기울고(yzWallPrism), 올라서는 칸에 포켓도어 1개.
+      const fy = levels[2], t = interiorWall, pt = 0.15;                                                                     // pt = 포켓도어 벽 두께 15cm(문짝 수납)
+      // ① 계단실 옆 내벽(거실쪽 보는 면) — 계단 구멍 앞면(zB0) 따라, 우측벽(inX0)~도착끝(far3). 포켓도어 벽 두께만큼 더 늘려 모서리를 ㄱ자로 채움. 막힌 벽. 윗면=그 z의 지붕 밑선(평탄).
+      horizontalWallWithGaps(inX0, zB0 - t, far3 + pt - inX0, fy, [], s2RoofUnderY(zB0) - fy, t, materials.wall);
+      // ② 계단 올라서는 면 내벽(포켓도어 벽, 두께 pt) — 도착끝(far3) 따라 앞(zB0)~뒤벽(inZ1). 벽은 3층 바닥 위(far3 바깥)에 세워 계단 발판을 침범하지 않음. 윗선은 박공 경사를 따라 기울고(yzWallPrism), 올라서는 칸에 포켓도어 1개.
       const dZ = zB0, dZ1 = zB0 + W;                                                                                          // 개구 = 계단 도착칸(폭 W) 전체 — 계단 너비와 동일
       const doorTopY = fy + interiorDoorH;
-      yzWallPrism({ x: far3, thickness: t, mat: materials.wall, points: [[dZ, doorTopY], [dZ1, doorTopY], [dZ1, s2RoofUnderY(dZ1)], [dZ, s2RoofUnderY(dZ)]] }); // 문 위 인방(문틀~지붕)
-      yzWallPrism({ x: far3, thickness: t, mat: materials.wall, points: [[dZ1, fy], [inZ1, fy], [inZ1, s2RoofUnderY(inZ1)], [dZ1, s2RoofUnderY(dZ1)]] });        // 문 뒤쪽 벽(바닥~지붕, 포켓 수납)
-      pocketDoorVertical(far3 + t, dZ, fy, interiorDoorH, 1, W);                                                               // 포켓도어(폭 W=계단 너비) — 뒤쪽 벽 속으로 슬라이드
+      yzWallPrism({ x: far3, thickness: pt, mat: materials.wall, points: [[dZ, doorTopY], [dZ1, doorTopY], [dZ1, s2RoofUnderY(dZ1)], [dZ, s2RoofUnderY(dZ)]] }); // 문 위 인방(문틀~지붕)
+      yzWallPrism({ x: far3, thickness: pt, mat: materials.wall, points: [[dZ1, fy], [inZ1, fy], [inZ1, s2RoofUnderY(inZ1)], [dZ1, s2RoofUnderY(dZ1)]] });        // 문 뒤쪽 벽(바닥~지붕, 포켓 수납)
+      pocketDoorVertical(far3 + pt, dZ, fy, interiorDoorH, 1, W);                                                            // 포켓도어(폭 W=계단 너비) — 뒤쪽 벽 속으로 슬라이드
       label('계단실 단열 포켓도어', far3, fy + 1.0, dZ + W / 2, 'opening');
     }
   });
