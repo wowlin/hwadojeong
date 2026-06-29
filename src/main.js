@@ -1742,11 +1742,9 @@ captureInto(s2DimObjects, () => {
       );
       swing.position.set(px0, fy + 0.02, pz0);   // 0~PI/2 사분면 = +Z(닫힘,벽)~+X(안쪽 열림)
       scene.add(swing);   // captureInto가 s2Floor2Objects로 자동 수집
-      // 화장실 칸막이벽 — 외벽이 없는 두 변(거실쪽 低X·앞쪽 低Z)만 막아 에워쌈. 안방쪽(高X)·뒤(高Z)는 외벽이라 그대로.
+      // 화장실 앞쪽(低Z, z=pz0) 칸막이벽 — 트인 변 하나만 막음. 거실쪽 모서리(px0)~안방쪽 외벽(px1).
       const wcWallT = 0.10, wcWallTop = (levels[2] - floor3T) - levels[1];
-      box({ x: px0 - wcWallT / 2, z: pz0 + dW, w: wcWallT, d: pz1 - (pz0 + dW), y: fy, h: wcWallTop, mat: materials.wall });   // 거실쪽 벽(문 뒤 高Z)
-      box({ x: px0 - wcWallT / 2, z: pz0, w: wcWallT, d: dW, y: fy + dH, h: wcWallTop - dH, mat: materials.wall });            // 거실쪽 문 위 인방
-      box({ x: px0, z: pz0 - wcWallT / 2, w: px1 - px0, d: wcWallT, y: fy, h: wcWallTop, mat: materials.wall });              // 앞쪽 벽(거실쪽 모서리~안방쪽 외벽)
+      box({ x: px0, z: pz0 - wcWallT / 2, w: px1 - px0, d: wcWallT, y: fy, h: wcWallTop, mat: materials.wall });
     }
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
