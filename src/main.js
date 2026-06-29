@@ -1642,23 +1642,33 @@ const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFini
   });
   // 공간 자리 표시(1m 정사각, 추후 화장실·방으로 크기 조정 예정) — 바닥 위에 색칠. 2·3층 동일 배치.
   //   화장실=왼쪽(高X)-뒤(高Z) 코너 / 방=앞벽(低Z) 좌(高X)·우(低X). 셋 다 서로 다른 색·바닥색과 구별.
-  const placeMark = (fy) => {
-    const m = (mat, x0, z0) => box({ x: x0, z: z0, w: 1.0, d: 1.0, y: fy + 0.006, h: 0.012, mat, cast: false });
-    m(materials.wcFloor, inX1 - 1, inZ1 - 1);   // 화장실 자리(왼쪽-뒤 코너) — 보라
-    m(materials.s3Room1, inX1 - 1, inZ0);        // 앞벽 좌(안방쪽) 방 — 하늘
-    m(materials.s3Room2, inX0, inZ0);            // 앞벽 우(거실쪽) 방 — 연두
+  // 3층 두 방 크기(연두·회색=하늘) — 같은 직사각형을 90° 돌려 배치, 서로·주황(계단 도착칸)·계단실과 안 겹침. 좌표는 단일 출처로 도출.
+  const RM_S = inX1 - (far3 + W);            // 짧은변 = 안방벽 안쪽 ~ 주황칸 끝 (연두 깊이 = 회색 너비; 깊이가 계단실 앞면을 안 넘음)
+  const RM_L = (inZ1 - 1) - inZ0;            // 긴변 = 앞벽 안쪽 ~ 화장실 앞면 (연두 너비 = 회색 깊이)
+  const placeMark = (fy, big, wcW = 1.0, wcD = 1.0) => {
+    const m = (mat, x0, z0, w = 1.0, d = 1.0) => box({ x: x0, z: z0, w, d, y: fy + 0.006, h: 0.012, mat, cast: false });
+    m(materials.wcFloor, inX1 - wcW, inZ1 - wcD, wcW, wcD);   // 화장실 자리(왼쪽-뒤 코너) — 보라
+    if (big) {
+      m(materials.s3Room2, inX0, inZ0, RM_L, RM_S);          // 연두 — 거실쪽·앞, 가로로 긴 직사각형
+      m(materials.s3Room1, far3 + W, inZ0, RM_S, RM_L);      // 회색(하늘) — 안방쪽, 세로로 긴 직사각형(주황 옆)
+    } else {
+      m(materials.s3Room1, inX1 - 1, inZ0);        // 앞벽 좌(안방쪽) 방 — 하늘
+      m(materials.s3Room2, inX0, inZ0);            // 앞벽 우(거실쪽) 방 — 연두
+    }
   };
   captureInto(s2Floor2Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far2, z: zB0, w: inX1 - far2, d: inZ1 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
-    placeMark(levels[1]);
+    placeMark(levels[1], false, 2.4, 1.6);   // 2층 화장실 = 너비 2.4 × 깊이 1.6
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
   });
   captureInto(s2Floor3Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
-    placeMark(levels[2]);
+    placeMark(levels[2], true);
+    label(`연두 ${RM_L.toFixed(2)}×${RM_S.toFixed(2)}m`, inX0 + RM_L / 2, levels[2] + 0.4, inZ0 + RM_S / 2, 'dim');   // 연두방 크기
+    label(`회색 ${RM_S.toFixed(2)}×${RM_L.toFixed(2)}m`, far3 + W + RM_S / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'dim');   // 회색방 크기
     // 계단 올라오는 자리(최상층 — 위로 더 오를 계단 없음) — 상부런이 닿는 한 칸(W×W)만 표시. 다른 용도 불가.
     box({ x: far3, z: zB0, w: W, d: W, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });
     // 연두색 방(거실쪽·앞 코너)을 분리할 벽으로 쓸 구간(내벽 10cm) 표시 — 계단실에 맞춰 ㄱ자로 방을 막음.
