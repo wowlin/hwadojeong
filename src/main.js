@@ -1946,19 +1946,20 @@ captureInto(s2SinkObjects, () => {
     box({ x: inXL - 0.14, z: cabCz - 0.04, w: 0.08, d: 0.08, y: cY + ctop, h: 0.3, mat: materials.entryFrame });   // 수전(벽쪽)
   };
   // 뒤(高z) 코너에 LG B312DS31 냉장고(311L, 545×689×1700) — 좌벽(高x) 밀착, 문은 거실(低x)쪽. 싱크는 그만큼 앞으로.
-  const FW = 0.545, FD = 0.689, FH = 1.70, fGap = 0.05;     // 냉장고 폭(Z)·깊이(X)·높이 · 싱크와 간격
-  const frCz = inZB - FW / 2;                               // 냉장고 중심 z(뒤벽 밀착)
-  box({ x: inXL - FD, z: inZB - FW, w: FD, d: FW, y: fTop, h: FH, mat: materials.fridge });   // 냉장고 본체
+  const FW = 0.545, FD = 0.689, FH = 1.70, fGap = 0.05, bGap = 0.05;   // 냉장고 폭(Z)·깊이(X)·높이 · 싱크와 간격 · 뒷벽과 간격
+  const frBack = inZB - bGap;                               // 냉장고 뒷면 z(뒤벽에서 bGap 띄움)
+  const frCz = frBack - FW / 2;                             // 냉장고 중심 z
+  box({ x: inXL - FD, z: frBack - FW, w: FD, d: FW, y: fTop, h: FH, mat: materials.fridge });   // 냉장고 본체
   // 문짝(B312=일반 2도어 상부냉동): 문 면=거실(低x)쪽, 경첩=뒤벽(高z)쪽, 손잡이=앞(低z)쪽 → 문은 앞쪽으로 열림
   const dFront = inXL - FD, dt = 0.02, fzH = FH * 0.30;     // 문 면·문짝 두께·상부 냉동실 비율
-  box({ x: dFront - dt, z: inZB - FW + 0.005, w: dt, d: FW - 0.01, y: fTop + FH - fzH, h: fzH - 0.01, mat: materials.fridgeDoor });   // 상부 냉동실 문
-  box({ x: dFront - dt, z: inZB - FW + 0.005, w: dt, d: FW - 0.01, y: fTop + 0.01, h: FH - fzH - 0.02, mat: materials.fridgeDoor });  // 하부 냉장실 문
-  const hz = inZB - FW + 0.07;                              // 손잡이 z(앞쪽 低z = 경첩 반대편)
+  box({ x: dFront - dt, z: frBack - FW + 0.005, w: dt, d: FW - 0.01, y: fTop + FH - fzH, h: fzH - 0.01, mat: materials.fridgeDoor });   // 상부 냉동실 문
+  box({ x: dFront - dt, z: frBack - FW + 0.005, w: dt, d: FW - 0.01, y: fTop + 0.01, h: FH - fzH - 0.02, mat: materials.fridgeDoor });  // 하부 냉장실 문
+  const hz = frBack - FW + 0.07;                              // 손잡이 z(앞쪽 低z = 경첩 반대편)
   box({ x: dFront - dt - 0.03, z: hz, w: 0.03, d: 0.04, y: fTop + FH - fzH - 0.42, h: 0.4, mat: materials.guard });   // 하부 문 손잡이
   box({ x: dFront - dt - 0.03, z: hz, w: 0.03, d: 0.04, y: fTop + FH - fzH + 0.05, h: 0.28, mat: materials.guard });  // 상부 문 손잡이
   label(`LG B312DS31 냉장고 311L · ${fmtDim(FW)}×${fmtDim(FD)}`, inXL - FD / 2, fTop + FH + 0.15, frCz, 'furniture');
   // 싱크대(2.4m)는 냉장고 앞에서 시작 — 옆 0.6 · 싱크 1.2 · 옆 0.6
-  const cWall = (inZB - FW - fGap) - SIDEW / 2;             // 뒤벽쪽(高z) 옆 하부장 — 냉장고 바로 앞
+  const cWall = (frBack - FW - fGap) - SIDEW / 2;             // 뒤벽쪽(高z) 옆 하부장 — 냉장고 바로 앞
   const cSink = cWall - SIDEW / 2 - SINKW / 2;              // 싱크 하부장(가운데)
   const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 앞쪽(低z) 옆 하부장
   drawCab(cWall, SIDEW, false);
