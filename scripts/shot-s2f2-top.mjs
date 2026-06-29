@@ -19,5 +19,9 @@ const setCam = (p, t) => page.evaluate(({ p, t }) => { const { camera, controls 
 await setCam([4.0, 70, 0.5], [4.0, 4.5, 0.5]);
 await page.waitForTimeout(500);
 await page.screenshot({ path: root + '/shot-s2f2-top.png' });
+// 뒤쪽(계단·화장실·내벽) 구역 확대 — 벽이 외벽까지 닿는지 본다.
+await setCam([4.0, 24, 2.0], [4.0, 4.5, 2.0]);
+await page.waitForTimeout(500);
+await page.screenshot({ path: root + '/shot-s2f2-back.png' });
 console.log('saved shot-s2f2-top.png');
 await browser.close();
