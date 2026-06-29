@@ -422,13 +422,13 @@ function interiorDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH, m
   box({ x: x + w - 0.18, z: z - 0.06, w: 0.05, d: 0.035, y: y + Math.min(1.02, h * 0.58), h: 0.05, mat: materials.handle });
 }
 
-function pocketDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH, slideDir = 1) {
+function pocketDoorHorizontal(x, z, y, w = interiorDoorW, h = interiorDoorH, slideDir = 1, mat = materials.pocketDoor) {
   const pocketW = w;
   const trackX = slideDir > 0 ? x : x - pocketW;
   const panelX = slideDir > 0 ? x + w + 0.04 : x - pocketW + 0.04;
   const panelW = Math.max(0.12, pocketW - 0.08);
   box({ x: trackX, z: z - 0.055, w: w + pocketW, d: 0.03, y: y + h + 0.03, h: 0.035, mat: materials.entryFrame });
-  box({ x: panelX, z: z - 0.035, w: panelW, d: 0.045, y, h, mat: materials.pocketDoor });
+  box({ x: panelX, z: z - 0.035, w: panelW, d: 0.045, y, h, mat });
   box({ x: panelX + (slideDir > 0 ? 0.08 : panelW - 0.13), z: z - 0.065, w: 0.05, d: 0.03, y: y + Math.min(0.95, h * 0.5), h: 0.05, mat: materials.handle });
   box({ x, z: z - 0.065, w, d: 0.02, y: y + 0.08, h: 0.035, mat: materials.openingEdge });
 }
@@ -1683,7 +1683,16 @@ captureInto(s2DimObjects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far2, z: zB0, w: inX1 - far2, d: inZ1 - zB0, y: levels[1] - floor2T, h: floor2T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
     // 계단실 옆벽 — 1→2 상부런 오를 때 왼쪽(앞쪽·저Z) 열린 변. 2층 바닥~천장(3층 바닥 밑면)까지 15cm 두께. 끝(계단 도착·高X)에서 1.2m 더 연장.
-    box({ x: inX0, z: zB0 - 0.15, w: (far2 - inX0) + 1.2 + 0.10, d: 0.15, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
+    //   도착칸 1.2m 가운데에 표준 슬라이딩 포켓도어(0.9×2.1) — 왼쪽(低X)으로 슬라이드. 그쪽으로만 벽이 길게 이어져 포켓 공간이 있고, 高X쪽은 모서리라 포켓 불가.
+    {
+      const wz = zB0 - 0.15, wt = 0.15, wTop = (levels[2] - floor3T) - levels[1];
+      const oX0 = far2 + (1.2 - interiorDoorW) / 2, oX1 = oX0 + interiorDoorW;            // 개구 = 도착칸 1.2m 가운데, 폭 0.9
+      box({ x: inX0, z: wz, w: oX0 - inX0, d: wt, y: levels[1], h: wTop, mat: materials.wall });                       // 왼쪽 벽(低X·포켓 수납)
+      box({ x: oX1, z: wz, w: (far2 + 1.2 + 0.10) - oX1, d: wt, y: levels[1], h: wTop, mat: materials.wall });         // 오른쪽 벽(高X·모서리까지)
+      box({ x: oX0, z: wz, w: interiorDoorW, d: wt, y: levels[1] + interiorDoorH, h: wTop - interiorDoorH, mat: materials.wall });   // 문 위 인방
+      pocketDoorHorizontal(oX0, zB0, levels[1], interiorDoorW, interiorDoorH, -1, materials.stdRoomDoor);              // 왼쪽(低X)으로 슬라이드 — 포켓이 低X쪽
+      label('표준 방문', oX0 + interiorDoorW / 2, levels[1] + 1.0, zB0 - 0.075, 'opening');
+    }
     // 층계참 화장실쪽(高X) 벽 — 주황 도착칸을 1.2×2.1m로 마저 둘러쌈. 10cm, 바닥~천장. 계단 올라오는 변(低X)만 개방.
     box({ x: far2 + 1.2, z: zB0, w: 0.10, d: inZ1 - zB0, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
     placeMark(levels[1], false, 2.4, 1.6);   // 2층 화장실 = 너비 2.4 × 깊이 1.6
