@@ -2098,14 +2098,14 @@ captureInto(s2SinkObjects, () => {
     { const xc = s2X0 + t / 2;
       box({ x: xc - 0.05, z: rO.a0, w: 0.1, d: rO.a1 - rO.a0, y: sy, h: 0.08, mat: fdFrame });          // 하부 레일
       box({ x: xc - 0.05, z: rO.a0, w: 0.1, d: rO.a1 - rO.a0, y: hy - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일
-      drawFold((k) => ({ x: xc - (k % 2 === 0 ? 0 : fV), z: rO.a0 + sU * k }));
-      label(`1층 우측 폴딩도어 ${fmtDim(fdGap)}×${fmtDim(fdH)}m (4짝·뒤로 열림)`, s2X0 - 0.3, sy + 1.45, (rO.a0 + rO.a1) / 2, 'opening'); }
+      drawFold((k) => ({ x: xc - (k % 2 === 0 ? 0 : fV), z: rO.a1 - sU * k }));
+      label(`1층 우측 폴딩도어 ${fmtDim(fdGap)}×${fmtDim(fdH)}m (4짝·앞으로 열림)`, s2X0 - 0.3, sy + 1.45, (rO.a0 + rO.a1) / 2, 'opening'); }
     // 뒤벽 좌측(高x): 좌측 기둥(bO.a1)서 우로 전진, 밖(+z)으로 접힘
     { const zc = s2BackZ - t / 2;
       box({ x: bO.a0, z: zc - 0.05, w: bO.a1 - bO.a0, d: 0.1, y: sy, h: 0.08, mat: fdFrame });           // 하부 레일
       box({ x: bO.a0, z: zc - 0.05, w: bO.a1 - bO.a0, d: 0.1, y: hy - 0.08, h: 0.08, mat: fdFrame });     // 상부 레일
-      drawFold((k) => ({ x: bO.a0 + sU * k, z: zc + (k % 2 === 0 ? 0 : fV) }));
-      label(`1층 뒤 폴딩도어 ${fmtDim(fdGap)}×${fmtDim(fdH)}m (4짝·오른쪽 열림)`, (bO.a0 + bO.a1) / 2, sy + 1.45, s2BackZ + 0.3, 'opening'); }
+      drawFold((k) => ({ x: bO.a1 - sU * k, z: zc + (k % 2 === 0 ? 0 : fV) }));
+      label(`1층 뒤 폴딩도어 ${fmtDim(fdGap)}×${fmtDim(fdH)}m (4짝·왼쪽 열림)`, (bO.a0 + bO.a1) / 2, sy + 1.45, s2BackZ + 0.3, 'opening'); }
   });
   captureInto(s2Wall2Objects, () => rectWalls(y1, y2));                   // 2층 외벽 — 2층 슬래브 밑면~2층 천장
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
