@@ -1935,6 +1935,25 @@ captureInto(s2DimObjects, () => {
   const _stoveStart = scene.children.length;
   box({ x: s2X0 + s2WallT, z: zz0, w: reserveW, d: zz1 - zz0, y: fTop + 0.005, h: 0.012, mat: materials.leftZone, cast: false });
   label(`화목난로 예약 ${fmtDim(reserveW)}×${fmtDim(zz1 - zz0)}m`, s2X0 + s2WallT + reserveW / 2, fTop + 0.6, (zz0 + zz1) / 2, 'dim');
+  // 화목난로 본체 + 연통 — 예약공간 거실쪽 외벽 구석(계단실 입구쪽)에 두고, 연통을 그 구석으로 곧게 3층까지 올린 뒤
+  //   (계단참 코너만 관통) 거실쪽 박공 끝벽을 뚫고 밖으로 빼 지붕 옆으로(지붕 경사면 관통 없음 → 누수 위험↓)
+  {
+    const stW = 0.6, stD = 0.5, stH = 1.05;                 // 본체(타워형) 폭·깊이·높이
+    const stX = s2X0 + s2WallT + 0.1;                       // 거실쪽 외벽서 0.1m 불연 이격(본체 x 0.4~1.0)
+    const stZ = 0.85;                                       // 본체 앞면 z(중심 1.1 = 계단실 보이드 앞끝 구석)
+    const flueX = stX + 0.1, flueZ = 1.1;                   // 연통 = 거실쪽 외벽 바짝·보이드 앞끝 구석(계단참 코너만 관통)
+    const flueTopIn = roofY + 0.5;                          // 실내 수직 상단(3층 상부, 박공 끝벽 관통 높이)
+    const wallOutX = s2X0 - 0.7;                            // 거실쪽 지붕 처마(0.4m) 끝에서 0.3m 안전거리 — 지붕 관통 회피
+    const flueTopOut = s2RoofUnderY(s2RidgeZ) + 0.6;        // 외부 수직 상단 = 용마루보다 위
+    const flueR = 0.0375;                                   // 연통 반경 = 지름 75mm
+    box({ x: stX - 0.1, z: stZ - 0.15, w: stW + 0.2, d: stD + 0.3, y: fTop + 0.012, h: 0.03, mat: materials.guard, cast: false });   // 불연 바닥판
+    box({ x: stX, z: stZ, w: stW, d: stD, y: fTop + 0.042, h: stH, mat: materials.guard });                                          // 본체
+    box({ x: stX + 0.08, z: stZ - 0.02, w: stW - 0.16, d: 0.02, y: fTop + 0.042 + 0.22, h: 0.6, mat: materials.openingEdge });        // 불보기창(앞면, 저z)
+    railCylinder([flueX, fTop + 0.042 + stH, flueZ], [flueX, flueTopIn, flueZ], flueR);          // ① 실내 수직 — 계단실 구석으로 3층까지
+    railCylinder([flueX, flueTopIn, flueZ], [wallOutX, flueTopIn, flueZ], flueR);                // ② 거실쪽 박공 끝벽 관통(수평)
+    railCylinder([wallOutX, flueTopIn, flueZ], [wallOutX, flueTopOut, flueZ], flueR);            // ③ 외부 수직 — 지붕 옆으로
+    label('화목난로 + 연통(벽 관통→외부)', stX + stW / 2, fTop + stH + 0.35, stZ, 'furniture');
+  }
   s2StoveObjects.push(...scene.children.slice(_stoveStart));
 }
 
