@@ -2072,7 +2072,7 @@ captureInto(s2SinkObjects, () => {
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
   const fdGap = 4 * 0.68;                                                 // 4짝 × 정면 짝폭 0.68 = 2.72m 개구부
   const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + fdGap, sillY: f1Top, headY: f1Top + fdH };  // 우측벽: 앞 기둥서 뒤로 2.72
-  const bO = { a0: (s2W - t) - fdColT - fdGap, a1: (s2W - t) - fdColT, sillY: groundTopY + 1.1, headY: f1Top + fdH };  // 뒤는 폴딩창 — sill 지표 위 1.1m(하부 막힘), 상단은 정면 폴딩과 동일
+  const bO = { a0: (s2W - t) - fdColT - fdGap, a1: (s2W - t) - fdColT, sillY: groundTopY + 1.8, headY: f1Top + fdH };  // 뒤는 폴딩창 — sill 지표 위 1.8m(하부 막힘), 상단은 정면 폴딩과 동일
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, bO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측·뒤 폴딩 개구부)
   captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 거실쪽(우) 절반 접어 열림
     const fdGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 닫힌 짝 유리
