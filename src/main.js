@@ -2033,23 +2033,31 @@ captureInto(s2SinkObjects, () => {
   const fdColT = 0.3, fdH = 2.4;                                          // 기둥 굵기 300mm · 폴딩도어 높이 2.4m(표준 최대)
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen));       // 1층 외벽 — 기초 상단~1층 천장(정면 폴딩 개구부)
-  captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 개구부 채움(중앙 양개)
-    const fdGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });
+  captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 거실쪽(우) 절반 접어 열림
+    const fdGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 닫힌 짝 유리
+    const fdMove = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 접힌(움직인) 짝 유리 — 약간 짙게
     const fdFrame = new THREE.MeshLambertMaterial({ color: 0x3a3f45 });   // 폴딩 알루미늄 프레임(다크그레이)
-    const glaze = 0.05, mullW = 0.05;
+    const mullW = 0.05;
     const ox0 = fdOpen.x0, ox1 = fdOpen.x1, sy = fdOpen.sillY, hy = fdOpen.headY, zc = s2FrontZ + t / 2;
-    box({ x: ox0, z: zc - glaze / 2, w: ox1 - ox0, d: glaze, y: sy, h: hy - sy, mat: fdGlass, cast: false });       // 유리면(개구부 전체)
-    box({ x: ox0, z: zc - 0.05, w: ox1 - ox0, d: 0.1, y: sy, h: 0.08, mat: fdFrame });                              // 하부 레일(문턱)
-    box({ x: ox0, z: zc - 0.05, w: ox1 - ox0, d: 0.1, y: hy - 0.08, h: 0.08, mat: fdFrame });                       // 상부 레일
-    const N = 10, pw = (ox1 - ox0) / N;                                   // 패널 10짝(중앙 5+5 양개), 짝폭 ≈0.68m
-    for (let i = 0; i <= N; i += 1) {
-      const mx = ox0 + pw * i;
-      box({ x: mx - mullW / 2, z: zc - 0.07, w: mullW, d: 0.14, y: sy, h: hy - sy, mat: fdFrame, cast: false });    // 세로 접이살
+    const cx = (ox0 + ox1) / 2, half = 5, pw = (ox1 - ox0) / 10;          // 양개: 한쪽 5짝, 짝폭 ≈0.68m
+    box({ x: ox0, z: zc - 0.05, w: ox1 - ox0, d: 0.1, y: sy, h: 0.08, mat: fdFrame });          // 하부 레일(문턱) — 고정 트랙(전폭)
+    box({ x: ox0, z: zc - 0.05, w: ox1 - ox0, d: 0.1, y: hy - 0.08, h: 0.08, mat: fdFrame });   // 상부 레일 — 고정 트랙(전폭)
+    // 안방쪽(좌, 高x) 절반 — 닫힘(평면 유리 + 세로 접이살)
+    box({ x: cx, z: zc - 0.025, w: ox1 - cx, d: 0.05, y: sy, h: hy - sy, mat: fdGlass, cast: false });
+    for (let i = 0; i <= half; i += 1) box({ x: cx + pw * i - mullW / 2, z: zc - 0.07, w: mullW, d: 0.14, y: sy, h: hy - sy, mat: fdFrame, cast: false });
+    box({ x: cx + 0.085, z: zc - 0.13, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 닫힌 짝 중앙 손잡이
+    // 거실쪽(우, 低x) 절반 — 거실쪽 기둥(ox0)에 아코디언으로 접혀 밖(−z)으로 열림. 짝끼리 ±60° 지그재그.
+    const ang = 60 * Math.PI / 180, sX = pw * Math.cos(ang), fD = pw * Math.sin(ang);   // 짝당 x 전진·접힘 깊이
+    const hinge = (k) => [ox0 + sX * k, k % 2 === 0 ? zc : zc - fD];                     // 접이 경첩점(짝수=트랙선, 홀수=밖으로 꺾임)
+    for (let k = 0; k < half; k += 1) {                                  // 5짝 — 각 짝을 경첩~경첩 잇는 기울어진 유리판으로
+      const [x0p, z0p] = hinge(k), [x1p, z1p] = hinge(k + 1);
+      const cxp = (x0p + x1p) / 2, czp = (z0p + z1p) / 2, len = Math.hypot(x1p - x0p, z1p - z0p);
+      const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sy, h: hy - sy, mat: fdMove, cast: false });
+      m.rotation.y = Math.atan2(-(z1p - z0p), x1p - x0p);
     }
-    const cx = (ox0 + ox1) / 2;
-    box({ x: cx - 0.13, z: zc - 0.13, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });          // 중앙 좌짝 손잡이
-    box({ x: cx + 0.085, z: zc - 0.13, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });         // 중앙 우짝 손잡이
-    label(`1층 정면 폴딩도어 ${fmtDim(ox1 - ox0)}×${fmtDim(hy - sy)}m (중앙 양개)`, cx, sy + 1.45, s2FrontZ - 0.25, 'opening');
+    for (let k = 0; k <= half; k += 1) { const [hx, hz] = hinge(k); box({ x: hx - 0.035, z: hz - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: fdFrame, cast: false }); }   // 경첩 세로살
+    { const [lx, lz] = hinge(half); box({ x: lx - 0.06, z: lz - 0.13, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle }); }   // 접힌 선두짝 손잡이
+    label(`1층 정면 폴딩도어 ${fmtDim(ox1 - ox0)}×${fmtDim(hy - sy)}m (중앙 양개·거실쪽 접어 열림)`, cx, sy + 1.45, s2FrontZ - 0.25, 'opening');
   });
   captureInto(s2Wall2Objects, () => rectWalls(y1, y2));                   // 2층 외벽 — 2층 슬래브 밑면~2층 천장
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
