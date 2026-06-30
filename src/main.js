@@ -1779,6 +1779,9 @@ captureInto(s2DimObjects, () => {
       scene.add(wd);   // captureInto가 s2Floor2Objects로 자동 수집
       label('세탁·건조 예정', bx0 + 0.4, fy + 1.95, pz1 - 0.31, 'mep');
     }
+    // 안방(앞 트인 방) 크기 라벨 — 게스트룸처럼 실사용 바닥(앞 외벽 안쪽 ~ 분리벽 안쪽 zB0-0.10). 방 이름 색(연노랑)으로 흰색 치수와 구별.
+    const abW = inW, abD = (zB0 - 0.10) - inZ0;
+    label(`안방 ${abW.toFixed(2)}×${abD.toFixed(2)}m`, inX0 + abW / 2, levels[1] + 0.4, inZ0 + abD / 2, 'room');
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
   });
@@ -1787,9 +1790,9 @@ captureInto(s2DimObjects, () => {
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
     placeMark(levels[2], true, wcW3, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 wcW3(X, 세면대만큼 키움) × 왼쪽벽 따라 1.0(Z)
     const g1W = far3 - inX0, g1D = (zB0 - interiorWall) - inZ0;                                                         // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~계단실 분리벽(10cm) 안쪽
-    label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'dim');   // 게스트룸1(연두) — 벽 두께 뺀 실사용 바닥
+    label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'room');   // 게스트룸1(연두) — 벽 두께 뺀 실사용 바닥
     const g2W = g2RoomW - 0.15, g2D = (RM_L - interiorWall) - g2ClosetD;                                                // 게스트룸2 실사용 바닥 — 폭=옆벽(15cm) 뺌, 깊이=화장실쪽 벽(10cm)·붙박이장 뺌
-    label(`게스트룸2 ${g2W.toFixed(2)}×${g2D.toFixed(2)}m`, inX1 - g2RoomW / 2, levels[2] + 0.4, inZ0 + (RM_L - g2ClosetD) / 2, 'dim');   // 게스트룸2(회색) — 벽 두께·붙박이장 뺀 실사용 바닥
+    label(`게스트룸2 ${g2W.toFixed(2)}×${g2D.toFixed(2)}m`, inX1 - g2RoomW / 2, levels[2] + 0.4, inZ0 + (RM_L - g2ClosetD) / 2, 'room');   // 게스트룸2(회색) — 벽 두께·붙박이장 뺀 실사용 바닥
     // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
     //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·앞 회색방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
     {
