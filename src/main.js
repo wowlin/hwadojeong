@@ -325,6 +325,7 @@ function label(text, x, y, z, group = 'dim') {
   const texture = new THREE.CanvasTexture(canvas);
   const isDim = group === 'dim';   // 치수 라벨은 항상 맨 위에 그려 땅·두부·구조에 안 묻히게(깊이 무시)
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: !isDim, depthWrite: !isDim }));
+  sprite.userData.labelGroup = group;   // 라벨 그룹(치수/방/가구/설비/개구부…) 기록 — 층별 라벨 정리에 사용
   if (isDim) sprite.renderOrder = 10;
   const readableSize = Math.max(size, 0.28);
   const worldH = readableSize * 1.2;                           // 세로(월드 높이) — 기존과 동일
@@ -1608,14 +1609,14 @@ captureInto(s2DimObjects, () => {
   const f1Top = baseY + S2_STAIR.slabT;
   let acc = f1Top; const levels = [f1Top];
   for (const h of S2_STAIR.floorH) { acc += h; levels.push(acc); }
-  // 상부런(계단참 위·앞 행) 단 수를 모든 비행 9단으로 통일 → 남는 단차는 하부런(계단참 아래·뒤벽 행)에서 흡수.
-  //   → 2→3층은 위·아래 9·9로 같고, 1→2층은 위 9·아래 11. 짧아진 상부런만큼 위층 바닥을 더(高X쪽으로) 채워 개구부를 메움.
+  // 상부런(계단참 위·앞 행) 단 수는 비행별로 지정 → 남는 단차는 하부런(계단참 아래·뒤벽 행)에서 흡수.
+  //   위에서부터 8·10·10·10단: 2→3 위 8·아래 10, 1→2 위 10·아래 10. 짧아진 상부런만큼 위층 바닥을 더(高X쪽으로) 채워 개구부를 메움.
   const flights = [];
   for (let f = 0; f < levels.length - 1; f += 1) {
     const fl = levels[f], rise = levels[f + 1] - fl;
     flights.push({ fl, risers: Math.round(rise / R) });    // 22(3.3) · 20(3.0)
   }
-  const nU = 9;                                                                  // 상부런(계단참 위) 단 수 — 전 비행 9단 통일
+  const nUpper = [10, 8];                                                        // 상부런(계단참 위) 비행별 단 수 — 1→2:10, 2→3:8
   const meta = [];
   // 비행을 런·계단참 단위로 따로 캡처 → 층별 '계단' 버튼이 그 층에 속한 부분만 보임(공유 부재는 applyVisibility서 OR).
   //   1→2: 하부런(LowA) / 1-2참+상부런(MidA, 1·2층 공유)   ·   2→3: 하부런(LowB) / 2-3참(MidB, 2·3층 공유) / 상부런(UpB)
@@ -1626,15 +1627,16 @@ captureInto(s2DimObjects, () => {
       riserX(xRun0 + k * T - rTh, zA0, top);                    // 챌판 — 하부런 앞면(高X쪽)
     }
   };
-  const drawUpperRun = (fl, nL) => {                            // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지, 앞코 低X쪽
-    for (let m = 1; m <= nU; m += 1) {
+  const drawUpperRun = (fl, nL, nUp) => {                       // 상부런(앞 행): 참→멀리(高X) 오름, 위층 착지, 앞코 低X쪽
+    for (let m = 1; m <= nUp; m += 1) {
       const top = fl + (nL + 1 + m) * R;
       treadX(xRun0 + (m - 1) * T, zB0, top, -1);
       riserX(xRun0 + (m - 1) * T, zB0, top);                    // 챌판 — 상부런 앞면(低X쪽)
     }
   };
   flights.forEach(({ fl, risers }, fi) => {
-    const nL = risers - 2 - nU;                                                              // 하부런(계단참 아래) 단 수 — 남는 단차 흡수(1→2:11, 2→3:9)
+    const nUp = nUpper[fi];                                                                  // 상부런 단 수(비행별) — 위에서부터 8·10·10·10이 되도록
+    const nL = risers - 2 - nUp;                                                             // 하부런(계단참 아래) 단 수 — 남는 단차 흡수(1→2:10, 2→3:10)
     if (fi === 0) {
       // 1→2 하부런 + 1층 계단아래 수납 → LowA(1층 계단)
       captureInto(s2StairLowA, () => {
@@ -1655,7 +1657,7 @@ captureInto(s2DimObjects, () => {
       // 1-2계단참 + 상부런 → MidA(1·2층 공유)
       captureInto(s2StairMidA, () => {
         landing(fl + (nL + 1) * R);                                                          // 우측벽 참(180° 반환)
-        drawUpperRun(fl, nL);
+        drawUpperRun(fl, nL, nUp);
       });
     } else {
       // 2→3 하부런 → LowB(2층 계단)
@@ -1666,17 +1668,17 @@ captureInto(s2DimObjects, () => {
         box({ x: xRun0 - rTh, z: zA0, w: rTh, d: W, y: fl + (nL + 1) * R - R - tTh, h: R, mat: materials.stairWall });   // 계단참 챌판 — 참과 그 아래 마지막 하부런 발판 사이 세로판. 계단참 두께(tTh)만큼 아래로 내려 참과 겹침 제거
       });
       // 2→3 상부런 → UpB(3층 계단)
-      captureInto(s2StairUpB, () => { drawUpperRun(fl, nL); });
+      captureInto(s2StairUpB, () => { drawUpperRun(fl, nL, nUp); });
     }
-    meta.push({ lowerFarX: xRun0 + nL * T, upperFarX: xRun0 + nU * T });
+    meta.push({ lowerFarX: xRun0 + nL * T, upperFarX: xRun0 + nUp * T });
   });
 
   // 각 층 바닥(층참) — 별도 행 [바닥][1층][2층][3층]로 토글하도록 층별로 따로 캡처.
   const floor2T = s2Floor2SlabT, floor3T = s2Floor3SlabT;   // 2·3층 바닥 두께 — 모듈 단일 출처 참조
   // 계단실 구멍은 '그 층에서 실제로 오르내리는 런'까지만 비운다 — 올라와 닿는 상부런 + 거기서 올라가는 다음 비행 하부런. 그래야 다음 계단 발이 바닥에 붙는다.
   //   1→2 아래 런(가장 긴 11단)은 1층 레벨이라 2층 구멍과 무관 → 그 길이로 깎으면 2→3 발이 구멍 위에 뜬다.
-  const far2 = Math.max(meta[0].upperFarX, meta[1].lowerFarX);   // 2층 계단실 끝 = 1→2 상부런(9)·2→3 하부런(9) 중 먼 쪽
-  const far3 = Math.max(meta[1].upperFarX, meta[1].lowerFarX);   // 최상층 계단실 끝 = 2→3 상부런(9)이 올라와 닿는 끝(하부런도 9)
+  const far2 = Math.max(meta[0].upperFarX, meta[1].lowerFarX);   // 2층 계단실 끝 = 1→2 상부런(10)·2→3 하부런(10) 중 먼 쪽
+  const far3 = meta[1].upperFarX;   // 최상층 계단실 끝 = 2→3 상부런(8)이 올라와 닿는 끝. 하부런은 3층 바닥 아래라 무관(상부런 단수로만 결정)
   captureInto(s2Floor1Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: inZ1 - inZ0, y: baseY, h: S2_STAIR.slabT, mat: materials.porcelainDeck });   // 1층 바닥(전체)
   });
@@ -1709,7 +1711,7 @@ captureInto(s2DimObjects, () => {
     {
       const wz = zB0 - 0.10, wt = 0.10, wTop = (levels[2] - floor3T) - levels[1];
       const oX0 = far2 + (1.2 - interiorDoorW) / 2, oX1 = oX0 + interiorDoorW;            // 도착칸 방문 개구(1.2m 가운데, 폭 0.9)
-      const bdW = 0.7, bdX0 = 6.0, bdX1 = bdX0 + bdW;                                     // 화장실 문 — 앞방에서 밀어 들어옴(안여닫이 +Z)
+      const bdW = 0.7, bdX0 = far2 + 1.3 + 0.10, bdX1 = bdX0 + bdW;                       // 화장실 문 — 안방에서 밀어 들어옴(안여닫이 +Z). 화장실 低X 벽(far2+1.3)서 10cm
       box({ x: inX0, z: wz, w: oX0 - inX0, d: wt, y: levels[1], h: wTop, mat: materials.wall });                       // 왼쪽 벽(低X·포켓 수납)
       box({ x: oX1, z: wz, w: bdX0 - oX1, d: wt, y: levels[1], h: wTop, mat: materials.wall });                        // 가운데 벽(방문~화장실문)
       box({ x: bdX1, z: wz, w: inX1 - bdX1, d: wt, y: levels[1], h: wTop, mat: materials.wall });                      // 오른쪽 벽(화장실문~안방 외벽)
@@ -1725,7 +1727,7 @@ captureInto(s2DimObjects, () => {
       rswing.position.set(oX1, levels[1] + 0.02, zB0 - 0.10);   // PI~3PI/2 = -Z(앞방 열림)~-X(닫힘,벽). 경첩 高X
       scene.add(rswing);   // captureInto가 s2Floor2Objects로 자동 수집
       label('표준 방문', oX0 + interiorDoorW / 2, levels[1] + 1.0, zB0 - 0.075, 'opening');
-      // 화장실 문짝 — 앞 분리벽에 폭 0.7. 앞방서 밀면 화장실 안(+Z)으로 90° 열림. 경첩=低X(bdX0) 모서리.
+      // 화장실 문짝 — 앞 분리벽에 폭 0.7. 안방서 밀면 화장실 안(+Z)으로 90° 열림. 경첩=低X(bdX0) 모서리.
       box({ x: bdX0, z: zB0 - 0.04, w: bdW, d: 0.04, y: levels[1], h: interiorDoorH, mat: materials.wcDoor });         // 문짝(닫힘, 분리벽)
       box({ x: bdX1 - 0.18, z: zB0 - 0.07, w: 0.05, d: 0.05, y: levels[1] + 1.02, h: 0.05, mat: materials.handle });   // 손잡이(高X 자유단, 앞방쪽)
       const bswing = new THREE.Mesh(
@@ -1754,8 +1756,8 @@ captureInto(s2DimObjects, () => {
       box({ x: shx, z: shz + shD - 0.04, w: shW, d: 0.04, y: fy, h: 2.0, mat: materials.glass });           // +Z 유리벽
       box({ x: px1 - 0.16, z: shz + 0.42, w: 0.06, d: 0.06, y: fy + 1.9, h: 0.08, mat: materials.handle });  // 샤워헤드(高X 외벽)
       label('샤워부스', shx + shW / 2, fy + 1.05, shz + shD / 2, 'furniture');
-      // 세면대 — 거실쪽-뒤(低X·高Z) 코너, 뒤 외벽에 등 붙임. 변기 없는 오른쪽(거실쪽) 건식존. 하부장 폭0.6·깊이0.5, 좌우 용품 여유. 수전은 뒤 외벽 벽수전.
-      const vW = 0.6, vD = 0.5, vx = bx0, vz = pz1 - vD;
+      // 세면대 — 변기 옆(3층처럼), 뒤 외벽(高Z)에 등 붙임. 변기와 표준 간격(중심 0.75m). 하부장 폭0.6·깊이0.5. 수전은 뒤 외벽 벽수전.
+      const vW = 0.6, vD = 0.5, vx = inX1 - wcSinkOff, vz = pz1 - vD;
       box({ x: vx, z: vz, w: vW, d: vD, y: fy, h: 0.8, mat: materials.sinkCabinet });                       // 하부장
       box({ x: vx + 0.06, z: vz + 0.1, w: vW - 0.12, d: vD - 0.2, y: fy + 0.8, h: 0.04, mat: materials.sinkBasin });   // 세면볼
       box({ x: vx + vW / 2 - 0.03, z: pz1 - 0.12, w: 0.06, d: 0.10, y: fy + 1.0, h: 0.06, mat: materials.entryFrame });   // 벽수전(뒤 외벽서)
@@ -1768,14 +1770,14 @@ captureInto(s2DimObjects, () => {
       heater.position.set(px1 - 0.30, fy + 1.95, pz1 - 0.28);
       scene.add(heater);   // captureInto가 s2Floor2Objects로 자동 수집
       label('전기온수기 50L', px1 - 0.5, fy + 2.3, pz1 - 0.3, 'mep');
-      // 세탁기·건조기 예정 — 거실쪽-앞(低X·低Z) 코너에 적층(0.62×0.62) 자리만 예약. 반투명 표시.
+      // 세탁기·건조기 예정 — 거실쪽-뒤(低X·高Z) 코너벽에 붙여 적층(0.62×0.62) 자리만 예약(전 세면대 자리). 반투명 표시.
       const wd = new THREE.Mesh(
         new THREE.BoxGeometry(0.62, 1.8, 0.62),
         new THREE.MeshLambertMaterial({ color: 0xb0b0b0, transparent: true, opacity: 0.3, depthWrite: false }),
       );
-      wd.position.set(bx0 + 0.35, fy + 0.9, bz0 + 0.35);
+      wd.position.set(bx0 + 0.31, fy + 0.9, pz1 - 0.31);
       scene.add(wd);   // captureInto가 s2Floor2Objects로 자동 수집
-      label('세탁·건조 예정', bx0 + 0.4, fy + 1.95, bz0 + 0.35, 'mep');
+      label('세탁·건조 예정', bx0 + 0.4, fy + 1.95, pz1 - 0.31, 'mep');
     }
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: W, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
@@ -1980,9 +1982,9 @@ captureInto(s2SinkObjects, () => {
   label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, skX + CD / 2, cY + 0.5, cSink, 'furniture');
 });
 
-// ── s2 실링팬 — 1층 천장 2개 · 2층 방 천장 2개. 각 공간 중심선에 맞추고 폭(X) 방향 균등 분산 ──
-// 긴변(X 폭)을 따라 두 대를 1/4·3/4 지점(중심 기준 ±폭/4)에 둬 각 대가 절반씩 담당 → 골고루 송풍.
-// 두 대 모두 공간 깊이(Z) 중심선 위 → 좌우·앞뒤 중심 동시 정렬.
+// ── s2 천장 조명·실링팬 — 1층·2층 방 천장에 전등-실링팬-전등-실링팬-전등(5개) 한 줄 ──
+// 긴변(X 폭)을 5등분 중심에 배치, 전등(양끝·가운데 3개)과 실링팬(2·4번째 2개)을 번갈아 → 골고루 송풍·조명.
+// 다섯 부재 모두 공간 깊이(Z) 중심선 위 → 좌우·앞뒤 중심 동시 정렬.
 {
   const inX0 = s2X0 + s2WallT, inX1 = s2W - s2WallT;          // 외벽 안쪽 폭(X)
   const inZ0 = s2FrontZ + s2WallT, inZ1 = s2BackZ - s2WallT;
@@ -1990,11 +1992,12 @@ captureInto(s2SinkObjects, () => {
   const lvl2 = F2 + S2_STAIR.slabT, lvl3 = F3 + S2_STAIR.slabT;
   const ceil1Y = lvl2 - s2Floor2SlabT;                       // 1층 천장(2층 슬래브 밑면)
   const ceil2Y = lvl3 - s2Floor3SlabT;                       // 2층 천장(3층 슬래브 밑면)
-  const fanX = [inX0 + (inX1 - inX0) * 0.25, inX0 + (inX1 - inX0) * 0.75];   // 폭 1/4·3/4(중심 대칭)
+  const fixX = Array.from({ length: 5 }, (_, i) => inX0 + (inX1 - inX0) * (i + 0.5) / 5);   // 폭 5등분 중심
+  const placeRow = (cz, ceilingY) => fixX.forEach((x, i) => (i % 2 === 1 ? ceilingFan : ceilingLight)({ x, z: cz, ceilingY }));   // 홀수번째=팬, 짝수번째=전등 → 전등-팬-전등-팬-전등
   const cz1 = (inZ0 + zB0) / 2;                              // 1층 트인 거실 깊이 중심(앞벽~계단실)
   const cz2 = (inZ0 + (zB0 - 0.10)) / 2;                     // 2층 앞방 깊이 중심(앞벽~분리벽)
-  captureInto(s2Fan1Objects, () => { for (const x of fanX) ceilingFan({ x, z: cz1, ceilingY: ceil1Y }); });
-  captureInto(s2Fan2Objects, () => { for (const x of fanX) ceilingFan({ x, z: cz2, ceilingY: ceil2Y }); });
+  captureInto(s2Fan1Objects, () => placeRow(cz1, ceil1Y));
+  captureInto(s2Fan2Objects, () => placeRow(cz2, ceil2Y));
 }
 
 // ── s2 외벽 — 층별 분리(각 층 바닥 슬래브 밑면 ~ 그 층 천장). 층마다 '외벽' 버튼, 모든 층 켜면 연결 ──
@@ -2439,6 +2442,21 @@ function ceilingFan({ x, z, ceilingY, bladeCount = 5, bladeLength = 0.62, drop =
   scene.add(lamp);
 }
 
+// 천장 직부등 — 하우징 + 발광 렌즈(썬룸 조명과 동일 규격). 천장면에 바로 부착.
+function ceilingLight({ x, z, ceilingY }) {
+  const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.1, 0.05, 16), materials.guard);
+  housing.position.set(x, ceilingY - 0.025, z);
+  housing.castShadow = false;
+  housing.receiveShadow = false;
+  scene.add(housing);
+  const lensMat = new THREE.MeshLambertMaterial({ color: 0xfff4cf, emissive: 0xffe39c, emissiveIntensity: 0.9 });
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.035, 16), lensMat);
+  lens.position.set(x, ceilingY - 0.06, z);
+  lens.castShadow = false;
+  lens.receiveShadow = false;
+  scene.add(lens);
+}
+
 const _firstFanStart = scene.children.length;
 ceilingFan({ x: firstLivingX + firstLivingW / 2, z: insideZ0 + firstLivingD / 2, ceilingY: firstCeilingY });
 ceilingFan({ x: firstFamilyX + firstFamilyW / 2, z: insideZ0 + firstFamilyD / 2, ceilingY: firstCeilingY });
@@ -2734,6 +2752,11 @@ function applyVisibility() {
   }
   // 계단2 공유부(라벨·층고 치수)는 계단 버튼(1·2·3층) 중 하나라도 켜지면 함께 보임
   { const on = !isPlan && (view.s2StairF1 || view.s2StairF2 || view.s2StairF3); for (const item of s2Stair2Objects) item.visible = on; }
+  // 층별 라벨 정리 — 윗층 바닥이 표시되면 아래층의 비치수 라벨(방·가구·설비·개구부)은 숨겨 겹쳐 보임 방지. 치수 라벨은 유지.
+  { const hideNonDim = (arrs) => { for (const arr of arrs) for (const item of arr) if (item.userData && item.userData.labelGroup && item.userData.labelGroup !== 'dim') item.visible = false; };
+    if (!isPlan && view.s2Floor2) hideNonDim([s2Floor1Objects, s2SinkObjects, s2StoveObjects, s2FurnitureObjects, s2StairLowA]);   // 2층 바닥 표시 → 1층 비치수 라벨 숨김
+    if (!isPlan && view.s2Floor3) hideNonDim([s2Floor2Objects]);                                                                  // 3층 바닥 표시 → 2층 비치수 라벨 숨김
+  }
   // 체크박스 상태 동기화(단일 출처)
   for (const [id, key] of CHECKS) { const el = document.querySelector('#' + id); if (el) el.checked = !!view[key]; }
   syncSegButtons();   // 계단/바닥 버튼 행 active 상태 동기화
@@ -2802,22 +2825,22 @@ const NOTES = {
     ].join('\n') };
   },
   get s2Floor2() {                                         // 2층 — 화장실·앞방 크기. 계단 상수·집 치수서 자동 계산
-    const { W, T, g } = S2_STAIR, wF = 2 * W + g, nU = 9;   // 계단 런 폭·디딤 깊이·상부런 단수(far2 = 계단실 끝 = inX0 + W + nU·T)
+    const { W, T, g } = S2_STAIR, wF = 2 * W + g, nU = 10;   // 계단 런 폭·디딤 깊이·2층 계단실 끝 단수(far2 = inX0 + W + nU·T, 1→2 상부런·2→3 하부런 둘 다 10단)
     const inW = s2W - 2 * s2WallT, inD = s2D - 2 * s2WallT;
     const bathW = inW - W - nU * T - 1.2 - 0.10, bathD = wF;   // 화장실 실사용: 계단실벽 안쪽(far2+1.3)~안방 외벽 · 분리벽 안쪽(zB0)~뒤벽
     const roomW = inW, roomD = inD - wF - 0.10;                // 앞방: 분리벽 앞 전체(전폭 × 앞 외벽~분리벽). 분리벽 0.10m
     const landW = 1.2, landD = wF;                            // 층계참(도착칸): 계단 끝(far2)~화장실 벽(far2+1.2) · 분리벽(zB0)~뒤 외벽
-    return { title: '2층 — 화장실 · 앞방', body: [
+    return { title: '2층 — 화장실 · 안방', body: [
       `- 층계참(계단 올라와 방 들기 전 평평한 바닥, 벽 뺀): ${fmtDim(landW)} × ${fmtDim(landD)} m`,
       `- 화장실(벽 뺀 실사용 바닥): ${fmtDim(bathW)} × ${fmtDim(bathD)} m`,
-      `- 앞쪽 방(벽으로 분리, 길쭉): ${fmtDim(roomW)} × ${fmtDim(roomD)} m`,
+      `- 안방(벽으로 분리, 길쭉): ${fmtDim(roomW)} × ${fmtDim(roomD)} m`,
       '',
-      '[화장실 배치] 좌(안방쪽)=습식·우(거실쪽)=건식 분리. 문=앞 분리벽(앞방서 밀어 +Z, 폭 0.7). 앞벽 0.10 m.',
+      '[화장실 배치] 좌(안방쪽)=습식·우(거실쪽)=건식 분리. 문=앞 분리벽(안방서 밀어 +Z, 폭 0.7, 도착칸쪽 벽서 10cm). 앞벽 0.10 m.',
       '- 변기: 안방쪽-뒤 코너(3층 변기와 수직정렬·오수관 직하). 중심 옆벽서 0.42 m.',
       '- 샤워부스: 안방쪽-앞 코너 0.9×0.85 m + 유리(변기와 같은 왼쪽 습식존).',
-      '- 세면대: 거실쪽-뒤 코너, 뒤 외벽에 등 붙임. 폭 0.6·깊이 0.5 m. 벽수전(외벽서), 좌우 용품 여유.',
+      '- 세면대: 변기 옆(3층처럼), 뒤 외벽에 등 붙임. 폭 0.6·깊이 0.5 m. 변기와 중심 간격 0.75 m. 벽수전(외벽서).',
       '- 전기온수기 50 L: 외벽(뒤) 상부 벽거치(50 L는 하부장에 숨기기엔 큼).',
-      '- 세탁기·건조기: 거실쪽-앞 코너 적층 자리(0.62×0.62 m) 예약(우측 건식존).',
+      '- 세탁기·건조기: 거실쪽-뒤 코너벽에 붙여 적층 자리(0.62×0.62 m) 예약(전 세면대 자리).',
     ].join('\n') };
   },
   get s2Floor3() {                                         // 3층 — 계단앞(계단실 단열) 문 요구사항. 계단 상수·박공 단면서 자동 계산
