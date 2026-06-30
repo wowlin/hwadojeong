@@ -1996,7 +1996,9 @@ captureInto(s2SinkObjects, () => {
   const placeRow = (cz, ceilingY) => fixX.forEach((x, i) => (i % 2 === 1 ? ceilingFan : ceilingLight)({ x, z: cz, ceilingY }));   // 홀수번째=팬, 짝수번째=전등 → 전등-팬-전등-팬-전등
   const cz1 = (inZ0 + zB0) / 2;                              // 1층 트인 거실 깊이 중심(앞벽~계단실)
   const cz2 = (inZ0 + (zB0 - 0.10)) / 2;                     // 2층 앞방 깊이 중심(앞벽~분리벽)
-  captureInto(s2Fan1Objects, () => placeRow(cz1, ceil1Y));
+  const sinkLightX = fixX[fixX.length - 1];                  // 가장 왼쪽 전등(평면 좌=高X, 씽크대쪽 벽)과 같은 좌우 위치
+  const sinkLightZ = inZ1 - (cz1 - inZ0);                    // 뒤벽서 거리 = 그 전등의 앞벽서 거리(대칭) → 씽크대 위
+  captureInto(s2Fan1Objects, () => { placeRow(cz1, ceil1Y); ceilingLight({ x: sinkLightX, z: sinkLightZ, ceilingY: ceil1Y }); });   // 1층: 씽크대쪽 전등 1개 추가
   captureInto(s2Fan2Objects, () => placeRow(cz2, ceil2Y));
 }
 
