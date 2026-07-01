@@ -2318,7 +2318,7 @@ captureInto(s2SinkObjects, () => {
   });
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
   const wcWinCz = (s2BackZ - t) - (2 * S2_STAIR.W + S2_STAIR.g) / 2;   // 화장실 Z중앙(뒤벽 안쪽 ~ 계단실 앞 경계 중앙)
-  const wcWinP0 = wcWinCz - 0.4, wcWinP1 = wcWinCz + 0.4;              // 폭 0.8m(Z 스팬)
+  const wcWinP0 = wcWinCz - 0.3, wcWinP1 = wcWinCz + 0.3;              // 폭 0.6m(Z 스팬)
   // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+0.9m·창높이 1.4m(상단 2.3m). 뒤벽은 화장실·계단이라 막힘.
   {
     const inX0w = s2X0 + t, inX1w = s2W - t, inZ0w = s2FrontZ + t, inZ1w = s2BackZ - t;
@@ -2332,12 +2332,12 @@ captureInto(s2SinkObjects, () => {
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, abFront, EW);        // 앞벽
       wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [], EW);         // 뒤벽(막힘)
       wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(거실쪽)
-      wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + 1.5, headY: lvl2 + 2.3 }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 프로젝트창
+      wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + 1.7, headY: lvl2 + 2.3 }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 프로젝트창
       for (const o of abFront) frontSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);
       for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(거실쪽)
       for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
-      awningSash(s2W - 0.13, wcWinP0, 0.8, lvl2 + 1.5, 0.8);             // 2층 화장실 왼쪽벽 프로젝트창
-      label('화장실 프로젝트창 0.8×0.8m', s2W + 0.1, lvl2 + 1.5 + 0.4, wcWinCz, 'opening');
+      awningSash(s2W - 0.13, wcWinP0, 0.6, lvl2 + 1.7, 0.6);             // 2층 화장실 왼쪽벽 프로젝트창
+      label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl2 + 1.7 + 0.4, wcWinCz, 'opening');
       label('안방 정면창 1.8×1.4m', (inX0w + inX1w) / 2, abSill + 0.8, s2FrontZ - 0.1, 'opening');
       label('안방 우측창 1.5×1.4m', s2X0 - 0.1, abSill + 0.8, sideCz, 'opening');
       label('안방 좌측창 1.5×1.4m', s2W + 0.1, abSill + 0.8, sideCz, 'opening');
@@ -2352,19 +2352,19 @@ captureInto(s2SinkObjects, () => {
     const fWin2 = { p0: fx2 - 1.0, p1: fx2 + 1.0, sillY: fWinSill, headY: fWinHead };
     // 앞뒤(가운데 세로) 복도 — 게스트룸1·2 사이 중앙 스파인(홈리프트 低X면 −2.1). 앞·뒤 외벽에 프로젝트창 각 1개(정면 픽스창과 같은 창대0.9·높이0.8, 폭 0.8).
     const corrX = bkLiftHiX - 2.1;                          // 앞뒤 복도 X중앙(게스트룸1 옆벽~게스트룸2 옆벽 사이 1.2m 복도 중앙)
-    const fCorr = { p0: corrX - 0.4, p1: corrX + 0.4, sillY: fWinSill, headY: fWinHead };
+    const fCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: fWinHead };
     wallStrip('x', s2FrontZ, s2X0 + t, s2W - t, y2, eaveY, [fWin1, fWin2, fCorr], EW);
     frontFixSash(fWin1.p0, s2FrontZ + 0.13, 2.0, fWinSill, 0.8);   // 게스트룸1 정면 픽스창
     frontFixSash(fWin2.p0, s2FrontZ + 0.13, 2.0, fWinSill, 0.8);   // 게스트룸2 정면 픽스창
-    frontAwningSash(fCorr.p0, s2FrontZ + 0.13, 0.8, fWinSill, 0.8, -1);   // 앞 복도 프로젝트창(低Z 바깥)
+    frontAwningSash(fCorr.p0, s2FrontZ + 0.13, 0.6, lvl3 + 1.1, 0.6, -1);   // 앞 복도 프로젝트창(低Z 바깥)
     label('게스트룸1 정면 픽스창 2.0×0.8m', fx1, fWinSill + 0.7, s2FrontZ - 0.1, 'opening');
     label('게스트룸2 정면 픽스창 2.0×0.8m', fx2, fWinSill + 0.7, s2FrontZ - 0.1, 'opening');
-    label('앞 복도 프로젝트창 0.8×0.8m', corrX, fWinSill + 0.5, s2FrontZ - 0.1, 'opening');
+    label('앞 복도 프로젝트창 0.6×0.6m', corrX, lvl3 + 1.1 + 0.4, s2FrontZ - 0.1, 'opening');
     // 뒤(처마까지) — 앞뒤 복도 뒤쪽 프로젝트창 개구 1개
-    const bCorr = { p0: corrX - 0.4, p1: corrX + 0.4, sillY: fWinSill, headY: fWinHead };
+    const bCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: fWinHead };
     wallStrip('x', s2BackZ - t, s2X0 + t, s2W - t, y2, eaveY, [bCorr], EW);
-    frontAwningSash(bCorr.p0, s2BackZ - 0.13, 0.8, fWinSill, 0.8, 1);   // 뒤 복도 프로젝트창(高Z 바깥)
-    label('뒤 복도 프로젝트창 0.8×0.8m', corrX, fWinSill + 0.5, s2BackZ + 0.1, 'opening');
+    frontAwningSash(bCorr.p0, s2BackZ - 0.13, 0.6, lvl3 + 1.1, 0.6, 1);   // 뒤 복도 프로젝트창(高Z 바깥)
+    label('뒤 복도 프로젝트창 0.6×0.6m', corrX, lvl3 + 1.1 + 0.4, s2BackZ + 0.1, 'opening');
     const gableTop = [[s2FrontZ, eaveY], [s2BackZ, eaveY], [zMid, peakY]];   // 처마 위 박공 삼각(창은 처마 밑 직사각 구간에만)
     // 3층 게스트룸 창(단일 출처) — 좌우 측벽에 각각. 창대 바닥+0.9m·높이 1.2m(상단 2.1, 위쪽 20cm 줄임). 폭 1.5m(안방 측창과 동일). 방 앞부분 배치.
     const gWinCz = s2FrontZ + t + 1.4;                       // 게스트룸 창 Z중앙(앞 외벽 안쪽서 1.4m — 두 방 앞부분, 지붕 밑선보다 낮음)
@@ -2376,15 +2376,15 @@ captureInto(s2SinkObjects, () => {
     label('게스트룸1 측창 1.5×1.2m', s2X0 - 0.1, gSill + 0.8, gWinCz, 'opening');
     // 좌(안방, 高X) — 화장실 프로젝트창 + 게스트룸2 측창 + 왼쪽 복도 프로젝트창: 처마 밑 직사각(세 개구)+처마 위 삼각으로 분리
     const cWinCz = (s2BackZ - t) - 2.1;                     // 왼쪽 복도 창 Z중앙(게스트룸2 뒤 칸막이~홈리프트 앞면 사이 폭1.0m 복도 중앙)
-    const cWinP0 = cWinCz - 0.4, cWinP1 = cWinCz + 0.4;     // 폭 0.8m(Z 스팬) — 화장실 창과 동일 규격(창대1.5·높이0.6)
+    const cWinP0 = cWinCz - 0.3, cWinP1 = cWinCz + 0.3;     // 폭 0.6m(Z 스팬) — 화장실 창과 동일 규격(창대1.5·높이0.6)
     wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.5, headY: lvl3 + 2.1 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: cWinP0, p1: cWinP1, sillY: lvl3 + 1.5, headY: lvl3 + 2.1 }], EW);
     yzWallPrism({ x: s2W - t, points: gableTop, thickness: t, mat: EW });
-    awningSash(s2W - 0.13, wcWinP0, 0.8, lvl3 + 1.5, 0.6);                // 3층 화장실 왼쪽벽 프로젝트창
-    label('화장실 프로젝트창 0.8×0.6m', s2W + 0.1, lvl3 + 1.5 + 0.4, wcWinCz, 'opening');
+    awningSash(s2W - 0.13, wcWinP0, 0.6, lvl3 + 1.5, 0.6);                // 3층 화장실 왼쪽벽 프로젝트창
+    label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl3 + 1.5 + 0.4, wcWinCz, 'opening');
     sideSash(s2W - 0.13, gWinP0, 1.5, gSill, 1.2);           // 게스트룸2 측창(高X·안방쪽)
     label('게스트룸2 측창 1.5×1.2m', s2W + 0.1, gSill + 0.8, gWinCz, 'opening');
-    awningSash(s2W - 0.13, cWinP0, 0.8, lvl3 + 1.5, 0.6);    // 3층 왼쪽 복도 프로젝트창(화장실 창과 동일 창대1.5·높이0.6, 폭 0.8)
-    label('왼쪽 복도 프로젝트창 0.8×0.6m', s2W + 0.1, lvl3 + 1.5 + 0.4, cWinCz, 'opening');
+    awningSash(s2W - 0.13, cWinP0, 0.6, lvl3 + 1.5, 0.6);    // 3층 왼쪽 복도 프로젝트창(화장실 창과 동일 창대1.5·높이0.6, 폭 0.6)
+    label('왼쪽 복도 프로젝트창 0.6×0.6m', s2W + 0.1, lvl3 + 1.5 + 0.4, cWinCz, 'opening');
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
     planYDim(s2W + 0.4, s2BackZ - 0.2, lvl3, eaveY, `외벽 최저 ${fmtDim(eaveY - lvl3)}m`);
     planYDim(s2W + 0.4, zMid, lvl3, peakY, `외벽 꼭지점 ${fmtDim(peakY - lvl3)}m`);
