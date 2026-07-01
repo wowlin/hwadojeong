@@ -499,15 +499,20 @@ function sideSash(x, z, d, sillY, h) {
   box({ x: glassX, z: z + frame, w: 0.04, d: d - frame * 2, y: sillY + frame, h: h - frame * 2, mat: materials.glass });
 }
 
-// 틸트앤턴 시스템창(단일 새시) — Z스팬·+X(안방쪽 高X)면. 미들바 없는 단일 유리 + 실내측 개폐 손잡이로 개폐형 표현.
-function tiltTurnSash(x, z, d, sillY, h) {
-  const frame = 0.05, frameX = x - 0.04, glassX = x - 0.035;
+// 프로젝트(어닝) 시스템창 — Z스팬·+X(안방쪽 高X)면. 상부 경첩·하부 바깥으로 밀어 열림. 창짝을 바깥으로 젖혀 어닝 형태 표현 + 하부 실내측 손잡이.
+function awningSash(x, z, d, sillY, h) {
+  const frame = 0.05, frameX = x - 0.04;
   box({ x: frameX, z, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });                  // 앞 세로틀(低Z)
   box({ x: frameX, z: z + d - frame, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });    // 뒤 세로틀(高Z)
   box({ x: frameX, z, w: 0.1, d, y: sillY, h: frame, mat: materials.entryFrame });                   // 하부틀
   box({ x: frameX, z, w: 0.1, d, y: sillY + h - frame, h: frame, mat: materials.entryFrame });       // 상부틀
-  box({ x: glassX, z: z + frame, w: 0.04, d: d - frame * 2, y: sillY + frame, h: h - frame * 2, mat: materials.glass });  // 단일 유리(미들바 없음)
-  box({ x: x - 0.12, z: z + frame + 0.02, w: 0.05, d: 0.04, y: sillY + h / 2 - 0.07, h: 0.16, mat: materials.handle });   // 틸트앤턴 손잡이(실내측)
+  // 여는 유리짝 — 상부(경첩) 고정, 하부가 바깥(+X)으로 젖혀짐. 상단 모서리 기준 Z축 회전으로 어닝 개방 표현.
+  const a = 0.35, paneH = h - frame * 2, paneD = d - frame * 2, topY = sillY + h - frame, zc = z + d / 2;
+  const pane = new THREE.Mesh(new THREE.BoxGeometry(0.04, paneH, paneD), materials.glass);
+  pane.position.set(frameX + Math.sin(a) * paneH / 2, topY - Math.cos(a) * paneH / 2, zc);
+  pane.rotation.z = a;
+  scene.add(pane);
+  box({ x: x - 0.12, z: z + frame + 0.02, w: 0.05, d: 0.04, y: sillY + frame + 0.03, h: 0.14, mat: materials.handle });   // 하부 실내측 손잡이(밀어 열기)
 }
 
 // 안방 측면(도로측, 고X 벽) 작은 출입문 — JJ시스템(VATON) AL 시스템도어 SD 여닫이형. 바닥까지 내려오는 유리 leaf + 하부 문턱 + 손잡이.
@@ -2285,9 +2290,9 @@ captureInto(s2SinkObjects, () => {
       drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
-  // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 틸트앤턴 시스템창(단일 출처) — 창대 바닥+1.5m·폭1.2(Z)×높0.6·개폐형. 자연환기 겸 채광, 기계배기와 병행.
+  // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
   const wcWinCz = (s2BackZ - t) - (2 * S2_STAIR.W + S2_STAIR.g) / 2;   // 화장실 Z중앙(뒤벽 안쪽 ~ 계단실 앞 경계 중앙)
-  const wcWinP0 = wcWinCz - 0.6, wcWinP1 = wcWinCz + 0.6;              // 폭 1.2m(Z 스팬)
+  const wcWinP0 = wcWinCz - 0.4, wcWinP1 = wcWinCz + 0.4;              // 폭 0.8m(Z 스팬)
   // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+0.9m·창높이 1.4m(상단 2.3m). 뒤벽은 화장실·계단이라 막힘.
   {
     const inX0w = s2X0 + t, inX1w = s2W - t, inZ0w = s2FrontZ + t, inZ1w = s2BackZ - t;
@@ -2301,12 +2306,12 @@ captureInto(s2SinkObjects, () => {
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, abFront, EW);        // 앞벽
       wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [], EW);         // 뒤벽(막힘)
       wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(거실쪽)
-      wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + 1.5, headY: lvl2 + 2.1 }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 틸트앤턴창
+      wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + 1.5, headY: lvl2 + 2.3 }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 프로젝트창
       for (const o of abFront) frontSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);
       for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(거실쪽)
       for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
-      tiltTurnSash(s2W - 0.13, wcWinP0, 1.2, lvl2 + 1.5, 0.6);           // 2층 화장실 왼쪽벽 틸트앤턴창
-      label('화장실 틸트앤턴창 1.2×0.6m', s2W + 0.1, lvl2 + 1.5 + 0.3, wcWinCz, 'opening');
+      awningSash(s2W - 0.13, wcWinP0, 0.8, lvl2 + 1.5, 0.8);             // 2층 화장실 왼쪽벽 프로젝트창
+      label('화장실 프로젝트창 0.8×0.8m', s2W + 0.1, lvl2 + 1.5 + 0.4, wcWinCz, 'opening');
       label('안방 정면창 1.8×1.4m', (inX0w + inX1w) / 2, abSill + 0.8, s2FrontZ - 0.1, 'opening');
       label('안방 우측창 1.5×1.4m', s2X0 - 0.1, abSill + 0.8, sideCz, 'opening');
       label('안방 좌측창 1.5×1.4m', s2W + 0.1, abSill + 0.8, sideCz, 'opening');
@@ -2319,11 +2324,11 @@ captureInto(s2SinkObjects, () => {
     const profile = [[s2FrontZ, y2], [s2BackZ, y2], [s2BackZ, eaveY], [zMid, peakY], [s2FrontZ, eaveY]];
     const gableTop = [[s2FrontZ, eaveY], [s2BackZ, eaveY], [zMid, peakY]];   // 처마 위 박공 삼각(창은 처마 밑 직사각 구간에만)
     yzWallPrism({ x: s2X0, points: profile, thickness: t, mat: EW });     // 우(거실, 박공 꼭지점)
-    // 좌(안방, 高X) — 화장실 틸트앤턴창: 처마 밑 직사각(창 개구)+처마 위 삼각으로 분리
-    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.5, headY: lvl3 + 2.1 }], EW);
+    // 좌(안방, 高X) — 화장실 프로젝트창: 처마 밑 직사각(창 개구)+처마 위 삼각으로 분리
+    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.5, headY: lvl3 + 2.3 }], EW);
     yzWallPrism({ x: s2W - t, points: gableTop, thickness: t, mat: EW });
-    tiltTurnSash(s2W - 0.13, wcWinP0, 1.2, lvl3 + 1.5, 0.6);              // 3층 화장실 왼쪽벽 틸트앤턴창
-    label('화장실 틸트앤턴창 1.2×0.6m', s2W + 0.1, lvl3 + 1.5 + 0.3, wcWinCz, 'opening');
+    awningSash(s2W - 0.13, wcWinP0, 0.8, lvl3 + 1.5, 0.8);                // 3층 화장실 왼쪽벽 프로젝트창
+    label('화장실 프로젝트창 0.8×0.8m', s2W + 0.1, lvl3 + 1.5 + 0.4, wcWinCz, 'opening');
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
     planYDim(s2W + 0.4, s2BackZ - 0.2, lvl3, eaveY, `외벽 최저 ${fmtDim(eaveY - lvl3)}m`);
     planYDim(s2W + 0.4, zMid, lvl3, peakY, `외벽 꼭지점 ${fmtDim(peakY - lvl3)}m`);
