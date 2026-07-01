@@ -1947,8 +1947,8 @@ captureInto(s2DimObjects, () => {
   {
     const stW = 0.6, stD = 0.5, stH = 1.05;                 // 본체(타워형) 폭·깊이·높이
     const stX = s2X0 + s2WallT + 0.1;                       // 거실쪽 외벽서 0.1m 불연 이격(본체 x 0.4~1.0)
-    const stZ = 0.85;                                       // 본체 앞면 z(중심 1.1 = 계단실 보이드 앞끝 구석)
-    const flueX = stX + 0.1, flueZ = 1.1;                   // 연통 = 거실쪽 외벽 바짝·보이드 앞끝 구석(계단참 코너만 관통)
+    const stZ = 1.0;                                        // 본체 앞면 z — 뒤끝을 계단실 보이드(zB0=1.4) 안까지 넣어, 연통이 방바닥 아닌 계단실 안에서 오르게
+    const flueX = stX + 0.05, flueZ = 1.45;                 // 연통 = 우측벽 코너쪽(후면 배기)·보이드 안(z≥1.4) — 계단참 앞구석만 관통(런 x≥1.05·방바닥 안 뚫음)
     const flueTopIn = roofY + 0.5;                          // 실내 수직 상단(3층 상부, 박공 끝벽 관통 높이)
     const wallOutX = s2X0 - 0.7;                            // 거실쪽 지붕 처마(0.4m) 끝에서 0.3m 안전거리 — 지붕 관통 회피
     const flueTopOut = s2RoofUnderY(s2RidgeZ) + 0.6;        // 외부 수직 상단 = 용마루보다 위
@@ -2102,6 +2102,23 @@ captureInto(s2SinkObjects, () => {
     } else {
       box({ x: s2W - t, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });  // 좌(안방, x=8.0−t)
     }
+  };
+  // 창 개구부를 여러 개 지원하는 벽 그리기 — 한 벽에 창 N개를 뚫고 나머지를 골조(기둥·창대띠·인방띠)로 채운다.
+  //   axis 'x': 앞/뒤벽(X를 따라, 고정 z) · axis 'z': 좌/우 측벽(Z를 따라, 고정 x). opens=[{p0,p1,sillY,headY}] (겹치지 않음)
+  const wallStrip = (axis, fixed, a, b, y0, y1, opens, mat) => {
+    const seg = (p0, p1, yy0, yy1) => {
+      if (p1 - p0 <= 1e-6 || yy1 - yy0 <= 1e-6) return;
+      if (axis === 'x') box({ x: p0, z: fixed, w: p1 - p0, d: t, y: yy0, h: yy1 - yy0, mat });
+      else box({ x: fixed, z: p0, w: t, d: p1 - p0, y: yy0, h: yy1 - yy0, mat });
+    };
+    let cur = a;
+    for (const o of [...opens].sort((u, v) => u.p0 - v.p0)) {
+      seg(cur, o.p0, y0, y1);          // 창 앞 기둥(전체 높이)
+      seg(o.p0, o.p1, y0, o.sillY);    // 창대 아래 띠
+      seg(o.p0, o.p1, o.headY, y1);    // 창 위 인방 띠
+      cur = o.p1;
+    }
+    seg(cur, b, y0, y1);               // 마지막 기둥
   };
   // 층 경계 = 실제 윗층 바닥 슬래브 아랫면(계단·바닥과 단일 출처). 바닥 표면 = F_n + 1층 마감두께.
   const lvl2 = F2 + S2_STAIR.slabT, lvl3 = F3 + S2_STAIR.slabT;           // 2·3층 바닥 표면(계단 levels[1]·[2]와 동일)
