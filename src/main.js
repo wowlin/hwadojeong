@@ -1787,9 +1787,10 @@ captureInto(s2DimObjects, () => {
     // 안방(앞 트인 방) 크기 라벨 — 게스트룸처럼 실사용 바닥(앞 외벽 안쪽 ~ 분리벽 안쪽 zB0-0.20, 내력벽 20cm). 방 이름 색(연노랑)으로 흰색 치수와 구별.
     const abW = inW, abD = (zB0 - 0.20) - inZ0;
     label(`안방 ${abW.toFixed(2)}×${abD.toFixed(2)}m`, inX0 + abW / 2, levels[1] + 0.4, inZ0 + abD / 2, 'room');
-    // 안방 침대 2.0×2.0 (높이 0.4m) — 앞쪽(低Z)-오른쪽(低X·거실쪽) 구석. 앞·우 외벽에 붙임.
-    box({ x: inX0, z: inZ0, w: 2.0, d: 2.0, y: levels[1], h: 0.4, mat: materials.bed });
-    label('침대 2.0×2.0m', inX0 + 1.0, levels[1] + 0.7, inZ0 + 1.0, 'furniture');
+    // 안방 침대 2.0×2.0 (높이 0.4m) — 오른쪽(低X·거실쪽) 외벽 + 뒤 계단실 분리벽(zB0-0.20) 코너에 붙임(머리를 계단실쪽으로).
+    const bedZ1 = zB0 - 0.20, bedZ0 = bedZ1 - 2.0;
+    box({ x: inX0, z: bedZ0, w: 2.0, d: 2.0, y: levels[1], h: 0.4, mat: materials.bed });
+    label('침대 2.0×2.0m', inX0 + 1.0, levels[1] + 0.7, bedZ0 + 1.0, 'furniture');
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: cgcW, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
   });
