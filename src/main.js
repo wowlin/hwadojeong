@@ -2006,7 +2006,7 @@ captureInto(s2SinkObjects, () => {
   drawCab(cInner, SIDEW, false);
   label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, skX + CD / 2, cY + 0.5, cSink, 'furniture');
   // 맨 앞(低z) 양문형 냉장고 예정지 — 좌벽(高x) 밀착. 반투명(2층 세탁/건조기 예정처럼).
-  const F2W = 1.0, F2DEP = 0.75, F2H = 1.85;                // 양문형 냉장고 자리 — 폭(Z)1.0(본체 0.9+양옆 여유)·깊이(X)0.75(본체 0.7+문 튀어나옴)·높이 1.85
+  const F2W = 1.1, F2DEP = 0.8, F2H = 2.0;                  // 양문형 냉장고 자리 — 폭(Z)1.1·깊이(X)0.8·높이 2.0
   const f2Cz = (cInner - SIDEW / 2) - fGap - F2W / 2;       // 예정지 중심 z(맨 앞 옆장 앞에 붙임)
   const fridgeGhost = new THREE.Mesh(
     new THREE.BoxGeometry(F2DEP, F2H, F2W),
