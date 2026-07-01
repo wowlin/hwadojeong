@@ -2108,7 +2108,8 @@ captureInto(s2SinkObjects, () => {
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
   const fdGap = 4 * 0.68;                                                 // 4짝 × 정면 짝폭 0.68 = 2.72m 개구부
   const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + fdGap, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 우측도 폴딩창 — sill 지표 위 1.7m·상단 f1Top+2.4 유지(높이 1.4m)
-  const bO = { a0: (s2W - t) - fdColT - fdGap, a1: (s2W - t) - fdColT, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 뒤는 폴딩창 — sill 지표 위 1.7m·상단은 좌·우와 동일(높이 1.4m)
+  const bGap = 4 * 0.8;                                                   // 뒤 슬라이드창 4짝 × 짝폭 0.8 = 3.2m 개구부
+  const bO = { a0: (s2W - t) - fdColT - bGap, a1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };  // 뒤는 슬라이드창 — 앞 정면처럼 바닥서 높이 2.4m(전창)·짝폭 0.8
   const lGap = 4 * 0.68;                                                  // 좌측 폴딩창 2+2 양개 = 4짝 × 짝폭 0.68 = 2.72m 개구부
   const lCz = (s2FrontZ + s2BackZ) / 2;                                  // 좌측벽 앞뒤 중앙(싱크대와 동일 기준)
   const lO = { a0: lCz - lGap / 2, a1: lCz + lGap / 2, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 좌측 폴딩창 — 벽 중앙 배치·2+2 양개, sill 지표 1.7m·상단 rO와 동일(높이 1.4m)
@@ -2160,12 +2161,25 @@ captureInto(s2SinkObjects, () => {
       box({ x: xc - 0.05, z: rO.a0, w: 0.1, d: rO.a1 - rO.a0, y: rO.headY - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일
       drawFold((k) => ({ x: xc - (k % 2 === 0 ? 0 : fV), z: rO.a1 - sU * k }), syR, rO.headY);
       label(`1층 우측 폴딩창 ${fmtDim(fdGap)}×${fmtDim(rO.headY - syR)}m (4짝·앞으로 열림)`, s2X0 - 0.3, syR + 1.0, (rO.a0 + rO.a1) / 2, 'opening'); }
-    // 뒤벽 좌측(高x): 좌측 기둥(bO.a1)서 우로 전진, 밖(+z)으로 접힘
-    { const zc = s2BackZ - t / 2, syB = bO.sillY;
-      box({ x: bO.a0, z: zc - 0.05, w: bO.a1 - bO.a0, d: 0.1, y: syB, h: 0.08, mat: fdFrame });           // 하부 레일(폴딩창 sill)
-      box({ x: bO.a0, z: zc - 0.05, w: bO.a1 - bO.a0, d: 0.1, y: bO.headY - 0.08, h: 0.08, mat: fdFrame });     // 상부 레일
-      drawFold((k) => ({ x: bO.a1 - sU * k, z: zc + (k % 2 === 0 ? 0 : fV) }), syB, bO.headY);
-      label(`1층 뒤 폴딩창 ${fmtDim(fdGap)}×${fmtDim(bO.headY - syB)}m (4짝·왼쪽 열림)`, (bO.a0 + bO.a1) / 2, syB + 1.0, s2BackZ + 0.3, 'opening'); }
+    // 뒤벽: 2트랙 4짝 양미서기 슬라이드 창 — 앞 정면처럼 바닥서 2.4m(전창). 바깥 2짝 고정 + 가운데 2짝 양옆으로 갈라져 가운데 열림.
+    { const zc = s2BackZ - t / 2, syB = bO.sillY, hyB = bO.headY;
+      const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝 유리
+      const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이(열린) 짝 유리
+      const pw = (bO.a1 - bO.a0) / 4, mullW = 0.05, trk = 0.03;                                            // 4짝·짝폭 0.68·트랙 오프셋
+      box({ x: bO.a0, z: zc - 0.06, w: bO.a1 - bO.a0, d: 0.12, y: syB, h: 0.08, mat: fdFrame });           // 하부 레일(2트랙 전폭)
+      box({ x: bO.a0, z: zc - 0.06, w: bO.a1 - bO.a0, d: 0.12, y: hyB - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일(2트랙 전폭)
+      const pane = (x0, zt, mat) => {                                                                       // 유리 짝 + 좌우 세로살
+        box({ x: x0, z: zt - 0.025, w: pw, d: 0.05, y: syB, h: hyB - syB, mat, cast: false });
+        box({ x: x0, z: zt - 0.035, w: mullW, d: 0.07, y: syB, h: hyB - syB, mat: fdFrame, cast: false });
+        box({ x: x0 + pw - mullW, z: zt - 0.035, w: mullW, d: 0.07, y: syB, h: hyB - syB, mat: fdFrame, cast: false });
+      };
+      pane(bO.a0, zc - trk, slGlass);            // 고정 바깥 좌 (앞트랙)
+      pane(bO.a1 - pw, zc - trk, slGlass);        // 고정 바깥 우 (앞트랙)
+      pane(bO.a0, zc + trk, slMove);              // 미닫이 좌 → 좌로 갈라져 바깥 뒤로 겹침 (뒤트랙)
+      pane(bO.a1 - pw, zc + trk, slMove);          // 미닫이 우 → 우로 갈라져 바깥 뒤로 겹침 (뒤트랙)
+      box({ x: bO.a0 + pw - 0.06, z: zc + trk - 0.13, w: 0.045, d: 0.045, y: syB + 0.95, h: 0.28, mat: materials.handle });   // 좌 미닫이 손잡이(가운데쪽)
+      box({ x: bO.a1 - pw + 0.02, z: zc + trk - 0.13, w: 0.045, d: 0.045, y: syB + 0.95, h: 0.28, mat: materials.handle });    // 우 미닫이 손잡이(가운데쪽)
+      label(`1층 뒤 슬라이드창 ${fmtDim(bO.a1 - bO.a0)}×${fmtDim(hyB - syB)}m (4짝 양미서기·짝폭 0.8·가운데 열림)`, (bO.a0 + bO.a1) / 2, syB + 1.0, s2BackZ + 0.3, 'opening'); }
     // 좌측벽(高x): 중앙 분리 2+2 양개 — 앞 2짝은 a0(低z)쪽, 뒤 2짝은 a1(高z)쪽으로 각각 접힘. 밖(+x)으로.
     { const xc = s2W - t / 2, syL = lO.sillY;
       box({ x: xc - 0.05, z: lO.a0, w: 0.1, d: lO.a1 - lO.a0, y: syL, h: 0.08, mat: fdFrame });          // 하부 레일(폴딩창 sill)
