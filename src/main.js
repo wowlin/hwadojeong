@@ -1999,10 +1999,9 @@ captureInto(s2SinkObjects, () => {
   // 맨 앞(低z·앞벽) 양문형 냉장고 예정지 — 앞벽 밀착. 싱크대는 그 뒤에 붙임. 반투명(2층 세탁/건조기 예정처럼).
   const F2W = 1.1, F2DEP = 0.8, F2H = 2.0;                  // 양문형 냉장고 자리 — 폭(Z)1.1·깊이(X)0.8·높이 2.0
   const f2Cz = (s2FrontZ + s2WallT) + F2W / 2;              // 예정지 중심 z — 앞벽(低z) 안쪽 면에 붙임
-  const f2Back = f2Cz + F2W / 2;                            // 양문형 뒷면(高z)
-  // 싱크대(2.4m) — 양문형 냉장고 뒤에 바로 붙임. 옆 0.6 · 싱크 1.2 · 옆 0.6
-  const cInner = f2Back + fGap + SIDEW / 2;                 // 앞쪽(低z) 옆 하부장 — 양문형에 붙음
-  const cSink = cInner + SIDEW / 2 + SINKW / 2;            // 싱크 하부장(가운데)
+  // 싱크대(2.4m) — 좌측벽 앞뒤 중앙에 배치(냉장고와 별개). 옆 0.6 · 싱크 1.2 · 옆 0.6
+  const cSink = ((s2FrontZ + s2WallT) + inZB) / 2;         // 좌측벽 앞뒤 중심
+  const cInner = cSink - SINKW / 2 - SIDEW / 2;            // 앞쪽(低z) 옆 하부장
   const cWall = cSink + SINKW / 2 + SIDEW / 2;             // 뒤쪽(高z) 옆 하부장
   drawCab(cWall, SIDEW, false);
   drawCab(cSink, SINKW, true);
