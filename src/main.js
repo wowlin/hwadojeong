@@ -1981,9 +1981,11 @@ captureInto(s2SinkObjects, () => {
     box({ x: bx0, z: bz0, w: bd, d: bw, y: cY + ctop - 0.18, h: 0.18, mat: materials.sinkBasin }); // 싱크볼(상판에 묻힘)
     box({ x: inXL - 0.14, z: cabCz - 0.04, w: 0.08, d: 0.08, y: cY + ctop, h: 0.3, mat: materials.entryFrame });   // 수전(벽쪽)
   };
-  // 뒤(高z) 코너에 LG B312DS31 냉장고(311L, 545×689×1700) — 좌벽(高x) 밀착, 문은 거실(低x)쪽. 싱크는 그만큼 앞으로.
-  const FW = 0.545, FD = 0.689, FH = 1.70, fGap = 0.05, bGap = 0.05;   // 냉장고 폭(Z)·깊이(X)·높이 · 싱크와 간격 · 뒷벽과 간격
+  // 왼쪽벽 일렬 배치(앞→뒤): 양문형(예정) — 싱크대 — 공간 — 기존 냉장고.
+  // 뒤(高z) 코너 기존 냉장고(LG B312DS31, 311L, 545×689×1700) — 좌벽(高x) 밀착, 문은 거실(低x)쪽. 그대로 유지.
+  const FW = 0.545, FD = 0.689, FH = 1.70, fGap = 0.05, bGap = 0.05;   // 기존 냉장고 폭(Z)·깊이(X)·높이 · 부재 간격 · 뒷벽과 간격
   const frBack = inZB - bGap;                               // 냉장고 뒷면 z(뒤벽에서 bGap 띄움)
+  const frFront = frBack - FW;                              // 냉장고 앞면 z
   const frCz = frBack - FW / 2;                             // 냉장고 중심 z
   box({ x: inXL - FD, z: frBack - FW, w: FD, d: FW, y: fTop, h: FH, mat: materials.fridge });   // 냉장고 본체
   // 문짝(B312=일반 2도어 상부냉동): 문 면=거실(低x)쪽, 경첩=뒤벽(高z)쪽, 손잡이=앞(低z)쪽 → 문은 앞쪽으로 열림
@@ -1993,15 +1995,42 @@ captureInto(s2SinkObjects, () => {
   const hz = frBack - FW + 0.07;                              // 손잡이 z(앞쪽 低z = 경첩 반대편)
   box({ x: dFront - dt - 0.03, z: hz, w: 0.03, d: 0.04, y: fTop + FH - fzH - 0.42, h: 0.4, mat: materials.guard });   // 하부 문 손잡이
   box({ x: dFront - dt - 0.03, z: hz, w: 0.03, d: 0.04, y: fTop + FH - fzH + 0.05, h: 0.28, mat: materials.guard });  // 상부 문 손잡이
-  label(`LG B312DS31 냉장고 311L · ${fmtDim(FW)}×${fmtDim(FD)}`, inXL - FD / 2, fTop + FH + 0.15, frCz, 'furniture');
-  // 싱크대(2.4m)는 냉장고 앞에서 시작 — 옆 0.6 · 싱크 1.2 · 옆 0.6
-  const cWall = (frBack - FW - fGap) - SIDEW / 2;             // 뒤벽쪽(高z) 옆 하부장 — 냉장고 바로 앞
+  label(`기존 냉장고 311L · ${fmtDim(FW)}×${fmtDim(FD)}`, inXL - FD / 2, fTop + FH + 0.15, frCz, 'furniture');
+  // 싱크대(2.4m) — 기존 냉장고 앞에 남는 공간(gap) 띄우고 앞으로 당김. 옆 0.6 · 싱크 1.2 · 옆 0.6
+  const gap = 0.6;                                           // 싱크와 기존 냉장고 사이 남는 공간(설계 검토용)
+  const cWall = (frFront - gap) - SIDEW / 2;                 // 뒤쪽(高z) 옆 하부장
   const cSink = cWall - SIDEW / 2 - SINKW / 2;              // 싱크 하부장(가운데)
   const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 앞쪽(低z) 옆 하부장
   drawCab(cWall, SIDEW, false);
   drawCab(cSink, SINKW, true);
   drawCab(cInner, SIDEW, false);
   label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, skX + CD / 2, cY + 0.5, cSink, 'furniture');
+  // 맨 앞(低z) 양문형 냉장고 예정지 — 좌벽(高x) 밀착, 왼쪽벽서 1.1m 깊이 예약. 반투명(2층 세탁/건조기 예정처럼).
+  const F2W = 0.916, F2DEP = 1.1, F2H = 1.80;               // 양문형 폭(Z)·깊이(X, 왼쪽벽서 남길 자리)·높이
+  const f2Cz = (cInner - SIDEW / 2) - fGap - F2W / 2;       // 예정지 중심 z(맨 앞 옆장 앞에 붙임)
+  const fridgeGhost = new THREE.Mesh(
+    new THREE.BoxGeometry(F2DEP, F2H, F2W),
+    new THREE.MeshLambertMaterial({ color: 0xbcc6cf, transparent: true, opacity: 0.32, depthWrite: false }),
+  );
+  fridgeGhost.position.set(inXL - F2DEP / 2, fTop + F2H / 2, f2Cz);
+  scene.add(fridgeGhost);   // captureInto가 s2SinkObjects로 자동 수집
+  // 양문(2짝) 표시 — 뒤=왼쪽벽(高x) 밀착, 문 면=거실쪽(低x) → 문은 거실쪽으로 열림. Z중앙서 좌우 분할.
+  const f2Face = inXL - F2DEP, f2dt = 0.03, f2hw = F2W / 2 - 0.02;
+  const f2DoorMat = new THREE.MeshLambertMaterial({ color: 0x8aa0b0, transparent: true, opacity: 0.55, depthWrite: false });
+  box({ x: f2Face - f2dt, z: f2Cz - f2hw, w: f2dt, d: f2hw, y: fTop + 0.05, h: F2H - 0.1, mat: f2DoorMat });   // 좌 문짝(低z쪽)
+  box({ x: f2Face - f2dt, z: f2Cz + 0.02, w: f2dt, d: f2hw, y: fTop + 0.05, h: F2H - 0.1, mat: f2DoorMat });   // 우 문짝(高z쪽)
+  box({ x: f2Face - f2dt - 0.03, z: f2Cz - 0.09, w: 0.03, d: 0.05, y: fTop + 0.75, h: 0.55, mat: materials.guard });   // 좌 손잡이
+  box({ x: f2Face - f2dt - 0.03, z: f2Cz + 0.04, w: 0.03, d: 0.05, y: fTop + 0.75, h: 0.55, mat: materials.guard });   // 우 손잡이
+  // 양문 열림 스윙(바닥 부채꼴) — 각 문짝 90° 열릴 때 쓸고 가는 1/4 부채꼴. 거실쪽(低x) 빈 바닥이면 열림 가능.
+  const f2SwMat = new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
+  const f2dr = F2W / 2 - 0.01;   // 문짝 폭(=스윙 반경)
+  const swL = new THREE.Mesh(new THREE.CylinderGeometry(f2dr, f2dr, 0.02, 24, 1, false, -Math.PI / 2, Math.PI / 2), f2SwMat);
+  swL.position.set(f2Face, fTop + 0.02, f2Cz - F2W / 2);   // 경첩=低z 모서리 · -X(열림)~+Z(닫힘) 사분면
+  scene.add(swL);   // captureInto가 s2SinkObjects로 자동 수집
+  const swR = new THREE.Mesh(new THREE.CylinderGeometry(f2dr, f2dr, 0.02, 24, 1, false, Math.PI, Math.PI / 2), f2SwMat);
+  swR.position.set(f2Face, fTop + 0.02, f2Cz + F2W / 2);   // 경첩=高z 모서리 · -Z(닫힘)~-X(열림) 사분면
+  scene.add(swR);   // captureInto가 s2SinkObjects로 자동 수집
+  label(`양문형 냉장고 예정 ${fmtDim(F2W)}×${fmtDim(F2DEP)}m`, inXL - F2DEP / 2, fTop + F2H + 0.15, f2Cz, 'furniture');
 });
 
 // ── s2 천장 조명·실링팬 — 1층·2층 방 천장에 전등-실링팬-전등-실링팬-전등(5개) 한 줄 ──
