@@ -1791,6 +1791,10 @@ captureInto(s2DimObjects, () => {
     const bedZ1 = zB0 - 0.20, bedZ0 = bedZ1 - 2.0;
     box({ x: inX0, z: bedZ0, w: 2.0, d: 2.0, y: levels[1], h: 0.4, mat: materials.bed });
     label('침대 2.0×2.0m', inX0 + 1.0, levels[1] + 0.7, bedZ0 + 1.0, 'furniture');
+    // 안방 서랍장(낮은 장) — 높이 0.8m·깊이 0.4m. 침대 옆면(방문쪽·高X)에 붙여 침대 길이(2.0m)만큼 나란히.
+    const drwD = 0.40;
+    box({ x: inX0 + 2.0, z: bedZ0, w: drwD, d: 2.0, y: levels[1], h: 0.80, mat: materials.sinkCabinet });
+    label('서랍장 h0.8·d0.4', inX0 + 2.0 + drwD / 2, levels[1] + 1.0, bedZ0 + 1.0, 'furniture');
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: cgcW, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
   });
