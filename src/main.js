@@ -2274,6 +2274,17 @@ captureInto(s2SinkObjects, () => {
       drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
+  // 2·3층 화장실 뒤 외벽(高Z) 픽스창(단일 출처) — 창대 바닥+1.5m·폭 1.2×높0.6 가로. 환기는 기계배기 전담, 창은 채광·개방감(안 열림).
+  const wcBwCx = ((bkLiftHiX + 0.10) + (s2W - t)) / 2;      // 화장실 뒤벽 X중앙(홈리프트 高X면+벽0.10 ~ 안방 외벽 안쪽)
+  const wcBwP0 = wcBwCx - 0.6, wcBwP1 = wcBwCx + 0.6;       // 폭 1.2m
+  const wcFixWin = (p0, p1, sillY, h, zc) => {              // 가로 픽스창(X 스팬, 뒤벽면) — 단일 유리·비개폐
+    const ww = p1 - p0, fr = 0.05, fd = 0.10, F = materials.entryFrame;
+    box({ x: p0, z: zc, w: fr, d: fd, y: sillY, h, mat: F });                 // 좌 세로틀
+    box({ x: p1 - fr, z: zc, w: fr, d: fd, y: sillY, h, mat: F });            // 우 세로틀
+    box({ x: p0, z: zc, w: ww, d: fd, y: sillY, h: fr, mat: F });             // 하부틀
+    box({ x: p0, z: zc, w: ww, d: fd, y: sillY + h - fr, h: fr, mat: F });    // 상부틀
+    box({ x: p0 + fr, z: zc + fd / 2 - 0.02, w: ww - 2 * fr, d: 0.04, y: sillY + fr, h: h - 2 * fr, mat: materials.glass });  // 단일 유리
+  };
   // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+0.9m·창높이 1.4m(상단 2.3m). 뒤벽은 화장실·계단이라 막힘.
   {
     const inX0w = s2X0 + t, inX1w = s2W - t, inZ0w = s2FrontZ + t, inZ1w = s2BackZ - t;
@@ -2285,12 +2296,14 @@ captureInto(s2SinkObjects, () => {
     const abSide  = [ow(sideCz - 0.75, sideCz + 0.75)];                            // 측면 1.5m (좌·우 동일)
     captureInto(s2Wall2Objects, () => {
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, abFront, EW);        // 앞벽
-      wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [], EW);         // 뒤벽(막힘)
+      wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [{ p0: wcBwP0, p1: wcBwP1, sillY: lvl2 + 1.5, headY: lvl2 + 2.1 }], EW);   // 뒤벽 — 화장실 픽스창 개구
       wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(거실쪽)
       wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, abSide, EW);    // 좌측벽(안방쪽)
       for (const o of abFront) frontSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);
       for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(거실쪽)
       for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
+      wcFixWin(wcBwP0, wcBwP1, lvl2 + 1.5, 0.6, s2BackZ - t + 0.10);       // 2층 화장실 뒤벽 픽스창
+      label('화장실 픽스창 1.2×0.6m', wcBwCx, lvl2 + 1.5 + 0.3, s2BackZ + 0.1, 'opening');
       label('안방 정면창 1.8×1.4m', (inX0w + inX1w) / 2, abSill + 0.8, s2FrontZ - 0.1, 'opening');
       label('안방 우측창 1.5×1.4m', s2X0 - 0.1, abSill + 0.8, sideCz, 'opening');
       label('안방 좌측창 1.5×1.4m', s2W + 0.1, abSill + 0.8, sideCz, 'opening');
@@ -2299,7 +2312,15 @@ captureInto(s2SinkObjects, () => {
   captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
     box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });     // 앞(처마까지)
-    box({ x: s2X0 + t, z: s2BackZ - t, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });   // 뒤(처마까지)
+    { // 뒤(처마까지) — 화장실 픽스창 개구
+      const bwZ = s2BackZ - t, bx0 = s2X0 + t, bx1 = s2W - t, sy = lvl3 + 1.5, hy = lvl3 + 2.1;
+      box({ x: bx0, z: bwZ, w: wcBwP0 - bx0, d: t, y: y2, h: eaveY - y2, mat: EW });    // 창 低X쪽 벽
+      box({ x: wcBwP1, z: bwZ, w: bx1 - wcBwP1, d: t, y: y2, h: eaveY - y2, mat: EW }); // 창 高X쪽 벽
+      box({ x: wcBwP0, z: bwZ, w: wcBwP1 - wcBwP0, d: t, y: y2, h: sy - y2, mat: EW }); // 창 아래
+      box({ x: wcBwP0, z: bwZ, w: wcBwP1 - wcBwP0, d: t, y: hy, h: eaveY - hy, mat: EW });   // 창 위(인방)
+      wcFixWin(wcBwP0, wcBwP1, sy, 0.6, bwZ + 0.10);                                    // 3층 화장실 픽스창
+      label('화장실 픽스창 1.2×0.6m', wcBwCx, sy + 0.3, s2BackZ + 0.1, 'opening');
+    }
     const profile = [[s2FrontZ, y2], [s2BackZ, y2], [s2BackZ, eaveY], [zMid, peakY], [s2FrontZ, eaveY]];
     yzWallPrism({ x: s2X0, points: profile, thickness: t, mat: EW });     // 우(거실, 박공 꼭지점)
     yzWallPrism({ x: s2W - t, points: profile, thickness: t, mat: EW });  // 좌(안방, 박공 꼭지점)
