@@ -2080,7 +2080,7 @@ captureInto(s2SinkObjects, () => {
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
   const fdGap = 4 * 0.68;                                                 // 4짝 × 정면 짝폭 0.68 = 2.72m 개구부
   const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + fdGap, sillY: groundTopY + 1.8, headY: f1Top + fdH };  // 우측도 폴딩창 — sill 지표 위 1.8m·상단 f1Top+2.4 유지
-  const bO = { a0: (s2W - t) - fdColT - fdGap, a1: (s2W - t) - fdColT, sillY: groundTopY + 1.8, headY: groundTopY + 1.8 + 1.4 };  // 뒤는 폴딩창 — sill 지표 위 1.8m·높이 1.4m
+  const bO = { a0: (s2W - t) - fdColT - fdGap, a1: (s2W - t) - fdColT, sillY: groundTopY + 1.8, headY: f1Top + fdH };  // 뒤는 폴딩창 — sill 지표 위 1.8m·상단은 좌·우와 동일(높이 1.3m)
   const lGap = 6 * 0.68;                                                  // 좌측은 계단실 없어 6짝 × 짝폭 0.68 = 4.08m 개구부(우측보다 넓게)
   const lO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + lGap, sillY: groundTopY + 1.8, headY: f1Top + fdH };  // 좌측 폴딩창 — 우측(rO)과 동일 sill·상단, 앞쪽 정렬·6짝
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, bO, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측·뒤·좌측 폴딩 개구부)
