@@ -2033,7 +2033,7 @@ captureInto(s2SinkObjects, () => {
   const eaveY = roofY;                                                    // 처마 = 3층 벽 상단(지붕 안침)
   const zMid = s2RidgeZ, peakY = s2RoofUnderY(zMid);                      // 용마루(깊이 중앙·박공 밑선 단일 출처)
   // 사각 둘레 4벽(y0~y1) — 앞·뒤는 좌우벽 사이에 끼우고, 좌·우는 전체 깊이(겹침·틈 없음)
-  const rectWalls = (y0, y1, frontOpen, rightOpen, backOpen) => {
+  const rectWalls = (y0, y1, frontOpen, rightOpen, backOpen, leftOpen) => {
     if (frontOpen) {   // 앞벽에 폴딩도어 개구부 — 하부 띠(바닥높이)·상부 인방·양 끝 기둥만 남기고 뚫음
       const { x0, x1, sillY, headY } = frontOpen;
       box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: y0, h: sillY - y0, mat: EW });          // 개구부 아래(바닥높이 띠)
@@ -2061,7 +2061,15 @@ captureInto(s2SinkObjects, () => {
     } else {
       box({ x: s2X0, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });     // 우(거실, x=0)
     }
-    box({ x: s2W - t, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });  // 좌(안방, x=8.0−t)
+    if (leftOpen) {  // 좌측벽(x=8.0−t·高x)에 폴딩 개구부 — 앞쪽 기둥·뒤쪽 벽·상하 띠만 남김
+      const { a0, a1, sillY, headY } = leftOpen, rd = s2BackZ - s2FrontZ;
+      box({ x: s2W - t, z: s2FrontZ, w: t, d: rd, y: y0, h: sillY - y0, mat: EW });                  // 개구부 아래
+      box({ x: s2W - t, z: s2FrontZ, w: t, d: rd, y: headY, h: y1 - headY, mat: EW });                // 개구부 위(인방)
+      box({ x: s2W - t, z: s2FrontZ, w: t, d: a0 - s2FrontZ, y: sillY, h: headY - sillY, mat: EW });   // 앞쪽 기둥
+      box({ x: s2W - t, z: a1, w: t, d: s2BackZ - a1, y: sillY, h: headY - sillY, mat: EW });          // 뒤쪽 벽 남김
+    } else {
+      box({ x: s2W - t, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });  // 좌(안방, x=8.0−t)
+    }
   };
   // 층 경계 = 실제 윗층 바닥 슬래브 아랫면(계단·바닥과 단일 출처). 바닥 표면 = F_n + 1층 마감두께.
   const lvl2 = F2 + S2_STAIR.slabT, lvl3 = F3 + S2_STAIR.slabT;           // 2·3층 바닥 표면(계단 levels[1]·[2]와 동일)
@@ -2073,7 +2081,9 @@ captureInto(s2SinkObjects, () => {
   const fdGap = 4 * 0.68;                                                 // 4짝 × 정면 짝폭 0.68 = 2.72m 개구부
   const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + fdGap, sillY: groundTopY + 1.8, headY: f1Top + fdH };  // 우측도 폴딩창 — sill 지표 위 1.8m·상단 f1Top+2.4 유지
   const bO = { a0: (s2W - t) - fdColT - fdGap, a1: (s2W - t) - fdColT, sillY: groundTopY + 1.8, headY: groundTopY + 1.8 + 1.4 };  // 뒤는 폴딩창 — sill 지표 위 1.8m·높이 1.4m
-  captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, bO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측·뒤 폴딩 개구부)
+  const lGap = 6 * 0.68;                                                  // 좌측은 계단실 없어 6짝 × 짝폭 0.68 = 4.08m 개구부(우측보다 넓게)
+  const lO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + lGap, sillY: groundTopY + 1.8, headY: f1Top + fdH };  // 좌측 폴딩창 — 우측(rO)과 동일 sill·상단, 앞쪽 정렬·6짝
+  captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, bO, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측·뒤·좌측 폴딩 개구부)
   captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 거실쪽(우) 절반 접어 열림
     const fdGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 닫힌 짝 유리
     const fdMove = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 접힌(움직인) 짝 유리 — 약간 짙게
@@ -2104,16 +2114,16 @@ captureInto(s2SinkObjects, () => {
     const fdMove = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });   // 접힌 짝 유리
     const fdFrame = new THREE.MeshLambertMaterial({ color: 0x3a3f45 });   // 폴딩 알루미늄 프레임(다크그레이)
     const pw = 0.68, ang = 60 * Math.PI / 180, sU = pw * Math.cos(ang), fV = pw * Math.sin(ang), n = 4;   // 짝당 전진·접힘깊이·짝수
-    const drawFold = (toWorld, syArg = f1Top, hyArg = f1Top + fdH) => {   // toWorld(k)→{x,z} 경첩점 / 짝끼리 지그재그. syArg·hyArg=하부·상부 높이(폴딩창은 올림)
+    const drawFold = (toWorld, syArg = f1Top, hyArg = f1Top + fdH, nArg = n) => {   // toWorld(k)→{x,z} 경첩점 / 짝끼리 지그재그. syArg·hyArg=하부·상부 높이(폴딩창은 올림). nArg=짝수(기본 4)
       const sy = syArg, hy = hyArg;
-      for (let k = 0; k < n; k += 1) {
+      for (let k = 0; k < nArg; k += 1) {
         const p0 = toWorld(k), p1 = toWorld(k + 1);
         const cxp = (p0.x + p1.x) / 2, czp = (p0.z + p1.z) / 2, len = Math.hypot(p1.x - p0.x, p1.z - p0.z);
         const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sy, h: hy - sy, mat: fdMove, cast: false });
         m.rotation.y = Math.atan2(-(p1.z - p0.z), p1.x - p0.x);
       }
-      for (let k = 0; k <= n; k += 1) { const p = toWorld(k); box({ x: p.x - 0.035, z: p.z - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: fdFrame, cast: false }); }   // 경첩 세로살
-      const lead = toWorld(n); box({ x: lead.x - 0.06, z: lead.z - 0.06, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 선두짝 손잡이
+      for (let k = 0; k <= nArg; k += 1) { const p = toWorld(k); box({ x: p.x - 0.035, z: p.z - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: fdFrame, cast: false }); }   // 경첩 세로살
+      const lead = toWorld(nArg); box({ x: lead.x - 0.06, z: lead.z - 0.06, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 선두짝 손잡이
     };
     // 우측벽(x=0): 앞쪽 기둥(rO.a0)서 뒤로 전진, 밖(−x)으로 접힘 — 폴딩창(sill 지표 위 1.8m·상단 유지)
     { const xc = s2X0 + t / 2, syR = rO.sillY;
@@ -2127,6 +2137,12 @@ captureInto(s2SinkObjects, () => {
       box({ x: bO.a0, z: zc - 0.05, w: bO.a1 - bO.a0, d: 0.1, y: bO.headY - 0.08, h: 0.08, mat: fdFrame });     // 상부 레일
       drawFold((k) => ({ x: bO.a1 - sU * k, z: zc + (k % 2 === 0 ? 0 : fV) }), syB, bO.headY);
       label(`1층 뒤 폴딩창 ${fmtDim(fdGap)}×${fmtDim(bO.headY - syB)}m (4짝·왼쪽 열림)`, (bO.a0 + bO.a1) / 2, syB + 1.0, s2BackZ + 0.3, 'opening'); }
+    // 좌측벽(高x): 뒤쪽 기둥(lO.a1)서 앞으로 전진, 밖(+x)으로 접힘 — 6짝 폴딩창(우측과 동일 높이)
+    { const xc = s2W - t / 2, syL = lO.sillY;
+      box({ x: xc - 0.05, z: lO.a0, w: 0.1, d: lO.a1 - lO.a0, y: syL, h: 0.08, mat: fdFrame });          // 하부 레일(폴딩창 sill)
+      box({ x: xc - 0.05, z: lO.a0, w: 0.1, d: lO.a1 - lO.a0, y: lO.headY - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일
+      drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 6);
+      label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (6짝·앞으로 열림)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
   captureInto(s2Wall2Objects, () => rectWalls(y1, y2));                   // 2층 외벽 — 2층 슬래브 밑면~2층 천장
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
