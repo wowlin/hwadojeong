@@ -1707,8 +1707,6 @@ captureInto(s2DimObjects, () => {
     if (withLabel) label(`홈리프트 ${liftW}×${liftD}m`, liftX0 + liftW / 2, y0 + 1.0, liftZ0 + liftD / 2, 'dim');
   };
   captureInto(s2Floor1Objects, () => drawLiftColumn(levels[0], levels[1], true));   // 1층분 기둥(뒤쪽·세면대 옆)
-  // 홈리프트 앞(低Z·집 정면쪽)면 내력벽 15cm — 1층 천장(2층 바닥 슬래브) 지지. 리프트 폭 전체(liftW), 1층 바닥~천장.
-  captureInto(s2Floor1Objects, () => box({ x: liftX0, z: liftZ0 - 0.15, w: liftW, d: 0.15, y: levels[0], h: (levels[1] - floor2T) - levels[0], mat: materials.wall }));
   const placeMark = (fy, big, wcW = 1.0, wcD = 1.0) => {
     const m = (mat, x0, z0, w = 1.0, d = 1.0) => box({ x: x0, z: z0, w, d, y: fy + 0.006, h: 0.012, mat, cast: false });
     m(materials.wcFloor, inX1 - wcW, inZ1 - wcD, wcW, wcD);   // 화장실 자리(왼쪽-뒤 코너) — 보라
