@@ -1815,6 +1815,24 @@ captureInto(s2DimObjects, () => {
       box({ x: rhx, z: rFrontZ - rdt - 0.03, w: 0.04, d: 0.03, y: levels[1] + rH - rfzH + 0.05, h: 0.28, mat: materials.guard });  // 상부 문 손잡이
       label(`한문형 냉장고 311L · ${fmtDim(rW)}×${fmtDim(rD)}`, rx0 + rW / 2, levels[1] + rH + 0.15, rFrontZ + rD / 2, 'furniture');
     }
+    // 안방 책상 — 앞쪽 벽(低Z)에 등 붙이고 왼쪽 벽(高X·안방 외벽)에 붙임. 길이 1.8m(X)·깊이 0.6m·높이 0.72m. 윗판+다리 4.
+    {
+      const dW = 1.8, dD = 0.6, dH = 0.72, dtop = 0.04, dleg = 0.06;
+      const dx1 = inX1, dx0 = dx1 - dW;          // 오른끝=왼쪽 외벽(高X) 밀착
+      const dz0 = inZ0;                            // 뒤끝=앞 외벽(低Z) 밀착
+      box({ x: dx0, z: dz0, w: dW, d: dD, y: levels[1] + dH - dtop, h: dtop, mat: materials.woodFrame });   // 윗판
+      for (const lx of [dx0 + 0.02, dx1 - 0.02 - dleg])
+        for (const lz of [dz0 + 0.02, dz0 + dD - 0.02 - dleg])
+          box({ x: lx, z: lz, w: dleg, d: dleg, y: levels[1], h: dH - dtop, mat: materials.woodFrame });   // 다리 4
+      label(`책상 ${dW.toFixed(1)}×${dD.toFixed(1)}m`, dx0 + dW / 2, levels[1] + dH + 0.3, dz0 + dD / 2, 'furniture');
+      // 책상 의자 — 책상 앞(+Z)에 두고 책상(−Z)을 향함. 좌판+등받이+다리 4. 좌판 0.45, 등받이 뒤(高Z)면.
+      const cW = 0.45, seatH = 0.45, cLeg = 0.04, ccx = dx0 + dW / 2, ccz = dz0 + dD + 0.28;
+      box({ x: ccx - cW / 2, z: ccz - cW / 2, w: cW, d: cW, y: levels[1] + seatH - 0.05, h: 0.05, mat: chairFrameMat });   // 좌판
+      box({ x: ccx - cW / 2, z: ccz + cW / 2 - 0.04, w: cW, d: 0.04, y: levels[1] + seatH, h: 0.45, mat: chairFrameMat }); // 등받이(뒤·高Z)
+      for (const lx of [ccx - cW / 2 + 0.02, ccx + cW / 2 - 0.02 - cLeg])
+        for (const lz of [ccz - cW / 2 + 0.02, ccz + cW / 2 - 0.02 - cLeg])
+          box({ x: lx, z: lz, w: cLeg, d: cLeg, y: levels[1], h: seatH - 0.05, mat: chairFrameMat });   // 다리 4
+    }
     // 계단 올라오는·3층으로 오르는 자리 — 계단참과 같은 크기(W×wF), 계단실 끝 바로 옆 바닥. 다른 용도 불가 표시.
     box({ x: far2, z: zB0, w: cgcW, d: inZ1 - zB0, y: levels[1] + 0.006, h: 0.012, mat: materials.stairUpZone2, cast: false });
   });
