@@ -2071,7 +2071,7 @@ captureInto(s2SinkObjects, () => {
   const fdColT = 0.3, fdH = 2.4;                                          // 기둥 굵기 300mm · 폴딩도어 높이 2.4m(표준 최대)
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
   const fdGap = 4 * 0.68;                                                 // 4짝 × 정면 짝폭 0.68 = 2.72m 개구부
-  const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + fdGap, sillY: f1Top, headY: f1Top + fdH };  // 우측벽: 앞 기둥서 뒤로 2.72
+  const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + fdGap, sillY: groundTopY + 1.8, headY: f1Top + fdH };  // 우측도 폴딩창 — sill 지표 위 1.8m·상단 f1Top+2.4 유지
   const bO = { a0: (s2W - t) - fdColT - fdGap, a1: (s2W - t) - fdColT, sillY: groundTopY + 1.8, headY: groundTopY + 1.8 + 1.4 };  // 뒤는 폴딩창 — sill 지표 위 1.8m·높이 1.4m
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, bO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측·뒤 폴딩 개구부)
   captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 거실쪽(우) 절반 접어 열림
@@ -2115,13 +2115,12 @@ captureInto(s2SinkObjects, () => {
       for (let k = 0; k <= n; k += 1) { const p = toWorld(k); box({ x: p.x - 0.035, z: p.z - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: fdFrame, cast: false }); }   // 경첩 세로살
       const lead = toWorld(n); box({ x: lead.x - 0.06, z: lead.z - 0.06, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 선두짝 손잡이
     };
-    const sy = f1Top, hy = f1Top + fdH;
-    // 우측벽(x=0): 앞쪽 기둥(rO.a0)서 뒤로 전진, 밖(−x)으로 접힘
-    { const xc = s2X0 + t / 2;
-      box({ x: xc - 0.05, z: rO.a0, w: 0.1, d: rO.a1 - rO.a0, y: sy, h: 0.08, mat: fdFrame });          // 하부 레일
-      box({ x: xc - 0.05, z: rO.a0, w: 0.1, d: rO.a1 - rO.a0, y: hy - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일
-      drawFold((k) => ({ x: xc - (k % 2 === 0 ? 0 : fV), z: rO.a1 - sU * k }));
-      label(`1층 우측 폴딩도어 ${fmtDim(fdGap)}×${fmtDim(fdH)}m (4짝·앞으로 열림)`, s2X0 - 0.3, sy + 1.45, (rO.a0 + rO.a1) / 2, 'opening'); }
+    // 우측벽(x=0): 앞쪽 기둥(rO.a0)서 뒤로 전진, 밖(−x)으로 접힘 — 폴딩창(sill 지표 위 1.8m·상단 유지)
+    { const xc = s2X0 + t / 2, syR = rO.sillY;
+      box({ x: xc - 0.05, z: rO.a0, w: 0.1, d: rO.a1 - rO.a0, y: syR, h: 0.08, mat: fdFrame });          // 하부 레일(폴딩창 sill)
+      box({ x: xc - 0.05, z: rO.a0, w: 0.1, d: rO.a1 - rO.a0, y: rO.headY - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일
+      drawFold((k) => ({ x: xc - (k % 2 === 0 ? 0 : fV), z: rO.a1 - sU * k }), syR, rO.headY);
+      label(`1층 우측 폴딩창 ${fmtDim(fdGap)}×${fmtDim(rO.headY - syR)}m (4짝·앞으로 열림)`, s2X0 - 0.3, syR + 1.0, (rO.a0 + rO.a1) / 2, 'opening'); }
     // 뒤벽 좌측(高x): 좌측 기둥(bO.a1)서 우로 전진, 밖(+z)으로 접힘
     { const zc = s2BackZ - t / 2, syB = bO.sillY;
       box({ x: bO.a0, z: zc - 0.05, w: bO.a1 - bO.a0, d: 0.1, y: syB, h: 0.08, mat: fdFrame });           // 하부 레일(폴딩창 sill)
