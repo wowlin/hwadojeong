@@ -1695,15 +1695,15 @@ captureInto(s2DimObjects, () => {
   const wcSinkOff = 0.42 + wcSinkGap + s2F3VanityW / 2;   // 세면대 하부장 시작점 — inX1에서 거리(변기 중심 0.42 + 표준 간격 + 세면대 반폭) = 1.47
   const wcW3 = wcSinkOff + 0.7 + wcDoorClear;             // 3층 화장실 너비 — 세면대 앞 문스윙 0.7 + 여유. 거실쪽 벽·문을 복도쪽으로 더 빼 문이 세면대를 비킴. ≈2.32
   // 홈리프트(아리코 컴팩트 6번 — 내경 1100×1480, 외경 1500×1600) 세로 샤프트. 세면대(뒤 외벽·高Z) 低X변에 붙여 세면대는 제자리 두고 옆에 벽 세워 만드는 자리. 문=앞(-Z, 복도쪽). 기존 벽 무시.
-  const liftW = 1.5, liftD = 1.6;                        // 외경 CxD — 문면 폭 1.5(X) × 깊이 1.6(Z)
+  const liftW = 1.5, liftD = 1.6;                        // 외경 — 깊이 1.5(X) × 문면 폭 1.6(Z, 계단쪽 -X면). 문이 계단을 마주봄
   const liftX0 = far2 + cgcW;                            // 층계참(별색 도착참 far2~far2+cgcW) 끝선에 低X변 밀착 — 그 옆(안방쪽)
   const liftZ0 = inZ1 - liftD;                           // 뒤 외벽(高Z)에 등 붙임
   const wcFaceX = liftX0 + liftW + 0.10;                 // 2층 화장실 低X 안쪽면(단일 출처) — 홈리프트 高X(안방쪽)면에 벽(0.10) 밀착. 화장실은 홈리프트 왼쪽
   const liftMarkMat = new THREE.MeshLambertMaterial({ color: 0xff4fa3, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide });
-  const liftDoorMat = new THREE.MeshLambertMaterial({ color: 0x1e6fff, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide });   // 문(앞·-Z)면 별색 표시
+  const liftDoorMat = new THREE.MeshLambertMaterial({ color: 0x1e6fff, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide });   // 문(계단쪽·-X)면 별색 표시
   const drawLiftColumn = (y0, y1, withLabel) => {   // 세로 반투명 직육면체 기둥(홈리프트 샤프트) — 층별 구간으로 나눠 각 층 토글에 딸림
     box({ x: liftX0, z: liftZ0, w: liftW, d: liftD, y: y0, h: y1 - y0, mat: liftMarkMat, cast: false });
-    box({ x: liftX0, z: liftZ0 - 0.03, w: liftW, d: 0.06, y: y0, h: y1 - y0, mat: liftDoorMat, cast: false });   // 문면(앞·-Z) — 파랑
+    box({ x: liftX0 - 0.03, z: liftZ0, w: 0.06, d: liftD, y: y0, h: y1 - y0, mat: liftDoorMat, cast: false });   // 문면(계단쪽·-X) — 파랑, 너비=깊이(1.6)
     if (withLabel) label(`홈리프트 ${liftW}×${liftD}m`, liftX0 + liftW / 2, y0 + 1.0, liftZ0 + liftD / 2, 'dim');
   };
   captureInto(s2Floor1Objects, () => drawLiftColumn(levels[0], levels[1], true));   // 1층분 기둥(뒤쪽·세면대 옆)
