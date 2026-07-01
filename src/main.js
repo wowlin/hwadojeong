@@ -1695,7 +1695,7 @@ captureInto(s2DimObjects, () => {
   const wcW3 = wcSinkOff + 0.7 + wcDoorClear;             // 3층 화장실 너비 — 세면대 앞 문스윙 0.7 + 여유. 거실쪽 벽·문을 복도쪽으로 더 빼 문이 세면대를 비킴. ≈2.32
   // 홈리프트(아리코 컴팩트 6번 — 내경 1100×1480, 외경 1500×1600) 세로 샤프트. 세면대(뒤 외벽·高Z) 低X변에 붙여 세면대는 제자리 두고 옆에 벽 세워 만드는 자리. 문=앞(-Z, 복도쪽). 기존 벽 무시.
   const liftW = 1.5, liftD = 1.6;                        // 외경 CxD — 문면 폭 1.5(X) × 깊이 1.6(Z)
-  const liftX0 = (inX1 - wcSinkOff) - liftW;             // 세면대 시작(inX1-wcSinkOff)에서 低X로 외경 폭만큼
+  const liftX0 = far2;                                   // 층계참 경계(계단실 개구부 高X끝 = 층 바닥참 시작선 far2)에 低X변 밀착 — 오른쪽으로 이동
   const liftZ0 = inZ1 - liftD;                           // 뒤 외벽(高Z)에 등 붙임
   const liftMarkMat = new THREE.MeshLambertMaterial({ color: 0xff4fa3, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide });
   const drawLiftColumn = (y0, y1, withLabel) => {   // 세로 반투명 직육면체 기둥(홈리프트 샤프트) — 층별 구간으로 나눠 각 층 토글에 딸림
