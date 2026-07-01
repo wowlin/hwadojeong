@@ -1794,37 +1794,38 @@ captureInto(s2DimObjects, () => {
   captureInto(s2Floor3Objects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
-    placeMark(levels[2], true, wcW3, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 wcW3(X, 세면대만큼 키움) × 왼쪽벽 따라 1.0(Z)
+    placeMark(levels[2], true, wcW3, liftD);   // 3층 화장실 = 뒤쪽벽 따라 wcW3(X, 세면대만큼 키움) × 왼쪽벽 따라 liftD(Z, 홈리프트 깊이만큼 앞으로 확장)
     drawLiftColumn(levels[2], roofY, true);   // 3층분 기둥 — 3층 바닥~처마(외벽 최저 2.4)
     const g1W = far3 - inX0, g1D = (zB0 - interiorWall) - inZ0;                                                         // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~계단실 분리벽(10cm) 안쪽
     label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'room');   // 게스트룸1(연두) — 벽 두께 뺀 실사용 바닥
     const g2W = g2RoomW - 0.15, g2D = RM_L - interiorWall;                                                              // 게스트룸2 실사용 바닥 — 폭=옆벽(15cm) 뺌, 깊이=뒤 칸막이벽(10cm) 뺌
     label(`게스트룸2 ${g2W.toFixed(2)}×${g2D.toFixed(2)}m`, inX1 - g2RoomW / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'room');   // 게스트룸2(회색) — 벽 두께 뺀 실사용 바닥
-    // 보라색 화장실(왼쪽-뒤 코너 1×1m) 권장 배치 — 변기 + 안여닫이 문 + 문 스윙.
-    //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·앞 회색방벽(低Z). 트인 변=거실쪽(低X)으로 복도(계단·통로)와 통함 → 문은 여기.
+    // 보라색 화장실(왼쪽-뒤 코너) — 홈리프트 뒤(高X면)·복도쪽(홈리프트 끝선) 벽으로 둘러 막고, 복도(低Z)에서 문으로 진입.
+    //   막힌 변: 좌측벽 inX1(高X)·뒤벽 inZ1(高Z)·홈리프트벽(低X)·복도벽(低Z). 문 = 복도벽(低Z)에서 안(+Z)으로 열림(2층 화장실문과 동일).
     {
-      const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - wcW3, pz0 = inZ1 - 1;
+      const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - wcW3, pz0 = liftZ0;
       // 변기 — 뒤벽(高Z)에 물탱크 붙이고 앞(低Z) 착석. 옆벽(좌측 高X)에서 0.2m 띄움(문 스윙 안 닿게, 안 붙게).
       box({ x: px1 - 0.64, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
       box({ x: px1 - 0.62, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
       label('권장 화장실', px1 - 0.63, fy + 0.95, pz1 - 0.45, 'furniture');
-      // 출입문 — 거실쪽 벽(低X, x=px0) 가로 중앙에 폭 0.7. 안쪽(+X)으로 열림(오른손 밀기). 경첩=뒤(高Z) 모서리, 손잡이=앞(低Z) 자유단.
-      const dW = 0.7, dH = 2.0, t = interiorWall;
-      const dz0 = pz0 + (1 - dW) / 2;                                                                                // 문 시작 Z(벽 가로 중앙)
-      box({ x: px0 - 0.03, z: dz0, w: 0.06, d: dW, y: fy, h: dH, mat: materials.wcDoor });                          // 문짝(닫힘, 거실쪽 벽)
-      box({ x: px0 - 0.06, z: dz0 + 0.13, w: 0.05, d: 0.05, y: fy + 1.02, h: 0.05, mat: materials.handle });        // 손잡이(앞쪽 자유단)
-      // 안여닫이 스윙 — 안쪽(+X)으로 90° 열릴 때 쓸고 가는 1/4 부채꼴. 반투명 바닥 표시.
+      // 홈리프트 뒤(高X면) 벽 — 低X 경계(px0)에 안쪽면 맞추고 몸통은 홈리프트쪽(-X)으로. 바닥~박공 밑선, 앞끝(pz0)~뒤벽(pz1) 전체. 문 없음.
+      const wx = px0 - 0.10;
+      yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[pz0, fy], [pz1, fy], [pz1, s2RoofUnderY(pz1)], [pz0, s2RoofUnderY(pz0)]] });
+      // 복도쪽 벽(低Z 면, z=pz0=홈리프트 끝선) — 10cm, 복도면(pz0)에 바깥면 맞추고 몸통은 화장실 안(+Z)으로 넣어 복도로 안 튀어나오게. 문 개구만 비움. 박공 밑선까지(pz0 일정 → 높이 일정).
+      const dW = 0.7, dH = 2.0, wTop = s2RoofUnderY(pz0), dx0 = px0 + 0.10, dx1 = dx0 + dW;   // 문 = 2층 화장실문과 동일 위치(홈리프트쪽 벽에서 0.10)
+      box({ x: px0, z: pz0, w: dx0 - px0, d: 0.10, y: fy, h: wTop - fy, mat: materials.wall });           // 문 低X쪽 벽(홈리프트쪽)
+      box({ x: dx1, z: pz0, w: px1 - dx1, d: 0.10, y: fy, h: wTop - fy, mat: materials.wall });           // 문 高X쪽 벽(안방쪽 외벽까지)
+      box({ x: dx0, z: pz0, w: dW, d: 0.10, y: fy + dH, h: wTop - (fy + dH), mat: materials.wall });      // 문 위 인방
+      // 출입문 — 복도벽(低Z) 폭 0.7. 복도서 밀면 화장실 안(+Z)으로 90° 열림. 경첩=低X(dx0, 홈리프트쪽) 모서리, 손잡이=高X(dx1) 자유단. (2층 화장실문과 동일)
+      box({ x: dx0, z: pz0, w: dW, d: 0.04, y: fy, h: dH, mat: materials.wcDoor });                       // 문짝(닫힘, 복도면 pz0)
+      box({ x: dx1 - 0.18, z: pz0 - 0.05, w: 0.05, d: 0.05, y: fy + 1.02, h: 0.05, mat: materials.handle });     // 손잡이(高X 자유단, 복도쪽)
       const swing = new THREE.Mesh(
-        new THREE.CylinderGeometry(dW, dW, 0.02, 24, 1, false, Math.PI / 2, Math.PI / 2),
+        new THREE.CylinderGeometry(dW, dW, 0.02, 24, 1, false, 0, Math.PI / 2),
         new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }),
       );
-      swing.position.set(px0, fy + 0.02, dz0 + dW);   // PI/2~PI 사분면 = +X(안쪽 열림)~-Z(닫힘,벽). 경첩=뒤(高Z) 모서리
+      swing.position.set(dx0, fy + 0.02, pz0);   // 0~PI/2 = +Z(안쪽 열림)~+X(닫힘,벽). 경첩=低X(dx0)
       scene.add(swing);   // captureInto가 s2Floor3Objects로 자동 수집
-      // 화장실 거실쪽 벽(低X 면, x=px0) — 10cm, 안쪽면을 화장실 경계(px0)에 맞추고 몸통은 바깥(복도·-X)으로. 문 개구만 비우고 박공 밑선까지. 윗선은 지붕 경사를 따라 기움.
-      const dz1 = dz0 + dW, wx = px0 - 0.10;
-      yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[pz0, fy], [dz0, fy], [dz0, s2RoofUnderY(dz0)], [pz0, s2RoofUnderY(pz0)]] });        // 문 앞쪽(低Z) 막힌 벽
-      yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz1, fy], [pz1, fy], [pz1, s2RoofUnderY(pz1)], [dz1, s2RoofUnderY(dz1)]] });        // 문 뒤쪽(高Z) 막힌 벽
-      yzWallPrism({ x: wx, thickness: 0.10, mat: materials.wall, points: [[dz0, fy + dH], [dz1, fy + dH], [dz1, s2RoofUnderY(dz1)], [dz0, s2RoofUnderY(dz0)]] });   // 문 위 인방
+      label('화장실 문', dx0 + dW / 2, fy + 1.4, pz0 - 0.05, 'opening');
     }
     // 건식 세면대 — 화장실 안, 뒤(외벽 高Z)에 등 붙임. 문 스윙(거실쪽 低X)을 비키고 변기(안방쪽 高X) 사이에 둠.
     //   수전은 세탁기 수도처럼 뒤 외벽에서 나오고, 하부장 안에 경동 나비엔 전기온수기 15L 설치.
