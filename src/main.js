@@ -2106,8 +2106,8 @@ captureInto(s2SinkObjects, () => {
   const f1Top = _wBase + S2_STAIR.slabT;                                  // 1층 바닥 윗면(층참 윗면)
   const fdColT = 0.3, fdH = 2.4;                                          // 기둥 굵기 300mm · 폴딩도어 높이 2.4m(표준 최대)
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
-  const fdGap = 4 * 0.68;                                                 // 4짝 × 정면 짝폭 0.68 = 2.72m 개구부
-  const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + fdGap, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 우측 슬라이드창 — sill 지표 위 1.7m·상단 f1Top+2.4 유지(높이 1.4m)
+  const rGap = 4 * 0.6;                                                   // 우측 4짝 양미서기 × 짝폭 0.6 = 2.4m 개구부
+  const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + rGap, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 우측 슬라이드창 — sill 지표 위 1.7m·상단 f1Top+2.4 유지(높이 1.4m)
   const bGap = 4 * 0.8;                                                   // 뒤 슬라이드창 4짝 × 짝폭 0.8 = 3.2m 개구부
   const bO = { a0: (s2W - t) - fdColT - bGap, a1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };  // 뒤는 슬라이드창 — 앞 정면처럼 바닥서 높이 2.4m(전창)·짝폭 0.8
   const lGap = 4 * 0.68;                                                  // 좌측 폴딩창 2+2 양개 = 4짝 × 짝폭 0.68 = 2.72m 개구부
