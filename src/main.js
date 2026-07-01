@@ -1548,18 +1548,18 @@ captureInto(foundationDimObjects, () => {
 // 거실측 외벽(x=0)·뒤벽(buildingBackZ=3.3)을 s1과 동일 모서리로 맞추고, 너비→x=8 / 깊이→앞(z) 방향.
 // s2 계단 사양(단일 출처) — 디딤·단높이·런폭·런틈·디딤판두께 · 층고(1→2,2→3). 메모·라벨이 이 값을 그대로 표시.
 const S2_STAIR = { T: 0.27, R: 0.15, W: 1.0, g: 0.1, tTh: 0.06, slabT: floorFinishH, floorH: [3.0, 3.0] };  // slabT=1층 층참=바닥 마감 두께(콘크리트 기초 위 부자재+포세린, floorFinishH 0.20). 층고 1·2층 모두 3.0m(천장고 2.7+슬래브 0.3)
-const s2W = 8.0;                            // s2 집 너비(X) — 고정 상수
+const s2W = 8.5;                            // s2 집 너비(X) — 고정 상수(x=0 거실측 고정, 왼쪽 안방측으로 확장)
 const s2X0 = 0;                             // 거실측 외벽 — s1과 동일(x=0, 옆집 이격 0.5 유지)
 const s2BackZ = buildingBackZ;             // 뒤벽 — s1과 동일(3.3, 측백 이격 1.0 유지, 부지 경계서 1m 고정)
 const s2WallT = 0.3;                        // s2 외벽 두께(단일 출처) — 외벽·계단 들임 기준
 const s2Floor2SlabT = 0.3;                  // 2층 바닥 슬래브 두께(30cm) — 치수·외벽 단일 출처
 const s2Floor3SlabT = 0.3;                  // 3층 바닥 슬래브 두께 — 치수·외벽 단일 출처(한 값만 유지)
-const s2RoomShort = 2.9;                    // 3층 방 짧은변(깊이 방향) — 고정 상수. 집 깊이가 여기서 파생
+const s2RoomShort = 3.2;                    // 3층 방 짧은변(깊이 방향) — 고정 상수. 집 깊이가 여기서 파생
 // 3층 화장실 앞 복도 모서리 건식 세면대(단일 출처) — 그림·메모가 이 값을 그대로 씀
 const s2F3VanityW = 0.6, s2F3VanityD = 0.4, s2F3VanityH = 0.8;   // 하부장 폭·깊이·높이
 const s2F3HeaterL = 15;                     // 하부장 안 경동 나비엔 전기온수기 용량(L)
 // 집 깊이(Z) = 뒤 외벽 + 계단실 깊이(두 런 행+틈) + 계단실↔방 내벽 + 방 짧은변 + 앞 외벽. 뒤벽 고정·앞벽만 이동.
-const s2D = 2 * s2WallT + (2 * S2_STAIR.W + S2_STAIR.g) + interiorWall + s2RoomShort;   // = 5.7
+const s2D = 2 * s2WallT + (2 * S2_STAIR.W + S2_STAIR.g) + interiorWall + s2RoomShort;   // = 6.0
 const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (파생)
 // s2 층고·박공지붕 단면 — 외벽·지붕·계단실 내벽이 공유하는 단일 출처(중복 정의 금지)
 const _wBase = groundTopY + MAT_H, _wFh1 = 3.0, _wFh = 3.0, _wFh3 = 2.6;     // 1층 3.0 · 2층 3.0 · 3층 2.6(손님방 외벽 최저 2.4 = 바닥마감 0.2 뺀 값). 1층 층고 3.0=천장고 2.7+슬래브 0.3
@@ -1576,7 +1576,7 @@ captureInto(s2FoundationObjects, () => {
 });
 // 치수 + 기준선 — s1과 같은 부분(너비=위, 깊이=양옆)
 captureInto(s2DimObjects, () => {
-  planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, '8.0m');          // 너비 8 — 위쪽(s1 8.5m 자리)
+  planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, `${fmtDim(s2W)}m`);          // 너비(s1 8.5m 자리)
   planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);        // 깊이(파생) — 가족방측(s1 4.0m 자리)
   planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);         // 깊이(파생) — 거실측(s1 4.0m 자리)
   // 기준선(회청색) — 새 끝점만: 너비 끝 x=8, 깊이 앞 z=s2FrontZ (x=0·뒤 z=3.3은 공통 기준선 사용)
