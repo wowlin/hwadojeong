@@ -467,6 +467,16 @@ function frontSash(x, z, w, sillY, h) {
   box({ x: x + frame, z: glassZ, w: w - frame * 2, d: 0.04, y: sillY + frame, h: h - frame * 2, mat: materials.glass });
 }
 
+// 정면 픽스창(X스팬·-Z면) — 미들바 없는 단일 고정 유리. 비개폐(픽스).
+function frontFixSash(x, z, w, sillY, h) {
+  const frame = 0.05, glassZ = z - 0.035;
+  box({ x, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.entryFrame });                    // 좌 세로틀
+  box({ x: x + w - frame, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.entryFrame });      // 우 세로틀
+  box({ x, z: z - 0.04, w, d: 0.1, y: sillY, h: frame, mat: materials.entryFrame });                     // 하부틀
+  box({ x, z: z - 0.04, w, d: 0.1, y: sillY + h - frame, h: frame, mat: materials.entryFrame });         // 상부틀
+  box({ x: x + frame, z: glassZ, w: w - frame * 2, d: 0.04, y: sillY + frame, h: h - frame * 2, mat: materials.glass });   // 단일 유리
+}
+
 // 거실 전면: 독일식 수평밀착 슬라이딩 시스템도어(출입 가능) — VATON(제이제이시스템) AL PS 타입.
 // 굵은 80mm 프로파일 + 2짝 미닫이 만남대(인터록) + 하부 레일 + 세로 손잡이로 일반창과 구분.
 function germanSlidingDoor(x, z, w, sillY, h) {
@@ -2319,7 +2329,16 @@ captureInto(s2SinkObjects, () => {
   }
   captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
-    box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });     // 앞(처마까지)
+    // 앞(처마까지) — 게스트룸 정면 픽스창 2개(창대 바닥+0.9m·높이 1.2·상단 2.1). 폭 2.0m, 각 방 앞부분 중앙.
+    const fWinSill = lvl3 + 0.9, fWinHead = lvl3 + 2.1;
+    const fx1 = (s2X0 + t) + 1.6, fx2 = (s2W - t) - 1.6;      // 게스트룸1(低X)·게스트룸2(高X) 정면창 X중앙
+    const fWin1 = { p0: fx1 - 1.0, p1: fx1 + 1.0, sillY: fWinSill, headY: fWinHead };
+    const fWin2 = { p0: fx2 - 1.0, p1: fx2 + 1.0, sillY: fWinSill, headY: fWinHead };
+    wallStrip('x', s2FrontZ, s2X0 + t, s2W - t, y2, eaveY, [fWin1, fWin2], EW);
+    frontFixSash(fWin1.p0, s2FrontZ + 0.13, 2.0, fWinSill, 1.2);   // 게스트룸1 정면 픽스창
+    frontFixSash(fWin2.p0, s2FrontZ + 0.13, 2.0, fWinSill, 1.2);   // 게스트룸2 정면 픽스창
+    label('게스트룸1 정면 픽스창 2.0×1.2m', fx1, fWinSill + 0.7, s2FrontZ - 0.1, 'opening');
+    label('게스트룸2 정면 픽스창 2.0×1.2m', fx2, fWinSill + 0.7, s2FrontZ - 0.1, 'opening');
     box({ x: s2X0 + t, z: s2BackZ - t, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });   // 뒤(처마까지)
     const gableTop = [[s2FrontZ, eaveY], [s2BackZ, eaveY], [zMid, peakY]];   // 처마 위 박공 삼각(창은 처마 밑 직사각 구간에만)
     // 3층 게스트룸 창(단일 출처) — 좌우 측벽에 각각. 창대 바닥+0.9m·높이 1.2m(상단 2.1, 위쪽 20cm 줄임). 폭 1.5m(안방 측창과 동일). 방 앞부분 배치.
