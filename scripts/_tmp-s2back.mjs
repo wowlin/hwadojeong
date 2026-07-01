@@ -12,15 +12,15 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 const page = await browser.newPage({ viewport: { width: 1500, height: 1200 }, deviceScaleFactor: 2 });
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.click('#tabS2'); await page.waitForTimeout(200);
-await page.click('#bF2Wall'); await page.waitForTimeout(300);   // 2층 외벽 켜기
+await page.click('#bF1Wall'); await page.waitForTimeout(300);   // 1층 외벽 켜기
 const setCam = (p, t) => page.evaluate(({ p, t }) => { const { camera, controls } = window.__cc; controls.target.set(...t); camera.position.set(...p); controls.update(); }, { p, t });
-// 뒤벽(z=3.3) 바깥에서 직시 — 2층 층계참 프로젝트창 확인 (창 X는 안방쪽 高X 근처)
-await setCam([6, 4.5, 9], [6, 4.2, 3.3]);
+// 1층 뒤벽 안쪽에서 층계참 프로젝트창 확인 (창 X는 거실쪽 低X 층계참, 창대 바닥+1.1)
+await setCam([2, 3, 9], [6, 2, 3.3]);
 await page.waitForTimeout(600);
-await page.screenshot({ path: out + '/s2w2-backclose.png' });
-// 옆·위에서 — 3층 뒤 복도창과의 정렬 확인
-await setCam([2, 6, 9], [6, 4, 3.3]);
+await page.screenshot({ path: out + '/s1w-backtop.png' });
+// 더 옆·위에서 전체 뒤벽
+await setCam([-2, 4, 9], [5, 2, 3.3]);
 await page.waitForTimeout(600);
-await page.screenshot({ path: out + '/s2w2-backtop.png' });
+await page.screenshot({ path: out + '/s1w-backtop2.png' });
 await browser.close();
 console.log('done');
