@@ -2142,6 +2142,12 @@ captureInto(s2SinkObjects, () => {
   const y1 = lvl2 - s2Floor2SlabT, y2 = lvl3 - s2Floor3SlabT;            // 1층 천장(2층 슬래브 밑면) · 2층 천장(3층 슬래브 밑면)
   // 1층 정면 폴딩도어 개구부 — 바닥 윗면에서 높이 2.4m, 정면 중심 기준 양개. 양 끝 기둥(3층 내하중 가정, 300mm) 남김.
   const f1Top = _wBase + S2_STAIR.slabT;                                  // 1층 바닥 윗면(층참 윗면)
+  // 뒤벽(집 뒤·+Z)에 홈리프트↔냉장고 사이 작은 표준 출입문(폭 0.8·높이 2.1) — 집 뒤로 나가는 문
+  const bdLeafW = 0.8, bdOuterW = 0.9, bdFrameH = 2.1;
+  const bkLiftHiX = (s2X0 + t + S2_STAIR.W) + 9 * S2_STAIR.T + 1.2 + 1.5;   // 홈리프트 高X면(계단 상부런 9단→계단실 끝 + 층계참 1.2 + 리프트 폭 1.5)
+  const bkFridgeLoX = (s2W - t) - 0.689;                                    // 냉장고 低X면(좌벽 안쪽 − 냉장고 깊이 0.689)
+  const bdCx = (bkLiftHiX + bkFridgeLoX) / 2;                               // 두 부재 사이 중앙
+  const backDoorOpen = { a0: bdCx - bdOuterW / 2, a1: bdCx + bdOuterW / 2, sillY: f1Top, headY: f1Top + bdFrameH };
   const fdColT = 0.3, fdH = 2.4;                                          // 기둥 굵기 300mm · 폴딩도어 높이 2.4m(표준 최대)
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
   const rGap = 4 * 0.6;                                                   // 우측 4짝 양미서기 × 짝폭 0.6 = 2.4m 개구부
@@ -2149,7 +2155,18 @@ captureInto(s2SinkObjects, () => {
   const lGap = 4 * 0.68;                                                  // 좌측 폴딩창 2+2 양개 = 4짝 × 짝폭 0.68 = 2.72m 개구부
   const lCz = (s2FrontZ + s2BackZ) / 2;                                  // 좌측벽 앞뒤 중앙(싱크대와 동일 기준)
   const lO = { a0: lCz - lGap / 2, a1: lCz + lGap / 2, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 좌측 폴딩창 — 벽 중앙 배치·2+2 양개, sill 지표 1.7m·상단 rO와 동일(높이 1.4m)
-  captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, null, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측 개구부, 뒤벽 막힘·좌측 폴딩)
+  captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, backDoorOpen, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측 개구부, 뒤벽 출입문·좌측 폴딩)
+  captureInto(s2Wall1Objects, () => {                                     // 뒤벽 작은 표준 출입문(홈리프트~냉장고 사이) — 유리 leaf + 문틀 + 손잡이
+    const bz = s2BackZ - t, fr = 0.06, dep = 0.10, zc = bz + 0.10;        // 뒤벽 안쪽면·프레임 두께·깊이·문 몸통 Z(벽 두께 안)
+    const x0 = backDoorOpen.a0, x1 = backDoorOpen.a1, by = f1Top, hh = bdFrameH, F = materials.entryFrame;
+    box({ x: x0, z: zc, w: fr, d: dep, y: by, h: hh, mat: F });                          // 좌 세로 문틀
+    box({ x: x1 - fr, z: zc, w: fr, d: dep, y: by, h: hh, mat: F });                     // 우 세로 문틀
+    box({ x: x0, z: zc, w: x1 - x0, d: dep, y: by + hh - fr, h: fr, mat: F });           // 상부 인방
+    box({ x: x0, z: zc, w: x1 - x0, d: dep, y: by, h: fr, mat: F });                     // 하부 문턱
+    box({ x: x0 + fr, z: zc + 0.03, w: (x1 - x0) - 2 * fr, d: 0.04, y: by + fr, h: hh - 2 * fr, mat: materials.glass });   // 유리 문짝
+    box({ x: x1 - fr - 0.05, z: zc - 0.02, w: 0.05, d: 0.04, y: by + hh * 0.42, h: hh * 0.16, mat: materials.handle });    // 세로 손잡이
+    label(`뒤 출입문 ${fmtDim(bdLeafW)}×${fmtDim(hh)}m`, (x0 + x1) / 2, by + hh + 0.15, bz - 0.1, 'opening');
+  });
   captureInto(s2Wall1Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, f1Top, y1, `1층 천장고 ${fmtDim(y1 - f1Top)}m`));   // 1층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 거실쪽(우) 절반 접어 열림
     const fdGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 닫힌 짝 유리
@@ -2219,11 +2236,11 @@ captureInto(s2SinkObjects, () => {
       drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
-  // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+0.9m·창높이 1.6m(상단 2.5m). 뒤벽은 화장실·계단이라 막힘.
+  // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+0.9m·창높이 1.4m(상단 2.3m). 뒤벽은 화장실·계단이라 막힘.
   {
     const inX0w = s2X0 + t, inX1w = s2W - t, inZ0w = s2FrontZ + t, inZ1w = s2BackZ - t;
     const zB0w = inZ1w - (2 * S2_STAIR.W + S2_STAIR.g);          // 계단실 앞 경계(앞방 뒤끝)
-    const abSill = lvl2 + 0.9, abHead = lvl2 + 0.9 + 1.6;        // 창대 0.9 · 상단 2.5
+    const abSill = lvl2 + 0.9, abHead = lvl2 + 0.9 + 1.4;        // 창대 0.9 · 상단 2.3
     const ow = (p0, p1) => ({ p0, p1, sillY: abSill, headY: abHead });
     const sideCz = (inZ0w + (zB0w - 0.20)) / 2;                  // 좌·우 측창 앞뒤 중앙(앞방 구간 중앙)
     const abFront = [ow((inX0w + inX1w) / 2 - 0.9, (inX0w + inX1w) / 2 + 0.9)];   // 정면 1.8m
@@ -2236,9 +2253,9 @@ captureInto(s2SinkObjects, () => {
       for (const o of abFront) frontSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);
       for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(거실쪽)
       for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
-      label('안방 정면창 1.8×1.6m', (inX0w + inX1w) / 2, abSill + 0.9, s2FrontZ - 0.1, 'opening');
-      label('안방 우측창 1.5×1.6m', s2X0 - 0.1, abSill + 0.9, sideCz, 'opening');
-      label('안방 좌측창 1.5×1.6m', s2W + 0.1, abSill + 0.9, sideCz, 'opening');
+      label('안방 정면창 1.8×1.4m', (inX0w + inX1w) / 2, abSill + 0.8, s2FrontZ - 0.1, 'opening');
+      label('안방 우측창 1.5×1.4m', s2X0 - 0.1, abSill + 0.8, sideCz, 'opening');
+      label('안방 좌측창 1.5×1.4m', s2W + 0.1, abSill + 0.8, sideCz, 'opening');
     });
   }
   captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
