@@ -1796,8 +1796,9 @@ captureInto(s2DimObjects, () => {
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
     placeMark(levels[2], true, wcW3, liftD);   // 3층 화장실 = 뒤쪽벽 따라 wcW3(X, 세면대만큼 키움) × 왼쪽벽 따라 liftD(Z, 홈리프트 깊이만큼 앞으로 확장)
     drawLiftColumn(levels[2], roofY, true);   // 3층분 기둥 — 3층 바닥~처마(외벽 최저 2.4)
-    const g1W = far3 - inX0, g1D = (zB0 - interiorWall) - inZ0;                                                         // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~계단실 분리벽(10cm) 안쪽
-    label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'room');   // 게스트룸1(연두) — 벽 두께 뺀 실사용 바닥
+    const g1ClosetD = 0.8;                                                                                             // 붙박이장 깊이(단일 출처) — 게스트룸1 치수·장이 함께 참조
+    const g1W = far3 - inX0, g1D = (zB0 - interiorWall - g1ClosetD) - inZ0;                                             // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~붙박이장 앞면(계단실 분리벽서 0.8m)
+    label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'room');   // 게스트룸1(연두) — 벽 두께·붙박이장 뺀 실사용 바닥
     const g2W = g2RoomW - 0.15, g2D = RM_L - interiorWall;                                                              // 게스트룸2 실사용 바닥 — 폭=옆벽(15cm) 뺌, 깊이=뒤 칸막이벽(10cm) 뺌
     label(`게스트룸2 ${g2W.toFixed(2)}×${g2D.toFixed(2)}m`, inX1 - g2RoomW / 2, levels[2] + 0.4, inZ0 + RM_L / 2, 'room');   // 게스트룸2(회색) — 벽 두께 뺀 실사용 바닥
     // 보라색 화장실(왼쪽-뒤 코너) — 홈리프트 뒤(高X면)·복도쪽(홈리프트 끝선) 벽으로 둘러 막고, 복도(低Z)에서 문으로 진입.
@@ -1881,6 +1882,14 @@ captureInto(s2DimObjects, () => {
       yzWallPrism({ x: far3, thickness: pt, mat: materials.wall, points: [[dZ1, fy], [inZ1, fy], [inZ1, s2RoofUnderY(inZ1)], [dZ1, s2RoofUnderY(dZ1)]] });        // 문 뒤쪽 벽(바닥~지붕, 포켓 수납)
       pocketDoorVertical(far3 + pt, dZ, fy, interiorDoorH, 1, W);                                                            // 포켓도어(폭 W=계단 너비) — 뒤쪽 벽 속으로 슬라이드
       label('계단실 단열 포켓도어', far3, fy + 1.0, dZ + W / 2, 'opening');
+    }
+    // 게스트룸1 붙박이장 — 계단실 분리벽(뒤·高Z)에 등 붙이고 방 앞(-Z)으로 깊이 0.8m 나옴. 폭=우측 외벽(inX0)~옆벽(far3) 방 전체. 높이 2.4m(박공 밑선 아래).
+    {
+      const fy = levels[2], clD = g1ClosetD, clH = 2.4;
+      const clZ1 = zB0 - interiorWall, clZ0 = clZ1 - clD;   // 계단실 분리벽 방쪽 면 ~ 장 앞면
+      const clX0 = inX0, clW = far3 - inX0;                 // 폭 = 방 전체 폭(우측 외벽~옆벽)
+      box({ x: clX0, z: clZ0, w: clW, d: clD, y: fy, h: clH, mat: materials.sinkCabinet });
+      label(`붙박이장 ${clW.toFixed(2)}×${clD.toFixed(2)}m`, clX0 + clW / 2, fy + clH + 0.3, clZ0 + clD / 2, 'furniture');
     }
     // 게스트룸2(회색) 칸막이벽 — 안방 외벽(inX1)·앞 외벽(inZ0)이 두 변을 막고, 트인 두 변에 칸막이. '회색' 자리(배경) 안쪽으로 세움.
     {
@@ -2203,7 +2212,28 @@ captureInto(s2SinkObjects, () => {
       drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
-  captureInto(s2Wall2Objects, () => rectWalls(y1, y2));                   // 2층 외벽 — 2층 슬래브 밑면~2층 천장
+  // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+0.9m·창높이 1.6m(상단 2.5m). 뒤벽은 화장실·계단이라 막힘.
+  {
+    const inX0w = s2X0 + t, inX1w = s2W - t, inZ0w = s2FrontZ + t, inZ1w = s2BackZ - t;
+    const zB0w = inZ1w - (2 * S2_STAIR.W + S2_STAIR.g);          // 계단실 앞 경계(앞방 뒤끝)
+    const abSill = lvl2 + 0.9, abHead = lvl2 + 0.9 + 1.6;        // 창대 0.9 · 상단 2.5
+    const ow = (p0, p1) => ({ p0, p1, sillY: abSill, headY: abHead });
+    const sideCz = (inZ0w + (zB0w - 0.20)) / 2;                  // 좌·우 측창 앞뒤 중앙(앞방 구간 중앙)
+    const abFront = [ow((inX0w + inX1w) / 2 - 0.9, (inX0w + inX1w) / 2 + 0.9)];   // 정면 1.8m
+    const abSide  = [ow(sideCz - 0.75, sideCz + 0.75)];                            // 측면 1.5m (좌·우 동일)
+    captureInto(s2Wall2Objects, () => {
+      wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, abFront, EW);        // 앞벽
+      wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [], EW);         // 뒤벽(막힘)
+      wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(거실쪽)
+      wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, abSide, EW);    // 좌측벽(안방쪽)
+      for (const o of abFront) frontSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);
+      for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(거실쪽)
+      for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
+      label('안방 정면창 1.8×1.6m', (inX0w + inX1w) / 2, abSill + 0.9, s2FrontZ - 0.1, 'opening');
+      label('안방 우측창 1.5×1.6m', s2X0 - 0.1, abSill + 0.9, sideCz, 'opening');
+      label('안방 좌측창 1.5×1.6m', s2W + 0.1, abSill + 0.9, sideCz, 'opening');
+    });
+  }
   captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
     box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });     // 앞(처마까지)
