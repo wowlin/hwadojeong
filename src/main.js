@@ -1948,7 +1948,8 @@ captureInto(s2DimObjects, () => {
     const stW = 0.6, stD = 0.5, stH = 1.05;                 // 본체(타워형) 폭·깊이·높이
     const stX = s2X0 + s2WallT + 0.1;                       // 거실쪽 외벽서 0.1m 불연 이격(본체 x 0.4~1.0)
     const stZ = 1.0;                                        // 본체 앞면 z — 뒤끝을 계단실 보이드(zB0=1.4) 안까지 넣어, 연통이 방바닥 아닌 계단실 안에서 오르게
-    const flueX = stX + 0.05, flueZ = 1.45;                 // 연통 = 우측벽 코너쪽(후면 배기)·보이드 안(z≥1.4) — 계단참 앞구석만 관통(런 x≥1.05·방바닥 안 뚫음)
+    // 연통 표면을 계단실 코너 두 벽에서 각각 5cm 이격(중심 = 벽면 + 5cm + 반경 0.0375). 우측 외벽 안쪽 x=0.3·계단실 앞벽 zB0=1.4
+    const flueX = (s2X0 + s2WallT) + 0.05 + 0.0375, flueZ = (s2BackZ - s2WallT - (2 * S2_STAIR.W + S2_STAIR.g)) + 0.05 + 0.0375;
     const flueTopIn = roofY + 0.5;                          // 실내 수직 상단(3층 상부, 박공 끝벽 관통 높이)
     const wallOutX = s2X0 - 0.7;                            // 거실쪽 지붕 처마(0.4m) 끝에서 0.3m 안전거리 — 지붕 관통 회피
     const flueTopOut = s2RoofUnderY(s2RidgeZ) + 0.6;        // 외부 수직 상단 = 용마루보다 위
@@ -3121,6 +3122,9 @@ function centerTargetHeight() {
   });
   if (_fitBox.isEmpty()) return;
   controls.target.y = (_fitBox.min.y + _fitBox.max.y) / 2;
+  // 화면에서 집이 아래로 붙어 보여, 프레임 세로의 15%만큼 위로 올려 보이도록 줌 중심을 아래로 내려 팬
+  const dist = camera.position.distanceTo(controls.target);
+  controls.target.y -= 0.15 * 2 * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
   controls.update();
 }
 
