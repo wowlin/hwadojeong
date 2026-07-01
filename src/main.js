@@ -2338,7 +2338,7 @@ captureInto(s2SinkObjects, () => {
     const abSill = lvl2 + 0.9, abHead = lvl2 + 0.9 + 1.4;        // 창대 0.9 · 상단 2.3
     const ow = (p0, p1) => ({ p0, p1, sillY: abSill, headY: abHead });
     const sideCz = (inZ0w + (zB0w - 0.20)) / 2;                  // 좌·우 측창 앞뒤 중앙(앞방 구간 중앙)
-    const abFront = [ow((inX0w + inX1w) / 2 - 0.9, (inX0w + inX1w) / 2 + 0.9)];   // 정면 1.8m
+    const abFront = [ow((inX0w + inX1w) / 2 - 0.9, inX1w - 0.6)];   // 정면 픽스창 — 오른쪽(低X) 끝 고정, 왼쪽(高X) 끝을 3층 게스트룸2 정면창 왼끝(inX1w−0.6)까지 확장
     const abSide  = [ow(sideCz - 0.75, sideCz + 0.75)];                            // 측면 1.5m (좌·우 동일)
     captureInto(s2Wall2Objects, () => {
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, abFront, EW);        // 앞벽
@@ -2347,14 +2347,14 @@ captureInto(s2SinkObjects, () => {
       wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [bCorr2], EW);   // 뒤벽 — 층계참 프로젝트창 1개
       wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(거실쪽)
       wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 프로젝트창
-      for (const o of abFront) frontSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);
+      for (const o of abFront) frontFixSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 안방 정면 픽스창
       for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(거실쪽)
       for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
       awningSash(s2W - 0.13, wcWinP0, 0.6, lvl2 + 1.2, 0.6);             // 2층 화장실 왼쪽벽 프로젝트창
       label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl2 + 1.2 + 0.4, wcWinCz, 'opening');
       frontAwningSash(bCorr2.p0, s2BackZ - 0.13, 0.6, lvl2 + 1.1, 0.6, 1);   // 2층 층계참 뒤벽 프로젝트창(高Z 바깥)
       label('층계참 프로젝트창 0.6×0.6m', corrX2, lvl2 + 1.1 + 0.4, s2BackZ + 0.1, 'opening');
-      label('안방 정면창 1.8×1.4m', (inX0w + inX1w) / 2, abSill + 0.8, s2FrontZ - 0.1, 'opening');
+      label('안방 정면 픽스창 ' + fmtDim(abFront[0].p1 - abFront[0].p0) + '×1.4m', (abFront[0].p0 + abFront[0].p1) / 2, abSill + 0.8, s2FrontZ - 0.1, 'opening');
       label('안방 우측창 1.5×1.4m', s2X0 - 0.1, abSill + 0.8, sideCz, 'opening');
       label('안방 좌측창 1.5×1.4m', s2W + 0.1, abSill + 0.8, sideCz, 'opening');
     });
