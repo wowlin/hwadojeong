@@ -2114,6 +2114,7 @@ captureInto(s2SinkObjects, () => {
   const lCz = (s2FrontZ + s2BackZ) / 2;                                  // 좌측벽 앞뒤 중앙(싱크대와 동일 기준)
   const lO = { a0: lCz - lGap / 2, a1: lCz + lGap / 2, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 좌측 폴딩창 — 벽 중앙 배치·2+2 양개, sill 지표 1.7m·상단 rO와 동일(높이 1.4m)
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, bO, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측·뒤·좌측 폴딩 개구부)
+  captureInto(s2Wall1Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, f1Top, y1, `1층 천장고 ${fmtDim(y1 - f1Top)}m`));   // 1층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 거실쪽(우) 절반 접어 열림
     const fdGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 닫힌 짝 유리
     const fdMove = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 접힌(움직인) 짝 유리 — 약간 짙게
@@ -2189,6 +2190,7 @@ captureInto(s2SinkObjects, () => {
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
   captureInto(s2Wall2Objects, () => rectWalls(y1, y2));                   // 2층 외벽 — 2층 슬래브 밑면~2층 천장
+  captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
     box({ x: s2X0 + t, z: s2FrontZ, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });     // 앞(처마까지)
     box({ x: s2X0 + t, z: s2BackZ - t, w: s2W - 2 * t, d: t, y: y2, h: eaveY - y2, mat: EW });   // 뒤(처마까지)
