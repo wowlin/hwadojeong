@@ -2204,9 +2204,9 @@ captureInto(s2SinkObjects, () => {
 }
 
 // ── s2 지붕(징크 박공) + 눈막이 + 태양광 — 3층 '지붕'·'태양광' 토글 ──
-//   처마=3층 벽 상단(roofY) 밑선. 두께 260mm(단열 260T) + 징크 마감. 처마 앞뒤 1.0m·좌우 0.4m.
+//   처마=3층 벽 상단(roofY) 밑선. 두께 260mm(단열 260T) + 징크 마감. 처마 앞뒤 1.0m·좌우 0.6m.
 {
-  const sideOver = 0.4, eaveOver = 1.0, thk = roofThickness, zf = 0.05, tan = Math.tan(s2RoofPitch);
+  const sideOver = 0.6, eaveOver = 1.0, thk = roofThickness, zf = 0.05, tan = Math.tan(s2RoofPitch);
   const undEaveY = roofY - tan * eaveOver;            // 처마 끝(내민 1m) 밑선 — 경사 연장
   const undRidgeY = s2RoofUnderY(s2RidgeZ);           // 용마루 밑선(단일 출처)
   const eFront = s2FrontZ - eaveOver, eBack = s2BackZ + eaveOver;   // 앞·뒤 처마 끝 Z
@@ -2234,7 +2234,7 @@ captureInto(s2SinkObjects, () => {
     // 징크 마감(단열 위)
     s2RoofSlab(eFront, topEaveY, topRidgeY, zf, materials.roof);
     s2RoofSlab(eBack, topEaveY, topRidgeY, zf, materials.roof);
-    label('지붕: 단열 260T + 리얼징크 · 박공 32° · 처마 앞뒤 1.0m·좌우 0.4m', s2W / 2, topRidgeY + 0.45, s2RidgeZ - 1.4, 'struct');
+    label('지붕: 단열 260T + 리얼징크 · 박공 32° · 처마 앞뒤 1.0m·좌우 0.6m', s2W / 2, topRidgeY + 0.45, s2RidgeZ - 1.4, 'struct');
     // 눈막이(스노우가드) 가로바 — 양 슬로프 처마 근처 2줄(쌓인 눈이 한꺼번에 미끄러지지 않게)
     const onTop = (ez, t) => ({ z: ez + t * (s2RidgeZ - ez), y: topEaveY + t * (topRidgeY - topEaveY) });
     const snowGuard = (ez, t) => {
@@ -2953,7 +2953,7 @@ const NOTES = {
   s2Roof3: { title: '지붕 (징크 박공)', body: [
     '- 마감: 리얼징크(티타늄아연). 지붕 두께 260 mm(단열 260T + 징크).',
     '- 경사 32° 박공, 용마루는 너비(X) 방향.',
-    '- 처마: 앞·뒤 1.0 m, 좌·우 0.4 m 내밈.',
+    '- 처마: 앞·뒤 1.0 m, 좌·우 0.6 m 내밈.',
     '- 눈막이(스노우가드): 양 슬로프 처마 근처 가로바 2줄 — 쌓인 눈이 한꺼번에 미끄러지지 않게.',
   ].join('\n') },
   s2Solar3: { title: '태양광 3 kW', body: [
