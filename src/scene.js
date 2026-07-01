@@ -84,7 +84,10 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bF3Stair">계단</button>
           <button type="button" class="seg-btn" id="bF3Wall">외벽</button>
         </div>
-        <div class="seg-row" role="group" aria-label="3층 지붕·태양광">
+      </section>
+      <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">지붕·태양광</h2>
+        <div class="seg-row" role="group" aria-label="지붕·태양광">
           <button type="button" class="seg-btn" id="bF3Roof">지붕</button>
           <button type="button" class="seg-btn" id="bF3Solar">태양광</button>
         </div>

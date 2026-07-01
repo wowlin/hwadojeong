@@ -1697,12 +1697,12 @@ captureInto(s2DimObjects, () => {
   const liftW = 0.9, liftD = 1.28;
   const liftX0 = (inX1 - wcSinkOff) - liftW;             // 세면대 시작(inX1-wcSinkOff)에서 低X로 캐빈 폭만큼
   const liftZ0 = inZ1 - liftD;                           // 뒤 외벽(高Z)에 등 붙임
-  const liftMarkMat = new THREE.MeshLambertMaterial({ color: 0xff4fa3, transparent: true, opacity: 0.6, depthWrite: false });
-  const drawLiftMark = (fy) => {
-    box({ x: liftX0, z: liftZ0, w: liftW, d: liftD, y: fy + 0.006, h: 0.014, mat: liftMarkMat, cast: false });
-    label(`홈리프트 권장 ${liftW}×${liftD}m`, liftX0 + liftW / 2, fy + 0.5, liftZ0 + liftD / 2, 'dim');
+  const liftMarkMat = new THREE.MeshLambertMaterial({ color: 0xff4fa3, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide });
+  const drawLiftColumn = (y0, y1, withLabel) => {   // 세로 반투명 직육면체 기둥(홈리프트 샤프트) — 층별 구간으로 나눠 각 층 토글에 딸림
+    box({ x: liftX0, z: liftZ0, w: liftW, d: liftD, y: y0, h: y1 - y0, mat: liftMarkMat, cast: false });
+    if (withLabel) label(`홈리프트 ${liftW}×${liftD}m`, liftX0 + liftW / 2, y0 + 1.0, liftZ0 + liftD / 2, 'dim');
   };
-  captureInto(s2Floor1Objects, () => drawLiftMark(levels[0]));   // 1층 뒤쪽 자리
+  captureInto(s2Floor1Objects, () => drawLiftColumn(levels[0], levels[1], true));   // 1층분 기둥(뒤쪽·세면대 옆)
   const placeMark = (fy, big, wcW = 1.0, wcD = 1.0) => {
     const m = (mat, x0, z0, w = 1.0, d = 1.0) => box({ x: x0, z: z0, w, d, y: fy + 0.006, h: 0.012, mat, cast: false });
     m(materials.wcFloor, inX1 - wcW, inZ1 - wcD, wcW, wcD);   // 화장실 자리(왼쪽-뒤 코너) — 보라
@@ -1751,7 +1751,7 @@ captureInto(s2DimObjects, () => {
     // 층계참 화장실쪽(高X) 벽 — 주황 도착칸을 1.2×2.1m로 마저 둘러쌈. 10cm, 바닥~천장. 계단 올라오는 변(低X)만 개방.
     box({ x: far2 + 1.2, z: zB0, w: 0.10, d: inZ1 - zB0, y: levels[1], h: (levels[2] - floor3T) - levels[1], mat: materials.wall });
     placeMark(levels[1], false, inX1 - (far2 + 1.3), wF);   // 2층 화장실 = 벽 뺀 실사용 바닥(계단실벽 안쪽 far2+1.3~안방외벽 × 분리벽 안쪽 zB0~뒤벽)
-    drawLiftMark(levels[1]);   // 2층 홈리프트 자리(세면대 옆)
+    drawLiftColumn(levels[1], levels[2], false);   // 2층분 기둥
     // 2층 화장실 권장 배치 — 변기(3층과 수직정렬·위치 고정) · 샤워부스 · 세면대(벽수전·좌우 용품여유) · 50L 전기온수기(외벽 상부) · 세탁/건조 예정공간.
     //   막힌 변: 高X 안방 외벽(inX1)·뒤 외벽(inZ1)·低X 도착칸벽(far2+1.3). 문=앞 분리벽(앞방서 밀어 +Z).
     {
@@ -1800,7 +1800,7 @@ captureInto(s2DimObjects, () => {
     box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
     box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
     placeMark(levels[2], true, wcW3, 1.0);   // 3층 화장실 = 뒤쪽벽 따라 wcW3(X, 세면대만큼 키움) × 왼쪽벽 따라 1.0(Z)
-    drawLiftMark(levels[2]);   // 3층 홈리프트 자리(세면대 옆)
+    drawLiftColumn(levels[2], roofY, true);   // 3층분 기둥 — 3층 바닥~처마(외벽 최저 2.4)
     const g1W = far3 - inX0, g1D = (zB0 - interiorWall) - inZ0;                                                         // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~계단실 분리벽(10cm) 안쪽
     label(`게스트룸1 ${g1W.toFixed(2)}×${g1D.toFixed(2)}m`, inX0 + g1W / 2, levels[2] + 0.4, inZ0 + g1D / 2, 'room');   // 게스트룸1(연두) — 벽 두께 뺀 실사용 바닥
     const g2W = g2RoomW - 0.15, g2D = (RM_L - interiorWall) - g2ClosetD;                                                // 게스트룸2 실사용 바닥 — 폭=옆벽(15cm) 뺌, 깊이=화장실쪽 벽(10cm)·붙박이장 뺌
