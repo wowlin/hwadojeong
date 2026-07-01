@@ -1996,18 +1996,18 @@ captureInto(s2SinkObjects, () => {
   box({ x: dFront - dt - 0.03, z: hz, w: 0.03, d: 0.04, y: fTop + FH - fzH - 0.42, h: 0.4, mat: materials.guard });   // 하부 문 손잡이
   box({ x: dFront - dt - 0.03, z: hz, w: 0.03, d: 0.04, y: fTop + FH - fzH + 0.05, h: 0.28, mat: materials.guard });  // 상부 문 손잡이
   label(`기존 냉장고 311L · ${fmtDim(FW)}×${fmtDim(FD)}`, inXL - FD / 2, fTop + FH + 0.15, frCz, 'furniture');
-  // 싱크대(2.4m) — 기존 냉장고 앞에 남는 공간(gap) 띄우고 앞으로 당김. 옆 0.6 · 싱크 1.2 · 옆 0.6
-  const gap = 0.6;                                           // 싱크와 기존 냉장고 사이 남는 공간(설계 검토용)
-  const cWall = (frFront - gap) - SIDEW / 2;                 // 뒤쪽(高z) 옆 하부장
-  const cSink = cWall - SIDEW / 2 - SINKW / 2;              // 싱크 하부장(가운데)
-  const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 앞쪽(低z) 옆 하부장
+  // 맨 앞(低z·앞벽) 양문형 냉장고 예정지 — 앞벽 밀착. 싱크대는 그 뒤에 붙임. 반투명(2층 세탁/건조기 예정처럼).
+  const F2W = 1.1, F2DEP = 0.8, F2H = 2.0;                  // 양문형 냉장고 자리 — 폭(Z)1.1·깊이(X)0.8·높이 2.0
+  const f2Cz = (s2FrontZ + s2WallT) + F2W / 2;              // 예정지 중심 z — 앞벽(低z) 안쪽 면에 붙임
+  const f2Back = f2Cz + F2W / 2;                            // 양문형 뒷면(高z)
+  // 싱크대(2.4m) — 양문형 냉장고 뒤에 바로 붙임. 옆 0.6 · 싱크 1.2 · 옆 0.6
+  const cInner = f2Back + fGap + SIDEW / 2;                 // 앞쪽(低z) 옆 하부장 — 양문형에 붙음
+  const cSink = cInner + SIDEW / 2 + SINKW / 2;            // 싱크 하부장(가운데)
+  const cWall = cSink + SINKW / 2 + SIDEW / 2;             // 뒤쪽(高z) 옆 하부장
   drawCab(cWall, SIDEW, false);
   drawCab(cSink, SINKW, true);
   drawCab(cInner, SIDEW, false);
   label(`주방 2.4m(싱크 ${fmtDim(SINKW)}+옆 ${fmtDim(SIDEW)}×2) · 백조 대형볼 0.95×0.454`, skX + CD / 2, cY + 0.5, cSink, 'furniture');
-  // 맨 앞(低z) 양문형 냉장고 예정지 — 좌벽(高x) 밀착. 반투명(2층 세탁/건조기 예정처럼).
-  const F2W = 1.1, F2DEP = 0.8, F2H = 2.0;                  // 양문형 냉장고 자리 — 폭(Z)1.1·깊이(X)0.8·높이 2.0
-  const f2Cz = (cInner - SIDEW / 2) - fGap - F2W / 2;       // 예정지 중심 z(맨 앞 옆장 앞에 붙임)
   const fridgeGhost = new THREE.Mesh(
     new THREE.BoxGeometry(F2DEP, F2H, F2W),
     new THREE.MeshLambertMaterial({ color: 0xbcc6cf, transparent: true, opacity: 0.32, depthWrite: false }),
