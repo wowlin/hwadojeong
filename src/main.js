@@ -1991,6 +1991,25 @@ captureInto(s2DimObjects, () => {
       pocketDoorVertical(gxL + pktWallT, dUmid, fy, interiorDoorH, -1, interiorDoorW, materials.stdRoomDoor);
       label('표준 방문', gxL, fy + 1.0, dUmid + interiorDoorW / 2, 'opening');
     }
+    // 게스트룸 매트리스(베이지·두께 10cm, 앞쪽 외벽에 머리·옆벽에 붙임) — 게스트룸1: 2.0×1.8 1개 / 게스트룸2: 2.0×1.1 2개(좌우 옆벽)
+    {
+      const fy = levels[2], mH = 0.1;
+      const mMat = new THREE.MeshLambertMaterial({ color: 0xe8dcc0 });
+      const pMat = new THREE.MeshLambertMaterial({ color: 0xfaf6ef });
+      const mattress = (x0, z0, w, d, txt) => { box({ x: x0, z: z0, w, d, y: fy, h: mH, mat: mMat }); label(txt, x0 + w / 2, fy + mH + 0.15, z0 + d / 2, 'furniture'); };
+      const pillow = (cx) => box({ x: cx - 0.35, z: inZ0 + 0.07, w: 0.7, d: 0.4, y: fy + mH, h: 0.1, mat: pMat });   // 매트 위·앞벽(低Z)쪽 머리맡
+      // 게스트룸1(低X·거실쪽) 더블 — 앞 외벽(低Z)에 머리, 거실쪽 옆벽(低X)에 붙임. 폭1.8(X)×길이2.0(Z). 베개 2개
+      const m1W = 1.8, m1L = 2.0;
+      mattress(inX0, inZ0, m1W, m1L, '매트리스 2.0×1.8m');
+      pillow(inX0 + 0.5); pillow(inX0 + 1.3);
+      // 게스트룸2(高X·안방쪽) 싱글 2개 — 앞 외벽(低Z)에 머리, 좌우 옆벽에 각 1개. 폭1.1(X)×길이2.0(Z). 각 베개 1개
+      const g2gxL = inX1 - g2RoomW;
+      const m2W = 1.1, m2L = 2.0;
+      mattress(g2gxL + 0.15, inZ0, m2W, m2L, '매트리스 2.0×1.1m');   // 게스트룸1쪽 옆벽
+      pillow(g2gxL + 0.15 + m2W / 2);
+      mattress(inX1 - m2W, inZ0, m2W, m2L, '매트리스 2.0×1.1m');      // 안방 외벽쪽 옆벽
+      pillow(inX1 - m2W / 2);
+    }
   });
 
   // 공유부(라벨·층고 치수) — '계단' 전체 버튼과 함께 보임.
