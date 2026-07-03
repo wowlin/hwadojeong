@@ -2397,12 +2397,12 @@ captureInto(s2SinkObjects, () => {
     // 뒤(처마까지) — 앞뒤 복도 뒤쪽 프로젝트창 1개 + 계단실 오른쪽(거실측·低X) 세로 픽스창 1개
     const bCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: fWinHead };
     const stairBackWinW = 0.6, stairBackWinX = (s2X0 + t) + S2_STAIR.W / 2;   // 계단실 우측벽(低X·거실쪽) 참 자리 뒤벽 중앙
-    const stairBackWin = { p0: stairBackWinX - stairBackWinW / 2, p1: stairBackWinX + stairBackWinW / 2, sillY: lvl3, headY: fWinHead };   // 하단=3층 바닥 · 상단=뒤 복도창 상단(1.7m)
+    const stairBackWin = { p0: stairBackWinX - stairBackWinW / 2, p1: stairBackWinX + stairBackWinW / 2, sillY: lvl3 + 0.3, headY: fWinHead };   // 하단=3층 바닥+0.3 · 상단=뒤 복도창 상단(1.7m)
     wallStrip('x', s2BackZ - t, s2X0 + t, s2W - t, y2, eaveY, [bCorr, stairBackWin], EW);
     frontAwningSash(bCorr.p0, s2BackZ - 0.13, 0.6, lvl3 + 1.1, 0.6, 1);   // 뒤 복도 프로젝트창(高Z 바깥)
     label('뒤 복도 프로젝트창 0.6×0.6m', corrX, lvl3 + 1.1 + 0.4, s2BackZ + 0.1, 'opening');
-    frontFixSash(stairBackWin.p0, s2BackZ - 0.13, stairBackWinW, lvl3, fWinHead - lvl3);   // 계단실 뒤벽 세로 픽스창
-    label(`계단실 뒤벽 픽스창 ${fmtDim(stairBackWinW)}×${fmtDim(fWinHead - lvl3)}m`, stairBackWinX, lvl3 + (fWinHead - lvl3) / 2, s2BackZ + 0.1, 'opening');
+    frontFixSash(stairBackWin.p0, s2BackZ - 0.13, stairBackWinW, stairBackWin.sillY, fWinHead - stairBackWin.sillY);   // 계단실 뒤벽 세로 픽스창
+    label(`계단실 뒤벽 픽스창 ${fmtDim(stairBackWinW)}×${fmtDim(fWinHead - stairBackWin.sillY)}m`, stairBackWinX, stairBackWin.sillY + (fWinHead - stairBackWin.sillY) / 2, s2BackZ + 0.1, 'opening');
     const gableTop = [[s2FrontZ, eaveY], [s2BackZ, eaveY], [zMid, peakY]];   // 처마 위 박공 삼각(창은 처마 밑 직사각 구간에만)
     // 3층 게스트룸 창(단일 출처) — 좌우 측벽에 각각. 창대 바닥+0.9m·높이 1.2m(상단 2.1, 위쪽 20cm 줄임). 폭 1.5m(안방 측창과 동일). 방 앞부분 배치.
     const gWinCz = s2FrontZ + t + 1.4;                       // 게스트룸 창 Z중앙(앞 외벽 안쪽서 1.4m — 두 방 앞부분, 지붕 밑선보다 낮음)
@@ -2831,12 +2831,6 @@ function ceilingFan({ x, z, ceilingY, bladeCount = 5, bladeLength = 0.62, drop =
     blade.receiveShadow = false;
     scene.add(blade);
   }
-  // 하부 조명 캡
-  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 12), materials.counter);
-  lamp.position.set(x, dropY - 0.085, z);
-  lamp.castShadow = false;
-  lamp.receiveShadow = false;
-  scene.add(lamp);
 }
 
 // 천장 직부등 — 하우징 + 발광 렌즈(썬룸 조명과 동일 규격). 천장면에 바로 부착.
