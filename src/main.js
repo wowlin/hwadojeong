@@ -2860,7 +2860,7 @@ function ceilingLight({ x, z, ceilingY }) {
 
 // 벽면 간접조명(코브) — 벽 상단 천장 살짝 아래에 붙는 발광 띠. 천장·벽을 은은히 비춤(직부등 대체).
 function coveLight({ x, z, len, axis = 'z', ceilingY }) {
-  const mat = new THREE.MeshLambertMaterial({ color: 0xfff4cf, emissive: 0xffe39c, emissiveIntensity: 0.6 });
+  const mat = new THREE.MeshLambertMaterial({ color: 0xfff4e8, emissive: 0xffe9ce, emissiveIntensity: 0.9 });
   const w = 0.05, h = 0.05;
   const geo = axis === 'z' ? new THREE.BoxGeometry(w, h, len) : new THREE.BoxGeometry(len, h, w);
   const strip = new THREE.Mesh(geo, mat);
@@ -2868,6 +2868,15 @@ function coveLight({ x, z, len, axis = 'z', ceilingY }) {
   strip.castShadow = false;
   strip.receiveShadow = false;
   scene.add(strip);
+  // 벽면 타고 아래로 내려오는 은은한 발광 판(반투명) — 빛이 아래로 흐르는 느낌
+  const glowH = 0.6;
+  const gmat = new THREE.MeshLambertMaterial({ color: 0xfff4e8, emissive: 0xffe9ce, emissiveIntensity: 0.35, transparent: true, opacity: 0.4, depthWrite: false });
+  const ggeo = axis === 'z' ? new THREE.BoxGeometry(0.01, glowH, len) : new THREE.BoxGeometry(len, glowH, 0.01);
+  const glow = new THREE.Mesh(ggeo, gmat);
+  glow.position.set(x, ceilingY - 0.09 - glowH / 2, z);
+  glow.castShadow = false;
+  glow.receiveShadow = false;
+  scene.add(glow);
 }
 
 const _firstFanStart = scene.children.length;
