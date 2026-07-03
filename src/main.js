@@ -2168,7 +2168,17 @@ captureInto(s2SinkObjects, () => {
   const sinkLightX = fixX[fixX.length - 1];                  // 가장 왼쪽 전등(평면 좌=高X, 씽크대쪽 벽)과 같은 좌우 위치
   const sinkLightZ = inZ1 - (cz1 - inZ0);                    // 뒤벽서 거리 = 그 전등의 앞벽서 거리(대칭) → 씽크대 위
   captureInto(s2Fan1Objects, () => { placeRow(cz1, ceil1Y); ceilingLight({ x: sinkLightX, z: sinkLightZ, ceilingY: ceil1Y }); });   // 1층: 씽크대쪽 전등 1개 추가
-  captureInto(s2Fan2Objects, () => placeRow(cz2, ceil2Y));
+  captureInto(s2Fan2Objects, () => {
+    fixX.forEach((x, i) => { if (i % 2 === 1) ceilingFan({ x, z: cz2, ceilingY: ceil2Y }); });   // 2층: 실링팬만(직부등 제거)
+    // 벽쪽 간접조명 — 방 4면 벽을 따라 천장 아래 발광 띠(코너 겹침 방지 위해 각 변 조금 짧게)
+    const cz0 = inZ0, cz1b = zB0 - 0.10;
+    const zMid = (cz0 + cz1b) / 2, zLen = (cz1b - cz0) - 0.4;
+    const xMid = (inX0 + inX1) / 2, xLen = (inX1 - inX0) - 0.4;
+    coveLight({ x: inX0 + 0.06, z: zMid, len: zLen, axis: 'z', ceilingY: ceil2Y });   // 안방쪽 벽
+    coveLight({ x: inX1 - 0.06, z: zMid, len: zLen, axis: 'z', ceilingY: ceil2Y });   // 거실쪽 벽
+    coveLight({ x: xMid, z: cz0 + 0.06, len: xLen, axis: 'x', ceilingY: ceil2Y });    // 앞벽
+    coveLight({ x: xMid, z: cz1b - 0.06, len: xLen, axis: 'x', ceilingY: ceil2Y });   // 뒤(분리)벽
+  });
 }
 
 // ── s2 외벽 — 층별 분리(각 층 바닥 슬래브 밑면 ~ 그 층 천장). 층마다 '외벽' 버튼, 모든 층 켜면 연결 ──
@@ -2846,6 +2856,18 @@ function ceilingLight({ x, z, ceilingY }) {
   lens.castShadow = false;
   lens.receiveShadow = false;
   scene.add(lens);
+}
+
+// 벽면 간접조명(코브) — 벽 상단 천장 살짝 아래에 붙는 발광 띠. 천장·벽을 은은히 비춤(직부등 대체).
+function coveLight({ x, z, len, axis = 'z', ceilingY }) {
+  const mat = new THREE.MeshLambertMaterial({ color: 0xfff4cf, emissive: 0xffe39c, emissiveIntensity: 0.6 });
+  const w = 0.05, h = 0.05;
+  const geo = axis === 'z' ? new THREE.BoxGeometry(w, h, len) : new THREE.BoxGeometry(len, h, w);
+  const strip = new THREE.Mesh(geo, mat);
+  strip.position.set(x, ceilingY - 0.09, z);
+  strip.castShadow = false;
+  strip.receiveShadow = false;
+  scene.add(strip);
 }
 
 const _firstFanStart = scene.children.length;
