@@ -2171,7 +2171,7 @@ captureInto(s2SinkObjects, () => {
   captureInto(s2Fan2Objects, () => {
     fixX.forEach((x, i) => { if (i % 2 === 1) ceilingFan({ x, z: cz2, ceilingY: ceil2Y }); });   // 2층: 실링팬만(직부등 제거)
     // 벽쪽 간접조명 — 방 4면 벽을 따라 천장 아래 발광 띠(코너 겹침 방지 위해 각 변 조금 짧게)
-    const cz0 = inZ0, cz1b = zB0 - 0.10;
+    const cz0 = inZ0, cz1b = zB0 - 0.20;   // 뒤 내측 벽(내력벽 20cm) 방쪽 면 — 여기에 붙여야 벽에 안 묻힘
     const zMid = (cz0 + cz1b) / 2, zLen = (cz1b - cz0) - 0.4;
     const xMid = (inX0 + inX1) / 2, xLen = (inX1 - inX0) - 0.4;
     coveLight({ x: inX0 + 0.06, z: zMid, len: zLen, axis: 'z', ceilingY: ceil2Y });   // 안방쪽 벽
