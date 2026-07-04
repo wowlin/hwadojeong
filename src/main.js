@@ -2004,8 +2004,8 @@ captureInto(s2DimObjects, () => {
       pillow(inX0 + 0.5); pillow(inX0 + 1.3);
       // 게스트룸2(高X·안방쪽) 싱글 2개 — 앞 외벽(低Z)에 머리, 좌우 옆벽에 각 1개. 폭1.1(X)×길이2.0(Z). 각 베개 1개
       const m2W = 1.1, m2L = 2.0;
-      mattress(inX1 - 2 * m2W, inZ0, m2W, m2L, '매트리스 2.0×1.1m');   // 안방 외벽쪽으로 나란히(안쪽)
-      pillow(inX1 - 1.5 * m2W);
+      mattress(inX1 - 2 * m2W - 0.1, inZ0, m2W, m2L, '매트리스 2.0×1.1m');   // 안방 외벽쪽으로 나란히(안쪽·옆벽매트와 10cm 간격)
+      pillow(inX1 - 1.5 * m2W - 0.1);
       mattress(inX1 - m2W, inZ0, m2W, m2L, '매트리스 2.0×1.1m');      // 안방 외벽쪽 옆벽
       pillow(inX1 - m2W / 2);
     }
