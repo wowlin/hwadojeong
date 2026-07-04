@@ -1829,18 +1829,22 @@ captureInto(s2DimObjects, () => {
     // 안방(앞 트인 방) 크기 라벨 — 게스트룸처럼 실사용 바닥(앞 외벽 안쪽 ~ 분리벽 안쪽 zB0-0.20, 내력벽 20cm). 방 이름 색(연노랑)으로 흰색 치수와 구별.
     const abW = inW, abD = (zB0 - 0.20) - inZ0;
     label(`안방 ${abW.toFixed(2)}×${abD.toFixed(2)}m`, inX0 + abW / 2, levels[1] + 0.4, inZ0 + abD / 2, 'room');
-    // 안방 침대 2.0×2.0 (높이 0.4m) — 오른쪽(低X·거실쪽) 외벽 + 뒤 계단실 분리벽(zB0-0.20) 코너에 붙임(머리를 계단실쪽으로).
-    const bedZ1 = zB0 - 0.20, bedZ0 = bedZ1 - 2.0;
+    // 안방 침대 2.0×2.0 (높이 0.4m) — 거실쪽(低X) 외벽 + 앞 외벽(inZ0) 코너에 붙임(머리를 앞쪽으로, 3층 게스트룸1과 동일 방향).
+    const bedZ0 = inZ0;
     box({ x: inX0, z: bedZ0, w: 2.0, d: 2.0, y: levels[1], h: 0.4, mat: materials.bed });
     label('침대 2.0×2.0m', inX0 + 1.0, levels[1] + 0.7, bedZ0 + 1.0, 'furniture');
+    // 안방 베개 2개 — 머리맡=앞 외벽(低Z)쪽, 게스트룸1과 동일 위치.
+    const abPillowMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    for (const cx of [inX0 + 0.5, inX0 + 1.3]) box({ x: cx - 0.35, z: bedZ0 + 0.07, w: 0.7, d: 0.4, y: levels[1] + 0.4, h: 0.1, mat: abPillowMat });
     // 안방 서랍장(낮은 장) — 높이 0.8m·깊이 0.4m. 침대 옆면(방문쪽·高X)에 붙여 침대 길이(2.0m)만큼 나란히.
     const drwD = 0.40;
     box({ x: inX0 + 2.0, z: bedZ0, w: drwD, d: 2.0, y: levels[1], h: 0.80, mat: materials.sinkCabinet });
     label('서랍장 h0.8·d0.4', inX0 + 2.0 + drwD / 2, levels[1] + 1.0, bedZ0 + 1.0, 'furniture');
-    // 안방 이불장 — 침대 맞은편 앞쪽 벽(앞 외벽 안쪽 inZ0)에 등 붙이고 방 안(+Z)으로 깊이 0.7m. 침대와 같은 거실쪽 정렬·폭 2.0m. 정면창(가운데) 안 가림.
+    // 안방 이불장(붙박이장) — 뒤 계단실 분리벽(zB0-0.20)에 등 붙이고 방 앞(-Z)으로 깊이 0.7m. 침대와 같은 거실쪽 정렬·폭 2.0m. 게스트룸1 붙박이장과 동일 방향.
     const bdgD = 0.70, bdgW = 2.0, bdgH = 2.0;
-    box({ x: inX0, z: inZ0, w: bdgW, d: bdgD, y: levels[1], h: bdgH, mat: materials.sinkCabinet });
-    label(`이불장 ${bdgW.toFixed(1)}×${bdgD.toFixed(1)}m`, inX0 + bdgW / 2, levels[1] + bdgH + 0.3, inZ0 + bdgD / 2, 'furniture');
+    const bdgZ1 = zB0 - 0.20, bdgZ0 = bdgZ1 - bdgD;
+    box({ x: inX0, z: bdgZ0, w: bdgW, d: bdgD, y: levels[1], h: bdgH, mat: materials.sinkCabinet });
+    label(`이불장 ${bdgW.toFixed(1)}×${bdgD.toFixed(1)}m`, inX0 + bdgW / 2, levels[1] + bdgH + 0.3, bdgZ0 + bdgD / 2, 'furniture');
     // 안방 한문형 냉장고 — 1층 기존 냉장고와 동일(311L, 0.545×0.689×1.70). 화장실 앞벽 왼쪽 끝(안방 외벽 高X 코너)에 등 붙임. 문=방(低Z)쪽.
     {
       const rW = 0.545, rD = 0.689, rH = 1.70;                  // 폭(X, 화장실벽 따라)·깊이(Z, 방쪽 돌출)·높이
