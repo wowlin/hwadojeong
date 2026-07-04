@@ -2378,11 +2378,11 @@ captureInto(s2SinkObjects, () => {
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
   const wcWinCz = (s2BackZ - t) - (2 * S2_STAIR.W + S2_STAIR.g) / 2;   // 화장실 Z중앙(뒤벽 안쪽 ~ 계단실 앞 경계 중앙)
   const wcWinP0 = wcWinCz - 0.3, wcWinP1 = wcWinCz + 0.3;              // 폭 0.6m(Z 스팬)
-  // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+0.9m·창높이 1.4m(상단 2.3m). 뒤벽은 화장실·계단이라 막힘.
+  // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+1.2m(추락안전)·창높이 1.2m(상단 2.4m, 1층 전면창과 동일). 뒤벽은 화장실·계단이라 막힘.
   {
     const inX0w = s2X0 + t, inX1w = s2W - t, inZ0w = s2FrontZ + t, inZ1w = s2BackZ - t;
     const zB0w = inZ1w - (2 * S2_STAIR.W + S2_STAIR.g);          // 계단실 앞 경계(앞방 뒤끝)
-    const abSill = lvl2 + 0.9, abHead = lvl2 + 0.9 + 1.4;        // 창대 0.9 · 상단 2.3
+    const abSill = lvl2 + 1.2, abHead = lvl2 + 2.4;             // 창대 1.2(추락안전) · 상단 2.4(1층 전면창과 동일·천장 밑 0.3m) · 높이 1.2
     const ow = (p0, p1) => ({ p0, p1, sillY: abSill, headY: abHead });
     const sideCz = (inZ0w + (zB0w - 0.20)) / 2;                  // 좌·우 측창 앞뒤 중앙(앞방 구간 중앙)
     const abFront = [ow((inX0w + inX1w) / 2 - 0.9, inX1w - 0.6)];   // 정면 픽스창 — 오른쪽(低X) 끝 고정, 왼쪽(高X) 끝을 3층 게스트룸2 정면창 왼끝(inX1w−0.6)까지 확장
@@ -2401,9 +2401,9 @@ captureInto(s2SinkObjects, () => {
       label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl2 + 1.2 + 0.4, wcWinCz, 'opening');
       frontAwningSash(bCorr2.p0, s2BackZ - 0.13, 0.6, lvl2 + 1.2, 0.6, 1);   // 2층 층계참 뒤벽 프로젝트창(高Z 바깥)
       label('층계참 프로젝트창 0.6×0.6m', corrX2, lvl2 + 1.2 + 0.4, s2BackZ + 0.1, 'opening');
-      label('안방 정면 픽스창 ' + fmtDim(abFront[0].p1 - abFront[0].p0) + '×1.4m', (abFront[0].p0 + abFront[0].p1) / 2, abSill + 0.8, s2FrontZ - 0.1, 'opening');
-      label('안방 우측창 1.5×1.4m', s2X0 - 0.1, abSill + 0.8, sideCz, 'opening');
-      label('안방 좌측창 1.5×1.4m', s2W + 0.1, abSill + 0.8, sideCz, 'opening');
+      label('안방 정면 픽스창 ' + fmtDim(abFront[0].p1 - abFront[0].p0) + '×1.2m', (abFront[0].p0 + abFront[0].p1) / 2, abSill + 0.6, s2FrontZ - 0.1, 'opening');
+      label('안방 우측창 1.5×1.2m', s2X0 - 0.1, abSill + 0.6, sideCz, 'opening');
+      label('안방 좌측창 1.5×1.2m', s2W + 0.1, abSill + 0.6, sideCz, 'opening');
     });
   }
   captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
