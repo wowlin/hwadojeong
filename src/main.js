@@ -2405,7 +2405,7 @@ captureInto(s2SinkObjects, () => {
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, [...abFront, fCorr2], EW);        // 앞벽 — 정면 픽스창 + 앞 프로젝트창
       const bCorr2 = { p0: corrX2 - 0.3, p1: corrX2 + 0.3, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 };   // 0.6×0.6·창대 바닥+1.2
       const [sSpan2] = s2FrontFixSpans();   // 2층 계단실 뒤벽 픽스창 — 오른쪽(거실쪽·低X) 가장자리(sSpan2.p0) 고정
-      const stairBackWin2W = 0.6;           // 너비 60cm
+      const stairBackWin2W = 0.4;           // 너비 40cm(채광용 세로 슬롯 — 디자인·구조 유리)
       const stairBackWin2 = { p0: sSpan2.p0, p1: sSpan2.p0 + stairBackWin2W, sillY: lvl2 + 0.3, headY: lvl2 + 1.7 };   // 하단=2층 바닥+0.3 · 상단 1.7(3층 계단실창과 동일 규칙)
       wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [bCorr2, stairBackWin2], EW);   // 뒤벽 — 층계참 프로젝트창 + 계단실 픽스창
       wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(거실쪽)
@@ -2447,7 +2447,7 @@ captureInto(s2SinkObjects, () => {
     // 뒤(처마까지) — 앞뒤 복도 뒤쪽 프로젝트창 1개 + 계단실 오른쪽(거실측·低X) 세로 픽스창 1개
     const bCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: pWinHead };
     const [sSpan] = s2FrontFixSpans();   // 계단실 뒤벽 픽스창 — 오른쪽(거실쪽·低X) 가장자리(sSpan.p0)를 고정
-    const stairBackWinW = 0.6;           // 너비 60cm
+    const stairBackWinW = 0.4;           // 너비 40cm(채광용 세로 슬롯 — 디자인·구조 유리)
     const stairBackWin = { p0: sSpan.p0, p1: sSpan.p0 + stairBackWinW, sillY: lvl3 + 0.3, headY: pWinHead };   // 하단=3층 바닥+0.3 · 상단=뒤 복도창 상단(1.7m)
     const stairBackWinX = (stairBackWin.p0 + stairBackWin.p1) / 2;
     wallStrip('x', s2BackZ - t, s2X0 + t, s2W - t, y2, eaveY, [bCorr, stairBackWin], EW);
