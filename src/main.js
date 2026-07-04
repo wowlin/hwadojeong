@@ -1616,6 +1616,10 @@ captureInto(s2FoundationObjects, () => {
   box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트 0.5m
   planYDim(-0.1, s2BackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 남쪽 모서리 높이 치수(s1과 동일 위치)
 });
+// 정면(앞·현관 쪽) 전체폭 옥외 계단 — 지면부터 1층 바닥(0.70m=기초 0.5+바닥 0.2)까지 5단, 집 너비(0~8.5m) 전체, 앞(−Z)으로 디딤판 0.3m씩. 's2 1층' 토글.
+captureInto(s2Floor1Objects, () => {
+  deckStairs({ axis: 'x', span0: s2X0, span1: s2X0 + s2W, edge: s2FrontZ, outward: -1, topY: groundTopY + MAT_H + S2_STAIR.slabT, baseY: groundTopY, steps: 5, tread: 0.3, mat: materials.matFoundation });
+});
 // 치수 + 기준선 — s1과 같은 부분(너비=위, 깊이=양옆)
 captureInto(s2DimObjects, () => {
   planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, `${fmtDim(s2W)}m`);          // 너비(s1 8.5m 자리)
