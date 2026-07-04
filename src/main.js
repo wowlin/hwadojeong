@@ -2400,8 +2400,9 @@ captureInto(s2SinkObjects, () => {
     const abFront = s2FrontFixSpans().map(s => ow(s.p0, s.p1));   // 정면 픽스창 좌우 2개 — 3층 게스트룸1·2 정면창과 동일 X스팬(같은 폭·수직 정렬), 가운데 전단벽
     const abSide  = [ow(sideCz - 0.8, sideCz + 0.8)];                            // 측면 2짝×0.8=1.6m (좌·우 동일)
     captureInto(s2Wall2Objects, () => {
-      wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, abFront, EW);        // 앞벽
-      const corrX2 = bkLiftHiX - 2.025;                                 // 2층 층계참 X중앙(3층 뒤 복도창과 동일 X)
+      const corrX2 = bkLiftHiX - 2.025;                                 // 앞·뒤 복도창 X중앙(3층 복도창과 동일 X)
+      const fCorr2 = { p0: corrX2 - 0.3, p1: corrX2 + 0.3, sillY: lvl2 + 1.1, headY: lvl2 + 1.7 };   // 앞 프로젝트창 0.6×0.6·창대 바닥+1.1 — 3층 앞 복도 프로젝트창과 동일 위치
+      wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, [...abFront, fCorr2], EW);        // 앞벽 — 정면 픽스창 + 앞 프로젝트창
       const bCorr2 = { p0: corrX2 - 0.3, p1: corrX2 + 0.3, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 };   // 0.6×0.6·창대 바닥+1.2
       const [sSpan2] = s2FrontFixSpans();   // 2층 계단실 뒤벽 픽스창 — 3층 계단실창·정면창과 동일 X스팬(통일)
       const stairBackWin2 = { ...sSpan2, sillY: lvl2 + 0.3, headY: lvl2 + 1.7 };   // 하단=2층 바닥+0.3 · 상단 1.7(3층 계단실창과 동일 규칙)
@@ -2409,6 +2410,8 @@ captureInto(s2SinkObjects, () => {
       wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(거실쪽)
       wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 프로젝트창
       for (const o of abFront) frontFixSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 안방 정면 픽스창
+      frontAwningSash(fCorr2.p0, s2FrontZ + 0.13, 0.6, lvl2 + 1.1, 0.6, -1);   // 2층 앞 프로젝트창(低Z 바깥) — 3층 앞 복도창과 동일 위치
+      label('앞 프로젝트창 0.6×0.6m', corrX2, lvl2 + 1.1 + 0.4, s2FrontZ - 0.1, 'opening');
       for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(거실쪽)
       for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
       awningSash(s2W - 0.13, wcWinP0, 0.6, lvl2 + 1.2, 0.6);             // 2층 화장실 왼쪽벽 프로젝트창
