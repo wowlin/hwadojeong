@@ -2385,7 +2385,7 @@ captureInto(s2SinkObjects, () => {
     const abSill = lvl2 + 1.2, abHead = lvl2 + 2.4;             // 창대 1.2(추락안전) · 상단 2.4(1층 전면창과 동일·천장 밑 0.3m) · 높이 1.2
     const ow = (p0, p1) => ({ p0, p1, sillY: abSill, headY: abHead });
     const sideCz = s2FrontZ + 0.6 + 0.8;                        // 좌·우 측창 앞뒤 중앙 — 앞 외벽 바깥서 0.6m 시작·짝폭 0.8m×2짝=1.6m(1층 전면창 기준)
-    const abFront = [ow((inX0w + inX1w) / 2 - 0.9, inX1w - 0.6)];   // 정면 픽스창 — 오른쪽(低X) 끝 고정, 왼쪽(高X) 끝을 3층 게스트룸2 정면창 왼끝(inX1w−0.6)까지 확장
+    const abFront = [inX0w + 1.6, inX1w - 1.6].map(cx => ow(cx - 1.2, cx + 1.2));   // 정면 픽스창 좌우 2개(각 2.4m) — 3층 게스트룸1·2 정면창과 동일 X중심(거실쪽 1.9·안방쪽 6.6)에 수직 정렬, 가운데 2.3m 전단벽
     const abSide  = [ow(sideCz - 0.8, sideCz + 0.8)];                            // 측면 2짝×0.8=1.6m (좌·우 동일)
     captureInto(s2Wall2Objects, () => {
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, abFront, EW);        // 앞벽
@@ -2401,7 +2401,7 @@ captureInto(s2SinkObjects, () => {
       label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl2 + 1.2 + 0.4, wcWinCz, 'opening');
       frontAwningSash(bCorr2.p0, s2BackZ - 0.13, 0.6, lvl2 + 1.2, 0.6, 1);   // 2층 층계참 뒤벽 프로젝트창(高Z 바깥)
       label('층계참 프로젝트창 0.6×0.6m', corrX2, lvl2 + 1.2 + 0.4, s2BackZ + 0.1, 'opening');
-      label('안방 정면 픽스창 ' + fmtDim(abFront[0].p1 - abFront[0].p0) + '×1.2m', (abFront[0].p0 + abFront[0].p1) / 2, abSill + 0.6, s2FrontZ - 0.1, 'opening');
+      abFront.forEach(o => label('안방 정면 픽스창 ' + fmtDim(o.p1 - o.p0) + '×1.2m', (o.p0 + o.p1) / 2, abSill + 0.6, s2FrontZ - 0.1, 'opening'));
       label('안방 우측창 1.6×1.2m', s2X0 - 0.1, abSill + 0.6, sideCz, 'opening');
       label('안방 좌측창 1.6×1.2m', s2W + 0.1, abSill + 0.6, sideCz, 'opening');
     });
