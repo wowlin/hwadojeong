@@ -2820,10 +2820,9 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
   label('외부 콘센트', livingSashEndX + 0.2, outletY + 0.42, wallFaceZ - 0.2, 'mep');
 }
 
-// 가족방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형)
-{
+// 가족방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형) — Z위치별로 재사용
+const drawFrostFaucet = (faucetZ) => {
   const faucetX = buildingW;             // 외벽 바깥면(x=8.5)
-  const faucetZ = 1.1;                    // 측면 출입문(z −0.3~0.5)에서 충분히 떨어진 솔리드 벽
   const brass = materials.handle;         // 황동색
   const bodyX = faucetX + 0.06;           // 벽에서 약간 떨어진 수직 몸체 중심
   const spoutY = 0.42;                    // 하단 토수구
@@ -2850,7 +2849,9 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
   cyl(0.02, 0.018, 0.12, bodyX, spoutY - 0.03, faucetZ + 0.025, 'x', 0.32);
   cyl(0.023, 0.023, 0.035, bodyX, spoutY - 0.11, faucetZ + 0.06, 'x', 0.32);
   label('외부 부동수전', faucetX + 0.5, topY + 0.85, faucetZ - 0.25, 'mep'); // 수전이 가려지지 않게 위쪽·옆으로
-}
+};
+drawFrostFaucet(1.1);                     // 앞쪽(측면 출입문 z −0.3~0.5에서 충분히 떨어진 솔리드 벽)
+drawFrostFaucet(buildingBackZ - 1.0);     // 왼쪽 뒤에서 1m 지점
 
 // 계단실 양쪽 내벽은 1층 원래 내벽(stairWallObjects) 1벌을 계단 화면과 공유 — 여기서 따로 그리지 않음(중복 제거).
 
