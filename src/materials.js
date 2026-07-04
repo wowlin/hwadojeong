@@ -63,6 +63,7 @@ export const materials = {
   stdRoomDoor: new THREE.MeshLambertMaterial({ color: 0x2f9e8f }),   // 표준 방문(슬라이딩 0.9×2.1) 전용색 — 어디 쓰여도 같은 표준 크기임을 색으로 구별
   entryDoor: new THREE.MeshLambertMaterial({ color: 0x4f3422 }),
   entryFrame: new THREE.MeshLambertMaterial({ color: 0x2f343a }),
+  windowFrame: new THREE.MeshLambertMaterial({ color: 0x878d94 }),   // 창·문틀 회색(폴딩도어·뒤 작은문·좌측 싱크대창 제외 전 창틀)
   handle: new THREE.MeshLambertMaterial({ color: 0xd4af37 }),
   glass: new THREE.MeshLambertMaterial({ color: 0x9ed0e8, transparent: true, opacity: 0.55 }),
   interiorGlassWall: new THREE.MeshLambertMaterial({ color: 0xd7e6e3, transparent: true, opacity: 0.32, depthWrite: false }),

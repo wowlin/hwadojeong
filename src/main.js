@@ -449,37 +449,37 @@ function entryDoor(x, z, outerW, leafW, y) {
   const frameW = (outerW - leafW) / 2;
   const doorH = 2.1;
   const frameH = 2.18;
-  box({ x, z: z - 0.02, w: frameW, d: 0.12, y, h: frameH, mat: materials.entryFrame });
-  box({ x: x + outerW - frameW, z: z - 0.02, w: frameW, d: 0.12, y, h: frameH, mat: materials.entryFrame });
-  box({ x, z: z - 0.02, w: outerW, d: 0.12, y: y + doorH, h: frameH - doorH, mat: materials.entryFrame });
-  box({ x: x + frameW, z, w: leafW, d: 0.08, y, h: doorH, mat: materials.entryFrame });   // 문짝 색 = 다른 문·창과 동일(다크그레이)
+  box({ x, z: z - 0.02, w: frameW, d: 0.12, y, h: frameH, mat: materials.windowFrame });
+  box({ x: x + outerW - frameW, z: z - 0.02, w: frameW, d: 0.12, y, h: frameH, mat: materials.windowFrame });
+  box({ x, z: z - 0.02, w: outerW, d: 0.12, y: y + doorH, h: frameH - doorH, mat: materials.windowFrame });
+  box({ x: x + frameW, z, w: leafW, d: 0.08, y, h: doorH, mat: materials.windowFrame });   // 문짝 색 = 다른 문·창과 동일(회색)
   box({ x: x + frameW + leafW - 0.18, z: z - 0.035, w: 0.06, d: 0.04, y: y + 1.02, h: 0.06, mat: materials.handle });
 }
 
 function frontSash(x, z, w, sillY, h) {
   const frame = 0.05;
   const glassZ = z - 0.035;
-  box({ x, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.entryFrame });
-  box({ x: x + w - frame, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.entryFrame });
-  box({ x, z: z - 0.04, w, d: 0.1, y: sillY, h: frame, mat: materials.entryFrame });
-  box({ x, z: z - 0.04, w, d: 0.1, y: sillY + h - frame, h: frame, mat: materials.entryFrame });
-  box({ x: x + w / 2 - frame / 2, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.entryFrame });
+  box({ x, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.windowFrame });
+  box({ x: x + w - frame, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.windowFrame });
+  box({ x, z: z - 0.04, w, d: 0.1, y: sillY, h: frame, mat: materials.windowFrame });
+  box({ x, z: z - 0.04, w, d: 0.1, y: sillY + h - frame, h: frame, mat: materials.windowFrame });
+  box({ x: x + w / 2 - frame / 2, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.windowFrame });
   box({ x: x + frame, z: glassZ, w: w - frame * 2, d: 0.04, y: sillY + frame, h: h - frame * 2, mat: materials.glass });
 }
 
 // 정면 픽스창(X스팬·-Z면) — 미들바 없는 단일 고정 유리. 비개폐(픽스).
 function frontFixSash(x, z, w, sillY, h) {
   const frame = 0.05, glassZ = z - 0.035;
-  box({ x, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.entryFrame });                    // 좌 세로틀
-  box({ x: x + w - frame, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.entryFrame });      // 우 세로틀
-  box({ x, z: z - 0.04, w, d: 0.1, y: sillY, h: frame, mat: materials.entryFrame });                     // 하부틀
-  box({ x, z: z - 0.04, w, d: 0.1, y: sillY + h - frame, h: frame, mat: materials.entryFrame });         // 상부틀
+  box({ x, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.windowFrame });                    // 좌 세로틀
+  box({ x: x + w - frame, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: materials.windowFrame });      // 우 세로틀
+  box({ x, z: z - 0.04, w, d: 0.1, y: sillY, h: frame, mat: materials.windowFrame });                     // 하부틀
+  box({ x, z: z - 0.04, w, d: 0.1, y: sillY + h - frame, h: frame, mat: materials.windowFrame });         // 상부틀
   box({ x: x + frame, z: glassZ, w: w - frame * 2, d: 0.04, y: sillY + frame, h: h - frame * 2, mat: materials.glass });   // 단일 유리
 }
 
 // 정면/배면 프로젝트(어닝)창 — X스팬·±Z면. 상부 경첩·하부 바깥으로 밀림. outZ = 외부 방향(+1: 뒤 高Z 바깥, -1: 앞 低Z 바깥)
 function frontAwningSash(x, z, w, sillY, h, outZ) {
-  const frame = 0.05, F = materials.entryFrame;
+  const frame = 0.05, F = materials.windowFrame;
   box({ x, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: F });                    // 좌 세로틀
   box({ x: x + w - frame, z: z - 0.04, w: frame, d: 0.1, y: sillY, h, mat: F });      // 우 세로틀
   box({ x, z: z - 0.04, w, d: 0.1, y: sillY, h: frame, mat: F });                     // 하부틀
@@ -500,7 +500,7 @@ function germanSlidingDoor(x, z, w, sillY, h) {
   const fd = 0.13;               // 프레임 깊이
   const fz = z - 0.05;
   const glassZ = z - 0.04;
-  const F = materials.entryFrame;
+  const F = materials.windowFrame;
   box({ x, z: fz, w: frame, d: fd, y: sillY, h, mat: F });                            // 좌 세로 프레임
   box({ x: x + w - frame, z: fz, w: frame, d: fd, y: sillY, h, mat: F });             // 우 세로 프레임
   box({ x, z: fz, w, d: fd, y: sillY + h - frame, h: frame, mat: F });                // 상부
@@ -517,21 +517,21 @@ function sideSash(x, z, d, sillY, h) {
   const frame = 0.05;
   const frameX = x - 0.04;
   const glassX = x - 0.035;
-  box({ x: frameX, z, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });
-  box({ x: frameX, z: z + d - frame, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });
-  box({ x: frameX, z, w: 0.1, d, y: sillY, h: frame, mat: materials.entryFrame });
-  box({ x: frameX, z, w: 0.1, d, y: sillY + h - frame, h: frame, mat: materials.entryFrame });
-  box({ x: frameX, z: z + d / 2 - frame / 2, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });
+  box({ x: frameX, z, w: 0.1, d: frame, y: sillY, h, mat: materials.windowFrame });
+  box({ x: frameX, z: z + d - frame, w: 0.1, d: frame, y: sillY, h, mat: materials.windowFrame });
+  box({ x: frameX, z, w: 0.1, d, y: sillY, h: frame, mat: materials.windowFrame });
+  box({ x: frameX, z, w: 0.1, d, y: sillY + h - frame, h: frame, mat: materials.windowFrame });
+  box({ x: frameX, z: z + d / 2 - frame / 2, w: 0.1, d: frame, y: sillY, h, mat: materials.windowFrame });
   box({ x: glassX, z: z + frame, w: 0.04, d: d - frame * 2, y: sillY + frame, h: h - frame * 2, mat: materials.glass });
 }
 
 // 프로젝트(어닝) 시스템창 — Z스팬·+X(안방쪽 高X)면. 상부 경첩·하부 바깥으로 밀어 열림. 창짝을 바깥으로 젖혀 어닝 형태 표현 + 하부 실내측 손잡이.
 function awningSash(x, z, d, sillY, h) {
   const frame = 0.05, frameX = x - 0.04;
-  box({ x: frameX, z, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });                  // 앞 세로틀(低Z)
-  box({ x: frameX, z: z + d - frame, w: 0.1, d: frame, y: sillY, h, mat: materials.entryFrame });    // 뒤 세로틀(高Z)
-  box({ x: frameX, z, w: 0.1, d, y: sillY, h: frame, mat: materials.entryFrame });                   // 하부틀
-  box({ x: frameX, z, w: 0.1, d, y: sillY + h - frame, h: frame, mat: materials.entryFrame });       // 상부틀
+  box({ x: frameX, z, w: 0.1, d: frame, y: sillY, h, mat: materials.windowFrame });                  // 앞 세로틀(低Z)
+  box({ x: frameX, z: z + d - frame, w: 0.1, d: frame, y: sillY, h, mat: materials.windowFrame });    // 뒤 세로틀(高Z)
+  box({ x: frameX, z, w: 0.1, d, y: sillY, h: frame, mat: materials.windowFrame });                   // 하부틀
+  box({ x: frameX, z, w: 0.1, d, y: sillY + h - frame, h: frame, mat: materials.windowFrame });       // 상부틀
   // 여는 유리짝 — 상부(경첩) 고정, 하부가 바깥(+X)으로 젖혀짐. 상단 모서리 기준 Z축 회전으로 어닝 개방 표현.
   const a = 0.35, paneH = h - frame * 2, paneD = d - frame * 2, topY = sillY + h - frame, zc = z + d / 2;
   const pane = new THREE.Mesh(new THREE.BoxGeometry(0.04, paneH, paneD), materials.glass);
@@ -546,7 +546,7 @@ function sideDoor(x, z, d, baseY, h) {
   const frame = 0.06;
   const frameX = x - 0.04;
   const glassX = x - 0.035;
-  const F = materials.entryFrame;
+  const F = materials.windowFrame;
   box({ x: frameX, z, w: 0.1, d: frame, y: baseY, h, mat: F });                       // 앞(저Z) 세로 프레임
   box({ x: frameX, z: z + d - frame, w: 0.1, d: frame, y: baseY, h, mat: F });        // 뒤(고Z) 세로 프레임
   box({ x: frameX, z, w: 0.1, d, y: baseY + h - frame, h: frame, mat: F });           // 상부
@@ -2331,15 +2331,16 @@ captureInto(s2SinkObjects, () => {
     };
     // 우측벽(x=0): 2트랙 4짝 양미서기 슬라이드 창 — 뒤벽과 동일 방식(축만 X↔Z). 바깥 2짝 고정 + 가운데 2짝 앞뒤로 갈라져 가운데 열림. sill·개구 유지.
     { const xc = s2X0 + t / 2, syR = rO.sillY, hyR = rO.headY;
+      const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 회색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
       const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝 유리
       const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이(열린) 짝 유리
       const pw = (rO.a1 - rO.a0) / 4, mullW = 0.05, trk = 0.03;                                            // 4짝·트랙 오프셋
-      box({ x: xc - 0.06, z: rO.a0, w: 0.12, d: rO.a1 - rO.a0, y: syR, h: 0.08, mat: fdFrame });           // 하부 레일(2트랙 전폭)
-      box({ x: xc - 0.06, z: rO.a0, w: 0.12, d: rO.a1 - rO.a0, y: hyR - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일(2트랙 전폭)
+      box({ x: xc - 0.06, z: rO.a0, w: 0.12, d: rO.a1 - rO.a0, y: syR, h: 0.08, mat: slFrame });           // 하부 레일(2트랙 전폭)
+      box({ x: xc - 0.06, z: rO.a0, w: 0.12, d: rO.a1 - rO.a0, y: hyR - 0.08, h: 0.08, mat: slFrame });    // 상부 레일(2트랙 전폭)
       const pane = (z0, xt, mat) => {                                                                       // 유리 짝 + 앞뒤 세로살
         box({ x: xt - 0.025, z: z0, w: 0.05, d: pw, y: syR, h: hyR - syR, mat, cast: false });
-        box({ x: xt - 0.035, z: z0, w: 0.07, d: mullW, y: syR, h: hyR - syR, mat: fdFrame, cast: false });
-        box({ x: xt - 0.035, z: z0 + pw - mullW, w: 0.07, d: mullW, y: syR, h: hyR - syR, mat: fdFrame, cast: false });
+        box({ x: xt - 0.035, z: z0, w: 0.07, d: mullW, y: syR, h: hyR - syR, mat: slFrame, cast: false });
+        box({ x: xt - 0.035, z: z0 + pw - mullW, w: 0.07, d: mullW, y: syR, h: hyR - syR, mat: slFrame, cast: false });
       };
       pane(rO.a0, xc + trk, slGlass);            // 고정 바깥 앞 (안쪽트랙)
       pane(rO.a1 - pw, xc + trk, slGlass);        // 고정 바깥 뒤 (안쪽트랙)

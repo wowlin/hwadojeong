@@ -10,48 +10,29 @@ app.innerHTML = `
         <button id="tabS2" type="button" class="scheme-tab active" data-scheme="s2">2층·다락</button>
         <button id="tabS1" type="button" class="scheme-tab" data-scheme="s1">1층·다락·포치</button>
       </nav>
-      <section class="menu-group" data-scheme="shared">
-        <h2 class="menu-title">대지·담장 (공통)</h2>
-        <div class="seg-row" role="group" aria-label="담장 표시">
-          <button type="button" class="seg-btn" id="bHedge">측백</button>
-          <button type="button" class="seg-btn" id="bFence">옆집</button>
+      <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">지붕·태양광</h2>
+        <div class="seg-row" role="group" aria-label="지붕·태양광">
+          <button type="button" class="seg-btn" id="bF3Roof">지붕</button>
+          <button type="button" class="seg-btn" id="bF3Solar">태양광</button>
         </div>
       </section>
-      <section class="menu-group" data-scheme="s1">
-        <h2 class="menu-title">기초</h2>
-        <label class="chk"><input id="cFoundation" type="checkbox"><span>말뚝기초</span></label>
-        <label class="chk"><input id="cMatFoundationHouse" type="checkbox"><span>부분 매트기초</span></label>
-        <label class="chk"><input id="cMatFoundationFull" type="checkbox"><span>전체 매트기초</span></label>
+      <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">3층</h2>
+        <div class="seg-row" role="group" aria-label="3층 바닥·계단·외벽">
+          <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
+          <button type="button" class="seg-btn" id="bF3Stair">계단</button>
+          <button type="button" class="seg-btn" id="bF3Wall">외벽</button>
+        </div>
       </section>
-      <section class="menu-group" data-scheme="s1">
-        <h2 class="menu-title">계단</h2>
-        <label class="chk"><input id="cFirstFloorFinish" type="checkbox"><span>1층 바닥</span></label>
-        <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
-        <label class="chk"><input id="cBath" type="checkbox"><span>계단하부 WC</span></label>
-        <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
-        <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
-      </section>
-      <section class="menu-group" data-scheme="s1">
-        <h2 class="menu-title">1층</h2>
-        <label class="chk"><input id="cExtWall" type="checkbox"><span>1층 외벽</span></label>
-        <label class="chk"><input id="cFirstRoom" type="checkbox"><span>1층 골조·실내</span></label>
-        <label class="chk"><input id="cAnno" type="checkbox"><span>방·치수 도면</span></label>
-        <label class="chk"><input id="cOutlet" type="checkbox"><span>콘센트</span></label>
-      </section>
-      <section class="menu-group" data-scheme="s1">
-        <h2 class="menu-title">다락</h2>
-        <label class="chk"><input id="cLoft" type="checkbox"><span>다락 바닥</span></label>
-        <label class="chk"><input id="cRoof" type="checkbox"><span>지붕</span></label>
-      </section>
-      <section class="menu-group" data-scheme="s1">
-        <h2 class="menu-title">포치</h2>
-        <label class="chk"><input id="cDeck" type="checkbox"><span>데크</span></label>
-        <label class="chk"><input id="cDeckFloor" type="checkbox"><span>데크 바닥</span></label>
-        <label class="chk"><input id="cDeckStairFrame" type="checkbox"><span>데크계단틀</span></label>
-        <label class="chk"><input id="cSun" type="checkbox"><span>썬룸</span></label>
-        <label class="chk"><input id="cSunWall" type="checkbox"><span>외벽</span></label>
-        <label class="chk"><input id="cFolding" type="checkbox"><span>폴딩도어</span></label>
-        <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
+      <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">2층</h2>
+        <div class="seg-row" role="group" aria-label="2층 바닥·계단·외벽">
+          <button type="button" class="seg-btn" id="bF2Floor">바닥</button>
+          <button type="button" class="seg-btn" id="bF2Stair">계단</button>
+          <button type="button" class="seg-btn" id="bF2Wall">외벽</button>
+          <button type="button" class="seg-btn" id="bF2Fan">실링팬</button>
+        </div>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">1층</h2>
@@ -68,28 +49,47 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bF1Fan">실링팬</button>
         </div>
       </section>
-      <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">2층</h2>
-        <div class="seg-row" role="group" aria-label="2층 바닥·계단·외벽">
-          <button type="button" class="seg-btn" id="bF2Floor">바닥</button>
-          <button type="button" class="seg-btn" id="bF2Stair">계단</button>
-          <button type="button" class="seg-btn" id="bF2Wall">외벽</button>
-          <button type="button" class="seg-btn" id="bF2Fan">실링팬</button>
-        </div>
+      <section class="menu-group" data-scheme="s1">
+        <h2 class="menu-title">포치</h2>
+        <label class="chk"><input id="cDeck" type="checkbox"><span>데크</span></label>
+        <label class="chk"><input id="cDeckFloor" type="checkbox"><span>데크 바닥</span></label>
+        <label class="chk"><input id="cDeckStairFrame" type="checkbox"><span>데크계단틀</span></label>
+        <label class="chk"><input id="cSun" type="checkbox"><span>썬룸</span></label>
+        <label class="chk"><input id="cSunWall" type="checkbox"><span>외벽</span></label>
+        <label class="chk"><input id="cFolding" type="checkbox"><span>폴딩도어</span></label>
+        <label class="chk"><input id="cAccessory" type="checkbox"><span>악세사리</span></label>
       </section>
-      <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">3층</h2>
-        <div class="seg-row" role="group" aria-label="3층 바닥·계단·외벽">
-          <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
-          <button type="button" class="seg-btn" id="bF3Stair">계단</button>
-          <button type="button" class="seg-btn" id="bF3Wall">외벽</button>
-        </div>
+      <section class="menu-group" data-scheme="s1">
+        <h2 class="menu-title">다락</h2>
+        <label class="chk"><input id="cLoft" type="checkbox"><span>다락 바닥</span></label>
+        <label class="chk"><input id="cRoof" type="checkbox"><span>지붕</span></label>
       </section>
-      <section class="menu-group" data-scheme="s2">
-        <h2 class="menu-title">지붕·태양광</h2>
-        <div class="seg-row" role="group" aria-label="지붕·태양광">
-          <button type="button" class="seg-btn" id="bF3Roof">지붕</button>
-          <button type="button" class="seg-btn" id="bF3Solar">태양광</button>
+      <section class="menu-group" data-scheme="s1">
+        <h2 class="menu-title">1층</h2>
+        <label class="chk"><input id="cExtWall" type="checkbox"><span>1층 외벽</span></label>
+        <label class="chk"><input id="cFirstRoom" type="checkbox"><span>1층 골조·실내</span></label>
+        <label class="chk"><input id="cAnno" type="checkbox"><span>방·치수 도면</span></label>
+        <label class="chk"><input id="cOutlet" type="checkbox"><span>콘센트</span></label>
+      </section>
+      <section class="menu-group" data-scheme="s1">
+        <h2 class="menu-title">계단</h2>
+        <label class="chk"><input id="cFirstFloorFinish" type="checkbox"><span>1층 바닥</span></label>
+        <label class="chk"><input id="cStair" type="checkbox"><span>계단</span></label>
+        <label class="chk"><input id="cBath" type="checkbox"><span>계단하부 WC</span></label>
+        <label class="chk"><input id="cLivingWall" type="checkbox"><span>거실측 벽</span></label>
+        <label class="chk"><input id="cFamilyWall" type="checkbox"><span>안방 내력벽</span></label>
+      </section>
+      <section class="menu-group" data-scheme="s1">
+        <h2 class="menu-title">기초</h2>
+        <label class="chk"><input id="cFoundation" type="checkbox"><span>말뚝기초</span></label>
+        <label class="chk"><input id="cMatFoundationHouse" type="checkbox"><span>부분 매트기초</span></label>
+        <label class="chk"><input id="cMatFoundationFull" type="checkbox"><span>전체 매트기초</span></label>
+      </section>
+      <section class="menu-group" data-scheme="shared">
+        <h2 class="menu-title">대지·담장 (공통)</h2>
+        <div class="seg-row" role="group" aria-label="담장 표시">
+          <button type="button" class="seg-btn" id="bHedge">측백</button>
+          <button type="button" class="seg-btn" id="bFence">옆집</button>
         </div>
       </section>
     </aside>
