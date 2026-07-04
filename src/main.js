@@ -2536,6 +2536,8 @@ captureInto(s2SinkObjects, () => {
 const _stairStart = scene.children.length;
 // · 안방 측면 출입문 앞 계단(고-X 벽에서 +x, 상단=firstFloorY)
 deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
+// · 정면(앞) 전체폭 계단 — 지면부터 1층 바닥까지 5단, 집 너비(0~8.5m) 전체, 앞(−Z)으로 디딤판 0.3m씩
+deckStairs({ axis: 'x', span0: 0, span1: buildingW, edge: buildingFrontZ, outward: -1, topY: firstFloorY, steps: 5 });
 deckFloorObjects.push(...scene.children.slice(_stairStart));   // 계단 포세린 디딤판 — 데크 바닥 포세린과 동일하게 '데크 바닥' 토글에서 계단틀 위에 표시
 
 // 데크 계단틀 — 앞쪽(−Z)·왼쪽(高X) 계단을 '납작한 직사각형 테두리'로 표시. 계단 윗단(데크 상단) 높이에 공중에 뜬 것처럼. 썬룸 '데크계단틀' 토글(deckStairFrameObjects).
