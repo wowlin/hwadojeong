@@ -2433,14 +2433,14 @@ captureInto(s2SinkObjects, () => {
     frontFixSash(stairBackWin.p0, s2BackZ - 0.13, stairBackWinW, stairBackWin.sillY, fWinHead - stairBackWin.sillY);   // 계단실 뒤벽 세로 픽스창
     label(`계단실 뒤벽 픽스창 ${fmtDim(stairBackWinW)}×${fmtDim(fWinHead - stairBackWin.sillY)}m`, stairBackWinX, stairBackWin.sillY + (fWinHead - stairBackWin.sillY) / 2, s2BackZ + 0.1, 'opening');
     const gableTop = [[s2FrontZ, eaveY], [s2BackZ, eaveY], [zMid, peakY]];   // 처마 위 박공 삼각(창은 처마 밑 직사각 구간에만)
-    // 3층 게스트룸 창(단일 출처) — 좌우 측벽에 각각. 창대 바닥+0.9m·높이 1.2m(상단 2.1, 위쪽 20cm 줄임). 폭 1.5m(안방 측창과 동일). 방 앞부분 배치.
-    const gWinCz = s2FrontZ + t + 1.4;                       // 게스트룸 창 Z중앙(앞 외벽 안쪽서 1.4m — 두 방 앞부분, 지붕 밑선보다 낮음)
-    const gWinP0 = gWinCz - 0.75, gWinP1 = gWinCz + 0.75, gSill = lvl3 + 0.9, gHead = lvl3 + 2.1;
+    // 3층 게스트룸 창(단일 출처) — 좌우 측벽에 각각. 2층 안방 좌우창과 동일: 앞 외벽 바깥서 0.6m 시작·미서기 2짝×0.8=1.6m·창대 바닥+1.2m(추락안전). 상단은 외벽 최저(2.4) 밑 0.3m=2.1m라 높이 0.9m(층고 낮아 축소).
+    const gWinCz = s2FrontZ + 0.6 + 0.8;                     // 게스트룸 창 Z중앙 — 앞 외벽 바깥서 0.6m 시작·짝폭 0.8m×2짝(2층 측창과 동일)
+    const gWinP0 = gWinCz - 0.8, gWinP1 = gWinCz + 0.8, gSill = lvl3 + 1.2, gHead = lvl3 + 2.1;
     // 우(거실, 低X) — 게스트룸1 측창: 처마 밑 직사각(창 개구)+처마 위 삼각으로 분리
     wallStrip('z', s2X0, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }], EW);
     yzWallPrism({ x: s2X0, points: gableTop, thickness: t, mat: EW });
-    sideSash(s2X0 + 0.17, gWinP0, 1.5, gSill, 1.2);          // 게스트룸1 측창(低X·거실쪽)
-    label('게스트룸1 측창 1.5×1.2m', s2X0 - 0.1, gSill + 0.8, gWinCz, 'opening');
+    sideSash(s2X0 + 0.17, gWinP0, 1.6, gSill, 0.9);          // 게스트룸1 측창(低X·거실쪽)
+    label('게스트룸1 측창 1.6×0.9m', s2X0 - 0.1, gSill + 0.45, gWinCz, 'opening');
     // 좌(안방, 高X) — 화장실 프로젝트창 + 게스트룸2 측창 + 왼쪽 복도 프로젝트창: 처마 밑 직사각(세 개구)+처마 위 삼각으로 분리
     const cWinCz = (s2BackZ - t) - 2.1;                     // 왼쪽 복도 창 Z중앙(게스트룸2 뒤 칸막이~홈리프트 앞면 사이 폭1.0m 복도 중앙)
     const cWinP0 = cWinCz - 0.3, cWinP1 = cWinCz + 0.3;     // 폭 0.6m(Z 스팬) — 화장실 창과 동일 규격(창대1.5·높이0.6)
@@ -2448,8 +2448,8 @@ captureInto(s2SinkObjects, () => {
     yzWallPrism({ x: s2W - t, points: gableTop, thickness: t, mat: EW });
     awningSash(s2W - 0.13, wcWinP0, 0.6, lvl3 + 1.2, 0.6);                // 3층 화장실 왼쪽벽 프로젝트창
     label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl3 + 1.2 + 0.4, wcWinCz, 'opening');
-    sideSash(s2W - 0.13, gWinP0, 1.5, gSill, 1.2);           // 게스트룸2 측창(高X·안방쪽)
-    label('게스트룸2 측창 1.5×1.2m', s2W + 0.1, gSill + 0.8, gWinCz, 'opening');
+    sideSash(s2W - 0.13, gWinP0, 1.6, gSill, 0.9);           // 게스트룸2 측창(高X·안방쪽)
+    label('게스트룸2 측창 1.6×0.9m', s2W + 0.1, gSill + 0.45, gWinCz, 'opening');
     awningSash(s2W - 0.13, cWinP0, 0.6, lvl3 + 1.2, 0.6);    // 3층 왼쪽 복도 프로젝트창(화장실 창과 동일 창대1.2·높이0.6, 폭 0.6)
     label('왼쪽 복도 프로젝트창 0.6×0.6m', s2W + 0.1, lvl3 + 1.2 + 0.4, cWinCz, 'opening');
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
