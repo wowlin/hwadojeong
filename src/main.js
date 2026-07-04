@@ -2408,8 +2408,8 @@ captureInto(s2SinkObjects, () => {
   }
   captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
-    // 앞(처마까지) — 게스트룸 정면 픽스창 2개(창대 바닥+1.2m 추락안전·높이 0.9·상단 2.1, 처마 밑선 밑 0.3m까지 올려 조망 확보·좌우 측창과 상단 통일). 폭 2.0m, 각 방 앞부분 중앙.
-    const fWinSill = lvl3 + 1.2, fWinHead = lvl3 + 2.1, pWinHead = lvl3 + 1.7;   // 픽스창 상단 2.1 / 복도·계단 창 상단 1.7(별도 — 픽스창에 안 묶임)
+    // 앞(처마까지) — 게스트룸 정면 픽스창 2개(창대 바닥+1.2m 추락안전·높이 0.5·상단 1.7, 처마 선단 밑 — 처마에 안 가림). 폭 2.0m, 각 방 앞부분 중앙 가로창.
+    const fWinSill = lvl3 + 1.2, fWinHead = lvl3 + 1.7, pWinHead = lvl3 + 1.7;   // 픽스창 상단 1.7(처마 선단 밑) / 복도·계단 창 상단 1.7
     const fx1 = (s2X0 + t) + 1.6, fx2 = (s2W - t) - 1.6;      // 게스트룸1(低X)·게스트룸2(高X) 정면창 X중앙
     const fWin1 = { p0: fx1 - 1.0, p1: fx1 + 1.0, sillY: fWinSill, headY: fWinHead };
     const fWin2 = { p0: fx2 - 1.0, p1: fx2 + 1.0, sillY: fWinSill, headY: fWinHead };
@@ -2420,8 +2420,8 @@ captureInto(s2SinkObjects, () => {
     frontFixSash(fWin1.p0, s2FrontZ + 0.13, 2.0, fWinSill, fWinHead - fWinSill);   // 게스트룸1 정면 픽스창
     frontFixSash(fWin2.p0, s2FrontZ + 0.13, 2.0, fWinSill, fWinHead - fWinSill);   // 게스트룸2 정면 픽스창
     frontAwningSash(fCorr.p0, s2FrontZ + 0.13, 0.6, lvl3 + 1.1, 0.6, -1);   // 앞 복도 프로젝트창(低Z 바깥)
-    label('게스트룸1 정면 픽스창 2.0×0.9m', fx1, fWinSill + 0.45, s2FrontZ - 0.1, 'opening');
-    label('게스트룸2 정면 픽스창 2.0×0.9m', fx2, fWinSill + 0.45, s2FrontZ - 0.1, 'opening');
+    label('게스트룸1 정면 픽스창 2.0×0.5m', fx1, fWinSill + 0.25, s2FrontZ - 0.1, 'opening');
+    label('게스트룸2 정면 픽스창 2.0×0.5m', fx2, fWinSill + 0.25, s2FrontZ - 0.1, 'opening');
     label('앞 복도 프로젝트창 0.6×0.6m', corrX, lvl3 + 1.1 + 0.4, s2FrontZ - 0.1, 'opening');
     // 뒤(처마까지) — 앞뒤 복도 뒤쪽 프로젝트창 1개 + 계단실 오른쪽(거실측·低X) 세로 픽스창 1개
     const bCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: pWinHead };
