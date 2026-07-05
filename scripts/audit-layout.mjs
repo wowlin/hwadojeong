@@ -207,9 +207,18 @@ const s2KitchenOutlets = [
   { name: 's2 주방 콘센트(양문형 냉장고 자리)', r: s2Outlet((s2FrontZ + s2WallT) + 1.1 / 2, s2F1Top + 1.85) },
   { name: 's2 주방 콘센트(기존 냉장고 자리)', r: s2Outlet((s2InB - 0.05) - 0.545 / 2, s2F1Top + 1.85) },
 ];
+// 우측(거실측) 벽 콘센트 ↔ 우측 슬라이드창 충돌 감사
+const s2RGap = 4 * 0.8, s2FdColT = 0.3;
+const s2RoA0 = s2FrontZ + s2WallT + s2FdColT;
+const s2SlideWin = { a0: s2RoA0, a1: s2RoA0 + s2RGap, y0: groundTopY + 1.7, y1: s2F1Top + s2FoldH };
+const s2RightOutlets = [
+  { name: 's2 거실 콘센트(창 앞쪽 옆)', r: s2Outlet(s2RoA0 - s2JambGap, s2F1Top + 1.1) },
+  { name: 's2 거실 콘센트(창 뒤쪽 옆)', r: s2Outlet(s2RoA0 + s2RGap + s2JambGap, s2F1Top + 1.1) },
+];
 
 const checks = [
   ...s2KitchenOutlets.map((o) => outsideOpening(o.r, s2FoldWin, `${o.name}은(는) 좌측 폴딩창 개구부 밖에 있어야 함`)),
+  ...s2RightOutlets.map((o) => outsideOpening(o.r, s2SlideWin, `${o.name}은(는) 우측 슬라이드창 개구부 밖에 있어야 함`)),
   lte(deckStairRise, 0.17, 'deck stair riser height is at most 17cm'),
   approx(foundationHeight, 0.5, 'foundation concrete is 0.5m high'),
   approx(buildingW, 8.5, 'foundation width label is 8.5m'),

@@ -2202,6 +2202,24 @@ captureInto(s2Wall1Objects, () => {
   label('주방 콘센트', inXL - 0.2, fTop + 1.35, cSink, 'mep');
 });
 
+// ── s2 1층 거실측(오른쪽) 벽 콘센트 — '외벽'(s2Wall1) 토글에 귀속. 우측 슬라이드창 양옆(앞·뒤·개구부 밖) 2개. ──
+captureInto(s2Wall1Objects, () => {
+  const fTop = groundTopY + MAT_H + S2_STAIR.slabT;
+  const inXR = s2X0 + s2WallT;                                // 우(低x·거실측) 외벽 안쪽 면
+  const fdColT = 0.3, rGap = 4 * 0.8, jambGap = 0.12;        // 우측 슬라이드창 개구부 = 3.2m, 창틀 밖 여유
+  const roA0 = s2FrontZ + s2WallT + fdColT;                  // 슬라이드창 앞(低z) 끝
+  const roA1 = roA0 + rGap;                                  // 슬라이드창 뒤(高z) 끝
+  const cFront = roA0 - jambGap;                             // 창 앞쪽 옆(개구부 밖)
+  const cBack = roA1 + jambGap;                              // 창 뒤쪽 옆(개구부 밖)
+  const inOutlet = (cz, oy) => {                             // 우벽 안쪽 면서 실내(+X)로 돌출
+    box({ x: inXR, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.outlet });              // 커버 플레이트
+    box({ x: inXR + 0.035, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.outletSocket }); // 소켓 면
+  };
+  inOutlet(cFront, fTop + 1.1);
+  inOutlet(cBack, fTop + 1.1);
+  label('거실 콘센트', inXR + 0.2, fTop + 1.35, (roA0 + roA1) / 2, 'mep');
+});
+
 // ── s2 천장 조명·실링팬 — 1층·2층 방 천장에 전등-실링팬-전등-실링팬-전등(5개) 한 줄 ──
 // 긴변(X 폭)을 5등분 중심에 배치, 전등(양끝·가운데 3개)과 실링팬(2·4번째 2개)을 번갈아 → 골고루 송풍·조명.
 // 다섯 부재 모두 공간 깊이(Z) 중심선 위 → 좌우·앞뒤 중심 동시 정렬.
