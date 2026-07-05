@@ -212,8 +212,8 @@ const s2RGap = 4 * 0.8, s2FdColT = 0.3;
 const s2RoA0 = s2FrontZ + s2WallT + s2FdColT;
 const s2SlideWin = { a0: s2RoA0, a1: s2RoA0 + s2RGap, y0: groundTopY + 1.7, y1: s2F1Top + s2FoldH };
 const s2RightOutlets = [
-  { name: 's2 거실 콘센트(창 앞쪽 옆)', r: s2Outlet(s2RoA0 - s2JambGap, s2F1Top + 1.1) },
-  { name: 's2 거실 콘센트(창 뒤쪽 옆)', r: s2Outlet(s2RoA0 + s2RGap + s2JambGap, s2F1Top + 1.1) },
+  { name: 's2 거실 콘센트(창 앞쪽 옆)', r: s2Outlet(s2RoA0 - s2JambGap, s2F1Top + 0.3) },
+  { name: 's2 거실 콘센트(창 뒤쪽 옆)', r: s2Outlet(s2RoA0 + s2RGap + s2JambGap, s2F1Top + 0.3) },
 ];
 
 const checks = [

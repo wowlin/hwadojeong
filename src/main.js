@@ -2215,9 +2215,9 @@ captureInto(s2Wall1Objects, () => {
     box({ x: inXR, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.outlet });              // 커버 플레이트
     box({ x: inXR + 0.035, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.outletSocket }); // 소켓 면
   };
-  inOutlet(cFront, fTop + 1.1);
-  inOutlet(cBack, fTop + 1.1);
-  label('거실 콘센트', inXR + 0.2, fTop + 1.35, (roA0 + roA1) / 2, 'mep');
+  inOutlet(cFront, fTop + 0.3);        // 거실 일반 콘센트 높이 = 바닥+0.3m(주방 상판 높이 아님)
+  inOutlet(cBack, fTop + 0.3);
+  label('거실 콘센트', inXR + 0.2, fTop + 0.55, (roA0 + roA1) / 2, 'mep');
 });
 
 // ── s2 천장 조명·실링팬 — 1층·2층 방 천장에 전등-실링팬-전등-실링팬-전등(5개) 한 줄 ──
