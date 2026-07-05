@@ -2179,15 +2179,16 @@ captureInto(s2SinkObjects, () => {
   label(`양문형 냉장고 예정 ${fmtDim(F2W)}×${fmtDim(F2DEP)}m`, inXL - F2DEP / 2, fTop + F2H + 0.15, f2Cz, 'furniture');
 });
 
-// ── s2 1층 주방 실내 콘센트 — '외벽'(s2Wall1) 토글에 귀속. 싱크대 좌우 2개(상판 위)+냉장고 자리 2개(양문형·기존). ──
+// ── s2 1층 주방 실내 콘센트 — '외벽'(s2Wall1) 토글에 귀속. 폴딩창 양옆 2개(개구부 밖·상판 위)+냉장고 자리 2개(양문형·기존). ──
 captureInto(s2Wall1Objects, () => {
   const fTop = groundTopY + MAT_H + S2_STAIR.slabT;
   const inXL = s2X0 + s2W - s2WallT;                          // 좌(高x) 외벽 안쪽 면
   const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
-  const SINKW = 1.2, SIDEW = 0.6, F2W = 1.1, FW = 0.545, bGap = 0.05;
-  const cSink = ((s2FrontZ + s2WallT) + inZB) / 2;          // 좌측벽 앞뒤 중심(싱크대 중심)
-  const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 싱크대 앞쪽(低z) 옆
-  const cWall = cSink + SINKW / 2 + SIDEW / 2;              // 싱크대 뒤쪽(高z) 옆
+  const F2W = 1.1, FW = 0.545, bGap = 0.05;
+  const cSink = ((s2FrontZ + s2WallT) + inZB) / 2;          // 좌측벽 앞뒤 중심(=폴딩창 중심)
+  const foldHalf = (4 * 0.68) / 2, jambGap = 0.12;          // 좌측 폴딩창 반폭 1.36 + 창틀 밖 여유(개구부 밖 배치)
+  const cInner = cSink - foldHalf - jambGap;                // 창 앞쪽(低z) 옆 — 개구부 밖 벽면(상판 위 콘센트)
+  const cWall = cSink + foldHalf + jambGap;                 // 창 뒤쪽(高z) 옆 — 개구부 밖 벽면
   const f2Cz = (s2FrontZ + s2WallT) + F2W / 2;             // 양문형 냉장고 자리(앞)
   const frCz = (inZB - bGap) - FW / 2;                     // 기존 냉장고 자리(뒤)
   const inOutlet = (cz, oy) => {                            // 좌벽 안쪽 면서 실내(-X)로 돌출

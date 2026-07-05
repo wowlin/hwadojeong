@@ -20,6 +20,19 @@ function separatedOrTouching(a0, a1, b0, b1, label) {
   return { label, ok, actual: `${a0}..${a1} vs ${b0}..${b1}`, expected: 'no overlap' };
 }
 
+// 벽부착 부재(콘센트·수전·스위치)가 같은 벽의 개구부(창·문) 안에 들어가면 실패.
+// 물리적으로 못 다는 위치 — z(또는 x)와 y 두 축 모두 겹칠 때만 충돌로 본다.
+function outsideOpening(rect, opening, label) {
+  const aOverlap = rect.a0 < opening.a1 - EPS && opening.a0 < rect.a1 - EPS;   // 벽면 가로축(z 또는 x)
+  const yOverlap = rect.y0 < opening.y1 - EPS && opening.y0 < rect.y1 - EPS;   // 높이축
+  const ok = !(aOverlap && yOverlap);
+  return {
+    label, ok,
+    actual: `부재 ${rect.a0.toFixed(2)}..${rect.a1.toFixed(2)} / y ${rect.y0.toFixed(2)}..${rect.y1.toFixed(2)}`,
+    expected: `개구부(${opening.a0.toFixed(2)}..${opening.a1.toFixed(2)} / y ${opening.y0.toFixed(2)}..${opening.y1.toFixed(2)}) 밖`,
+  };
+}
+
 const groundTopY = 0.08;
 const foundationHeight = 0.5;
 const firstWallY = groundTopY + foundationHeight;
@@ -164,7 +177,39 @@ const deckStairTopY = groundTopY + deckFoundationH + deckFinishT;
 const deckStairSteps = Math.max(1, Math.ceil((deckStairTopY - groundTopY) / 0.17));
 const deckStairRise = (deckStairTopY - groundTopY) / deckStairSteps;
 
+// ── s2(3층) 1층 좌측벽: 주방 콘센트 ↔ 좌측 폴딩창 충돌 감사 ──
+// main.js와 동일하게 재도출(감사 방식 그대로 — 단일출처 리팩터는 후속 과제).
+// 벽부착 부재를 개구부에 그려도 아무 경고 없이 통과하던 구멍을 막는다.
+const s2WallT = 0.3;
+const s2W = 8.5;
+const s2BackZ = 3.3;
+const s2D = 6.0;                              // main.js s2D 단일출처값
+const s2FrontZ = s2BackZ - s2D;               // -2.7
+const s2MatH = 0.5, s2SlabT = 0.2;
+const s2F1Top = groundTopY + s2MatH + s2SlabT;   // 1층 바닥 윗면 0.78
+const s2LeftInnerX = s2W - s2WallT;           // 좌측(高x) 외벽 안쪽 면 8.2
+// 좌측 폴딩창(2+2 양개) — 벽 중앙 배치
+const s2FoldH = 2.4;
+const s2FoldCz = (s2FrontZ + s2BackZ) / 2;    // 0.3
+const s2FoldGap = 4 * 0.68;                    // 2.72
+const s2FoldWin = {
+  a0: s2FoldCz - s2FoldGap / 2, a1: s2FoldCz + s2FoldGap / 2,   // z -1.06..1.66
+  y0: groundTopY + 1.7, y1: s2F1Top + s2FoldH,                  // y 1.78..3.18
+};
+// 주방 콘센트 4개(플레이트 박스: z±0.065, y..+0.15) — main.js inOutlet과 동일 좌표
+const s2SinkCz = ((s2FrontZ + s2WallT) + (s2BackZ - s2WallT)) / 2;   // 0.3(=폴딩창 중심)
+const s2InB = s2BackZ - s2WallT;
+const s2FoldHalf = s2FoldGap / 2, s2JambGap = 0.12;                  // 폴딩창 반폭 + 창틀 밖 여유
+const s2Outlet = (cz, oy) => ({ a0: cz - 0.065, a1: cz + 0.065, y0: oy, y1: oy + 0.15 });
+const s2KitchenOutlets = [
+  { name: 's2 주방 콘센트(창 앞쪽 옆)', r: s2Outlet(s2SinkCz - s2FoldHalf - s2JambGap, s2F1Top + 1.1) },
+  { name: 's2 주방 콘센트(창 뒤쪽 옆)', r: s2Outlet(s2SinkCz + s2FoldHalf + s2JambGap, s2F1Top + 1.1) },
+  { name: 's2 주방 콘센트(양문형 냉장고 자리)', r: s2Outlet((s2FrontZ + s2WallT) + 1.1 / 2, s2F1Top + 1.85) },
+  { name: 's2 주방 콘센트(기존 냉장고 자리)', r: s2Outlet((s2InB - 0.05) - 0.545 / 2, s2F1Top + 1.85) },
+];
+
 const checks = [
+  ...s2KitchenOutlets.map((o) => outsideOpening(o.r, s2FoldWin, `${o.name}은(는) 좌측 폴딩창 개구부 밖에 있어야 함`)),
   lte(deckStairRise, 0.17, 'deck stair riser height is at most 17cm'),
   approx(foundationHeight, 0.5, 'foundation concrete is 0.5m high'),
   approx(buildingW, 8.5, 'foundation width label is 8.5m'),
