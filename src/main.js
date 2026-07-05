@@ -2661,14 +2661,16 @@ captureInto(s2Wall1Objects, () => {
     {
       const xW = s2W - t;                                  // 외벽 안쪽면(=inX1)
       const nZ0 = 0.40, nZ1 = 1.60;                        // 니치 Z: 0.40=게스트룸2 뒤끝(inZ0+RM_L)·1.60=화장실 앞벽(liftZ0+0.2) — 두 벽 사이(스코프 밖이라 값 고정)
-      const nX0 = xW - 0.65;                               // 복도쪽 칸막이 위치 — 외벽서 0.65m(실외기 깊이 0.396+흡입여유 0.2)
+      const nX0 = xW - 0.80;                               // 복도쪽 칸막이 위치 — 외벽서 0.80m(실외기 깊이 0.396+흡입여유 0.35)
       const ecuCz = cWinCz;                                // 실외기 Z중앙 = 루버 개구와 동일 출처
-      const dz0 = ecuCz - 0.3, dz1 = ecuCz + 0.3, dTop = lvl3 + 2.0;   // 점검 루버도어(폭 0.6)
-      yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[nZ0, lvl3], [dz0, lvl3], [dz0, s2RoofUnderY(dz0)], [nZ0, s2RoofUnderY(nZ0)]] });   // 저Z 막힌벽
-      yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[dz1, lvl3], [nZ1, lvl3], [nZ1, s2RoofUnderY(nZ1)], [dz1, s2RoofUnderY(dz1)]] });   // 고Z 막힌벽
+      const nCz = (nZ0 + nZ1) / 2;                         // 니치 Z중앙 — 양개문 중심
+      const dz0 = nCz - 0.55, dz1 = nCz + 0.55, dTop = lvl3 + 2.0;   // 양개(양문형) 단열 점검문 폭 1.1m(실외기 길이 0.96 반입·반출)
+      yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[nZ0, lvl3], [dz0, lvl3], [dz0, s2RoofUnderY(dz0)], [nZ0, s2RoofUnderY(nZ0)]] });   // 저Z 막힌벽(문설주)
+      yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[dz1, lvl3], [nZ1, lvl3], [nZ1, s2RoofUnderY(nZ1)], [dz1, s2RoofUnderY(dz1)]] });   // 고Z 막힌벽(문설주)
       yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[dz0, dTop], [dz1, dTop], [dz1, s2RoofUnderY(dz1)], [dz0, s2RoofUnderY(dz0)]] });   // 문 위 인방
-      box({ x: nX0 + 0.02, z: dz0, w: 0.06, d: dz1 - dz0, y: lvl3, h: 2.0, mat: materials.wcDoor });   // 점검 루버도어(닫힘, 복도쪽)
-      label('실외기 점검 루버도어', nX0, lvl3 + 1.2, ecuCz, 'opening');
+      box({ x: nX0 + 0.02, z: dz0, w: 0.06, d: nCz - dz0, y: lvl3, h: 2.0, mat: materials.entryDoor });   // 양개 단열문 — 저Z짝
+      box({ x: nX0 + 0.02, z: nCz, w: 0.06, d: dz1 - nCz, y: lvl3, h: 2.0, mat: materials.entryDoor });   // 양개 단열문 — 고Z짝
+      label('양개 단열 점검문 1.1m', nX0, lvl3 + 1.2, nCz, 'opening');
       const ecuW = 0.396, ecuLen = 0.96, ecuH = 0.70;      // 실외기(위니아 MRW11HSF) 깊이(X)·폭(Z)·높이
       box({ x: xW - 0.05 - ecuW, z: ecuCz - ecuLen / 2, w: ecuW, d: ecuLen, y: lvl3 + 0.10, h: ecuH, mat: materials.guard });   // 본체(받침 위 0.10)
       box({ x: xW - 0.06, z: ecuCz - ecuLen / 2 + 0.10, w: 0.025, d: ecuLen - 0.20, y: lvl3 + 0.23, h: ecuH - 0.20, mat: materials.openingEdge });   // 토출 팬그릴(외벽쪽 +X)
