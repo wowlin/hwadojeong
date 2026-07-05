@@ -2332,24 +2332,25 @@ captureInto(s2SinkObjects, () => {
   captureInto(s2Wall1Objects, () => {                                     // 뒤 출입문 앞 옥외 계단 — 너비 1m·3단(문턱=맨 위 단, 뒤쪽 +Z로 내려감)
     deckStairs({ axis: 'x', span0: bdCx - 0.5, span1: bdCx + 0.5, edge: s2BackZ, outward: 1, steps: 4, topY: f1Top, baseY: groundTopY, tread: 0.25 });
   });
-  captureInto(s2Wall1Objects, () => {                                     // 왼쪽(안방쪽·高X) 외벽 외부 부동수전(동파방지 벽붙이형) — 왼쪽 뒤에서 1m
-    const faucetX = s2W, faucetZ = s2BackZ - 1.0;                         // 외벽 바깥면(x=8.5)·뒤벽서 1m 앞
-    const brass = materials.handle, bodyX = faucetX + 0.06, spoutY = groundTopY + 0.42, topY = groundTopY + 0.82;
+  captureInto(s2Wall1Objects, () => {                                     // 왼쪽(안방쪽·高X) 외벽 외부 부동수전(벽붙이 야외수전) — 왼쪽 뒤에서 1m
+    const wallX = s2W, fz = s2BackZ - 1.0;                                // 외벽 바깥면(x=8.5)·뒤벽서 1m 앞
+    const brass = materials.handle;
+    const bodyY = groundTopY + 0.65;                                      // 밸브 설치 높이(지면 위 0.57m)
+    const outX = wallX + 0.14;                                           // 밸브 몸통 바깥 끝(바깥=+X)
     const cyl = (rTop, rBot, len, x, y, z, rotAxis, rot) => {
-      const m = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, len, 12), brass);
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, len, 16), brass);
       m.position.set(x, y, z);
       if (rotAxis === 'x') m.rotation.x = rot;
       if (rotAxis === 'z') m.rotation.z = rot;
       m.castShadow = true; m.receiveShadow = false; scene.add(m); return m;
     };
-    box({ x: faucetX, z: faucetZ - 0.06, w: 0.03, d: 0.12, y: topY - 0.06, h: 0.12, mat: brass });   // 벽 유입부 플랜지
-    cyl(0.02, 0.02, 0.08, faucetX + 0.03, topY, faucetZ, 'z', Math.PI / 2);                          // 수평 엘보
-    cyl(0.025, 0.025, topY - spoutY, bodyX, (topY + spoutY) / 2, faucetZ, null, 0);                  // 긴 수직 부동 몸체
-    cyl(0.018, 0.018, 0.04, bodyX, topY + 0.03, faucetZ, null, 0);                                   // 상단 레버(세로)
-    cyl(0.016, 0.016, 0.24, bodyX, topY + 0.05, faucetZ, 'x', Math.PI / 2);                          // 상단 레버(가로 T)
-    cyl(0.02, 0.018, 0.12, bodyX, spoutY - 0.03, faucetZ + 0.025, 'x', 0.32);                        // 하단 토수구
-    cyl(0.023, 0.023, 0.035, bodyX, spoutY - 0.11, faucetZ + 0.06, 'x', 0.32);                       // 호스 연결구
-    label('외부 부동수전', faucetX + 0.5, topY + 0.85, faucetZ - 0.25, 'mep');
+    cyl(0.055, 0.055, 0.03, wallX + 0.015, bodyY, fz, 'z', Math.PI / 2);  // 벽 플랜지(벽면에 밀착한 원판)
+    cyl(0.034, 0.034, 0.14, wallX + 0.07, bodyY, fz, 'z', Math.PI / 2);   // 밸브 몸통(벽에서 바깥으로 수평)
+    cyl(0.014, 0.014, 0.10, outX, bodyY + 0.05, fz, null, 0);             // 핸들 축(세로)
+    cyl(0.075, 0.075, 0.02, outX, bodyY + 0.10, fz, null, 0);             // 둥근 손잡이(휠)
+    cyl(0.024, 0.024, 0.14, outX, bodyY - 0.08, fz, null, 0);             // 토수구(몸통 끝에서 아래로)
+    cyl(0.028, 0.026, 0.035, outX, bodyY - 0.16, fz, null, 0);            // 끝 호스 연결구(약간 굵게)
+    label('외부 부동수전', wallX + 0.5, bodyY + 0.5, fz - 0.25, 'mep');
   });
   captureInto(s2Wall1Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, f1Top, y1, `1층 천장고 ${fmtDim(y1 - f1Top)}m`));   // 1층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 거실쪽(우) 절반 접어 열림
