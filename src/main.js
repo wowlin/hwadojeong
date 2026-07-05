@@ -2687,9 +2687,9 @@ captureInto(s2Wall1Objects, () => {
       label('실외기실 방수 바닥·배수 트렌치', xW - 0.06, lvl3 + 0.3, ecuCz, 'mep');
       // ── 내단열 보충 면 표시(노랑) — 루버로 뚫린 외벽은 단열 포기, 실외기실 안쪽면이 '새 외벽선' ──
       //    실내(복도·게스트룸2·화장실)와 맞닿는 세 수직면. 천장=지붕단열, 바닥(=2층 천장)은 별도 단열.
-      yzWallPrism({ x: nX0 + 0.11, thickness: 0.04, mat: materials.insulPlane, points: [[nZ0, lvl3], [nZ1, lvl3], [nZ1, s2RoofUnderY(nZ1)], [nZ0, s2RoofUnderY(nZ0)]] });   // ① 복도쪽 칸막이(실외기실↔복도)
-      box({ x: nX0 + 0.15, z: nZ0 + 0.02, w: xW - (nX0 + 0.15), d: 0.04, y: lvl3, h: s2RoofUnderY(nZ0) - lvl3, mat: materials.insulPlane });   // ② 저Z 측벽(실외기실↔게스트룸2) — 외벽에 붙고 칸막이 단열 앞에서 시작
-      box({ x: nX0 + 0.15, z: nZ1 - 0.06, w: xW - (nX0 + 0.15), d: 0.04, y: lvl3, h: s2RoofUnderY(nZ1) - lvl3, mat: materials.insulPlane });   // ③ 고Z 측벽(실외기실↔화장실) — 외벽에 붙고 칸막이 단열 앞에서 시작
+      yzWallPrism({ x: nX0 + 0.11, thickness: 0.10, mat: materials.insulPlane, points: [[nZ0, lvl3], [nZ1, lvl3], [nZ1, s2RoofUnderY(nZ1)], [nZ0, s2RoofUnderY(nZ0)]] });   // ① 복도쪽 칸막이(실외기실↔복도) — 내단열 10cm
+      box({ x: nX0 + 0.21, z: nZ0 + 0.02, w: xW - (nX0 + 0.21), d: 0.10, y: lvl3, h: s2RoofUnderY(nZ0) - lvl3, mat: materials.insulPlane });   // ② 저Z 측벽(실외기실↔게스트룸2) — 내단열 10cm, 외벽~칸막이 단열 안쪽면
+      box({ x: nX0 + 0.21, z: nZ1 - 0.12, w: xW - (nX0 + 0.21), d: 0.10, y: lvl3, h: s2RoofUnderY(nZ1) - lvl3, mat: materials.insulPlane });   // ③ 고Z 측벽(실외기실↔화장실) — 내단열 10cm, 외벽~칸막이 단열 안쪽면
       label('내단열 보충면(새 외벽선)', nX0 + 0.5, lvl3 + 1.6, ecuCz, 'mep');
     }
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
