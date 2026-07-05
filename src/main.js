@@ -2651,7 +2651,7 @@ captureInto(s2Wall1Objects, () => {
     // 좌(안방, 高X) — 화장실 프로젝트창 + 게스트룸2 측창 + 실외기 방열 루버: 처마 밑 직사각(세 개구)+처마 위 삼각으로 분리
     // 왼쪽 복도창 자리 → 2층 냉난방기 실외기 방열 루버 개구(실외기 앞면 토출·바깥). 폭 1.1(Z)×높0.8, 창대 바닥+0.05
     const ecuNicheCz = 1.10;                                // 실외기실 앞뒤(Z) 중앙 = (게스트룸2 뒤끝 0.40 + 화장실 앞벽 1.80)/2 — 실외기·루버 공통 정렬
-    const ecuLouP0 = ecuNicheCz - 0.55, ecuLouP1 = ecuNicheCz + 0.55, ecuLouSill = lvl3 + 0.05, ecuLouHead = lvl3 + 0.85;
+    const ecuLouP0 = ecuNicheCz - 0.55, ecuLouP1 = ecuNicheCz + 0.55, ecuLouSill = lvl3 + 0.15, ecuLouHead = lvl3 + 0.95;
     wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLouSill, headY: ecuLouHead }], EW);
     yzWallPrism({ x: s2W - t, points: gableTop, thickness: t, mat: EW });
     awningSash(s2W - 0.13, wcWinP0, 0.6, lvl3 + 1.2, 0.6);                // 3층 화장실 왼쪽벽 프로젝트창
