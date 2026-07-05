@@ -2647,15 +2647,33 @@ captureInto(s2Wall1Objects, () => {
     label('게스트룸1 측창 1.6×0.9m', s2X0 - 0.1, gSill + 0.45, gWinCz, 'opening');
     // 좌(안방, 高X) — 화장실 프로젝트창 + 게스트룸2 측창 + 왼쪽 복도 프로젝트창: 처마 밑 직사각(세 개구)+처마 위 삼각으로 분리
     const cWinCz = (s2BackZ - t) - 2.1;                     // 왼쪽 복도 창 Z중앙(게스트룸2 뒤 칸막이~홈리프트 앞면 사이 폭1.0m 복도 중앙)
-    const cWinP0 = cWinCz - 0.3, cWinP1 = cWinCz + 0.3;     // 폭 0.6m(Z 스팬) — 화장실 창과 동일 규격(창대1.5·높이0.6)
-    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: cWinP0, p1: cWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }], EW);
+    // 왼쪽 복도창 자리 → 2층 냉난방기 실외기 방열 루버 개구(실외기 앞면 토출·바깥). 폭 1.1(Z)×높0.8, 창대 바닥+0.05
+    const ecuLouP0 = cWinCz - 0.55, ecuLouP1 = cWinCz + 0.55, ecuLouSill = lvl3 + 0.05, ecuLouHead = lvl3 + 0.85;
+    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLouSill, headY: ecuLouHead }], EW);
     yzWallPrism({ x: s2W - t, points: gableTop, thickness: t, mat: EW });
     awningSash(s2W - 0.13, wcWinP0, 0.6, lvl3 + 1.2, 0.6);                // 3층 화장실 왼쪽벽 프로젝트창
     label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl3 + 1.2 + 0.4, wcWinCz, 'opening');
     sideSash(s2W - 0.13, gWinP0, 1.6, gSill, 0.9);           // 게스트룸2 측창(高X·안방쪽)
     label('게스트룸2 측창 1.6×0.9m', s2W + 0.1, gSill + 0.45, gWinCz, 'opening');
-    awningSash(s2W - 0.13, cWinP0, 0.6, lvl3 + 1.2, 0.6);    // 3층 왼쪽 복도 프로젝트창(화장실 창과 동일 창대1.2·높이0.6, 폭 0.6)
-    label('왼쪽 복도 프로젝트창 0.6×0.6m', s2W + 0.1, lvl3 + 1.2 + 0.4, cWinCz, 'opening');
+    box({ x: s2W - 0.13, z: ecuLouP0, w: 0.05, d: ecuLouP1 - ecuLouP0, y: ecuLouSill, h: ecuLouHead - ecuLouSill, mat: materials.openingEdge });   // 실외기 방열 루버 그릴(바깥면)
+    label('실외기 방열 루버 1.1×0.8m', s2W + 0.1, (ecuLouSill + ecuLouHead) / 2, cWinCz, 'opening');
+    // ── 2층 냉난방기 실외기 서비스 함 — 3층 화장실 앞 복도 왼쪽(高X 외벽). 2층 실내기 바로 위(복도 구간). 실외기 앞(토출)=외벽(+X)·흡입=복도(-X) ──
+    {
+      const xW = s2W - t;                                  // 외벽 안쪽면(=inX1)
+      const nZ0 = 0.40, nZ1 = 1.60;                        // 니치 Z: 0.40=게스트룸2 뒤끝(inZ0+RM_L)·1.60=화장실 앞벽(liftZ0+0.2) — 두 벽 사이(스코프 밖이라 값 고정)
+      const nX0 = xW - 0.65;                               // 복도쪽 칸막이 위치 — 외벽서 0.65m(실외기 깊이 0.396+흡입여유 0.2)
+      const ecuCz = cWinCz;                                // 실외기 Z중앙 = 루버 개구와 동일 출처
+      const dz0 = ecuCz - 0.3, dz1 = ecuCz + 0.3, dTop = lvl3 + 2.0;   // 점검 루버도어(폭 0.6)
+      yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[nZ0, lvl3], [dz0, lvl3], [dz0, s2RoofUnderY(dz0)], [nZ0, s2RoofUnderY(nZ0)]] });   // 저Z 막힌벽
+      yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[dz1, lvl3], [nZ1, lvl3], [nZ1, s2RoofUnderY(nZ1)], [dz1, s2RoofUnderY(dz1)]] });   // 고Z 막힌벽
+      yzWallPrism({ x: nX0, thickness: 0.10, mat: materials.wall, points: [[dz0, dTop], [dz1, dTop], [dz1, s2RoofUnderY(dz1)], [dz0, s2RoofUnderY(dz0)]] });   // 문 위 인방
+      box({ x: nX0 + 0.02, z: dz0, w: 0.06, d: dz1 - dz0, y: lvl3, h: 2.0, mat: materials.wcDoor });   // 점검 루버도어(닫힘, 복도쪽)
+      label('실외기 점검 루버도어', nX0, lvl3 + 1.2, ecuCz, 'opening');
+      const ecuW = 0.396, ecuLen = 0.96, ecuH = 0.70;      // 실외기(위니아 MRW11HSF) 깊이(X)·폭(Z)·높이
+      box({ x: xW - 0.05 - ecuW, z: ecuCz - ecuLen / 2, w: ecuW, d: ecuLen, y: lvl3 + 0.10, h: ecuH, mat: materials.guard });   // 본체(받침 위 0.10)
+      box({ x: xW - 0.06, z: ecuCz - ecuLen / 2 + 0.10, w: 0.025, d: ecuLen - 0.20, y: lvl3 + 0.23, h: ecuH - 0.20, mat: materials.openingEdge });   // 토출 팬그릴(외벽쪽 +X)
+      label('2층 냉난방기 실외기 960×700×396', xW - 0.35, lvl3 + ecuH + 0.4, ecuCz, 'mep');
+    }
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
     planYDim(s2W + 0.4, s2BackZ - 0.2, lvl3, eaveY, `외벽 최저 ${fmtDim(eaveY - lvl3)}m`);
     planYDim(s2W + 0.4, zMid, lvl3, peakY, `외벽 꼭지점 ${fmtDim(peakY - lvl3)}m`);
