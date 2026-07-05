@@ -1586,6 +1586,15 @@ captureInto(foundationDimObjects, () => {
   }
 });
 
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║ ▼▼▼  S2 영역 시작 — 3층 구조(현재 작업 도면)  ▼▼▼                                ║
+// ║ 이 배너 ~ "S2 영역 끝" 배너 사이는 s2(3층 구조) 전용이다.                         ║
+// ║ · 3층 작업 부재는 반드시 이 구역 안에, s2 좌표(s2W·s2X0·s2BackZ·s2FrontZ·        ║
+// ║   f1Top·S2_STAIR…)와 s2*Objects 그룹으로만 추가한다.                             ║
+// ║ · s1(1층+다락) 좌표(buildingW·buildingBackZ·firstFloorY…)·그룹                    ║
+// ║   (firstFloorObjects·roofObjects·footprintObjects…)은 값이 겹쳐 조용히 s1에       ║
+// ║   그려진다 → 여기서 쓰면 test ⑭(작업 도면 격리)가 실패한다. 절대 금지.            ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 // ── 2층·다락 탭(s2) 배치도/기초 — 집 발자국 너비(X) 8 × 깊이(Z)는 3층 방 짧은변에서 파생 ─────────────
 // 거실측 외벽(x=0)·뒤벽(buildingBackZ=3.3)을 s1과 동일 모서리로 맞추고, 너비→x=8 / 깊이→앞(z) 방향.
 // s2 계단 사양(단일 출처) — 디딤·단높이·런폭·런틈·디딤판두께 · 층고(1→2,2→3). 메모·라벨이 이 값을 그대로 표시.
@@ -2804,6 +2813,9 @@ const _grillStart = scene.children.length;
 }
 extrasObjects.push(...scene.children.slice(_grillStart));
 
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║ ▲▲▲  S2 영역 끝  ▲▲▲   (아래부터는 s1(1층+다락)·공유 부재 — s2 아님)             ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동수전·실내 계단 → 1층 그룹
 
 // 거실 시스템도어 양옆 전면 외벽에 외부(방수) 콘센트 2개
@@ -2820,9 +2832,10 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
   label('외부 콘센트', livingSashEndX + 0.2, outletY + 0.42, wallFaceZ - 0.2, 'mep');
 }
 
-// 가족방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형) — Z위치별로 재사용
-const drawFrostFaucet = (faucetZ) => {
+// 가족방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형)
+{
   const faucetX = buildingW;             // 외벽 바깥면(x=8.5)
+  const faucetZ = 1.1;                    // 측면 출입문(z −0.3~0.5)에서 충분히 떨어진 솔리드 벽
   const brass = materials.handle;         // 황동색
   const bodyX = faucetX + 0.06;           // 벽에서 약간 떨어진 수직 몸체 중심
   const spoutY = 0.42;                    // 하단 토수구
@@ -2849,9 +2862,7 @@ const drawFrostFaucet = (faucetZ) => {
   cyl(0.02, 0.018, 0.12, bodyX, spoutY - 0.03, faucetZ + 0.025, 'x', 0.32);
   cyl(0.023, 0.023, 0.035, bodyX, spoutY - 0.11, faucetZ + 0.06, 'x', 0.32);
   label('외부 부동수전', faucetX + 0.5, topY + 0.85, faucetZ - 0.25, 'mep'); // 수전이 가려지지 않게 위쪽·옆으로
-};
-drawFrostFaucet(1.1);                     // 앞쪽(측면 출입문 z −0.3~0.5에서 충분히 떨어진 솔리드 벽)
-drawFrostFaucet(buildingBackZ - 1.0);     // 왼쪽 뒤에서 1m 지점
+}
 
 // 계단실 양쪽 내벽은 1층 원래 내벽(stairWallObjects) 1벌을 계단 화면과 공유 — 여기서 따로 그리지 않음(중복 제거).
 

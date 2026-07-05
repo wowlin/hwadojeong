@@ -152,3 +152,29 @@ test('⑬ 데크 계단틀 — 데크와 동일 출처(deckFootprints[0])로 정
   assert.match(src, /데크 계단틀[\s\S]{0,1500}deckFootprints\[0\]/,
     '데크 계단틀 블록이 deckFootprints[0]를 좌표 출처로 참조해야 한다(데크와 동일 정렬)');
 });
+
+test('⑭ 작업 도면 격리 — S2(3층) 영역에서 s1(1층+다락) 그룹에 그리는 사고 차단', () => {
+  // 사고 방지: s2(3층) 작업 중 s1(1층+다락) 그룹에 부재를 그리면, 두 좌표값이 겹쳐(x=8.5·뒤벽 z=3.3)
+  //   에러 없이 s1 도면에 조용히 그려진다 → s2 화면엔 안 보이는데 "추가됐다"고 착각. (부동수전 사고가 이 경우)
+  // main.js의 "S2 영역 시작"~"S2 영역 끝" 배너 사이(=3층 전용 구역)에서 s1 전용 그룹에
+  //   captureInto()/​.push 하는 코드가 나오면 실패시킨다. s2 부재는 s2*Objects로만 그려야 한다.
+  const src = readFileSync(mainJs, 'utf8');
+  const begin = src.indexOf('▼▼▼  S2 영역 시작');
+  const end = src.indexOf('▲▲▲  S2 영역 끝');
+  assert.ok(begin > 0 && end > begin, 'main.js에 "S2 영역 시작"·"S2 영역 끝" 경계 배너가 있어야 함(작업 도면 격리 기준)');
+  const s2Zone = src.slice(begin, end);
+  // s1(1층+다락) 전용 그룹 — S2 구역에서 이들에 그리면 사고. (s2*Objects·공유 그룹은 허용)
+  const s1Groups = [
+    'firstFloorObjects', 'firstFloorFinishObjects', 'bathObjects', 'firstWallObjects', 'firstDimObjects',
+    'secondFloorObjects', 'roofObjects', 'footprintObjects', 'dimObjects', 'planObjects',
+    'stairObjects', 'stairCoreObjects', 'stairWallObjects', 'livingInnerWallObjects', 'familyInnerWallObjects',
+    'outletObjects', 'atticOutletObjects',
+  ];
+  const bad = [];
+  for (const g of s1Groups) {
+    if (new RegExp(`captureInto\\(\\s*${g}\\b`).test(s2Zone) || new RegExp(`\\b${g}\\.push\\b`).test(s2Zone)) bad.push(g);
+  }
+  if (/\bcaptureSecond\s*\(/.test(s2Zone)) bad.push('captureSecond(다락 캡처)');
+  assert.equal(bad.length, 0,
+    `S2(3층) 영역에서 s1(1층+다락) 그룹에 그림: ${bad.join(', ')} — s2*Objects로 바꾸거나, s1 부재라면 "S2 영역 끝" 배너 밖으로 옮길 것`);
+});
