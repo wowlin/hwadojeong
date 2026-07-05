@@ -36,6 +36,7 @@ export const materials = {
   showerFloor: new THREE.MeshLambertMaterial({ color: 0x2f6fd8, transparent: true, opacity: 0.5, depthWrite: false }),   // 2층 샤워욕실 자리(반투명 파랑)
   wcFloor: new THREE.MeshLambertMaterial({ color: 0x9b5de5, transparent: true, opacity: 0.5, depthWrite: false }),       // 3층 변기·세면대 자리(반투명 보라)
   wetFloor: new THREE.MeshLambertMaterial({ color: 0x4a8fa6 }),   // 방수 바닥 마감(실외기실 등 — 청회색 방수 코팅)
+  insulPlane: new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.55, depthWrite: false }),   // 내단열 보충 면 표시(실외기실 = 새 외벽선, 노랑)
   s3Room1: new THREE.MeshLambertMaterial({ color: 0x8ecae6, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방1 바닥(반투명 하늘)
   s3Room2: new THREE.MeshLambertMaterial({ color: 0xa7d96b, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방2 바닥(반투명 연두)
   stairUpZone2: new THREE.MeshLambertMaterial({ color: 0xf3a712, transparent: true, opacity: 0.5, depthWrite: false }),  // 2층 계단 올라오는·3층 오르는 자리(계단참 계열 호박색) — 다른 용도 불가

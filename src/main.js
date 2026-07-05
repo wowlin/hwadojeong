@@ -2683,6 +2683,12 @@ captureInto(s2Wall1Objects, () => {
       box({ x: xW - 0.12, z: nZ0, w: 0.12, d: nZ1 - nZ0, y: lvl3 - 0.05, h: 0.05, mat: materials.guard });            // 배수 트렌치 몸통(오목, 외벽 밑)
       box({ x: xW - 0.12, z: nZ0, w: 0.12, d: nZ1 - nZ0, y: lvl3 - 0.012, h: 0.012, mat: materials.entryFrame });     // 트렌치 그레이팅 커버
       label('실외기실 방수 바닥·배수 트렌치', xW - 0.06, lvl3 + 0.3, ecuCz, 'mep');
+      // ── 내단열 보충 면 표시(노랑) — 루버로 뚫린 외벽은 단열 포기, 실외기실 안쪽면이 '새 외벽선' ──
+      //    실내(복도·게스트룸2·화장실)와 맞닿는 세 수직면. 천장=지붕단열, 바닥(=2층 천장)은 별도 단열.
+      yzWallPrism({ x: nX0 + 0.11, thickness: 0.04, mat: materials.insulPlane, points: [[nZ0, lvl3], [nZ1, lvl3], [nZ1, s2RoofUnderY(nZ1)], [nZ0, s2RoofUnderY(nZ0)]] });   // ① 복도쪽 칸막이(실외기실↔복도)
+      box({ x: nX0, z: nZ0 + 0.02, w: xW - nX0, d: 0.04, y: lvl3, h: s2RoofUnderY(nZ0) - lvl3, mat: materials.insulPlane });   // ② 저Z 측벽(실외기실↔게스트룸2)
+      box({ x: nX0, z: nZ1 - 0.06, w: xW - nX0, d: 0.04, y: lvl3, h: s2RoofUnderY(nZ1) - lvl3, mat: materials.insulPlane });   // ③ 고Z 측벽(실외기실↔화장실)
+      label('내단열 보충면(새 외벽선)', nX0 + 0.5, lvl3 + 1.6, ecuCz, 'mep');
     }
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
     planYDim(s2W + 0.4, s2BackZ - 0.2, lvl3, eaveY, `외벽 최저 ${fmtDim(eaveY - lvl3)}m`);
