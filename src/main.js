@@ -2177,6 +2177,16 @@ captureInto(s2SinkObjects, () => {
   swR.position.set(f2Face, fTop + 0.02, f2Cz + F2W / 2);   // 경첩=高z 모서리 · -Z(닫힘)~-X(열림) 사분면
   scene.add(swR);   // captureInto가 s2SinkObjects로 자동 수집
   label(`양문형 냉장고 예정 ${fmtDim(F2W)}×${fmtDim(F2DEP)}m`, inXL - F2DEP / 2, fTop + F2H + 0.15, f2Cz, 'furniture');
+  // 왼쪽(高x) 벽 실내 콘센트 — 싱크대 좌우 2개(상판 위) + 냉장고 자리 2개(양문형·기존). 벽면서 실내(-X)로 돌출.
+  const inOutlet = (cz, oy) => {
+    box({ x: inXL - 0.035, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.counter });         // 커버 플레이트
+    box({ x: inXL - 0.05, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.entryFrame });  // 소켓 면
+  };
+  inOutlet(cInner, fTop + 1.1);     // 싱크대 앞쪽(低z) 옆
+  inOutlet(cWall, fTop + 1.1);      // 싱크대 뒤쪽(高z) 옆
+  inOutlet(f2Cz, fTop + 1.85);      // 양문형 냉장고 자리(앞)
+  inOutlet(frCz, fTop + 1.85);      // 기존 냉장고 자리(뒤)
+  label('주방 콘센트', inXL - 0.2, fTop + 1.35, cSink, 'mep');
 });
 
 // ── s2 천장 조명·실링팬 — 1층·2층 방 천장에 전등-실링팬-전등-실링팬-전등(5개) 한 줄 ──
