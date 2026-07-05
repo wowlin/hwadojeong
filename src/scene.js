@@ -7,7 +7,7 @@ app.innerHTML = `
   <main class="shell">
     <aside class="sidebar">
       <nav class="scheme-tabs">
-        <button id="tabS2" type="button" class="scheme-tab active" data-scheme="s2">2층·다락</button>
+        <button id="tabS2" type="button" class="scheme-tab active" data-scheme="s2">3층</button>
         <button id="tabS1" type="button" class="scheme-tab" data-scheme="s1">1층·다락·포치</button>
       </nav>
       <section class="menu-group" data-scheme="s2">
