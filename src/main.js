@@ -2681,6 +2681,11 @@ captureInto(s2Wall1Objects, () => {
       box({ x: xW - 0.05 - ecuW, z: ecuCz - ecuLen / 2, w: ecuW, d: ecuLen, y: lvl3 + 0.10, h: ecuH, mat: materials.guard });   // 본체(받침 위 0.10)
       box({ x: xW - 0.06, z: ecuCz - ecuLen / 2 + 0.10, w: 0.025, d: ecuLen - 0.20, y: lvl3 + 0.23, h: ecuH - 0.20, mat: materials.openingEdge });   // 토출 팬그릴(외벽쪽 +X)
       label('2층 냉난방기 실외기 960×700×396', xW - 0.35, lvl3 + ecuH + 0.4, ecuCz, 'mep');
+      // 방수 바닥 + 외벽쪽 배수 트렌치 — 제상수·빗물받이. 트렌치는 외벽 루버 밑에서 외부로 배수(구배).
+      box({ x: nX0, z: nZ0, w: (xW - 0.12) - nX0, d: nZ1 - nZ0, y: lvl3, h: 0.015, mat: materials.wetFloor });        // 방수 바닥 마감(트렌치 앞까지)
+      box({ x: xW - 0.12, z: nZ0, w: 0.12, d: nZ1 - nZ0, y: lvl3 - 0.05, h: 0.05, mat: materials.guard });            // 배수 트렌치 몸통(오목, 외벽 밑)
+      box({ x: xW - 0.12, z: nZ0, w: 0.12, d: nZ1 - nZ0, y: lvl3 - 0.012, h: 0.012, mat: materials.entryFrame });     // 트렌치 그레이팅 커버
+      label('실외기실 방수 바닥·배수 트렌치', xW - 0.06, lvl3 + 0.3, ecuCz, 'mep');
     }
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.
     planYDim(s2W + 0.4, s2BackZ - 0.2, lvl3, eaveY, `외벽 최저 ${fmtDim(eaveY - lvl3)}m`);
