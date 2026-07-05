@@ -2177,15 +2177,27 @@ captureInto(s2SinkObjects, () => {
   swR.position.set(f2Face, fTop + 0.02, f2Cz + F2W / 2);   // 경첩=高z 모서리 · -Z(닫힘)~-X(열림) 사분면
   scene.add(swR);   // captureInto가 s2SinkObjects로 자동 수집
   label(`양문형 냉장고 예정 ${fmtDim(F2W)}×${fmtDim(F2DEP)}m`, inXL - F2DEP / 2, fTop + F2H + 0.15, f2Cz, 'furniture');
-  // 왼쪽(高x) 벽 실내 콘센트 — 싱크대 좌우 2개(상판 위) + 냉장고 자리 2개(양문형·기존). 벽면서 실내(-X)로 돌출.
-  const inOutlet = (cz, oy) => {
+});
+
+// ── s2 1층 주방 실내 콘센트 — '외벽'(s2Wall1) 토글에 귀속. 싱크대 좌우 2개(상판 위)+냉장고 자리 2개(양문형·기존). ──
+captureInto(s2Wall1Objects, () => {
+  const fTop = groundTopY + MAT_H + S2_STAIR.slabT;
+  const inXL = s2X0 + s2W - s2WallT;                          // 좌(高x) 외벽 안쪽 면
+  const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
+  const SINKW = 1.2, SIDEW = 0.6, F2W = 1.1, FW = 0.545, bGap = 0.05;
+  const cSink = ((s2FrontZ + s2WallT) + inZB) / 2;          // 좌측벽 앞뒤 중심(싱크대 중심)
+  const cInner = cSink - SINKW / 2 - SIDEW / 2;             // 싱크대 앞쪽(低z) 옆
+  const cWall = cSink + SINKW / 2 + SIDEW / 2;              // 싱크대 뒤쪽(高z) 옆
+  const f2Cz = (s2FrontZ + s2WallT) + F2W / 2;             // 양문형 냉장고 자리(앞)
+  const frCz = (inZB - bGap) - FW / 2;                     // 기존 냉장고 자리(뒤)
+  const inOutlet = (cz, oy) => {                            // 좌벽 안쪽 면서 실내(-X)로 돌출
     box({ x: inXL - 0.035, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.counter });         // 커버 플레이트
     box({ x: inXL - 0.05, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.entryFrame });  // 소켓 면
   };
-  inOutlet(cInner, fTop + 1.1);     // 싱크대 앞쪽(低z) 옆
-  inOutlet(cWall, fTop + 1.1);      // 싱크대 뒤쪽(高z) 옆
-  inOutlet(f2Cz, fTop + 1.85);      // 양문형 냉장고 자리(앞)
-  inOutlet(frCz, fTop + 1.85);      // 기존 냉장고 자리(뒤)
+  inOutlet(cInner, fTop + 1.1);
+  inOutlet(cWall, fTop + 1.1);
+  inOutlet(f2Cz, fTop + 1.85);
+  inOutlet(frCz, fTop + 1.85);
   label('주방 콘센트', inXL - 0.2, fTop + 1.35, cSink, 'mep');
 });
 
