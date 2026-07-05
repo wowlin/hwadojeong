@@ -202,23 +202,37 @@ const s2InB = s2BackZ - s2WallT;
 const s2FoldHalf = s2FoldGap / 2, s2JambGap = 0.12;                  // 폴딩창 반폭 + 창틀 밖 여유
 const s2Outlet = (cz, oy) => ({ a0: cz - 0.065, a1: cz + 0.065, y0: oy, y1: oy + 0.15 });
 const s2KitchenOutlets = [
-  { name: 's2 주방 콘센트(창 앞쪽 옆)', r: s2Outlet(s2SinkCz - s2FoldHalf - s2JambGap, s2F1Top + 1.1) },
-  { name: 's2 주방 콘센트(창 뒤쪽 옆)', r: s2Outlet(s2SinkCz + s2FoldHalf + s2JambGap, s2F1Top + 1.1) },
-  { name: 's2 주방 콘센트(양문형 냉장고 자리)', r: s2Outlet((s2FrontZ + s2WallT) + 1.1 / 2, s2F1Top + 1.85) },
-  { name: 's2 주방 콘센트(기존 냉장고 자리)', r: s2Outlet((s2InB - 0.05) - 0.545 / 2, s2F1Top + 1.85) },
+  { name: 's2 주방 콘센트(창 앞쪽 옆)', kind: 'counter', r: s2Outlet(s2SinkCz - s2FoldHalf - s2JambGap, s2F1Top + 1.1) },
+  { name: 's2 주방 콘센트(창 뒤쪽 옆)', kind: 'counter', r: s2Outlet(s2SinkCz + s2FoldHalf + s2JambGap, s2F1Top + 1.1) },
+  { name: 's2 주방 콘센트(양문형 냉장고 자리)', kind: 'appliance', r: s2Outlet((s2FrontZ + s2WallT) + 1.1 / 2, s2F1Top + 1.85) },
+  { name: 's2 주방 콘센트(기존 냉장고 자리)', kind: 'appliance', r: s2Outlet((s2InB - 0.05) - 0.545 / 2, s2F1Top + 1.85) },
 ];
+// 방 용도별 콘센트 높이 표준(바닥 기준) — 틀린 높이는 커밋을 막는다. "말로 앞으로"가 아니라 게이트로 강제.
+const OUTLET_HEIGHT_BANDS = {
+  general: { lo: 0.25, hi: 0.35, label: '거실·침실 일반(바닥+0.30m)' },
+  counter: { lo: 1.00, hi: 1.20, label: '주방 상판(바닥+1.10m)' },
+  appliance: { lo: 1.70, hi: 1.90, label: '가전 전용(바닥+1.85m)' },
+};
+function outletHeightOK(o, floorTop) {
+  const h = o.r.y0 - floorTop;
+  const band = OUTLET_HEIGHT_BANDS[o.kind];
+  const ok = h >= band.lo - EPS && h <= band.hi + EPS;
+  return { label: `${o.name} 높이는 ${band.label} 표준 대역이어야 함`, ok, actual: `바닥+${h.toFixed(2)}m`, expected: `${band.lo}~${band.hi}m` };
+}
 // 우측(거실측) 벽 콘센트 ↔ 우측 슬라이드창 충돌 감사
 const s2RGap = 4 * 0.8, s2FdColT = 0.3;
 const s2RoA0 = s2FrontZ + s2WallT + s2FdColT;
 const s2SlideWin = { a0: s2RoA0, a1: s2RoA0 + s2RGap, y0: groundTopY + 1.7, y1: s2F1Top + s2FoldH };
 const s2RightOutlets = [
-  { name: 's2 거실 콘센트(창 앞쪽 옆)', r: s2Outlet(s2RoA0 - s2JambGap, s2F1Top + 0.3) },
-  { name: 's2 거실 콘센트(창 뒤쪽 옆)', r: s2Outlet(s2RoA0 + s2RGap + s2JambGap, s2F1Top + 0.3) },
+  { name: 's2 거실 콘센트(창 앞쪽 옆)', kind: 'general', r: s2Outlet(s2RoA0 - s2JambGap, s2F1Top + 0.3) },
+  { name: 's2 거실 콘센트(창 뒤쪽 옆)', kind: 'general', r: s2Outlet(s2RoA0 + s2RGap + s2JambGap, s2F1Top + 0.3) },
 ];
 
 const checks = [
   ...s2KitchenOutlets.map((o) => outsideOpening(o.r, s2FoldWin, `${o.name}은(는) 좌측 폴딩창 개구부 밖에 있어야 함`)),
   ...s2RightOutlets.map((o) => outsideOpening(o.r, s2SlideWin, `${o.name}은(는) 우측 슬라이드창 개구부 밖에 있어야 함`)),
+  ...s2KitchenOutlets.map((o) => outletHeightOK(o, s2F1Top)),
+  ...s2RightOutlets.map((o) => outletHeightOK(o, s2F1Top)),
   lte(deckStairRise, 0.17, 'deck stair riser height is at most 17cm'),
   approx(foundationHeight, 0.5, 'foundation concrete is 0.5m high'),
   approx(buildingW, 8.5, 'foundation width label is 8.5m'),
