@@ -2849,8 +2849,6 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
   };
   extOutlet(livingYardSashX - 0.2);    // 도어 좌측(코너쪽)
   extOutlet(livingSashEndX + 0.2);     // 도어 우측(현관쪽)
-  extOutlet(0.35);                      // 정면 우측 코너(거실쪽, 낮은 X)
-  extOutlet(buildingW - 0.35);         // 정면 좌측 코너(안방쪽, 높은 X)
   label('외부 콘센트', livingSashEndX + 0.2, outletY + 0.42, wallFaceZ - 0.2, 'mep');
 }
 
