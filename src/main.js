@@ -2651,15 +2651,17 @@ captureInto(s2Wall1Objects, () => {
     // 좌(안방, 高X) — 화장실 프로젝트창 + 게스트룸2 측창 + 실외기 방열 루버: 처마 밑 직사각(세 개구)+처마 위 삼각으로 분리
     // 왼쪽 복도창 자리 → 2층 냉난방기 실외기 방열 루버 개구(실외기 앞면 토출·바깥). 폭 1.1(Z)×높0.8, 창대 바닥+0.05
     const ecuNicheCz = 1.10;                                // 실외기실 앞뒤(Z) 중앙 = (게스트룸2 뒤끝 0.40 + 화장실 앞벽 1.80)/2 — 실외기·루버 공통 정렬
-    const ecuLouP0 = ecuNicheCz - 0.55, ecuLouP1 = ecuNicheCz + 0.55, ecuLouSill = lvl3 + 0.15, ecuLouHead = lvl3 + 0.95;
-    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLouSill, headY: ecuLouHead }], EW);
+    const ecuLouP0 = ecuNicheCz - 0.60, ecuLouP1 = ecuNicheCz + 0.60, ecuLouSill = lvl3 + 0.15, ecuLouHead = lvl3 + 0.95;
+    const ecuLou2Sill = lvl3 + 1.05, ecuLou2Head = lvl3 + 1.85;   // 상단 방열 루버 — 하단 위 멀리언 0.10, 폭·높이 동일(2단, 벽 채움)
+    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLouSill, headY: ecuLouHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLou2Sill, headY: ecuLou2Head }], EW);
     yzWallPrism({ x: s2W - t, points: gableTop, thickness: t, mat: EW });
     awningSash(s2W - 0.13, wcWinP0, 0.6, lvl3 + 1.2, 0.6);                // 3층 화장실 왼쪽벽 프로젝트창
     label('화장실 프로젝트창 0.6×0.6m', s2W + 0.1, lvl3 + 1.2 + 0.4, wcWinCz, 'opening');
     sideSash(s2W - 0.13, gWinP0, 1.6, gSill, 0.9);           // 게스트룸2 측창(高X·안방쪽)
     label('게스트룸2 측창 1.6×0.9m', s2W + 0.1, gSill + 0.45, gWinCz, 'opening');
-    box({ x: s2W - 0.13, z: ecuLouP0, w: 0.05, d: ecuLouP1 - ecuLouP0, y: ecuLouSill, h: ecuLouHead - ecuLouSill, mat: materials.openingEdge });   // 실외기 방열 루버 그릴(바깥면)
-    label('실외기 방열 루버 1.1×0.8m', s2W + 0.1, (ecuLouSill + ecuLouHead) / 2, ecuNicheCz, 'opening');
+    box({ x: s2W - 0.13, z: ecuLouP0, w: 0.05, d: ecuLouP1 - ecuLouP0, y: ecuLouSill, h: ecuLouHead - ecuLouSill, mat: materials.openingEdge });   // 실외기 방열 루버 그릴(하단·바깥면)
+    box({ x: s2W - 0.13, z: ecuLouP0, w: 0.05, d: ecuLouP1 - ecuLouP0, y: ecuLou2Sill, h: ecuLou2Head - ecuLou2Sill, mat: materials.openingEdge });   // 실외기 방열 루버 그릴(상단·바깥면)
+    label('실외기 방열 루버 1.2×0.8m 2단', s2W + 0.1, (ecuLouSill + ecuLou2Head) / 2, ecuNicheCz, 'opening');
     // ── 2층 냉난방기 실외기 서비스 함 — 3층 화장실 앞 복도 왼쪽(高X 외벽). 2층 실내기 바로 위(복도 구간). 실외기 앞(토출)=외벽(+X)·흡입=복도(-X) ──
     {
       const xW = s2W - t;                                  // 외벽 안쪽면(=inX1)
