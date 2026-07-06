@@ -2580,8 +2580,8 @@ captureInto(s2Wall1Objects, () => {
   });
   // 눈썹지붕(고정식 캐노피) 단일 출처 — 개구 상단 위 리얼징크 경사판 + 벽-지붕 후레싱(물끊기) + 처마끝 드립엣지 + 까치발 2개.
   // axis: 돌출축('x'|'z', 외벽 법선) · dir: 바깥 방향(±1) · wallFace: 외벽 바깥면(그 축) · spanC/spanW: 스팬축 중앙·지붕 폭 · topY: 개구 상단. 돌출 0.8·물매낙차 0.1(벽쪽↑ 바깥↓).
-  const eyebrowRoof = (axis, dir, wallFace, spanC, spanW, topY, tag) => {
-    const run = 0.8, drop = 0.1, thk = 0.06;
+  const eyebrowRoof = (axis, dir, wallFace, spanC, spanW, topY, tag, run = 0.8) => {
+    const drop = 0.1, thk = 0.06;
     const L = Math.hypot(run, drop);
     const s0 = spanC - spanW / 2;                              // 스팬축 시작
     const panelMinP = wallFace + dir * run / 2 - L / 2;        // 경사판 돌출축 min(중앙=wallFace+dir·run/2)
@@ -2613,7 +2613,7 @@ captureInto(s2Wall1Objects, () => {
   captureInto(s2Wall1Objects, () => {                                     // 1층 개구부 위 고정식 눈썹지붕 — 단일 출처(eyebrowRoof)로 통일
     eyebrowRoof('x', +1, s2W,        lCz, lGap + 0.40, lO.headY, '1층 싱크대쪽');                                  // 좌측(싱크대쪽) 폴딩창 위(+X)
     eyebrowRoof('z', -1, s2FrontZ,   (fdOpen.x0 + fdOpen.x1) / 2, (fdOpen.x1 - fdOpen.x0) + 0.40, fdOpen.headY, '정면 폴딩도어');   // 정면 폴딩도어 위(−Z)
-    eyebrowRoof('x', -1, s2X0,       (rO.a0 + rO.a1) / 2, (rO.a1 - rO.a0) + 0.40, rO.headY, '우측 슬라이드창');       // 우측(거실측) 슬라이드창 위(−X)
+    eyebrowRoof('x', -1, s2X0,       (rO.a0 + rO.a1) / 2, (rO.a1 - rO.a0) + 0.40, rO.headY, '우측 슬라이드창', 0.45);   // 우측(거실측) 슬라이드창 위(−X) — 대지경계 0.5m 이내로 돌출 축소
     eyebrowRoof('z', +1, s2BackZ,    bdCx, (backDoorOpen.a1 - backDoorOpen.a0) + 0.40, backDoorOpen.headY, '뒤 출입문');   // 뒤 출입문 위(+Z)
   });
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
