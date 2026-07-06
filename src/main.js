@@ -1616,6 +1616,10 @@ const s2FrontZ = s2BackZ - s2D;            // 정면 = 뒤 − 깊이 (파생)
 const _wBase = groundTopY + MAT_H, _wFh1 = 3.0, _wFh = 3.0, _wFh3 = 2.6;     // 1층 3.0 · 2층 3.0 · 3층 2.6(손님방 외벽 최저 2.4 = 바닥마감 0.2 뺀 값). 1층 층고 3.0=천장고 2.7+슬래브 0.3
 const F2 = _wBase + _wFh1, F3 = _wBase + _wFh1 + _wFh, roofY = F3 + _wFh3;   // 2층 바닥 · 3층 바닥 · 지붕(처마=3층 벽 상단)
 const s2RoofPitch = 32 * Math.PI / 180;                                     // 박공 32°(용마루 높이가 이 각도서 자동 계산)
+const s2RoofSideOver = 0.45;                  // 좌우(박공면) 처마 내밈 — 그리기·메모 단일 출처
+const s2RoofEaveOver = 1.0;                   // 앞뒤(경사면) 처마 내밈 — 그리기·메모 단일 출처
+const s2SnowGuardT = [0.16, 0.30];            // 눈막이 줄 위치(처마→용마루 비율) — 슬로프당 줄 수 = 배열 길이
+const s2Solar = { panelW: 1.66, panelL: 1.0, panelThk: 0.05, gapX: 0.04, gapZ: 0.04, cols: 4, rows: 2, wattEach: 400 };  // 태양광 모듈 규격·배열 — 그리기·메모 단일 출처
 const s2RidgeZ = (s2FrontZ + s2BackZ) / 2;                                  // 용마루 — 깊이 중앙(용마루는 너비 X를 따라감)
 const s2RoofUnderY = (z) => roofY + (s2D / 2 - Math.abs(z - s2RidgeZ)) * Math.tan(s2RoofPitch);   // 그 z의 박공지붕 밑선(처마 roofY ~ 용마루)
 // 배치도 발자국(납작) — s2 탭에서만 표시
@@ -2744,7 +2748,7 @@ captureInto(s2Wall1Objects, () => {
 // ── s2 지붕(징크 박공) + 눈막이 + 태양광 — 3층 '지붕'·'태양광' 토글 ──
 //   처마=3층 벽 상단(roofY) 밑선. 두께 260mm(단열 260T) + 징크 마감. 처마 앞뒤 1.0m·좌우 0.45m.
 {
-  const sideOver = 0.45, eaveOver = 1.0, thk = roofThickness, zf = 0.05, tan = Math.tan(s2RoofPitch);
+  const sideOver = s2RoofSideOver, eaveOver = s2RoofEaveOver, thk = roofThickness, zf = 0.05, tan = Math.tan(s2RoofPitch);
   const undEaveY = roofY - tan * eaveOver;            // 처마 끝(내민 1m) 밑선 — 경사 연장
   const undRidgeY = s2RoofUnderY(s2RidgeZ);           // 용마루 밑선(단일 출처)
   const eFront = s2FrontZ - eaveOver, eBack = s2BackZ + eaveOver;   // 앞·뒤 처마 끝 Z
@@ -2784,15 +2788,14 @@ captureInto(s2Wall1Objects, () => {
         box({ x: bx - 0.02, z: p.z - 0.02, w: 0.04, d: 0.04, y: p.y + 0.02, h: 0.11, mat: materials.snowGuard, cast: false });   // 브래킷
       }
     };
-    snowGuard(eBack, 0.16); snowGuard(eBack, 0.30);    // 뒤(남측) — 태양광 아래~처마
-    snowGuard(eFront, 0.16); snowGuard(eFront, 0.30);  // 앞(정면) — 처마쪽 2줄
+    for (const t of s2SnowGuardT) { snowGuard(eBack, t); snowGuard(eFront, t); }   // 뒤(남측)·앞(정면) 각 슬로프 s2SnowGuardT.length줄
   });
   // 태양광 3kW — 뒤쪽(남측) 슬로프, 모듈 8장(가로 4 × 세로 2, ≈400W). 지붕 폭 중앙 정렬
   captureInto(s2Solar3Objects, () => {
     const solarMat = new THREE.MeshLambertMaterial({ color: 0x16264a });
     const cosS = Math.cos(s2RoofPitch), sinS = Math.sin(s2RoofPitch);
     const surfaceY = (z) => topRidgeY - tan * (z - s2RidgeZ);   // 뒤 슬로프(z>용마루) 징크 윗면
-    const panelW = 1.66, panelL = 1.0, panelThk = 0.05, gapX = 0.04, gapZ = 0.04, cols = 4, rows = 2;
+    const { panelW, panelL, panelThk, gapX, gapZ, cols, rows } = s2Solar;
     const arrayW = cols * panelW + (cols - 1) * gapX;
     const arrayCenterX = s2W / 2;
     const startX = arrayCenterX - arrayW / 2 + panelW / 2;
@@ -3496,16 +3499,23 @@ function syncSegButtons() {
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕 경사는 32도로 최대한 맞춰 설계 적용한다.\n  (태양광 설치: 28~34도가 최적 경사대)' },
-  s2Roof3: { title: '지붕 (징크 박공)', body: [
-    '- 마감: 리얼징크(티타늄아연). 지붕 두께 260 mm(단열 260T + 징크).',
-    '- 경사 32° 박공, 용마루는 너비(X) 방향.',
-    '- 처마: 앞·뒤 1.0 m, 좌·우 0.6 m 내밈.',
-    '- 눈막이(스노우가드): 양 슬로프 처마 근처 가로바 2줄 — 쌓인 눈이 한꺼번에 미끄러지지 않게.',
-  ].join('\n') },
-  s2Solar3: { title: '태양광 3 kW', body: [
-    '- 뒤쪽(남측) 지붕 슬로프에 설치. 모듈 8장(가로 4 × 세로 2, 약 400 W) ≈ 3 kW.',
-    '- 한전 상계(역송) 연계. 박공 32°는 태양광 최적 경사대(28~34°) 안.',
-  ].join('\n') },
+  get s2Roof3() {
+    const deg = Math.round(s2RoofPitch * 180 / Math.PI);
+    return { title: '지붕 (징크 박공)', body: [
+      `- 마감: 리얼징크(티타늄아연). 지붕 두께 ${Math.round(roofThickness * 1000)} mm(단열 + 징크).`,
+      `- 경사 ${deg}° 박공, 용마루는 너비(X) 방향.`,
+      `- 처마: 앞·뒤 ${fmtDim(s2RoofEaveOver)} m, 좌·우 ${fmtDim(s2RoofSideOver)} m 내밈.`,
+      `- 눈막이(스노우가드): 양 슬로프 처마 근처 가로바 ${s2SnowGuardT.length}줄 — 쌓인 눈이 한꺼번에 미끄러지지 않게.`,
+    ].join('\n') };
+  },
+  get s2Solar3() {
+    const deg = Math.round(s2RoofPitch * 180 / Math.PI);
+    const n = s2Solar.cols * s2Solar.rows, kw = n * s2Solar.wattEach / 1000;
+    return { title: `태양광 ${fmtDim(kw)} kW`, body: [
+      `- 뒤쪽(남측) 지붕 슬로프에 설치. 모듈 ${n}장(가로 ${s2Solar.cols} × 세로 ${s2Solar.rows}, 약 ${s2Solar.wattEach} W) ≈ ${fmtDim(kw)} kW.`,
+      `- 한전 상계(역송) 연계. 박공 ${deg}°는 태양광 최적 경사대(28~34°) 안.`,
+    ].join('\n') };
+  },
   get s2Wall3() {                                          // 박공 외벽 envelope — 높이·각도(기초 상단 기준, 단일 출처서 계산)
     const deg = s2RoofPitch * 180 / Math.PI;                 // 박공 각도 단일 출처(s2RoofPitch)에서 읽음
     const rise = (s2D / 2) * Math.tan(s2RoofPitch);          // 처마→용마루 상승(깊이 절반 × tan(박공각))
