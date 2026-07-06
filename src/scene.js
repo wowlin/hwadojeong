@@ -18,6 +18,13 @@ app.innerHTML = `
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
+        <h2 class="menu-title">전체</h2>
+        <div class="seg-row" role="group" aria-label="전체 외벽·홈리프트">
+          <button type="button" class="seg-btn" id="bAllWall">외벽</button>
+          <button type="button" class="seg-btn" id="bLift">홈리프트</button>
+        </div>
+      </section>
+      <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">3층</h2>
         <div class="seg-row" role="group" aria-label="3층 바닥·계단·외벽">
           <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
