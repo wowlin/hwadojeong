@@ -2595,14 +2595,16 @@ captureInto(s2Wall1Objects, () => {
       const panel = box({ x: panelMinP, z: s0, w: L, d: spanW, y: topY + drop / 2 + 0.02, h: thk, mat: materials.roof });   // 리얼징크 경사판
       panel.rotation.z = Math.atan2(-drop, dir * run);          // 바깥으로 물매
       box({ x: flashP, z: s0, w: 0.08, d: spanW, y: topY + drop - 0.02, h: 0.14, mat: materials.roofEdge });   // 벽-지붕 후레싱
-      box({ x: dripP,  z: s0, w: 0.05, d: spanW, y: topY - drop - 0.06, h: 0.13, mat: materials.roofEdge });    // 처마끝 드립엣지
+      box({ x: wallFace + dir * 0.05, z: s0, w: 0.10, d: spanW, y: topY - 0.11, h: 0.20, mat: materials.roofEdge });   // 뒷변 인방 연속보 — 개구 상단 인방에 전체 길이 고정(까치발 대신 연속 지지)
+      box({ x: dripP,  z: s0, w: 0.06, d: spanW, y: topY - drop - 0.12, h: 0.22, mat: materials.roofEdge });    // 처마끝 테두리보 — 처짐·바람 들썩임 방지(양 끝 지지만으로 성립)
       const bracket = (bs) => { const m = box({ x: bmid, z: bs, w: bl, d: 0.06, y: bY, h: 0.06, mat: materials.roofEdge }); m.rotation.z = Math.atan2(y1b - y0b, p1b - p0b); };
       if (bracketed) { bracket(s0 + 0.06); bracket(s0 + spanW - 0.12); }
     } else {
       const panel = box({ x: s0, z: panelMinP, w: spanW, d: L, y: topY + drop / 2 + 0.02, h: thk, mat: materials.roof });
       panel.rotation.x = Math.atan2(drop, dir * run);
       box({ x: s0, z: flashP, w: spanW, d: 0.08, y: topY + drop - 0.02, h: 0.14, mat: materials.roofEdge });
-      box({ x: s0, z: dripP,  w: spanW, d: 0.05, y: topY - drop - 0.06, h: 0.13, mat: materials.roofEdge });
+      box({ x: s0, z: wallFace + dir * 0.05, w: spanW, d: 0.10, y: topY - 0.11, h: 0.20, mat: materials.roofEdge });   // 뒷변 인방 연속보 — 개구 상단 인방에 전체 길이 고정(까치발 대신 연속 지지)
+      box({ x: s0, z: dripP,  w: spanW, d: 0.06, y: topY - drop - 0.12, h: 0.22, mat: materials.roofEdge });   // 처마끝 테두리보 — 처짐·바람 들썩임 방지(양 끝 지지만으로 성립)
       const bracket = (bx) => { const m = box({ x: bx, z: bmid, w: 0.06, d: bl, y: bY, h: 0.06, mat: materials.roofEdge }); m.rotation.x = Math.atan2(-(y1b - y0b), p1b - p0b); };
       if (bracketed) { bracket(s0 + 0.06); bracket(s0 + spanW - 0.12); }
     }
