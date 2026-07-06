@@ -581,10 +581,10 @@ siteBaseObjects.push(box({ x: lotX1, z: lotZ0, w: roadW, d: lotD, h: 0.002, mat:
 siteBaseObjects.push(box({ x: lotX0, z: lotZ1, w: lotW + roadW, d: roadW, h: 0.002, mat: materials.road, cast: false, name: 'ground' }));   // 후면 도로(부지 밖, 모서리 연결)
 
 // 경계 — 측백담장(측백 생울타리)·옆집담장(우측 콘크리트) 두 토글로 분리.
-// 옆집담장(경계벽) — 대지 오른쪽(거실 쪽, 낮은 X) 바깥. 폭 0.2m × 높이 1.0m, 경계선 전체 길이.
+// 옆집담장(경계벽) — 대지 오른쪽(거실 쪽, 낮은 X) 바깥. 폭 0.2m × 높이 fenceH, 경계선 전체 길이.
 const fenceMat = new THREE.MeshLambertMaterial({ color: 0xb0a692 });
-const fenceH = 1.0;   // 옆집담장 높이 — 그리기·메모 단일 출처
-const hedgeH = 1.6;   // 측백담장(생울타리) 높이 — 그리기·메모 단일 출처
+const fenceH = 1.1;   // 옆집담장 높이 — 그리기·메모 단일 출처
+const hedgeH = 1.5;   // 측백담장(생울타리) 높이 — 그리기·메모 단일 출처
 fenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: groundTopY, h: fenceH, mat: fenceMat, name: 'ground' }));
 // 측백나무 생울타리(상록) — 뒤쪽 + 왼쪽(안방 쪽, 높은 X) 경계 안쪽 50cm.
 hedgeObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: groundTopY, h: hedgeH, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
