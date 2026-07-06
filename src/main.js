@@ -3591,16 +3591,19 @@ const NOTES = {
     const depth = W + usTh;                                // 옷장 깊이: 문 앞면~뒤벽 안쪽(계단아래 문 두께 포함)
     const height = (nL + 1) * R - tTh;                     // 옷장 높이: 1층 바닥~계단참 하부
     const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용)
-    return { title: '계단 사양 · 계단참 아래 옷장', body: [
+    return { title: '계단', body: [
       '［계단］ 좌우런 · 우측벽 스위치백',
       `· 단높이      ${mm(R)} mm`,
       `· 디딤 깊이    ${mm(T)} mm`,
       `· 디딤판      ${mm(T + nosing)} × ${mm(W)} mm  (계단코 포함, 두께 ${mm(tTh)})`,
       `· 런 폭       ${mm(W)} mm`,
       `· 런 사이 틈   ${mm(g)} mm`,
-      `· 계단참      ${mm(W)} × ${mm(wF)} mm`,
       `· 1→2층      ${mm(floorH[0])} mm / ${n1}단`,
       `· 2→3층      ${mm(floorH[1])} mm / ${n2}단`,
+      '',
+      '［참 크기］',
+      `· 계단참(스위치백)  ${mm(W)} × ${mm(wF)} mm`,
+      `· 층계참(도착칸)   ${mm(s2LandingW)} × ${mm(wF)} mm`,
       '',
       '［계단참 아래 옷장］ 쌍여닫이',
       `· 너비  ${mm(width)} mm  (외벽~챌판)`,
