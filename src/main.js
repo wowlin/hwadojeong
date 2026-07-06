@@ -3618,7 +3618,7 @@ const NOTES = {
   },
   get hedge() {                                            // 측백담장 — 높이·두께는 코드(hedgeH·hedgeThickness)서 파생.
     return { title: '측백담장', body: [
-      '- 측백나무 생울타리(상록) · 뒤·좌측(가족방) 경계',
+      '- 측백나무 생울타리(상록)',
       `- 높이 ${fmtDim(hedgeH)} m · 두께 ${fmtDim(hedgeThickness)} m`,
     ].join('\n') };
   },
