@@ -18,3 +18,5 @@ scratchpad/
 scratch-render-check.png
 shot.png
 diag-*.png
+.claude/repeat-count.txt
+.claude/repeat-req.txt
