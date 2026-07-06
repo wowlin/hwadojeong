@@ -2708,6 +2708,9 @@ captureInto(s2Wall1Objects, () => {
     const ecuLouP0 = ecuNicheCz - 0.50, ecuLouP1 = ecuNicheCz + 0.50, ecuLouSill = lvl3 + 0.15, ecuLouHead = lvl3 + 1.10;
     const ecuLou2Sill = lvl3 + 1.30, ecuLou2Head = lvl3 + 2.25;   // 상단 방열 루버 — 멀리언 0.20·위 인방 0.15(2.4m 밑), 하·상 높이 0.95 동일(2단)
     wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLouSill, headY: ecuLouHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLou2Sill, headY: ecuLou2Head }], EW);
+    // 상단 배기 루버 — 처마 위 박공 삼각벽에 하나 더(굴뚝효과로 더운 공기 위로 배기). 폭=하단 루버와 동일(ecuLouP0~P1), 높이 0.5m로 축소(삼각 안에 맞춤)
+    const ecuLou3Sill = eaveY + 0.15, ecuLou3Head = eaveY + 0.65;   // 처마선 위 인방 0.15 두고 시작, 높이 0.5m
+    const rU = (z) => s2RoofUnderY(z);                              // 그 z의 박공 밑선(삼각 윗변)
     // 박공 삼각벽(안방쪽)을 상단 배기 루버 개구 둘레로 4조각 분할(x=s2W-t) — 앞쪽(용마루 포함)·뒤쪽·개구 아래·개구 위
     yzWallPrism({ x: s2W - t, thickness: t, mat: EW, points: [[s2FrontZ, eaveY], [ecuLouP0, eaveY], [ecuLouP0, rU(ecuLouP0)], [zMid, peakY]] });
     yzWallPrism({ x: s2W - t, thickness: t, mat: EW, points: [[ecuLouP1, eaveY], [s2BackZ, eaveY], [ecuLouP1, rU(ecuLouP1)]] });
@@ -2722,9 +2725,6 @@ captureInto(s2Wall1Objects, () => {
     box({ x: s2W - 0.13, z: ecuLouP0, w: 0.05, d: ecuLouP1 - ecuLouP0, y: ecuLouSill, h: ecuLouHead - ecuLouSill, mat: materials.openingEdge });   // 실외기 방열 루버 그릴(하단·바깥면)
     box({ x: s2W - 0.13, z: ecuLouP0, w: 0.05, d: ecuLouP1 - ecuLouP0, y: ecuLou2Sill, h: ecuLou2Head - ecuLou2Sill, mat: materials.openingEdge });   // 실외기 방열 루버 그릴(상단·바깥면)
     label('실외기 방열 루버 1.0×0.95m 2단', s2W + 0.1, (ecuLouSill + ecuLouHead) / 2, ecuNicheCz, 'opening');
-    // 상단 배기 루버 — 처마 위 박공 삼각벽에 하나 더(굴뚝효과로 더운 공기 위로 배기). 폭=하단 루버와 동일(ecuLouP0~P1), 높이 0.5m로 축소(삼각 안에 맞춤)
-    const ecuLou3Sill = eaveY + 0.15, ecuLou3Head = eaveY + 0.65;   // 처마선 위 인방 0.15 두고 시작, 높이 0.5m
-    const rU = (z) => s2RoofUnderY(z);                              // 그 z의 박공 밑선(삼각 윗변)
     // ── 2층 냉난방기 실외기 서비스 함 — 3층 화장실 앞 복도 왼쪽(高X 외벽). 2층 실내기 바로 위(복도 구간). 실외기 앞(토출)=외벽(+X)·흡입=복도(-X) ──
     {
       const xW = s2W - t;                                  // 외벽 안쪽면(=inX1)
