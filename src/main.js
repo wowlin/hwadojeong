@@ -3392,9 +3392,7 @@ const view = {
   s2Wall2: false,        // s2 2층 외벽 — '2층' 그룹 '외벽' 버튼
   s2Wall3: false,        // s2 3층 외벽(박공 포함) — '3층' 그룹 '외벽' 버튼
   s2Ecu3: false,         // s2 3층 실외기(방열/배기 루버 그릴 + 벽 안쪽 실외기실) — '3층' 그룹 '실외기' 버튼
-  s2StairF1: false,      // 1층 계단 버튼 — 1→2 전체(하부런+1-2참+상부런)
-  s2StairF2: false,      // 2층 계단 버튼 — 1-2참+상부런 + 2→3 하부런 + 2-3참
-  s2StairF3: false,      // 3층 계단 버튼 — 2-3참 + 2→3 상부런
+  s2Stair: false,        // 계단 버튼 — 1·2·3층 계단 전체(하부런+계단참+상부런) 한 토글, '전체' 그룹
   s2Floor1: false,       // s2 1층 바닥('1층' 버튼)
   s2Floor2: false,       // s2 2층 바닥('2층' 버튼)
   s2Floor3: false,       // s2 3층 바닥('3층' 버튼)
@@ -3493,17 +3491,11 @@ function applyVisibility() {
   }
   // 미사용 배열(삭제된 골조 토글 · 구 통합 계단벽[분리됨])
   for (const item of stairWallObjects) item.visible = false;
-  // s2 계단 런·계단참 — 층별 버튼이 그 층에 속한 부분만. 공유 부재(MidA·MidB)는 인접 층 버튼의 OR로 표시.
-  { const f1 = view.s2StairF1, f2 = view.s2StairF2, f3 = view.s2StairF3;
-    const set = (arr, on) => { for (const item of arr) item.visible = !isPlan && on; };
-    set(s2StairLowA, f1);              // 1→2 하부런 — 1층 계단
-    set(s2StairMidA, f1 || f2);        // 1-2참+상부런 — 1·2층 공유
-    set(s2StairLowB, f2);              // 2→3 하부런 — 2층 계단
-    set(s2StairMidB, f2 || f3);        // 2-3참 — 2·3층 공유
-    set(s2StairUpB,  f3);              // 2→3 상부런 — 3층 계단
+  // s2 계단 — 1·2·3층 런·계단참·공유 라벨 전체를 하나의 '계단' 토글로 함께 표시.
+  { const on = !isPlan && view.s2Stair;
+    for (const arr of [s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Stair2Objects])
+      for (const item of arr) item.visible = on;
   }
-  // 계단2 공유부(라벨·층고 치수)는 계단 버튼(1·2·3층) 중 하나라도 켜지면 함께 보임
-  { const on = !isPlan && (view.s2StairF1 || view.s2StairF2 || view.s2StairF3); for (const item of s2Stair2Objects) item.visible = on; }
   // 층별 라벨 정리 — 윗층 바닥이 표시되면 아래층의 비치수 라벨(방·가구·설비·개구부)은 숨겨 겹쳐 보임 방지. 치수 라벨은 유지.
   { const hideNonDim = (arrs) => { for (const arr of arrs) for (const item of arr) if (item.userData && item.userData.labelGroup && item.userData.labelGroup !== 'dim') item.visible = false; };
     if (!isPlan && view.s2Floor2) hideNonDim([s2Floor1Objects, s2SinkObjects, s2StoveObjects, s2FurnitureObjects, s2StairLowA]);   // 2층 바닥 표시 → 1층 비치수 라벨 숨김
@@ -3521,12 +3513,12 @@ function setActive(id, on) { const el = document.querySelector('#' + id); if (el
 function syncSegButtons() {
   setActive('bHedge', view.hedge); setActive('bFence', view.fence);
   // '1층' 그룹 버튼 — 구조 섹션의 같은 부품을 공유 토글(active 동기화)
-  setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Stair', view.s2StairF1); setActive('bF1Wall', view.s2Wall1);
+  setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Wall', view.s2Wall1);
   setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove); setActive('bF1Fan', view.s2Fan1);
-  setActive('bF2Floor', view.s2Floor2); setActive('bF2Stair', view.s2StairF2); setActive('bF2Wall', view.s2Wall2); setActive('bF2Fan', view.s2Fan2);
-  setActive('bF3Floor', view.s2Floor3); setActive('bF3Stair', view.s2StairF3); setActive('bF3Wall', view.s2Wall3); setActive('bF3Ecu', view.s2Ecu3);
+  setActive('bF2Floor', view.s2Floor2); setActive('bF2Wall', view.s2Wall2); setActive('bF2Fan', view.s2Fan2);
+  setActive('bF3Floor', view.s2Floor3); setActive('bF3Wall', view.s2Wall3); setActive('bF3Ecu', view.s2Ecu3);
   setActive('bF3Roof', view.s2Roof3); setActive('bF3Solar', view.s2Solar3);
-  setActive('bAllWall', view.s2Wall1 && view.s2Wall2 && view.s2Wall3); setActive('bLift', view.s2Lift);
+  setActive('bStair', view.s2Stair); setActive('bAllWall', view.s2Wall1 && view.s2Wall2 && view.s2Wall3); setActive('bLift', view.s2Lift);
 }
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
@@ -3584,7 +3576,7 @@ const NOTES = {
       '· 마감    포세린 타일',
     ].join('\n') };
   },
-  get s2StairF1() {                                        // 계단 사양 + 1층 계단참 아래 옷장 — 모두 계단 상수서 자동 계산
+  get s2Stair() {                                          // 계단 사양 + 1층 계단참 아래 옷장 — 모두 계단 상수서 자동 계산
     const { T, R, W, g, tTh, floorH, nosing, rTh, usTh, nUpper, landingSteps } = S2_STAIR;
     const wF = 2 * W + g;                                  // 계단참 깊이(두 런 + 틈)
     const n1 = Math.round(floorH[0] / R), n2 = Math.round(floorH[1] / R);   // 비행별 단 수
@@ -3694,7 +3686,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2StairF1', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Stair', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
@@ -3750,10 +3742,11 @@ function showPlan() {
 const CHECK_MAP = Object.fromEntries(CHECKS);   // 체크박스 id → view 키
 const SEG_KEYS = {                              // 버튼 id → 제어하는 view 키(집계 버튼은 leaf 키들의 합집합)
   bHedge: ['hedge'], bFence: ['fence'],
-  bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Stair: ['s2StairF1'], bF1Wall: ['s2Wall1'],
+  bStair: ['s2Stair'],
+  bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Wall: ['s2Wall1'],
   bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'], bF1Fan: ['s2Fan1'],
-  bF2Floor: ['s2Floor2'], bF2Stair: ['s2StairF2'], bF2Wall: ['s2Wall2'], bF2Fan: ['s2Fan2'],
-  bF3Floor: ['s2Floor3'], bF3Stair: ['s2StairF3'], bF3Wall: ['s2Wall3'], bF3Ecu: ['s2Ecu3'],
+  bF2Floor: ['s2Floor2'], bF2Wall: ['s2Wall2'], bF2Fan: ['s2Fan2'],
+  bF3Floor: ['s2Floor3'], bF3Wall: ['s2Wall3'], bF3Ecu: ['s2Ecu3'],
   bF3Roof: ['s2Roof3'], bF3Solar: ['s2Solar3'],
 };
 const groupControls = [];   // [{ btn, keys }] — 각 그룹의 전체버튼 + 제어 키 목록(초기 1회 산출)
@@ -3821,19 +3814,17 @@ bindSegButton('bFence', () => { view.fence = !view.fence; });
 // '1층' 그룹 버튼 — 구조 섹션의 같은 부품(기초·1층바닥·1>2층계단·식탁·주방·난로)을 공유 토글
 bindSegButton('bF1Foundation', () => { view.s2Foundation = !view.s2Foundation; });
 bindSegButton('bF1Floor', () => { view.s2Floor1 = !view.s2Floor1; });
-bindSegButton('bF1Stair', () => { view.s2StairF1 = !view.s2StairF1; });
 bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
 bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
 bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
 bindSegButton('bF1Fan', () => { view.s2Fan1 = !view.s2Fan1; });
 bindSegButton('bF2Floor', () => { view.s2Floor2 = !view.s2Floor2; });
-bindSegButton('bF2Stair', () => { view.s2StairF2 = !view.s2StairF2; });   // 2층 계단 = 1-2참+상부런 + 2→3 하부런 + 2-3참
 bindSegButton('bF2Fan', () => { view.s2Fan2 = !view.s2Fan2; });
 bindSegButton('bF3Floor', () => { view.s2Floor3 = !view.s2Floor3; });
-bindSegButton('bF3Stair', () => { view.s2StairF3 = !view.s2StairF3; });   // 3층 계단 = 2-3참 + 2→3 상부런
 bindSegButton('bF3Ecu', () => { view.s2Ecu3 = !view.s2Ecu3; });          // 3층 실외기 = 방열/배기 루버 그릴 + 벽 안쪽 실외기실
 bindSegButton('bF3Roof', () => { view.s2Roof3 = !view.s2Roof3; });       // 3층 지붕 = 징크 박공 슬래브 + 처마 + 눈막이
 bindSegButton('bF3Solar', () => { view.s2Solar3 = !view.s2Solar3; });    // 3층 태양광 = 뒤 지붕 3kW 패널
+bindSegButton('bStair', () => { view.s2Stair = !view.s2Stair; });        // 계단 = 1·2·3층 계단 전체 한 토글
 bindSegButton('bAllWall', () => { const all = view.s2Wall1 && view.s2Wall2 && view.s2Wall3; view.s2Wall1 = view.s2Wall2 = view.s2Wall3 = !all; });   // 전체 외벽 = 1·2·3층 외벽 한꺼번에
 bindSegButton('bLift', () => { view.s2Lift = !view.s2Lift; });           // 홈리프트 = 전체 샤프트(독립)
 

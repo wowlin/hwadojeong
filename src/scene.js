@@ -19,32 +19,30 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">전체</h2>
-        <div class="seg-row" role="group" aria-label="전체 외벽·홈리프트">
+        <div class="seg-row" role="group" aria-label="전체 외벽·계단·홈리프트">
           <button type="button" class="seg-btn" id="bAllWall">외벽</button>
+          <button type="button" class="seg-btn" id="bStair">계단</button>
           <button type="button" class="seg-btn" id="bLift">홈리프트</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">3층</h2>
-        <div class="seg-row" role="group" aria-label="3층 바닥·계단">
+        <div class="seg-row" role="group" aria-label="3층 바닥·실외기">
           <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
-          <button type="button" class="seg-btn" id="bF3Stair">계단</button>
           <button type="button" class="seg-btn" id="bF3Ecu">실외기</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">2층</h2>
-        <div class="seg-row" role="group" aria-label="2층 바닥·계단">
+        <div class="seg-row" role="group" aria-label="2층 바닥·실링팬">
           <button type="button" class="seg-btn" id="bF2Floor">바닥</button>
-          <button type="button" class="seg-btn" id="bF2Stair">계단</button>
           <button type="button" class="seg-btn" id="bF2Fan">실링팬</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="1층 바닥·계단">
+        <div class="seg-row" role="group" aria-label="1층 바닥">
           <button type="button" class="seg-btn" id="bF1Floor">바닥</button>
-          <button type="button" class="seg-btn" id="bF1Stair">계단</button>
         </div>
         <div class="seg-row" role="group" aria-label="1층 식탁·주방·난로">
           <button type="button" class="seg-btn" id="bF1Furniture">식탁</button>
