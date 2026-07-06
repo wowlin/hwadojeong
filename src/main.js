@@ -3565,7 +3565,7 @@ const NOTES = {
     const rise = MAT_H + S2_STAIR.slabT;                    // 지면~1층 바닥 윗면(정면·뒤 계단 공통 상승)
     const fRis = rise / s2FrontStair.steps, rRis = rise / s2RearStair.steps;
     return { title: '1층 바닥', body: [
-      '- 바닥: 페데스탈(높이조절 받침) + 포세린 타일 — 건식 시스템(데크 바닥과 동일 마감).',
+      '- 바닥: 페데스탈(높이조절 받침) + 포세린 타일 — 건식 시스템.',
       `- 정면 옥외 계단: 집 너비 전체 ${fmtDim(s2W)} m · ${s2FrontStair.steps}단 · 단높이 ${fmtDim(fRis)} m · 디딤 ${fmtDim(s2FrontStair.tread)} m · 포세린 타일.`,
       `- 뒤 출입문 옥외 계단: 폭 ${fmtDim(s2RearStair.width)} m · ${s2RearStair.steps}단 · 단높이 ${fmtDim(rRis)} m · 디딤 ${fmtDim(s2RearStair.tread)} m · 포세린 타일.`,
     ].join('\n') };
