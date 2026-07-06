@@ -2578,23 +2578,43 @@ captureInto(s2Wall1Objects, () => {
       drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
-  captureInto(s2Wall1Objects, () => {                                     // 좌측(싱크대쪽) 폴딩창 위 고정식 눈썹지붕(캐노피) — 돌출 0.6·폭 창+양옆 0.15·리얼징크
-    const eRun = 0.8, eDrop = 0.1, eThk = 0.06;                           // 돌출(밖=+X)·물매 낙차(뒤↑앞↓)·판 두께
-    const eW = lGap + 0.40, ez0 = lCz - eW / 2;                           // 폭 = 폴딩창 개구(2.72) + 양옆 0.20씩, Z중앙은 창 중앙
-    const eWallX = s2W, eTopY = lO.headY;                                 // 좌측 외벽 바깥면·폴딩창 상단(바로 위)
-    const L = Math.hypot(eRun, eDrop), ang = Math.atan2(eDrop, eRun);     // 경사판 길이·물매 각
-    const panel = box({ x: (eWallX + eRun / 2) - L / 2, z: ez0, w: L, d: eW, y: (eTopY + eDrop / 2 + 0.02), h: eThk, mat: materials.roof });   // 리얼징크 경사판
-    panel.rotation.z = -ang;                                             // 앞(+X)으로 물매 지게 기울임
-    box({ x: eWallX - 0.03, z: ez0, w: 0.08, d: eW, y: eTopY + eDrop - 0.02, h: 0.14, mat: materials.roofEdge });   // 벽-지붕 접합 후레싱(물끊기)
-    box({ x: eWallX + eRun - 0.04, z: ez0, w: 0.05, d: eW, y: eTopY - eDrop - 0.06, h: 0.13, mat: materials.roofEdge });   // 처마끝 물끊기(드립 엣지)
-    const bracket = (bz) => {                                            // 까치발(대각 브래킷) — 벽↘ 지붕밑 지지
-      const x0 = eWallX, y0 = eTopY - 0.40, x1 = eWallX + eRun - 0.05, y1 = eTopY - 0.06;
-      const bl = Math.hypot(x1 - x0, y1 - y0), ba = Math.atan2(y1 - y0, x1 - x0);
-      const m = box({ x: (x0 + x1) / 2 - bl / 2, z: bz, w: bl, d: 0.06, y: (y0 + y1) / 2 - 0.03, h: 0.06, mat: materials.roofEdge });
-      m.rotation.z = ba;
-    };
-    bracket(ez0 + 0.06); bracket(ez0 + eW - 0.12);                       // 지붕 양 끝(창 개구부 밖·창틀 옆 벽)
-    label(`1층 싱크대쪽 눈썹지붕 ${fmtDim(eRun)}×${fmtDim(eW)}m (고정식·리얼징크)`, eWallX + 0.4, eTopY + 0.35, lCz, 'roof');
+  // 눈썹지붕(고정식 캐노피) 단일 출처 — 개구 상단 위 리얼징크 경사판 + 벽-지붕 후레싱(물끊기) + 처마끝 드립엣지 + 까치발 2개.
+  // axis: 돌출축('x'|'z', 외벽 법선) · dir: 바깥 방향(±1) · wallFace: 외벽 바깥면(그 축) · spanC/spanW: 스팬축 중앙·지붕 폭 · topY: 개구 상단. 돌출 0.8·물매낙차 0.1(벽쪽↑ 바깥↓).
+  const eyebrowRoof = (axis, dir, wallFace, spanC, spanW, topY, tag) => {
+    const run = 0.8, drop = 0.1, thk = 0.06;
+    const L = Math.hypot(run, drop);
+    const s0 = spanC - spanW / 2;                              // 스팬축 시작
+    const panelMinP = wallFace + dir * run / 2 - L / 2;        // 경사판 돌출축 min(중앙=wallFace+dir·run/2)
+    const flashP = wallFace + dir * 0.01 - 0.04;              // 벽-지붕 후레싱 min(벽면 바로 바깥)
+    const dripP  = wallFace + dir * run - dir * 0.015 - 0.025;  // 처마끝 드립엣지 min
+    const p0b = wallFace, p1b = wallFace + dir * (run - 0.05);  // 까치발 벽점·지붕밑점(돌출축)
+    const y0b = topY - 0.40, y1b = topY - 0.06;
+    const bl = Math.hypot(p1b - p0b, y1b - y0b);
+    const bmid = (p0b + p1b) / 2 - bl / 2, bY = (y0b + y1b) / 2 - 0.03;
+    if (axis === 'x') {
+      const panel = box({ x: panelMinP, z: s0, w: L, d: spanW, y: topY + drop / 2 + 0.02, h: thk, mat: materials.roof });   // 리얼징크 경사판
+      panel.rotation.z = Math.atan2(-drop, dir * run);          // 바깥으로 물매
+      box({ x: flashP, z: s0, w: 0.08, d: spanW, y: topY + drop - 0.02, h: 0.14, mat: materials.roofEdge });   // 벽-지붕 후레싱
+      box({ x: dripP,  z: s0, w: 0.05, d: spanW, y: topY - drop - 0.06, h: 0.13, mat: materials.roofEdge });    // 처마끝 드립엣지
+      const bracket = (bs) => { const m = box({ x: bmid, z: bs, w: bl, d: 0.06, y: bY, h: 0.06, mat: materials.roofEdge }); m.rotation.z = Math.atan2(y1b - y0b, p1b - p0b); };
+      bracket(s0 + 0.06); bracket(s0 + spanW - 0.12);
+    } else {
+      const panel = box({ x: s0, z: panelMinP, w: spanW, d: L, y: topY + drop / 2 + 0.02, h: thk, mat: materials.roof });
+      panel.rotation.x = Math.atan2(drop, dir * run);
+      box({ x: s0, z: flashP, w: spanW, d: 0.08, y: topY + drop - 0.02, h: 0.14, mat: materials.roofEdge });
+      box({ x: s0, z: dripP,  w: spanW, d: 0.05, y: topY - drop - 0.06, h: 0.13, mat: materials.roofEdge });
+      const bracket = (bx) => { const m = box({ x: bx, z: bmid, w: 0.06, d: bl, y: bY, h: 0.06, mat: materials.roofEdge }); m.rotation.x = Math.atan2(-(y1b - y0b), p1b - p0b); };
+      bracket(s0 + 0.06); bracket(s0 + spanW - 0.12);
+    }
+    const lx = axis === 'x' ? wallFace + dir * 0.4 : spanC;
+    const lz = axis === 'x' ? spanC : wallFace + dir * 0.4;
+    label(`${tag} 눈썹지붕 ${fmtDim(run)}×${fmtDim(spanW)}m (고정식·리얼징크)`, lx, topY + 0.35, lz, 'roof');
+  };
+  captureInto(s2Wall1Objects, () => {                                     // 1층 개구부 위 고정식 눈썹지붕 — 단일 출처(eyebrowRoof)로 통일
+    eyebrowRoof('x', +1, s2W,        lCz, lGap + 0.40, lO.headY, '1층 싱크대쪽');                                  // 좌측(싱크대쪽) 폴딩창 위(+X)
+    eyebrowRoof('z', -1, s2FrontZ,   (fdOpen.x0 + fdOpen.x1) / 2, (fdOpen.x1 - fdOpen.x0) + 0.40, fdOpen.headY, '정면 폴딩도어');   // 정면 폴딩도어 위(−Z)
+    eyebrowRoof('x', -1, s2X0,       (rO.a0 + rO.a1) / 2, (rO.a1 - rO.a0) + 0.40, rO.headY, '우측 슬라이드창');       // 우측(거실측) 슬라이드창 위(−X)
+    eyebrowRoof('z', +1, s2BackZ,    bdCx, (backDoorOpen.a1 - backDoorOpen.a0) + 0.40, backDoorOpen.headY, '뒤 출입문');   // 뒤 출입문 위(+Z)
   });
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
   const wcWinCz = (s2BackZ - t) - 0.3 - 0.3;   // 화장실 창 Z중앙 — 뒤 외벽 안쪽서 0.3m 이격(창 뒤끝) + 반폭 0.3
