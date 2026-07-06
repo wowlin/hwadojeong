@@ -66,10 +66,11 @@ export const materials = {
   stdRoomDoor: new THREE.MeshLambertMaterial({ color: 0x2f9e8f }),   // 표준 방문(슬라이딩 0.9×2.1) 전용색 — 어디 쓰여도 같은 표준 크기임을 색으로 구별
   entryDoor: new THREE.MeshLambertMaterial({ color: 0x4f3422 }),
   entryFrame: new THREE.MeshLambertMaterial({ color: 0x2f343a }),
-  outlet: new THREE.MeshLambertMaterial({ color: 0xff2fb0 }),   // 콘센트 전용 강조색(도면 식별용 마젠타) — 다른 부재와 확실히 구별
-  outletSocket: new THREE.MeshLambertMaterial({ color: 0x9c0060 }),   // 콘센트 소켓 면(강조색보다 어두운 마젠타)
-  heatOutlet: new THREE.MeshLambertMaterial({ color: 0xff7a1a }),   // 전기 난방용 콘센트 강조색(주황) — 일반 콘센트(마젠타)와 구별
-  heatOutletSocket: new THREE.MeshLambertMaterial({ color: 0xb04500 }),   // 난방용 콘센트 소켓 면(어두운 주황)
+  outlet: new THREE.MeshLambertMaterial({ color: 0x22c55e }),   // 일반 콘센트 색(녹색)
+  outletSocket: new THREE.MeshLambertMaterial({ color: 0x11803a }),   // 일반 콘센트 소켓 면(어두운 녹색)
+  heatOutlet: new THREE.MeshLambertMaterial({ color: 0xff2fb0 }),   // 고전력 콘센트 기본 색상(마젠타) — 일반(녹색)과 구별
+  heatOutletSocket: new THREE.MeshLambertMaterial({ color: 0x9c0060 }),   // 고전력 콘센트 소켓 면(어두운 마젠타)
+  inductionOutlet: new THREE.MeshLambertMaterial({ color: 0x9b4dff }),   // 인덕션 직결 정션박스 색(보라)
   windowFrame: new THREE.MeshLambertMaterial({ color: 0xffffff }),   // 창·문틀 흰색(폴딩도어·뒤 작은문·좌측 싱크대창 제외 전 창틀)
   handle: new THREE.MeshLambertMaterial({ color: 0xd4af37 }),
   glass: new THREE.MeshLambertMaterial({ color: 0x9ed0e8, transparent: true, opacity: 0.55 }),
