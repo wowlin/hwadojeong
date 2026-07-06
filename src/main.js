@@ -3639,16 +3639,12 @@ const NOTES = {
       '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
     ].join('\n') };
   },
-  get s2Foundation() {                                     // 기초 — '기초' 토글 시. 두께·바닥마감은 코드(MAT_H·floorFinishH)서 파생.
+  get s2Foundation() {                                     // 기초 — '기초' 토글 시. 두께는 코드(MAT_H)서 파생.
     const slabH = MAT_H;                                   // 온통기초(매트 슬래브) 두께
-    const finishH = floorFinishH;                          // 1층 바닥 마감 두께
-    const floorTop = slabH + finishH;                     // 지면 → 1층 바닥 표면 높이
     return { title: '기초', body: [
-      '[기초 · 바닥]',
+      '[기초]',
       `- 형식: 온통기초(매트 슬래브) · ${s2W}×${s2D.toFixed(1)} m 전면`,
       `- 기초 두께: ${slabH.toFixed(2)} m (지면 위)`,
-      `- 바닥 마감: ${finishH.toFixed(2)} m (기초 윗면 위)`,
-      `- 지면 → 1층 바닥 표면: ${floorTop.toFixed(2)} m`,
     ].join('\n') };
   },
 };
