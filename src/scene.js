@@ -41,8 +41,7 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="1층 기초·바닥·계단">
-          <button type="button" class="seg-btn" id="bF1Foundation">기초</button>
+        <div class="seg-row" role="group" aria-label="1층 바닥·계단">
           <button type="button" class="seg-btn" id="bF1Floor">바닥</button>
           <button type="button" class="seg-btn" id="bF1Stair">계단</button>
         </div>
@@ -90,10 +89,11 @@ app.innerHTML = `
         <label class="chk"><input id="cMatFoundationFull" type="checkbox"><span>전체 매트기초</span></label>
       </section>
       <section class="menu-group" data-scheme="shared">
-        <h2 class="menu-title">대지·담장 (공통)</h2>
-        <div class="seg-row" role="group" aria-label="담장 표시">
-          <button type="button" class="seg-btn" id="bHedge">측백</button>
-          <button type="button" class="seg-btn" id="bFence">옆집</button>
+        <h2 class="menu-title">기초</h2>
+        <div class="seg-row" role="group" aria-label="기초·담장 표시">
+          <button type="button" class="seg-btn" id="bF1Foundation">기초</button>
+          <button type="button" class="seg-btn" id="bHedge">측백담장</button>
+          <button type="button" class="seg-btn" id="bFence">옆집담장</button>
         </div>
       </section>
     </aside>
