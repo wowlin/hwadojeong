@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, hedgeGroundObjects, fenceGroundObjects, hedgeDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1544,19 +1544,19 @@ PILE_POS.decks.forEach((d) => planPileMarks(d.x0, d.z0, d.w, d.d, d.sx, d.sz, ()
 PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHead));                    // 안방 말뚝(0.4m) — 청색
 // 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
 PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
-// 담장 발자국(측백·옆집) — siteBaseObjects(공통, 항상 표시)에 넣어 모든 탭이 공유.
-siteBaseObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
-siteBaseObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
-siteBaseObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
+// 담장 발자국(측백·옆집) — 각 담장 토글에 귀속(기초처럼 자국·입체·치수를 한 버튼으로). 배치도에선 항상 표시.
+fenceGroundObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
+hedgeGroundObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
+hedgeGroundObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
 // 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인. 바닥+기초 공통(dimObjects).
 captureInto(dimObjects, () => {
   const dL = deckFootprints[0];   // 거실 데크 기초(안방 앞 데크 제거됨)
   // 가로 — 위쪽: 기초 8.5 / 가족방 측백 0.5 (거실 0.5는 아래쪽으로 이동)
   planXDim(lotZ1 + 0.4, 0, buildingW, '8.5m');
-  captureInto(planOnlyDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - hedgeThickness, lotX1, `측백 ${fmtDim(hedgeThickness)}m`));   // 가족방 측백(좌상단) — 바닥 전용(기초 뷰 숨김)
+  captureInto(hedgeDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - hedgeThickness, lotX1, `측백 ${fmtDim(hedgeThickness)}m`));   // 가족방 측백(좌상단) — 측백담장 토글+배치도
   // 세로 — 가족방(왼쪽) 건물 깊이 4 / 거실(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
   planZDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m');          // 가족방 건물 깊이
-  captureInto(planOnlyDimObjects, () => planZDim(lotX1 + 0.35, lotZ1 - hedgeThickness, lotZ1, `측백 ${fmtDim(hedgeThickness)}m`));   // 뒤(가로) 측백 — 바닥 전용(기초 뷰 숨김)
+  captureInto(hedgeDimObjects, () => planZDim(lotX1 + 0.35, lotZ1 - hedgeThickness, lotZ1, `측백 ${fmtDim(hedgeThickness)}m`));   // 뒤(가로) 측백 — 측백담장 토글+배치도
   captureInto(gapDimObjects, () => planZDim(lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m'));   // 뒤 이격 합 1m — 공통(집-담장 이격)
   planZDim(lotX0 - 0.4, buildingFrontZ, buildingBackZ, '4.0m');          // 거실 건물 깊이
   planZDim(lotX0 - 0.4, dL.z, buildingFrontZ, `${fmtDim(dL.d)}m`);   // 거실 데크 깊이(오른쪽 가장자리)
@@ -3458,8 +3458,11 @@ function applyVisibility() {
   // 말뚝기초=기준(오프셋 0), 매트기초(부분/전체)=매트 윗면−말뚝 윗면 만큼 위로. 기초 높이를 바꾸면 자동 반영(하드코딩 없음).
   const activeFoundationTopY = (view.matFoundationHouse || view.matFoundationFull) ? (groundTopY + MAT_H) : foundationTopY;
   houseGroup.position.y = activeFoundationTopY - foundationTopY;
-  // 항상 표시(공통 — 모든 탭 공유): 바탕 대지·도로 + 담장 발자국
+  // 항상 표시(공통 — 모든 탭 공유): 바탕 대지·도로
   for (const item of siteBaseObjects) item.visible = true;
+  // 담장 발자국 — 기초처럼 각 담장 토글에 연동(자국·입체·치수 한 버튼). 배치도에선 항상 표시.
+  for (const item of hedgeGroundObjects) item.visible = isPlan || view.hedge;
+  for (const item of fenceGroundObjects) item.visible = isPlan || view.fence;
   // 집·데크 발자국 = 현재 탭(설계안) 것만 — 2층 탭에선 숨겨 집 배치도 분리
   for (const item of footprintObjects) item.visible = (currentScheme === 's1');
   // 배치도(부감) 전용: 말뚝 마커·평면 치수
@@ -3467,7 +3470,8 @@ function applyVisibility() {
   const planDimOn = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull || view.s2Foundation;   // 배치도 + 말뚝/매트기초(s1) + s2 기초 — 공통 치수·기준선 노출 조건
   // 집·데크 크기 치수 = 현재 탭 것만(2층 탭에선 숨김)
   for (const item of dimObjects) item.visible = (currentScheme === 's1') && planDimOn;
-  for (const item of planOnlyDimObjects) item.visible = isPlan;   // 측백 0.5 — 공통, 배치도 전용(dimObjects의 측백 메시를 여기서 다시 덮어 숨김)
+  for (const item of planOnlyDimObjects) item.visible = isPlan;   // 평면 전용 치수 — 배치도 전용(dimObjects 게이팅을 덮음)
+  for (const item of hedgeDimObjects) item.visible = isPlan || view.hedge;   // 측백 0.5m 치수 — 측백담장 토글+배치도(dimObjects 게이팅을 덮음)
   for (const item of gapDimObjects) item.visible = planDimOn;     // 집-담장 이격(0.5·1.0) — 공통(모든 탭), dimObjects의 s1 게이팅을 덮어 공유
   // s2(2층·다락) 탭 전용: 집 발자국(배치도) + 치수·기준선(배치도·기초). 기초 0.5m 슬래브는 PARTS(s2Foundation)에서 처리.
   for (const item of s2FootprintObjects) item.visible = (currentScheme === 's2');

@@ -67,12 +67,12 @@ test('⑦ 안방 말뚝 — 바닥 마커와 입체 말뚝이 같은 출처(PILE
 });
 
 test('⑧ 집·데크 발자국 — 단일 출처(footprintObjects), 현재 탭(설계안) 전용 표시', () => {
-  // 집 배치도는 탭마다 다르므로 발자국은 footprintObjects에 정의하고 현재 탭(s1)에서만 표시. 담장 발자국은 siteBaseObjects로 공통화.
+  // 집 배치도는 탭마다 다르므로 발자국은 footprintObjects에 정의하고 현재 탭(s1)에서만 표시. 담장 발자국은 담장 토글 그룹에 귀속(기초처럼 자국·입체·치수 한 버튼).
   const src = readFileSync(mainJs, 'utf8');
   assert.match(src, /footprintObjects\.push\(box\(\{ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD,[\s\S]{0,120}materials\.foundation/, '집 발자국은 footprintObjects에 정의');
   assert.match(src, /footprintObjects\.push\(box\(\{ x: f\.x, z: f\.z,[\s\S]{0,120}materials\.deckFoundation/, '데크 발자국은 footprintObjects에 정의');
   assert.match(src, /for \(const item of footprintObjects\) item\.visible = \(currentScheme === 's1'\);/, '집·데크 발자국은 현재 탭(s1)에서만 표시');
-  assert.match(src, /siteBaseObjects\.push\(box\([\s\S]{0,120}materials\.hedge/, '담장 발자국은 siteBaseObjects(공통)에 정의');
+  assert.match(src, /hedgeGroundObjects\.push\(box\([\s\S]{0,120}materials\.hedge/, '측백담장 발자국은 hedgeGroundObjects(측백담장 토글)에 정의');
   // 발자국 색(집·데크 기초재)을 planObjects에 다시 그리지 말 것 — 그러면 바닥 전용으로 이원화됨.
   assert.doesNotMatch(src, /planObjects\.push\([^)]*materials\.(foundation|deckFoundation)/, '발자국을 planObjects(바닥 전용)에 중복 정의 금지');
 });
