@@ -3465,14 +3465,16 @@ function applyVisibility() {
   // 배치도(부감) 전용: 말뚝 마커·평면 치수
   for (const item of planObjects) item.visible = false;   // 말뚝 위치 마커 — 배치도에서 숨김(집·썬룸 배치만 표시)
   const planDimOn = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull || view.s2Foundation;   // 배치도 + 말뚝/매트기초(s1) + s2 기초 — 공통 치수·기준선 노출 조건
+  // s2 탭 바닥 기준층 — 시작 배치도의 발자국·치수는 어떤 토글(기초·측백담장·옆집담장 포함)에도 사라지지 않고 항상 그대로 유지.
+  const s2Ground = (currentScheme === 's2');
   // 집·데크 크기 치수 = 현재 탭 것만(2층 탭에선 숨김)
   for (const item of dimObjects) item.visible = (currentScheme === 's1') && planDimOn;
   for (const item of planOnlyDimObjects) item.visible = isPlan;   // 평면 전용 치수 — 배치도 전용(dimObjects 게이팅을 덮음)
-  for (const item of hedgeDimObjects) item.visible = isPlan || view.hedge;   // 측백 0.5m 치수 — 측백담장 토글+배치도(dimObjects 게이팅을 덮음)
-  for (const item of gapDimObjects) item.visible = planDimOn;     // 집-담장 이격(0.5·1.0) — 공통(모든 탭), dimObjects의 s1 게이팅을 덮어 공유
-  // s2(2층·다락) 탭 전용: 집 발자국(배치도) + 치수·기준선(배치도·기초). 기초 0.5m 슬래브는 PARTS(s2Foundation)에서 처리.
-  for (const item of s2FootprintObjects) item.visible = (currentScheme === 's2');
-  for (const item of s2DimObjects) item.visible = (currentScheme === 's2') && (isPlan || view.s2Foundation);
+  for (const item of hedgeDimObjects) item.visible = isPlan || s2Ground;   // 측백 0.5m 치수 — s2 바닥 기준층(항상)·배치도(dimObjects 게이팅을 덮음)
+  for (const item of gapDimObjects) item.visible = planDimOn || s2Ground;  // 집-담장 이격(0.5·1.0) — s2 바닥 기준층(항상)+공통 배치도/기초
+  // s2 집 발자국·치수 = 바닥 기준층으로 항상 표시(기초 토글과 무관). 기초 0.5m 슬래브(입체)는 PARTS(s2Foundation)에서 별도 처리.
+  for (const item of s2FootprintObjects) item.visible = s2Ground;
+  for (const item of s2DimObjects) item.visible = s2Ground;
   // 부품: PARTS 테이블 일괄 — 각 부품 독립 토글(배치도일 땐 모두 숨김)
   for (const p of PARTS) {
     const on = !isPlan && !!view[p.key];
