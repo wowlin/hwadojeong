@@ -3655,8 +3655,8 @@ function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
   const active = NOTE_ORDER.filter((k) => (k === 'plan' ? view.plan : (!view.plan && view[k])) && NOTES[k]);
-  // 대지 개요 — 3층 도면 기본 화면(배치도 아닐 때)에선 토글과 무관하게 항상 맨 위에 표시
-  if (!view.plan && currentScheme === 's2' && NOTES.siteOverview) active.unshift('siteOverview');
+  // 대지 개요 — 3층 도면에선 시작 배치도든 입체든, 토글과 무관하게 항상 맨 위에 표시
+  if (currentScheme === 's2' && NOTES.siteOverview) active.unshift('siteOverview');
   if (!active.length) { body.innerHTML = '<p class="note-empty">이 화면에 대한 메모가 아직 없습니다.</p>'; return; }
   body.innerHTML = active.map((k) => `<section class="note-item"><h3>${NOTES[k].title}</h3><div class="note-text">${NOTES[k].body}</div></section>`).join('');
 }
