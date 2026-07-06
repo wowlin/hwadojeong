@@ -91,7 +91,7 @@ import {
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, hedgeGroundObjects, fenceGroundObjects, hedgeDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects, deckStairFrameObjects,
+  planOnlyDimObjects, hedgeDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, livingInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
@@ -1544,10 +1544,10 @@ PILE_POS.decks.forEach((d) => planPileMarks(d.x0, d.z0, d.w, d.d, d.sx, d.sz, ()
 PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHead));                    // 안방 말뚝(0.4m) — 청색
 // 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
 PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
-// 담장 발자국(측백·옆집) — 각 담장 토글에 귀속(기초처럼 자국·입체·치수를 한 버튼으로). 배치도에선 항상 표시.
-fenceGroundObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
-hedgeGroundObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
-hedgeGroundObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
+// 담장 발자국(측백·옆집) — siteBaseObjects(공통, 항상 표시)에 넣어 모든 탭이 공유. 기초 등 다른 토글과 무관하게 바탕에 늘 깔린다.
+siteBaseObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
+siteBaseObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
+siteBaseObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
 // 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인. 바닥+기초 공통(dimObjects).
 captureInto(dimObjects, () => {
   const dL = deckFootprints[0];   // 거실 데크 기초(안방 앞 데크 제거됨)
@@ -3458,11 +3458,8 @@ function applyVisibility() {
   // 말뚝기초=기준(오프셋 0), 매트기초(부분/전체)=매트 윗면−말뚝 윗면 만큼 위로. 기초 높이를 바꾸면 자동 반영(하드코딩 없음).
   const activeFoundationTopY = (view.matFoundationHouse || view.matFoundationFull) ? (groundTopY + MAT_H) : foundationTopY;
   houseGroup.position.y = activeFoundationTopY - foundationTopY;
-  // 항상 표시(공통 — 모든 탭 공유): 바탕 대지·도로
+  // 항상 표시(공통 — 모든 탭 공유): 바탕 대지·도로 + 담장 발자국(색상은 늘 바탕에)
   for (const item of siteBaseObjects) item.visible = true;
-  // 담장 발자국 — 기초처럼 각 담장 토글에 연동(자국·입체·치수 한 버튼). 배치도에선 항상 표시.
-  for (const item of hedgeGroundObjects) item.visible = isPlan || view.hedge;
-  for (const item of fenceGroundObjects) item.visible = isPlan || view.fence;
   // 집·데크 발자국 = 현재 탭(설계안) 것만 — 2층 탭에선 숨겨 집 배치도 분리
   for (const item of footprintObjects) item.visible = (currentScheme === 's1');
   // 배치도(부감) 전용: 말뚝 마커·평면 치수
@@ -3615,19 +3612,21 @@ const NOTES = {
       `- 하부장 안에 경동 나비엔 전기온수기 ${s2F3HeaterL} L 설치.`,
     ].join('\n') };
   },
-  get s2Foundation() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 집 크기(s2W·s2D) 바뀌면 자동 반영
+  get siteOverview() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 항상 기본 표시. 숫자는 코드(s2W·s2D·이격 상수)서 파생.
     const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
     const floors = 3;                                      // 지상 층수
     const bldgArea = s2W * s2D;                            // 건축면적(1층 발자국)
     const totalArea = bldgArea * floors;                  // 연면적(전 층 합)
     const bcr = (bldgArea / lotArea) * 100;               // 건폐율
     const far = (totalArea / lotArea) * 100;              // 용적률
-    return { title: '기초 · 대지 개요', body: [
+    const sideGap = -lotX0;                                // 옆집(거실측) 이격 = 집 외벽~옆 경계(파생)
+    const rearGap = lotZ1 - s2BackZ;                      // 뒤 이격 = 집 뒤벽~후면 경계(파생)
+    return { title: '대지 개요', body: [
       '[대지 · 지역]',
       '- 주소: 경기 포천시 이동면 장암리 639-25',
       `- 대지면적: ${lotArea} ㎡ (지목 잡종지 → 건축 후 ‘대’)`,
       '- 용도지역: 계획관리지역 + 성장관리계획구역',
-      '- 이격거리: 도로(건축선) 1.0 m · 옆·뒤 경계 0.5 m',
+      `- 이격거리: 도로(건축선) 1.0 m · 옆 ${sideGap.toFixed(1)} m · 뒤 ${rearGap.toFixed(1)} m`,
       '',
       '[규모 검토]',
       `- 건물: ${s2W}×${s2D.toFixed(1)} m · 지상 ${floors}층`,
@@ -3638,12 +3637,26 @@ const NOTES = {
       '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
     ].join('\n') };
   },
+  get s2Foundation() {                                     // 기초 — '기초' 토글 시. 두께·바닥마감은 코드(MAT_H·floorFinishH)서 파생.
+    const slabH = MAT_H;                                   // 온통기초(매트 슬래브) 두께
+    const finishH = floorFinishH;                          // 1층 바닥 마감 두께
+    const floorTop = slabH + finishH;                     // 지면 → 1층 바닥 표면 높이
+    return { title: '기초', body: [
+      '[기초 · 바닥]',
+      `- 형식: 온통기초(매트 슬래브) · ${s2W}×${s2D.toFixed(1)} m 전면`,
+      `- 기초 두께: ${slabH.toFixed(2)} m (지면 위)`,
+      `- 바닥 마감: ${finishH.toFixed(2)} m (기초 윗면 위)`,
+      `- 지면 → 1층 바닥 표면: ${floorTop.toFixed(2)} m`,
+    ].join('\n') };
+  },
 };
 const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
   const active = NOTE_ORDER.filter((k) => (k === 'plan' ? view.plan : (!view.plan && view[k])) && NOTES[k]);
+  // 대지 개요 — 3층 도면 기본 화면(배치도 아닐 때)에선 토글과 무관하게 항상 맨 위에 표시
+  if (!view.plan && currentScheme === 's2' && NOTES.siteOverview) active.unshift('siteOverview');
   if (!active.length) { body.innerHTML = '<p class="note-empty">이 화면에 대한 메모가 아직 없습니다.</p>'; return; }
   body.innerHTML = active.map((k) => `<section class="note-item"><h3>${NOTES[k].title}</h3><div class="note-text">${NOTES[k].body}</div></section>`).join('');
 }
