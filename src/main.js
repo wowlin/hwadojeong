@@ -3531,18 +3531,22 @@ const NOTES = {
     const width = W - 0.03;                                // 옷장 너비: 우측 외벽 안쪽~계단참 챌판(챌판 두께 제외)
     const depth = W + 0.04;                                // 옷장 깊이: 문 앞면~뒤벽 안쪽
     const height = (nL + 1) * R - tTh;                     // 옷장 높이: 1층 바닥~계단참 하부
+    const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용)
     return { title: '계단 사양 · 계단참 아래 옷장', body: [
-      '[계단 — 좌우런·우측벽 스위치백]',
-      `- 단높이: ${fmtDim(R)} m · 디딤 깊이: ${fmtDim(T)} m`,
-      `- 발판(디딤판): ${fmtDim(T)}×${fmtDim(W)} m, 두께 ${fmtDim(tTh)} m · 계단코 ${fmtDim(nosing)} m`,
-      `- 런 폭: ${fmtDim(W)} m · 두 런 틈: ${fmtDim(g)} m`,
-      `- 계단참: ${fmtDim(W)}×${fmtDim(wF)} m`,
-      `- 층고·단수: 1→2층 ${fmtDim(floorH[0])} m ${n1}단 · 2→3층 ${fmtDim(floorH[1])} m ${n2}단`,
+      '［계단］ 좌우런 · 우측벽 스위치백',
+      `· 단높이      ${mm(R)} mm`,
+      `· 디딤 깊이    ${mm(T)} mm`,
+      `· 디딤판      ${mm(T)} × ${mm(W)} mm  (두께 ${mm(tTh)}, 계단코 ${mm(nosing)})`,
+      `· 런 폭       ${mm(W)} mm`,
+      `· 런 사이 틈   ${mm(g)} mm`,
+      `· 계단참      ${mm(W)} × ${mm(wF)} mm`,
+      `· 1→2층      ${mm(floorH[0])} mm / ${n1}단`,
+      `· 2→3층      ${mm(floorH[1])} mm / ${n2}단`,
       '',
-      '[계단참 아래 옷장 — 쌍여닫이]',
-      `- 너비(외벽~챌판): ${fmtDim(width)} m`,
-      `- 깊이(문~뒤벽): ${fmtDim(depth)} m`,
-      `- 높이(바닥~계단참 하부): ${fmtDim(height)} m`,
+      '［계단참 아래 옷장］ 쌍여닫이',
+      `· 너비  ${mm(width)} mm  (외벽~챌판)`,
+      `· 깊이  ${mm(depth)} mm  (문~뒤벽)`,
+      `· 높이  ${mm(height)} mm  (바닥~계단참 밑)`,
     ].join('\n') };
   },
   get s2Floor2() {                                         // 2층 — 화장실·앞방 크기. 계단 상수·집 치수서 자동 계산
