@@ -3624,7 +3624,7 @@ const NOTES = {
   },
   get fence() {                                            // 옆집담장 — 높이는 코드(fenceH)서 파생.
     return { title: '옆집담장', body: [
-      '- 우측(거실쪽) 콘크리트 경계벽',
+      '- 우측 콘크리트 경계벽',
       `- 높이 ${fmtDim(fenceH)} m`,
     ].join('\n') };
   },
