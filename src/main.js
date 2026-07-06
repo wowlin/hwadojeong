@@ -648,7 +648,7 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 // 모서리 바깥에 나란히 붙여, 치수 막대와 라벨이 같은 모서리에 모이게 한다.
 
 // 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 2.8m
-planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, '1층 높이 2.8m');
+planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`);
 
 room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: firstFloorY + floorOverlayLift, mat: materials.living, text: roomText('거실+주방', firstLivingW, firstLivingD) });
 // 거실 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 실외기는 통풍 좋은 곳에 별도.
@@ -3607,7 +3607,7 @@ const NOTES = {
       '',
       '[창고 4×2.5 m(10 ㎡) 가설건축물 신고 시]',
       '- 신고 가설건축물(존치 3년·연장 가능)은 원칙적으로 건폐율·용적률 산정에서 제외 → 위 비율 변동 없음.',
-      `- 만약 산입한다면 건폐율·용적률 각 +${shedPct.toFixed(1)} %p (건폐율 ${(bcr + shedPct).toFixed(1)} %, 보수 기준 ${(bcrC + shedPct).toFixed(1)} %).`,
+      `- 만약 산입한다면 건폐율·용적률 각 +${shedPct.toFixed(1)} %p (건폐율 ${(bcr + shedPct).toFixed(1)} %).`,
       '',
       '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
     ].join('\n') };
