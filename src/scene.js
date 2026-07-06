@@ -29,6 +29,7 @@ app.innerHTML = `
         <div class="seg-row" role="group" aria-label="3층 바닥·계단">
           <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
           <button type="button" class="seg-btn" id="bF3Stair">계단</button>
+          <button type="button" class="seg-btn" id="bF3Ecu">실외기</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
