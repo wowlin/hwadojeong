@@ -1639,9 +1639,12 @@ captureInto(s2FoundationObjects, () => {
   box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트 0.5m
   planYDim(-0.1, s2BackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 남쪽 모서리 높이 치수(s1과 동일 위치)
 });
-// 정면(앞·현관 쪽) 전체폭 옥외 계단 — 지면부터 1층 바닥(0.70m=기초 0.5+바닥 0.2)까지 5단, 집 너비(0~8.5m) 전체, 앞(−Z)으로 디딤판 0.3m씩. 's2 1층' 토글.
+// 옥외 계단 사양(단일 출처) — deckStairs 호출·'1층 바닥' 메모가 공유. 지면~1층 바닥 윗면(기초 0.5+바닥 마감)까지 오름.
+const s2FrontStair = { steps: 5, tread: 0.3 };              // 정면 전체폭(집 너비) 옥외 계단 — 포세린 타일
+const s2RearStair = { steps: 4, tread: 0.25, width: 1.0 };  // 뒤 출입문 옥외 계단 — 포세린 타일
+// 정면(앞·현관 쪽) 전체폭 옥외 계단 — 지면부터 1층 바닥(기초 0.5+바닥 마감)까지, 집 너비 전체, 앞(−Z)으로 디딤. 's2 1층' 토글.
 captureInto(s2Floor1Objects, () => {
-  deckStairs({ axis: 'x', span0: s2X0, span1: s2X0 + s2W, edge: s2FrontZ, outward: -1, topY: groundTopY + MAT_H + S2_STAIR.slabT, baseY: groundTopY, steps: 5, tread: 0.3, mat: materials.matFoundation });
+  deckStairs({ axis: 'x', span0: s2X0, span1: s2X0 + s2W, edge: s2FrontZ, outward: -1, topY: groundTopY + MAT_H + S2_STAIR.slabT, baseY: groundTopY, steps: s2FrontStair.steps, tread: s2FrontStair.tread, mat: materials.porcelainDeck });
 });
 // 치수 + 기준선 — s1과 같은 부분(너비=위, 깊이=양옆)
 captureInto(s2DimObjects, () => {
@@ -2485,7 +2488,7 @@ captureInto(s2Wall1Objects, () => {
     label(`뒤 출입문 ${fmtDim(bdLeafW)}×${fmtDim(hh)}m`, (x0 + x1) / 2, by + hh + 0.15, bz - 0.1, 'opening');
   });
   captureInto(s2Floor1Objects, () => {                                    // 뒤 출입문 앞 옥외 계단 — 너비 1m·3단(문턱=맨 위 단, 뒤쪽 +Z로 내려감). 정면 옥외 계단처럼 '1층 바닥' 토글
-    deckStairs({ axis: 'x', span0: bdCx - 0.5, span1: bdCx + 0.5, edge: s2BackZ, outward: 1, steps: 4, topY: f1Top, baseY: groundTopY, tread: 0.25 });
+    deckStairs({ axis: 'x', span0: bdCx - s2RearStair.width / 2, span1: bdCx + s2RearStair.width / 2, edge: s2BackZ, outward: 1, steps: s2RearStair.steps, topY: f1Top, baseY: groundTopY, tread: s2RearStair.tread });
   });
   captureInto(s2Wall1Objects, () => {                                     // 왼쪽(안방쪽·高X) 외벽 외부 부동수전(벽붙이 야외수전) — 왼쪽 뒤에서 1m
     const wallX = s2W, fz = s2BackZ - 1.0;                                // 외벽 바깥면(x=8.5)·뒤벽서 1m 앞
@@ -3558,6 +3561,15 @@ const NOTES = {
       `- 용마루가 처마보다 ${fmtDim(rise)} m 높음 (깊이 ${fmtDim(s2D)} m의 절반 × tan${Math.round(deg)}°)`,
     ].join('\n') };
   },
+  get s2Floor1() {                                         // 1층 바닥 — 마감 재질 + 정면·뒤 옥외 계단 사양(계단 상수서 자동 계산)
+    const rise = MAT_H + S2_STAIR.slabT;                    // 지면~1층 바닥 윗면(정면·뒤 계단 공통 상승)
+    const fRis = rise / s2FrontStair.steps, rRis = rise / s2RearStair.steps;
+    return { title: '1층 바닥', body: [
+      '- 바닥: 페데스탈(높이조절 받침) + 포세린 타일 — 건식 시스템(데크 바닥과 동일 마감).',
+      `- 정면 옥외 계단: 집 너비 전체 ${fmtDim(s2W)} m · ${s2FrontStair.steps}단 · 단높이 ${fmtDim(fRis)} m · 디딤 ${fmtDim(s2FrontStair.tread)} m · 포세린 타일.`,
+      `- 뒤 출입문 옥외 계단: 폭 ${fmtDim(s2RearStair.width)} m · ${s2RearStair.steps}단 · 단높이 ${fmtDim(rRis)} m · 디딤 ${fmtDim(s2RearStair.tread)} m · 포세린 타일.`,
+    ].join('\n') };
+  },
   get s2StairF1() {                                        // 계단 사양 + 1층 계단참 아래 옷장 — 모두 계단 상수서 자동 계산
     const { T, R, W, g, tTh, floorH, nosing, rTh, usTh, nUpper, landingSteps } = S2_STAIR;
     const wF = 2 * W + g;                                  // 계단참 깊이(두 런 + 틈)
@@ -3668,7 +3680,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2StairF1', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2StairF1', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
