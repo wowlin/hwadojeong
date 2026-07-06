@@ -2593,7 +2593,7 @@ captureInto(s2Wall1Objects, () => {
       const m = box({ x: (x0 + x1) / 2 - bl / 2, z: bz, w: bl, d: 0.06, y: (y0 + y1) / 2 - 0.03, h: 0.06, mat: materials.roofEdge });
       m.rotation.z = ba;
     };
-    bracket(lO.a0 + 0.10); bracket(lO.a1 - 0.16);                        // 좌·우 창틀 안쪽 2개
+    bracket(ez0 + 0.06); bracket(ez0 + eW - 0.12);                       // 지붕 양 끝(창 개구부 밖·창틀 옆 벽)
     label(`1층 싱크대쪽 눈썹지붕 ${fmtDim(eRun)}×${fmtDim(eW)}m (고정식·리얼징크)`, eWallX + 0.4, eTopY + 0.35, lCz, 'roof');
   });
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
