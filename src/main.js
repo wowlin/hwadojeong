@@ -3761,18 +3761,15 @@ bindSegButton('bFence', () => { view.fence = !view.fence; });
 bindSegButton('bF1Foundation', () => { view.s2Foundation = !view.s2Foundation; });
 bindSegButton('bF1Floor', () => { view.s2Floor1 = !view.s2Floor1; });
 bindSegButton('bF1Stair', () => { view.s2StairF1 = !view.s2StairF1; });
-bindSegButton('bF1Wall', () => { view.s2Wall1 = !view.s2Wall1; });
 bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
 bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
 bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
 bindSegButton('bF1Fan', () => { view.s2Fan1 = !view.s2Fan1; });
 bindSegButton('bF2Floor', () => { view.s2Floor2 = !view.s2Floor2; });
 bindSegButton('bF2Stair', () => { view.s2StairF2 = !view.s2StairF2; });   // 2층 계단 = 1-2참+상부런 + 2→3 하부런 + 2-3참
-bindSegButton('bF2Wall', () => { view.s2Wall2 = !view.s2Wall2; });
 bindSegButton('bF2Fan', () => { view.s2Fan2 = !view.s2Fan2; });
 bindSegButton('bF3Floor', () => { view.s2Floor3 = !view.s2Floor3; });
 bindSegButton('bF3Stair', () => { view.s2StairF3 = !view.s2StairF3; });   // 3층 계단 = 2-3참 + 2→3 상부런
-bindSegButton('bF3Wall', () => { view.s2Wall3 = !view.s2Wall3; });
 bindSegButton('bF3Roof', () => { view.s2Roof3 = !view.s2Roof3; });       // 3층 지붕 = 징크 박공 슬래브 + 처마 + 눈막이
 bindSegButton('bF3Solar', () => { view.s2Solar3 = !view.s2Solar3; });    // 3층 태양광 = 뒤 지붕 3kW 패널
 bindSegButton('bAllWall', () => { const all = view.s2Wall1 && view.s2Wall2 && view.s2Wall3; view.s2Wall1 = view.s2Wall2 = view.s2Wall3 = !all; });   // 전체 외벽 = 1·2·3층 외벽 한꺼번에

@@ -26,28 +26,25 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">3층</h2>
-        <div class="seg-row" role="group" aria-label="3층 바닥·계단·외벽">
+        <div class="seg-row" role="group" aria-label="3층 바닥·계단">
           <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
           <button type="button" class="seg-btn" id="bF3Stair">계단</button>
-          <button type="button" class="seg-btn" id="bF3Wall">외벽</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">2층</h2>
-        <div class="seg-row" role="group" aria-label="2층 바닥·계단·외벽">
+        <div class="seg-row" role="group" aria-label="2층 바닥·계단">
           <button type="button" class="seg-btn" id="bF2Floor">바닥</button>
           <button type="button" class="seg-btn" id="bF2Stair">계단</button>
-          <button type="button" class="seg-btn" id="bF2Wall">외벽</button>
           <button type="button" class="seg-btn" id="bF2Fan">실링팬</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="1층 기초·바닥·계단·외벽">
+        <div class="seg-row" role="group" aria-label="1층 기초·바닥·계단">
           <button type="button" class="seg-btn" id="bF1Foundation">기초</button>
           <button type="button" class="seg-btn" id="bF1Floor">바닥</button>
           <button type="button" class="seg-btn" id="bF1Stair">계단</button>
-          <button type="button" class="seg-btn" id="bF1Wall">외벽</button>
         </div>
         <div class="seg-row" role="group" aria-label="1층 식탁·주방·난로">
           <button type="button" class="seg-btn" id="bF1Furniture">식탁</button>
