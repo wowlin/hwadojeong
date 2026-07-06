@@ -2311,6 +2311,12 @@ captureInto(s2Wall1Objects, () => {
   inOutlet(cWall, fTop + 1.1);
   inOutlet(f2Cz, fTop + 1.85);
   inOutlet(frCz, fTop + 1.85);
+  // 싱크볼 아래 30L 전기온수기 전용 콘센트 — 고전력(주황). 하부장 안 측벽, 온수기 본체 옆·낮은 높이(바닥+0.4m)
+  const inHeatOutlet = (cz, oy) => {
+    box({ x: inXL - 0.035, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.heatOutlet });         // 커버 플레이트
+    box({ x: inXL - 0.05, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.heatOutletSocket });  // 소켓 면
+  };
+  inHeatOutlet(cSink + 0.5, fTop + 0.4);
 });
 
 // ── s2 1층 거실측(오른쪽) 벽 콘센트 — '외벽'(s2Wall1) 토글에 귀속. 우측 슬라이드창 양옆(앞·뒤·개구부 밖) 2개. ──
@@ -3578,6 +3584,7 @@ const NOTES = {
     '［전기온수기］',
     '· 경동나비엔 ESW560-30U (30리터)',
     '· 싱크대 아래 설치',
+    '· 전용 콘센트(고전력·주황) — 하부장 안 낮은 높이',
   ].join('\n') },
   get s2Stair() {                                          // 계단 사양 + 1층 계단참 아래 옷장 — 모두 계단 상수서 자동 계산
     const { T, R, W, g, tTh, floorH, nosing, rTh, usTh, nUpper, landingSteps } = S2_STAIR;
