@@ -2579,8 +2579,8 @@ captureInto(s2Wall1Objects, () => {
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
   captureInto(s2Wall1Objects, () => {                                     // 좌측(싱크대쪽) 폴딩창 위 고정식 눈썹지붕(캐노피) — 돌출 0.6·폭 창+양옆 0.15·리얼징크
-    const eRun = 0.6, eDrop = 0.1, eThk = 0.06;                           // 돌출(밖=+X)·물매 낙차(뒤↑앞↓)·판 두께
-    const eW = lGap + 0.30, ez0 = lCz - eW / 2;                           // 폭 = 폴딩창 개구(2.72) + 양옆 0.15씩, Z중앙은 창 중앙
+    const eRun = 0.8, eDrop = 0.1, eThk = 0.06;                           // 돌출(밖=+X)·물매 낙차(뒤↑앞↓)·판 두께
+    const eW = lGap + 0.40, ez0 = lCz - eW / 2;                           // 폭 = 폴딩창 개구(2.72) + 양옆 0.20씩, Z중앙은 창 중앙
     const eWallX = s2W, eTopY = lO.headY;                                 // 좌측 외벽 바깥면·폴딩창 상단(바로 위)
     const L = Math.hypot(eRun, eDrop), ang = Math.atan2(eDrop, eRun);     // 경사판 길이·물매 각
     const panel = box({ x: (eWallX + eRun / 2) - L / 2, z: ez0, w: L, d: eW, y: (eTopY + eDrop / 2 + 0.02), h: eThk, mat: materials.roof });   // 리얼징크 경사판
