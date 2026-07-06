@@ -2578,6 +2578,24 @@ captureInto(s2Wall1Objects, () => {
       drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
+  captureInto(s2Wall1Objects, () => {                                     // 좌측(싱크대쪽) 폴딩창 위 고정식 눈썹지붕(캐노피) — 돌출 0.6·폭 창+양옆 0.15·리얼징크
+    const eRun = 0.6, eDrop = 0.1, eThk = 0.06;                           // 돌출(밖=+X)·물매 낙차(뒤↑앞↓)·판 두께
+    const eW = lGap + 0.30, ez0 = lCz - eW / 2;                           // 폭 = 폴딩창 개구(2.72) + 양옆 0.15씩, Z중앙은 창 중앙
+    const eWallX = s2W, eTopY = lO.headY;                                 // 좌측 외벽 바깥면·폴딩창 상단(바로 위)
+    const L = Math.hypot(eRun, eDrop), ang = Math.atan2(eDrop, eRun);     // 경사판 길이·물매 각
+    const panel = box({ x: (eWallX + eRun / 2) - L / 2, z: ez0, w: L, d: eW, y: (eTopY + eDrop / 2 + 0.02), h: eThk, mat: materials.roof });   // 리얼징크 경사판
+    panel.rotation.z = -ang;                                             // 앞(+X)으로 물매 지게 기울임
+    box({ x: eWallX - 0.03, z: ez0, w: 0.08, d: eW, y: eTopY + eDrop - 0.02, h: 0.14, mat: materials.roofEdge });   // 벽-지붕 접합 후레싱(물끊기)
+    box({ x: eWallX + eRun - 0.04, z: ez0, w: 0.05, d: eW, y: eTopY - eDrop - 0.06, h: 0.13, mat: materials.roofEdge });   // 처마끝 물끊기(드립 엣지)
+    const bracket = (bz) => {                                            // 까치발(대각 브래킷) — 벽↘ 지붕밑 지지
+      const x0 = eWallX, y0 = eTopY - 0.40, x1 = eWallX + eRun - 0.05, y1 = eTopY - 0.06;
+      const bl = Math.hypot(x1 - x0, y1 - y0), ba = Math.atan2(y1 - y0, x1 - x0);
+      const m = box({ x: (x0 + x1) / 2 - bl / 2, z: bz, w: bl, d: 0.06, y: (y0 + y1) / 2 - 0.03, h: 0.06, mat: materials.roofEdge });
+      m.rotation.z = ba;
+    };
+    bracket(lO.a0 + 0.10); bracket(lO.a1 - 0.16);                        // 좌·우 창틀 안쪽 2개
+    label(`1층 싱크대쪽 눈썹지붕 ${fmtDim(eRun)}×${fmtDim(eW)}m (고정식·리얼징크)`, eWallX + 0.4, eTopY + 0.35, lCz, 'roof');
+  });
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
   const wcWinCz = (s2BackZ - t) - 0.3 - 0.3;   // 화장실 창 Z중앙 — 뒤 외벽 안쪽서 0.3m 이격(창 뒤끝) + 반폭 0.3
   const wcWinP0 = wcWinCz - 0.3, wcWinP1 = wcWinCz + 0.3;              // 폭 0.6m(Z 스팬)
