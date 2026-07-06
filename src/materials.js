@@ -39,6 +39,7 @@ export const materials = {
   insulPlane: new THREE.MeshLambertMaterial({ color: 0xffcc00, transparent: true, opacity: 0.55, depthWrite: false }),   // 내단열 보충 면 표시(실외기실 = 새 외벽선, 노랑)
   s3Room1: new THREE.MeshLambertMaterial({ color: 0x8ecae6, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방1 바닥(반투명 하늘)
   s3Room2: new THREE.MeshLambertMaterial({ color: 0xa7d96b, transparent: true, opacity: 0.45, depthWrite: false }),      // 3층 방2 바닥(반투명 연두)
+  stairUpZone1: new THREE.MeshLambertMaterial({ color: 0xf9c74f, transparent: true, opacity: 0.5, depthWrite: false }),  // 1층 계단참(홈리프트 앞) 자리(계단참 계열 노랑) — 다른 용도 불가
   stairUpZone2: new THREE.MeshLambertMaterial({ color: 0xf3a712, transparent: true, opacity: 0.5, depthWrite: false }),  // 2층 계단 올라오는·3층 오르는 자리(계단참 계열 호박색) — 다른 용도 불가
   stairUpZone3: new THREE.MeshLambertMaterial({ color: 0xe85d2f, transparent: true, opacity: 0.5, depthWrite: false }),  // 3층 계단 올라오는 자리(주황) — 다른 용도 불가
   s3Hall: new THREE.MeshLambertMaterial({ color: 0xcfcfcf, transparent: true, opacity: 0.4, depthWrite: false }),        // 3층 복도·홀 바닥(반투명 회색)
