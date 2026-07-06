@@ -3531,7 +3531,7 @@ const NOTES = {
       '［계단］ 좌우런 · 우측벽 스위치백',
       `· 단높이      ${mm(R)} mm`,
       `· 디딤 깊이    ${mm(T)} + 계단코 ${mm(nosing)} = ${mm(T + nosing)} mm`,
-      `· 디딤판      ${mm(T)} × ${mm(W)} mm  (두께 ${mm(tTh)}, 계단코 ${mm(nosing)})`,
+      `· 디딤판      ${mm(T + nosing)} × ${mm(W)} mm  (계단코 포함, 두께 ${mm(tTh)})`,
       `· 런 폭       ${mm(W)} mm`,
       `· 런 사이 틈   ${mm(g)} mm`,
       `· 계단참      ${mm(W)} × ${mm(wF)} mm`,
