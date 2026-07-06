@@ -583,10 +583,12 @@ siteBaseObjects.push(box({ x: lotX0, z: lotZ1, w: lotW + roadW, d: roadW, h: 0.0
 // 경계 — 측백담장(측백 생울타리)·옆집담장(우측 콘크리트) 두 토글로 분리.
 // 옆집담장(경계벽) — 대지 오른쪽(거실 쪽, 낮은 X) 바깥. 폭 0.2m × 높이 1.0m, 경계선 전체 길이.
 const fenceMat = new THREE.MeshLambertMaterial({ color: 0xb0a692 });
-fenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: groundTopY, h: 1.0, mat: fenceMat, name: 'ground' }));
-// 측백나무 생울타리(상록) — 뒤쪽 + 왼쪽(가족방 쪽, 높은 X) 경계 안쪽 50cm, 높이 1.6m.
-hedgeObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: groundTopY, h: 1.6, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
-hedgeObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: groundTopY, h: 1.6, mat: materials.hedge, name: 'ground' }));   // 왼쪽(가족방) 생울타리
+const fenceH = 1.0;   // 옆집담장 높이 — 그리기·메모 단일 출처
+const hedgeH = 1.6;   // 측백담장(생울타리) 높이 — 그리기·메모 단일 출처
+fenceObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: groundTopY, h: fenceH, mat: fenceMat, name: 'ground' }));
+// 측백나무 생울타리(상록) — 뒤쪽 + 왼쪽(가족방 쪽, 높은 X) 경계 안쪽 50cm.
+hedgeObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: groundTopY, h: hedgeH, mat: materials.hedge, name: 'ground' }));   // 후면 생울타리
+hedgeObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: groundTopY, h: hedgeH, mat: materials.hedge, name: 'ground' }));   // 왼쪽(가족방) 생울타리
 
 // 입체 집 기초(시스템말뚝 + 두부)는 1층 벽·실 좌표가 정의된 뒤(아래)에서 만든다 — 하중 경로에 말뚝 정렬.
 // 기초 가로/세로 길이 치수 — 제거(라벨 정리)
@@ -3612,6 +3614,18 @@ const NOTES = {
       `- 하부장 ${fmtDim(s2F3VanityW)}×${fmtDim(s2F3VanityD)} m · 높이 ${fmtDim(s2F3VanityH)} m + 세면볼`,
       '- 수전: 세탁기 수도처럼 뒤 외벽에서 나오는 벽수전.',
       `- 하부장 안에 경동 나비엔 전기온수기 ${s2F3HeaterL} L 설치.`,
+    ].join('\n') };
+  },
+  get hedge() {                                            // 측백담장 — 높이·두께는 코드(hedgeH·hedgeThickness)서 파생.
+    return { title: '측백담장', body: [
+      '- 측백나무 생울타리(상록) · 뒤·좌측(가족방) 경계',
+      `- 높이 ${fmtDim(hedgeH)} m · 두께 ${fmtDim(hedgeThickness)} m`,
+    ].join('\n') };
+  },
+  get fence() {                                            // 옆집담장 — 높이는 코드(fenceH)서 파생.
+    return { title: '옆집담장', body: [
+      '- 우측(거실쪽) 콘크리트 경계벽',
+      `- 높이 ${fmtDim(fenceH)} m`,
     ].join('\n') };
   },
   get siteOverview() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 항상 기본 표시. 숫자는 코드(s2W·s2D·이격 상수)서 파생.
