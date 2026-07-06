@@ -3535,7 +3535,7 @@ const NOTES = {
     return { title: '계단 사양 · 계단참 아래 옷장', body: [
       '［계단］ 좌우런 · 우측벽 스위치백',
       `· 단높이      ${mm(R)} mm`,
-      `· 디딤 깊이    ${mm(T)} mm + 계단코 ${mm(nosing)} mm = ${mm(T + nosing)} mm`,
+      `· 디딤 깊이    ${mm(T)} + 계단코 ${mm(nosing)} = ${mm(T + nosing)} mm`,
       `· 디딤판      ${mm(T)} × ${mm(W)} mm  (두께 ${mm(tTh)}, 계단코 ${mm(nosing)})`,
       `· 런 폭       ${mm(W)} mm`,
       `· 런 사이 틈   ${mm(g)} mm`,
