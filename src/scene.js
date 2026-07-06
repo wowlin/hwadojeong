@@ -41,14 +41,16 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s2">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="1층 바닥">
-          <button type="button" class="seg-btn" id="bF1Floor">바닥</button>
+        <div class="seg-row" role="group" aria-label="1층 실링팬">
+          <button type="button" class="seg-btn" id="bF1Fan">실링팬</button>
         </div>
         <div class="seg-row" role="group" aria-label="1층 식탁·주방·난로">
           <button type="button" class="seg-btn" id="bF1Furniture">식탁</button>
           <button type="button" class="seg-btn" id="bF1Sink">주방</button>
           <button type="button" class="seg-btn" id="bF1Stove">난로</button>
-          <button type="button" class="seg-btn" id="bF1Fan">실링팬</button>
+        </div>
+        <div class="seg-row" role="group" aria-label="1층 바닥">
+          <button type="button" class="seg-btn" id="bF1Floor">바닥</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s1">
