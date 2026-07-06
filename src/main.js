@@ -2580,7 +2580,7 @@ captureInto(s2Wall1Objects, () => {
   });
   // 눈썹지붕(고정식 캐노피) 단일 출처 — 개구 상단 위 리얼징크 경사판 + 벽-지붕 후레싱(물끊기) + 처마끝 드립엣지 + 까치발 2개.
   // axis: 돌출축('x'|'z', 외벽 법선) · dir: 바깥 방향(±1) · wallFace: 외벽 바깥면(그 축) · spanC/spanW: 스팬축 중앙·지붕 폭 · topY: 개구 상단. 돌출 0.8·물매낙차 0.1(벽쪽↑ 바깥↓).
-  const eyebrowRoof = (axis, dir, wallFace, spanC, spanW, topY, tag, run = 0.8) => {
+  const eyebrowRoof = (axis, dir, wallFace, spanC, spanW, topY, tag, run = 0.8, bracketed = true) => {
     const drop = 0.1, thk = 0.06;
     const L = Math.hypot(run, drop);
     const s0 = spanC - spanW / 2;                              // 스팬축 시작
@@ -2597,14 +2597,14 @@ captureInto(s2Wall1Objects, () => {
       box({ x: flashP, z: s0, w: 0.08, d: spanW, y: topY + drop - 0.02, h: 0.14, mat: materials.roofEdge });   // 벽-지붕 후레싱
       box({ x: dripP,  z: s0, w: 0.05, d: spanW, y: topY - drop - 0.06, h: 0.13, mat: materials.roofEdge });    // 처마끝 드립엣지
       const bracket = (bs) => { const m = box({ x: bmid, z: bs, w: bl, d: 0.06, y: bY, h: 0.06, mat: materials.roofEdge }); m.rotation.z = Math.atan2(y1b - y0b, p1b - p0b); };
-      bracket(s0 + 0.06); bracket(s0 + spanW - 0.12);
+      if (bracketed) { bracket(s0 + 0.06); bracket(s0 + spanW - 0.12); }
     } else {
       const panel = box({ x: s0, z: panelMinP, w: spanW, d: L, y: topY + drop / 2 + 0.02, h: thk, mat: materials.roof });
       panel.rotation.x = Math.atan2(drop, dir * run);
       box({ x: s0, z: flashP, w: spanW, d: 0.08, y: topY + drop - 0.02, h: 0.14, mat: materials.roofEdge });
       box({ x: s0, z: dripP,  w: spanW, d: 0.05, y: topY - drop - 0.06, h: 0.13, mat: materials.roofEdge });
       const bracket = (bx) => { const m = box({ x: bx, z: bmid, w: 0.06, d: bl, y: bY, h: 0.06, mat: materials.roofEdge }); m.rotation.x = Math.atan2(-(y1b - y0b), p1b - p0b); };
-      bracket(s0 + 0.06); bracket(s0 + spanW - 0.12);
+      if (bracketed) { bracket(s0 + 0.06); bracket(s0 + spanW - 0.12); }
     }
     const lx = axis === 'x' ? wallFace + dir * 0.4 : spanC;
     const lz = axis === 'x' ? spanC : wallFace + dir * 0.4;
@@ -2614,7 +2614,7 @@ captureInto(s2Wall1Objects, () => {
     eyebrowRoof('x', +1, s2W,        lCz, lGap + 0.40, lO.headY, '1층 싱크대쪽');                                  // 좌측(싱크대쪽) 폴딩창 위(+X)
     eyebrowRoof('z', -1, s2FrontZ,   (fdOpen.x0 + fdOpen.x1) / 2, (fdOpen.x1 - fdOpen.x0) + 0.40, fdOpen.headY, '정면 폴딩도어');   // 정면 폴딩도어 위(−Z)
     eyebrowRoof('x', -1, s2X0,       (rO.a0 + rO.a1) / 2, (rO.a1 - rO.a0) + 0.40, rO.headY, '우측 슬라이드창', 0.45);   // 우측(거실측) 슬라이드창 위(−X) — 대지경계 0.5m 이내로 돌출 축소
-    eyebrowRoof('z', +1, s2BackZ,    bdCx, (backDoorOpen.a1 - backDoorOpen.a0) + 0.40, backDoorOpen.headY, '뒤 출입문');   // 뒤 출입문 위(+Z)
+    eyebrowRoof('z', +1, s2BackZ,    bdCx, (backDoorOpen.a1 - backDoorOpen.a0) + 0.40, backDoorOpen.headY + 0.25, '뒤 출입문', 0.8, false);   // 뒤 출입문 위(+Z) — 밖열림 대비: 문 상단서 0.25m 올리고 까치발 제거(캔틸레버)
   });
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
   const wcWinCz = (s2BackZ - t) - 0.3 - 0.3;   // 화장실 창 Z중앙 — 뒤 외벽 안쪽서 0.3m 이격(창 뒤끝) + 반폭 0.3
