@@ -763,7 +763,7 @@ frontSash(livingRearWindowX, insideZ1 + 0.04, livingRearWindowW, livingRearWindo
 frontSash(familyRearWindowX, insideZ1 + 0.04, familyRearWindowW, familyRearWindowSillY, familyRearWindowH);
 sideDoor(insideX1 + 0.04, sideDoorZ, sideDoorW, sideDoorBaseY, sideDoorH);   // 안방 측면 출입문(전면쪽, 도로측 창 대신)
 label('안방 측면 출입문', insideX1 + 0.5, sideDoorTopY + 0.05, sideDoorZ + sideDoorW / 2, 'opening');
-pocketDoorVertical(familyInnerWallX, familyDoorZ, firstFloorY, interiorDoorH, 1);   // 안방 출입문 — 공유 내력벽 개구에 맞춤
+// 안방 포켓도어(문짝+개구)는 벽과 같은 '계단' 그룹에서 단일 출처로 그림 → buildStairWalls()의 familyInnerWallObjects 블록. 여기선 안 그림.
 
 // 안방 침대 2.0 x 2.0m — 뒤쪽 벽(높은 Z) + 동쪽(도로측, 높은 X) 코너. 머리맡=동쪽(높은 X) 벽.
 {
@@ -4070,8 +4070,11 @@ function buildStairWalls() {
     }
   });
   captureInto(familyInnerWallObjects, () => {
-    // 계단실|안방 내력벽 20cm(말뚝 중심) — 일단 통벽(안방 출입문 개구 없음, 나중에 다시 추가). 1층은 이 벽을 누적해 쓰고 따로 그리지 않음.
-    verticalWallWithGaps(fx, zStart, d, wy, [], wallH, familyInnerWallW, materials.stairInnerWall);
+    // 계단실|안방 내력벽 20cm(말뚝 중심) — 앞쪽에 안방 표준 포켓도어(900×2100) 개구. 벽·개구·문짝을 한 그룹(단일 출처)으로 그려 '계단' 화면부터 함께 보임.
+    verticalWallWithGaps(fx, zStart, d, wy, [[familyDoorZ, familyDoorZ + interiorDoorW]], wallH, familyInnerWallW, materials.stairInnerWall);
+    const doorTopY = firstFloorY + interiorDoorH;
+    lowWall(fx, familyDoorZ, familyInnerWallW, interiorDoorW, doorTopY, (wy + wallH) - doorTopY, materials.stairInnerWall);   // 문 위 인방
+    pocketDoorVertical(familyInnerWallX, familyDoorZ, firstFloorY, interiorDoorH, 1);   // 안방 표준 포켓도어 문짝
   });
 }
 
