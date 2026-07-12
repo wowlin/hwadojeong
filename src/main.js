@@ -341,13 +341,16 @@ function lowWall(x, z, w, d, y = 0.08, h = 0.7, mat = materials.wall) {
 
 // ★라벨 그룹★ — 그룹별 배경색(bg) + 글자(스프라이트) 크기(size)를 한 곳에서 통일 관리.
 //   크기·색을 바꾸려면 해당 그룹의 size/bg만 고치면 그 그룹 전체에 적용된다.
+// 라벨 글자 크기 = 단일 표준(LABEL_SIZE). 종류(치수·방·가구·설비·개구부·구조)는 배경색으로만 구분하고,
+// 폰트 크기는 모두 이 한 값을 쓴다. 크기를 바꾸려면 여기 한 곳만 고친다.
+const LABEL_SIZE = 0.50;
 const LABEL_GROUPS = {
-  dim:       { bg: 'rgba(255,255,255,0.88)', size: 0.50 },   // 치수
-  room:      { bg: 'rgba(255,243,196,0.92)', size: 0.40 },   // 방 이름 — 연노랑
-  furniture: { bg: 'rgba(205,227,247,0.92)', size: 0.40 },   // 가구·집기 — 연파랑
-  mep:       { bg: 'rgba(255,224,189,0.92)', size: 0.40 },   // 설비(전기·수도·냉난방·태양광·배수) — 연주황
-  opening:   { bg: 'rgba(213,237,209,0.92)', size: 0.40 },   // 개구부(문·창) — 연녹
-  struct:    { bg: 'rgba(226,226,226,0.92)', size: 0.40 },   // 구조·마감·사양 — 연회색
+  dim:       { bg: 'rgba(255,255,255,0.88)', size: LABEL_SIZE },   // 치수
+  room:      { bg: 'rgba(255,243,196,0.92)', size: LABEL_SIZE },   // 방 이름 — 연노랑
+  furniture: { bg: 'rgba(205,227,247,0.92)', size: LABEL_SIZE },   // 가구·집기 — 연파랑
+  mep:       { bg: 'rgba(255,224,189,0.92)', size: LABEL_SIZE },   // 설비(전기·수도·냉난방·태양광·배수) — 연주황
+  opening:   { bg: 'rgba(213,237,209,0.92)', size: LABEL_SIZE },   // 개구부(문·창) — 연녹
+  struct:    { bg: 'rgba(226,226,226,0.92)', size: LABEL_SIZE },   // 구조·마감·사양 — 연회색
 };
 
 // 세로(높이) 치수 — 한 모서리에 수직선 + 상·하 틱(X방향) + 라벨. name:'ground'로 프레이밍 제외.
