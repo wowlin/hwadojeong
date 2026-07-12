@@ -3427,13 +3427,13 @@ function syncSegButtons() {
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕 경사는 32도로 최대한 맞춰 설계 적용한다.\n  (태양광 설치: 28~34도가 최적 경사대)' },
-  get stair() {                                            // s1 계단 사양 — ㄷ자(사선 3단) 계단. 모두 계단 상수(stairParams·stairGeom)서 자동 계산
+  get stair() {                                            // s1 계단 사양 — ㄷ자(돌음 회전·평참 없음) 계단. 모두 계단 상수(stairParams·stairGeom)서 자동 계산
     const g = stairGeom(stairParams);
-    const { W, R, T, N, fy, nWind, nL, nU, loftY, treadH, nosing, turnD } = g;
+    const { W, R, T, N, fy, nWind, nLand, nL, nU, loftY, treadH, nosing, turnD } = g;
     const floorH = loftY - fy;                             // 1층 층고(= 다락 바닥 높이)
     const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용)
     return { title: '계단', body: [
-      '［계단］ ㄷ자 · 사선 3단 · 뒤벽 턴',
+      '［계단］ ㄷ자 · 돌음 회전(평참 없음) · 뒤벽 턴',
       `· 단높이      ${mm(R)} mm`,
       `· 디딤 깊이    ${mm(T)} mm`,
       `· 디딤판      ${mm(T + nosing)} × ${mm(W)} mm  (계단코 포함, 두께 ${mm(treadH)})`,
@@ -3444,12 +3444,12 @@ const NOTES = {
       '',
       '［단 구성］ 아래→위',
       `· 하부 곧은계단   ${nL}단`,
-      `· 사선(부채꼴 90°) ${nWind}단`,
-      '· 계단참        1단',
+      `· 하부 돌음(90°)  ${nWind}단`,
+      `· 상부 돌음(90°)  ${nLand}단`,
       `· 상부 곧은계단   ${nU}단`,
       '· 다락 진입      1단',
       '',
-      '［계단참(턴존)］',
+      '［턴존(돌음 회전)］',
       `· 크기  ${mm(W)} × ${mm(turnD)} mm  (런 폭 × 턴존 깊이)`,
     ].join('\n') };
   },
@@ -3837,7 +3837,7 @@ for (const t of document.querySelectorAll('.scheme-tab')) {
 
 // ── 계단 단독 설계(ㄷ자 가변 계단) ─────────────────────────────────────────────
 // 뒤벽에 붙는 ㄷ자(반환) 계단을 가변값 4개로 그린다: 너비·단높이·계단폭(디딤 깊이)·개수.
-//   1층 바닥 → 하부 곧은계단(+Z, 뒤로 오름) → 사선 3단(부채꼴 90°) → 계단참(평평 90°)
+//   1층 바닥 → 하부 곧은계단(+Z, 뒤로 오름) → 하부 돌음(부채꼴 90°) → 상부 돌음(부채꼴 90°, 평참 없음)
 //   → 반대 방향 상부 곧은계단(-Z, 앞으로 오름) → 마지막 단 위 = 다락 바닥.
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
@@ -3987,7 +3987,7 @@ function drawStairCore(p) {
 // 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
 function drawStairAnno(p) {
   const loftSlabs = [];   // 다락 바닥 슬래브 — '다락 바닥' 토글(secondFloorObjects)로 분리 수집. '방·치수 도면'(anno)엔 안 넣음.
-  const stairLandingAnno = [];   // '계단참' 라벨 → '계단' 토글(stairCoreObjects)로 분리(바닥엔 안 넣음).
+  const stairLandingAnno = [];   // '돌음' 라벨 → '계단' 토글(stairCoreObjects)로 분리(바닥엔 안 넣음).
   const loftPassAnno = [];        // '다락 통행' 라벨 → '다락' 토글(secondFloorObjects)로 분리.
   const innerWallAnno = [];       // '내벽 높이' 막대+라벨 → '안방 내력벽' 토글(familyInnerWallObjects)로 분리(막대가 그 벽에 붙음).
   const g = stairGeom(p);
@@ -4001,7 +4001,7 @@ function drawStairAnno(p) {
     box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: my, h: mh, mat: M, cast: false });    // 우(거실쪽)
     box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: my, h: mh, mat: M, cast: false }); // 좌(안방쪽)
   }
-  captureInto(stairLandingAnno, () => label('계단참', laneB + W / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim'));
+  captureInto(stairLandingAnno, () => label('돌음', laneB + W / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim'));
   // 다락 바닥(상부계단 앞 통행) — 상부계단 출구(zFrontU)에서 앞 외벽 안쪽(insideZ0)까지 확보되는 평탄 통행 깊이.
   // 상부 단수가 늘면 zFrontU가 앞으로 밀려 통행 깊이가 줄어든다(계단 변경 시 숫자 자동 갱신).
   // 두께는 30cm 고정(loftFloorThickness). 윗면=다락 바닥 높이(loftY), 밑면=loftY-30cm → 양쪽 내벽이 이 밑면에 맞춰 높이 변함.
@@ -4087,7 +4087,7 @@ function buildStair() {
     const _moved = new Set([...stairInfo.loftSlabs, ...stairInfo.stairLandingAnno, ...stairInfo.loftPassAnno, ...stairInfo.innerWallAnno]);
     stairObjects.push(...scene.children.slice(_s).filter((o) => !_moved.has(o)));  // 분리분 제외 → '바닥'엔 안 뜸
     secondFloorObjects.push(...stairInfo.loftSlabs, ...stairInfo.loftPassAnno);    // 다락 바닥 슬래브 + '다락 통행' 라벨 → '다락' 토글
-    stairCoreObjects.push(...stairInfo.stairLandingAnno);                          // '계단참' 라벨 → '계단' 토글
+    stairCoreObjects.push(...stairInfo.stairLandingAnno);                          // '돌음' 라벨 → '계단' 토글
     familyInnerWallObjects.push(...stairInfo.innerWallAnno); }                     // '내벽 높이' 막대+라벨 → '안방 내력벽' 토글(막대가 그 벽에 붙음)
   applyVisibility();
 }
