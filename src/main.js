@@ -4032,7 +4032,7 @@ buildStair();
   for (const arr of HOUSE_ARRAYS) for (const o of arr) { if (!seen.has(o)) { seen.add(o); houseGroup.add(o); } }   // add = scene→houseGroup 재부모(로컬좌표 보존)
 }
 
-setScheme('s2'); // 초기 탭 = 2층·다락(s2) + 그 배치도(부감) — setScheme가 showPlan 호출
+setScheme('s1'); // 초기 탭 = 1층·다락·포치(s1) + 그 배치도(부감) — setScheme가 showPlan 호출
 
 // 모든 컨트롤 버튼 높이를 '가장 큰 버튼'에 맞춰 통일 — 라벨 줄이 늘어도, 몇 줄로 줄바꿈돼도 항상 동일.
 function equalizeButtonHeights() {
