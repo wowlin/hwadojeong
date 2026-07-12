@@ -3977,7 +3977,7 @@ function drawStairCore(p) {
     scene.add(swept);
   }
   // 난간 — 칸막이(벽)가 막는 두 런 사이가 아니라, 트여서 추락 위험이 있는 '하부 직선계단의 거실측(laneA)' 가장자리에 둔다. 계단 경사를 따라 손잡이(발판+0.9m) + 양 끝·중간 수직 동자.
-  const railX = laneA, postR = 0.022, handR = 0.028;
+  const railX = laneA + 0.06, postR = 0.022, handR = 0.028;   // 거실측 발판 위(측면 세로막이·벽면 안쪽으로 살짝 들여 발판에 서게)
   // 세로 동자 — 하부 직선계단 각 발판의 깊이 중심 거실측(laneA)에 발판 위 1.0m로 하나씩
   const balH = 1.0;
   for (let i = 0; i < nL; i += 1) railCylinder([railX, fy + (i + 1) * R, zFrontL + i * T + T / 2], [railX, fy + (i + 1) * R + balH, zFrontL + i * T + T / 2], postR);
