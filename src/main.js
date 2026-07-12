@@ -822,9 +822,9 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
   captureInto(secondFloorObjects, () => {
     box({ x: planRightLivingX, z: insideZ0, w: stairLowXRunX - planRightLivingX, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 거실측 슬래브 → 거실 벽면(stairLowXRunX)까지(내벽 밑까지 채워 틈 제거)
     box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: secondCorridorD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 복도 슬래브 거실측 = 거실 벽면(stairLowXRunX), 안방측 = 안방 벽면(stairHighXWallX) — 뒤 다락바닥·1층과 정렬
-    box({ x: secondRoom2X, z: insideZ0, w: secondRoom2W, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });
+    box({ x: stairHighXWallX, z: insideZ0, w: insideX1 - stairHighXWallX, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 안방측 슬래브 → 안방 내력벽 계단면(stairHighXWallX)부터(내벽 밑까지 채워 틈 제거)
     room({ x: secondCorridorX, z: secondCorridorZ, w: secondCorridorW, d: secondCorridorD, y: secondWallY + floorSurfaceH, mat: materials.landing, text: roomText('다락 복도', secondCorridorW, secondCorridorD) });
-    room({ x: planRightLivingX, z: secondAtticZ, w: sideRoomW, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', sideRoomW, secondAtticD) });
+    room({ x: planRightLivingX, z: secondAtticZ, w: firstLivingW, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', firstLivingW, secondAtticD) });
     room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
   });
 
@@ -871,14 +871,14 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     // 다락방 문이 있는 벽 높이 — 칸막이(secondAtticWallZ) 위치, 왼쪽 벽
     planYDim(frontCornerDimX, secondAtticWallZ, secondWallY, secondWallY + secondAtticFrontWallH, `다락방 벽 ${fmtDim(secondAtticFrontWallH)}m`);
     // 2F attic partitions follow the same gable profile as the exterior walls.
-    horizontalWallWithGaps(planRightLivingX, secondAtticWallZ, sideRoomW, secondWallY, [
+    horizontalWallWithGaps(planRightLivingX, secondAtticWallZ, firstLivingW, secondWallY, [
       [secondRoom1DoorX, secondRoom1DoorX + interiorDoorW]
     ], secondAtticFrontWallH, interiorWall);
     horizontalWallWithGaps(secondRoom2X, secondAtticWallZ, secondRoom2W, secondWallY, [
       [secondRoom2DoorX, secondRoom2DoorX + interiorDoorW]
     ], secondAtticFrontWallH, interiorWall);
     gableLongWallX({ x: livingInnerWallX - innerWallW / 2, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: innerWallW, mat: materials.wall });   // 1층 거실측 내벽과 정확히 겹치게(중심 livingInnerWallX) — 계단실로 반쯤 밀리던 것 정정
-    gableLongWallX({ x: stairHighXWallX, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });
+    gableLongWallX({ x: familyInnerWallX - familyInnerWallW / 2, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: familyInnerWallW, mat: materials.wall });   // 1층 안방측 내력벽(20cm)과 정확히 겹치게(중심 familyInnerWallX)
     pocketDoorHorizontal(secondRoom1DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, -1);
     pocketDoorHorizontal(secondRoom2DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, 1);
     lowWall(secondRoom1DoorX, secondAtticWallZ, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방1 문 위 인방
