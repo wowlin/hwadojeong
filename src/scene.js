@@ -92,9 +92,6 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bAnno">방·치수 도면</button>
           <button type="button" class="seg-btn" id="bOutlet">콘센트</button>
         </div>
-      </section>
-      <section class="menu-group" data-scheme="s1">
-        <h2 class="menu-title">계단</h2>
         <div class="seg-row" role="group" aria-label="계단 1층 바닥·계단">
           <button type="button" class="seg-btn" id="bFirstFloorFinish">1층 바닥</button>
           <button type="button" class="seg-btn" id="bS1Stair">계단</button>
