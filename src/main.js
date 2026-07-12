@@ -3969,7 +3969,7 @@ function drawStairAnno(p) {
   const loftSlabs = [];   // 다락 바닥 슬래브 — '다락 바닥' 토글(secondFloorObjects)로 분리 수집. '방·치수 도면'(anno)엔 안 넣음.
   const stairLandingAnno = [];   // '계단참' 라벨 → '계단' 토글(stairCoreObjects)로 분리(바닥엔 안 넣음).
   const loftPassAnno = [];        // '다락 통행' 라벨 → '다락' 토글(secondFloorObjects)로 분리.
-  const innerWallAnno = [];       // '내벽 높이' 막대+라벨 → '거실측 내벽' 토글(livingInnerWallObjects)로 분리.
+  const innerWallAnno = [];       // '내벽 높이' 막대+라벨 → '안방 내력벽' 토글(familyInnerWallObjects)로 분리(막대가 그 벽에 붙음).
   const g = stairGeom(p);
   const { W, R, T, N, fy, nL, nWind, nU, loftY, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
   // 외벽 자리 표시 — 계단 화면엔 외벽을 안 그리므로, 외벽 둘레(집 발자국 테두리)를 주황 바닥띠로 표시해 공간 경계를 인지시킨다.
@@ -4013,8 +4013,8 @@ function drawStairAnno(p) {
   // 내벽 높이(=층고) 막대 + 라벨 — 1층 바닥~내벽 윗면(=다락 바닥 밑면, loftY-30cm). 계단 높이 바뀌면 벽 높이·숫자 함께 갱신.
   const wallH = (loftY - loftTh) - fy;
   captureInto(innerWallAnno, () => {
-    box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: wallH, mat: materials.guard, cast: false });
-    label(`내벽 높이 ${fmtDim(wallH)}m`, laneA - 0.38, fy + wallH / 2, zFrontL - 0.05, 'dim');
+    box({ x: familyInnerWallX, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: wallH, mat: materials.guard, cast: false });   // 막대를 안방 내력벽 중심선에 붙임(거실에 붕 뜨지 않게)
+    label(`내벽 높이 ${fmtDim(wallH)}m`, familyInnerWallX + 0.3, fy + wallH / 2, zFrontL, 'dim');   // 라벨은 안방 내력벽 옆(안방쪽)
   });
   return { nL, nU, innerWallH: wallH, firstPass, loftPass, livingW: firstLivingW, anbangW: firstFamilyW, stairW: W, loftSlabs, stairLandingAnno, loftPassAnno, innerWallAnno };
 }
@@ -4068,7 +4068,7 @@ function buildStair() {
     stairObjects.push(...scene.children.slice(_s).filter((o) => !_moved.has(o)));  // 분리분 제외 → '바닥'엔 안 뜸
     secondFloorObjects.push(...stairInfo.loftSlabs, ...stairInfo.loftPassAnno);    // 다락 바닥 슬래브 + '다락 통행' 라벨 → '다락' 토글
     stairCoreObjects.push(...stairInfo.stairLandingAnno);                          // '계단참' 라벨 → '계단' 토글
-    livingInnerWallObjects.push(...stairInfo.innerWallAnno); }                     // '내벽 높이' 막대+라벨 → '거실측 내벽' 토글
+    familyInnerWallObjects.push(...stairInfo.innerWallAnno); }                     // '내벽 높이' 막대+라벨 → '안방 내력벽' 토글(막대가 그 벽에 붙음)
   applyVisibility();
 }
 
