@@ -50,7 +50,7 @@ export const stairHighXRunX = familyInnerWallX - familyInnerWallW / 2 - stairRun
 export const firstLivingD = sideRoomD;
 export const firstFamilyD = sideRoomD;
 export const firstLivingX = planRightLivingX;                                 // 거실 바닥 시작 = 우 외벽 안쪽 면
-export const firstLivingW = livingInnerWallX - innerWallW / 2 - firstLivingX; // 거실 바닥 끝 = 내벽 안쪽 면(겹침 없음)
+export const firstLivingW = stairLowXRunX - firstLivingX; // 거실 바닥 끝 = 계단 저X면(계단실 경계) — 거실측 막이를 계단실 안쪽에 넣어 벽이 없으므로 주방이 그 자리까지 확장
 export const firstFamilyX = familyInnerWallX + familyInnerWallW / 2;          // 안방 바닥 시작 = 내력벽(20cm) 안쪽 면(겹침 없음)
 export const firstFamilyW = insideX1 - firstFamilyX;                          // 안방 바닥 끝 = 좌 외벽 안쪽 면
 export const entryGapStart = stairClearX + (stairClearW - entryFrameOuterW) / 2;
