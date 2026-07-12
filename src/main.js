@@ -618,20 +618,14 @@ captureInto(firstFloorFinishObjects, () => {
   //   윗면이 다락 바닥 밑면(loftY - 30cm)에 맞도록 계단 높이에 따라 벽 높이가 변하기 때문(계단·1층 공유).
 }
 
-// 1층 방 안목치수 — 벽(외벽·내벽)을 제외한 실사용 방바닥 크기를 "너비 x 깊이"로 각 방 가운데에 표기. 1층·다락·지붕 단계 표시.
+// 1층 방 크기 라벨 — 단일 경로(roomText '이름 크기')로만 표기. 거실·안방은 drawStairAnno의 방 라벨이 담당하므로
+// 여기선 그리지 않는다(중복 제거). 방 라벨이 없던 '계단실'만 같은 방 이름 라벨 방식으로 추가한다. 1층·다락·지붕 단계 표시.
 captureInto(firstDimObjects, () => {
   const ly = firstFloorY + 0.4;                                // 라벨 높이(방바닥 위)
-  const ph = innerWallW / 2;                                  // 거실측 내벽 반두께(10cm)
-  const fph = familyInnerWallW / 2;                           // 안방측 내력벽 반두께(20cm)
-  const d1 = livingInnerWallX, d2 = familyInnerWallX;         // 내벽 중심(거실|계단실=3.1, 계단실|안방=5.4)
+  const x0 = livingInnerWallX + innerWallW / 2;               // 계단실 안목 시작 = 거실측 내벽(10cm) 안쪽 면
+  const x1 = familyInnerWallX - familyInnerWallW / 2;         // 계단실 안목 끝   = 안방측 내력벽(20cm) 안쪽 면
   const zF = buildingFrontZ + exteriorWall, zB = buildingBackZ - exteriorWall;   // 앞·뒤 외벽 안쪽 면
-  const dep = zB - zF;                                         // 안목 깊이(모든 방 공통 = 3.6)
-  const rooms = [
-    [exteriorWall, d1 - ph],            // 거실: 우 외벽 안쪽 ~ 거실|계단실 내벽 면
-    [d1 + ph, d2 - fph],                // 계단실: 거실측 내벽 ~ 안방측 내력벽 면
-    [d2 + fph, buildingW - exteriorWall] // 안방: 계단실|안방 내력벽(20cm) 면 ~ 좌 외벽 안쪽
-  ];
-  for (const [x0, x1] of rooms) label(`${fmtDim(x1 - x0)} x ${fmtDim(dep)}m`, (x0 + x1) / 2, ly, (zF + zB) / 2, 'dim');
+  label(roomText('계단실', x1 - x0, zB - zF), (x0 + x1) / 2, ly, (zF + zB) / 2, 'room');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
