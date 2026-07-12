@@ -3929,6 +3929,9 @@ function drawStairCore(p) {
 // 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
 function drawStairAnno(p) {
   const loftSlabs = [];   // 다락 바닥 슬래브 — '다락 바닥' 토글(secondFloorObjects)로 분리 수집. '방·치수 도면'(anno)엔 안 넣음.
+  const stairLandingAnno = [];   // '계단참' 라벨 → '계단' 토글(stairCoreObjects)로 분리(바닥엔 안 넣음).
+  const loftPassAnno = [];        // '다락 통행' 라벨 → '다락' 토글(secondFloorObjects)로 분리.
+  const innerWallAnno = [];       // '내벽 높이' 막대+라벨 → '거실측 내벽' 토글(livingInnerWallObjects)로 분리.
   const g = stairGeom(p);
   const { W, R, T, N, fy, nL, nWind, nU, loftY, laneA, laneB, zTurn0, zBack, zFrontL, zFrontU } = g;
   // 외벽 자리 표시 — 계단 화면엔 외벽을 안 그리므로, 외벽 둘레(집 발자국 테두리)를 주황 바닥띠로 표시해 공간 경계를 인지시킨다.
@@ -3940,7 +3943,7 @@ function drawStairAnno(p) {
     box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: my, h: mh, mat: M, cast: false });    // 우(거실쪽)
     box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: my, h: mh, mat: M, cast: false }); // 좌(안방쪽)
   }
-  label('계단참', laneB + W / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim');
+  captureInto(stairLandingAnno, () => label('계단참', laneB + W / 2, fy + (nL + nWind + 1) * R + 0.25, (zTurn0 + zBack) / 2, 'dim'));
   // 다락 바닥(상부계단 앞 통행) — 상부계단 출구(zFrontU)에서 앞 외벽 안쪽(insideZ0)까지 확보되는 평탄 통행 깊이.
   // 상부 단수가 늘면 zFrontU가 앞으로 밀려 통행 깊이가 줄어든다(계단 변경 시 숫자 자동 갱신).
   // 두께는 30cm 고정(loftFloorThickness). 윗면=다락 바닥 높이(loftY), 밑면=loftY-30cm → 양쪽 내벽이 이 밑면에 맞춰 높이 변함.
@@ -3961,7 +3964,7 @@ function drawStairAnno(p) {
     }
   });
   // (상부 마지막 단↔다락 바닥 사이 계단벽은 두지 않음 — 30cm 두께 다락 바닥의 앞면이 그 단높이 벽 역할을 함)
-  label(`다락 통행 ${fmtDim(loftPass)}m`, laneB + W / 2, loftY + 0.22, insideZ0 + loftPass / 2, 'dim');
+  captureInto(loftPassAnno, () => label(`다락 통행 ${fmtDim(loftPass)}m`, laneB + W / 2, loftY + 0.22, insideZ0 + loftPass / 2, 'dim'));
   // 1층 계단 앞 통행 — 하부계단 입구(zFrontL)에서 앞 외벽 안쪽(insideZ0)까지. 하부 단수가 늘면 줄어든다.
   // (도면 위 라벨은 두지 않음 — 뒤쪽 계단을 가려서. 통행 거리 값은 좌상단 패널에 표시)
   const firstPass = zFrontL - insideZ0;
@@ -3971,9 +3974,11 @@ function drawStairAnno(p) {
   room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: roomY, mat: materials.bed, text: roomText('안방', firstFamilyW, firstFamilyD) });
   // 내벽 높이(=층고) 막대 + 라벨 — 1층 바닥~내벽 윗면(=다락 바닥 밑면, loftY-30cm). 계단 높이 바뀌면 벽 높이·숫자 함께 갱신.
   const wallH = (loftY - loftTh) - fy;
-  box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: wallH, mat: materials.guard, cast: false });
-  label(`내벽 높이 ${fmtDim(wallH)}m`, laneA - 0.38, fy + wallH / 2, zFrontL - 0.05, 'dim');
-  return { nL, nU, innerWallH: wallH, firstPass, loftPass, livingW: firstLivingW, anbangW: firstFamilyW, stairW: W, loftSlabs };
+  captureInto(innerWallAnno, () => {
+    box({ x: laneA - 0.38, z: zFrontL, w: 0.03, d: 0.03, y: fy, h: wallH, mat: materials.guard, cast: false });
+    label(`내벽 높이 ${fmtDim(wallH)}m`, laneA - 0.38, fy + wallH / 2, zFrontL - 0.05, 'dim');
+  });
+  return { nL, nU, innerWallH: wallH, firstPass, loftPass, livingW: firstLivingW, anbangW: firstFamilyW, stairW: W, loftSlabs, stairLandingAnno, loftPassAnno, innerWallAnno };
 }
 
 // 계단실 양쪽 세로 내벽(거실|계단실·계단실|안방) — 윗면이 다락 바닥 밑면(loftY-30cm)에 맞도록 높이가 계단에 따라 변함.
@@ -4015,9 +4020,12 @@ function buildStair() {
   buildStairWalls();                                                       // 양쪽 내벽 — 다락 바닥 밑면(30cm)에 맞춰 높이 갱신
   captureInto(stairCoreObjects, () => { drawStairCore(stairParams); });
   { const _s = scene.children.length; stairInfo = drawStairAnno(stairParams);
-    const _loft = new Set(stairInfo.loftSlabs);
-    stairObjects.push(...scene.children.slice(_s).filter((o) => !_loft.has(o)));   // 다락 바닥 슬래브는 제외 → '방·치수 도면'엔 안 뜸
-    secondFloorObjects.push(...stairInfo.loftSlabs); }                             // 다락 바닥 슬래브를 '다락 바닥' 토글로
+    // 계단참·다락통행·내벽높이 라벨은 '바닥'이 아니라 각자 토글로 분리 → 바닥 화면에서 제외.
+    const _moved = new Set([...stairInfo.loftSlabs, ...stairInfo.stairLandingAnno, ...stairInfo.loftPassAnno, ...stairInfo.innerWallAnno]);
+    stairObjects.push(...scene.children.slice(_s).filter((o) => !_moved.has(o)));  // 분리분 제외 → '바닥'엔 안 뜸
+    secondFloorObjects.push(...stairInfo.loftSlabs, ...stairInfo.loftPassAnno);    // 다락 바닥 슬래브 + '다락 통행' 라벨 → '다락' 토글
+    stairCoreObjects.push(...stairInfo.stairLandingAnno);                          // '계단참' 라벨 → '계단' 토글
+    livingInnerWallObjects.push(...stairInfo.innerWallAnno); }                     // '내벽 높이' 막대+라벨 → '거실측 내벽' 토글
   applyVisibility();
 }
 
