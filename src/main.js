@@ -3643,6 +3643,30 @@ const NOTES = {
       '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
     ].join('\n') };
   },
+  get siteOverviewS1() {                                   // 대지·지역 개요(1층+다락 안) — s1 도면 상단 상시 표시. 숫자는 코드(building*·이격 상수)서 파생.
+    const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
+    const bldgArea = buildingW * buildingD;                // 건축면적(1층 발자국)
+    const totalArea = bldgArea;                            // 연면적 = 1층만(다락은 용적률 비산입)
+    const bcr = (bldgArea / lotArea) * 100;               // 건폐율
+    const far = (totalArea / lotArea) * 100;              // 용적률
+    const sideGap = -lotX0;                                // 옆집(거실측) 이격 = 집 외벽~옆 경계(파생)
+    const rearGap = lotZ1 - buildingBackZ;                 // 뒤 이격 = 집 뒤벽~후면 경계(파생)
+    return { title: '대지 개요', body: [
+      '[대지 · 지역]',
+      '- 주소: 경기 포천시 이동면 장암리 639-25',
+      `- 대지면적: ${lotArea} ㎡ (지목 잡종지 → 건축 후 ‘대’)`,
+      '- 용도지역: 계획관리지역 + 성장관리계획구역',
+      `- 이격거리: 도로(건축선) 1.0 m · 옆 ${sideGap.toFixed(1)} m · 뒤 ${rearGap.toFixed(1)} m`,
+      '',
+      '[규모 검토]',
+      `- 건물: ${buildingW}×${buildingD.toFixed(1)} m · 지상 1층 + 다락`,
+      `- 건축면적 ${bldgArea.toFixed(0)} ㎡ · 연면적 ${totalArea.toFixed(0)} ㎡ (다락 비산입)`,
+      `- 건폐율: ${bcr.toFixed(1)} %  (한도 50 %)`,
+      `- 용적률: ${far.toFixed(1)} %  (한도 125 %)`,
+      '',
+      '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
+    ].join('\n') };
+  },
   get s2Foundation() {                                     // 기초 — '기초' 토글 시. 두께는 코드(MAT_H)서 파생.
     const slabH = MAT_H;                                   // 온통기초(매트 슬래브) 두께
     return { title: '기초', body: [
@@ -3657,8 +3681,9 @@ function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
   const active = NOTE_ORDER.filter((k) => (k === 'plan' ? view.plan : (!view.plan && view[k])) && NOTES[k]);
-  // 대지 개요 — 3층 도면에선 시작 배치도든 입체든, 토글과 무관하게 항상 맨 위에 표시
+  // 대지 개요 — 도면(s1·s2)마다 시작 배치도든 입체든, 토글과 무관하게 항상 맨 위에 표시
   if (currentScheme === 's2' && NOTES.siteOverview) active.unshift('siteOverview');
+  else if (currentScheme === 's1' && NOTES.siteOverviewS1) active.unshift('siteOverviewS1');
   if (!active.length) { body.innerHTML = '<p class="note-empty">이 화면에 대한 메모가 아직 없습니다.</p>'; return; }
   body.innerHTML = active.map((k) => `<section class="note-item"><h3>${NOTES[k].title}</h3><div class="note-text">${NOTES[k].body}</div></section>`).join('');
 }
