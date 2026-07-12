@@ -414,7 +414,7 @@ function verticalWallWithGaps(x, z, d, y, gaps = [], h = 0.7, thickness = 0.08, 
 
 function room({ x, z, w, d, y, mat, text, surfaceH = 0.02 }) {
   box({ x, z, w, d, y: y - surfaceH, h: surfaceH, mat, cast: false });
-  label(text, x + w / 2, y + 0.16, z + d / 2, 'room');
+  if (text) label(text, x + w / 2, y + 0.16, z + d / 2, 'room');   // text 없으면 색면만(라벨은 바닥 토글이 단독으로 담당)
 }
 
 function roomText(name, w, d) {
@@ -649,7 +649,7 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 // 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 2.8m
 planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`);
 
-room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: firstFloorY + floorOverlayLift, mat: materials.living, text: roomText('거실+주방', firstLivingW, firstLivingD) });
+room({ x: firstLivingX, z: insideZ0, w: firstLivingW, d: firstLivingD, y: firstFloorY + floorOverlayLift, mat: materials.living });   // 색면만 — 거실 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
 // 거실 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 실외기는 통풍 좋은 곳에 별도.
 {
   const acW = 0.85, acH = 0.30, acD = 0.22;
@@ -721,7 +721,7 @@ captureInto(bathObjects, () => {
   }
 });
 box({ x: stairClearX, z: stairOpeningStart, w: stairClearW, d: insideZ1 - stairOpeningStart, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stair, cast: false });
-room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed, text: roomText('안방', firstFamilyW, firstFamilyD) });
+room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed });   // 색면만 — 안방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
 
 // 1F walls
 horizontalWallWithGaps(0, buildingFrontZ, 8.5, firstWallY, [
