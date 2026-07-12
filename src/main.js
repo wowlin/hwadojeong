@@ -87,7 +87,7 @@ import {
   atticOutletY
 } from './layout.js';
 import {
-  firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, roofObjects, deckObjects,
+  firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
@@ -807,104 +807,89 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
 
 { const _bathSet = new Set(bathObjects); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_bathSet.has(o))); }   // 1층 골조·실내 그룹 확정(화장실 부품은 bathObjects로 분리)
 
-captureSecond(() => {
-  // 2F measured plan. The stair arrival continues left/right as a front corridor,
-  // with attic rooms behind it.
+// 다락 = 3개 토글로 분리: 실제 다락바닥(secondFloorObjects) · 다락 외벽(atticExtWallObjects) · 다락 내벽(atticInnerWallObjects).
+// 공유 좌표는 여기서 한 번 계산해 세 그룹이 공유(단일 출처).
+{
+  // 2F measured plan. The stair arrival continues left/right as a front corridor, with attic rooms behind it.
   const slabMat = new THREE.MeshLambertMaterial({ color: 0xf6f6f6, transparent: true, opacity: 0.94 });
   const secondWallY = secondY + secondFloorThickness;
   const gableBaseY = secondWallY + secondWallHeight;
-  box({ x: planRightLivingX, z: insideZ0, w: sideRoomW, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });
-  box({ x: stairClearX, z: insideZ0, w: stairClearW, d: secondCorridorD, y: secondY, h: secondFloorThickness, mat: slabMat });
-  box({ x: secondRoom2X, z: insideZ0, w: secondRoom2W, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });
-  room({ x: secondCorridorX, z: secondCorridorZ, w: secondCorridorW, d: secondCorridorD, y: secondWallY + floorSurfaceH, mat: materials.landing, text: roomText('다락 복도', secondCorridorW, secondCorridorD) });
-  room({ x: planRightLivingX, z: secondAtticZ, w: sideRoomW, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', sideRoomW, secondAtticD) });
-  room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
-
-  planYDim(frontCornerDimX, frontCornerDimZ, secondWallY, secondWallY + secondWallHeight, `다락 벽높이 ${fmtDim(secondWallHeight)}m`);
-
-  // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
   const atticRidgeZ = buildingFrontZ + buildingD / 2;
   const atticPeakH = secondWallHeight + gableRise;
-  planYDim(frontCornerDimX, atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`);
-
-  // 다락방 문이 있는 벽 높이 — 칸막이(secondAtticWallZ) 위치, 왼쪽 벽
-  planYDim(frontCornerDimX, secondAtticWallZ, secondWallY, secondWallY + secondAtticFrontWallH, `다락방 벽 ${fmtDim(secondAtticFrontWallH)}m`);
-
-  // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
-  horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [
-    [atticVentWindowX, atticVentWindowX + atticVentWindowW]
-  ], secondWallHeight, exteriorWall, materials.exteriorWall);
-  lowWall(atticVentWindowX, buildingFrontZ, atticVentWindowW, exteriorWall, secondWallY, secondCorridorWindowSillOffset, materials.exteriorWall);
-  lowWall(atticVentWindowX, buildingFrontZ, atticVentWindowW, exteriorWall, secondWallY + secondCorridorWindowTopOffset, secondWallHeight - secondCorridorWindowTopOffset, materials.exteriorWall);
-  frontSash(atticVentWindowX, buildingFrontZ - 0.04, atticVentWindowW, secondWallY + secondCorridorWindowSillOffset, secondCorridorWindowH);
-  horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [
-    [atticRoom1RearWindowX, atticRoom1RearWindowX + atticRearWindowW],
-    [atticRoom2RearWindowX, atticRoom2RearWindowX + atticRearWindowW],
-    [atticSkyWindowX, atticSkyWindowX + atticSkyWindowW]
-  ], secondWallHeight, exteriorWall, materials.exteriorWall);
-  for (const windowX of [atticRoom1RearWindowX, atticRoom2RearWindowX]) {
-    lowWall(windowX, insideZ1, atticRearWindowW, exteriorWall, secondWallY, atticRearWindowSillOffset, materials.exteriorWall);
-    lowWall(windowX, insideZ1, atticRearWindowW, exteriorWall, secondWallY + atticRearWindowTopOffset, secondWallHeight - atticRearWindowTopOffset, materials.exteriorWall);
-    frontSash(windowX, insideZ1 + 0.04, atticRearWindowW, secondWallY + atticRearWindowSillOffset, atticRearWindowH);
-  }
-  // 계단 픽스창(후면 중앙, 저-X 런 정면 — 1층에서 올라가며 하늘 보임)
-  lowWall(atticSkyWindowX, insideZ1, atticSkyWindowW, exteriorWall, secondWallY, atticSkyWindowSillOffset, materials.exteriorWall);
-  lowWall(atticSkyWindowX, insideZ1, atticSkyWindowW, exteriorWall, secondWallY + atticSkyWindowSillOffset + atticSkyWindowH, secondWallHeight - (atticSkyWindowSillOffset + atticSkyWindowH), materials.exteriorWall);
-  frontSash(atticSkyWindowX, insideZ1 + 0.04, atticSkyWindowW, secondWallY + atticSkyWindowSillOffset, atticSkyWindowH);
-  lowWall(0, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
-  lowWall(insideX1, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
-  gableEndWallWithWindow({
-    x: 0,
-    z: buildingFrontZ,
-    d: buildingD,
-    y: gableBaseY,
-    rise: gableRise,
-    thickness: exteriorWall,
-    mat: materials.exteriorWall,
-    windowZ: buildingFrontZ + buildingD / 2,
-    windowW: sideGableWindowW,
-    windowBottomY: gableBaseY + sideGableWindowSillOffset,
-    windowH: sideGableWindowH,
-    sashSide: -1
-  });
-  gableEndWallWithWindow({
-    x: insideX1,
-    z: buildingFrontZ,
-    d: buildingD,
-    y: gableBaseY,
-    rise: gableRise,
-    thickness: exteriorWall,
-    mat: materials.exteriorWall,
-    windowZ: buildingFrontZ + buildingD / 2,
-    windowW: sideGableWindowW,
-    windowBottomY: gableBaseY + sideGableWindowSillOffset,
-    windowH: sideGableWindowH,
-    sashSide: 1
-  });
-
-  // 2F attic partitions follow the same gable profile as the exterior walls.
-  horizontalWallWithGaps(planRightLivingX, secondAtticWallZ, sideRoomW, secondWallY, [
-    [secondRoom1DoorX, secondRoom1DoorX + interiorDoorW]
-  ], secondAtticFrontWallH, interiorWall);
-  horizontalWallWithGaps(secondRoom2X, secondAtticWallZ, secondRoom2W, secondWallY, [
-    [secondRoom2DoorX, secondRoom2DoorX + interiorDoorW]
-  ], secondAtticFrontWallH, interiorWall);
-  gableLongWallX({ x: stairLowXWallX, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });
-  gableLongWallX({ x: stairHighXWallX, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });
-  // (계단 개구부 앞 난간·커브는 아래 '다락 입구 가로벽'이 대신하므로 제거 — 벽이 막으니 난간 불필요)
-  pocketDoorHorizontal(secondRoom1DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, -1);
-  pocketDoorHorizontal(secondRoom2DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, 1);
-  lowWall(secondRoom1DoorX, secondAtticWallZ, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방1 문 위 인방
-  lowWall(secondRoom2DoorX, secondAtticWallZ, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방2 문 위 인방
-
-  // 다락 입구 — 계단 개구부를 가로벽(문 구멍 1개)으로 막음. 닫으면 다락 전체가 1층과 분리(1층 개방 유지).
-  // 다락방 칸막이와 같은 Z선(secondAtticWallZ=stairOpeningStart)·높이라 벽이 한 줄로 이어짐.
   const atticStairDoorX = stairHighXRunX + (stairRunW - interiorDoorW) / 2;
-  horizontalWallWithGaps(stairClearX, stairOpeningStart, stairClearW, secondWallY, [[atticStairDoorX, atticStairDoorX + interiorDoorW]], secondAtticFrontWallH, interiorWall);
-  lowWall(atticStairDoorX, stairOpeningStart, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 문 위 인방(개구부 위 막음)
-  interiorDoorHorizontal(atticStairDoorX, stairOpeningStart, secondWallY, interiorDoorW, secondAtticDoorH);
-  label('다락 입구 단열문', atticStairDoorX + interiorDoorW / 2, secondWallY + 1.0, stairOpeningStart - 0.5, 'opening');
-});
+
+  // ── 실제 다락 바닥 — 바닥 슬래브 + 방(복도·다락방1·2) ──────────────────────────
+  captureInto(secondFloorObjects, () => {
+    box({ x: planRightLivingX, z: insideZ0, w: sideRoomW, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });
+    box({ x: stairClearX, z: insideZ0, w: stairClearW, d: secondCorridorD, y: secondY, h: secondFloorThickness, mat: slabMat });
+    box({ x: secondRoom2X, z: insideZ0, w: secondRoom2W, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });
+    room({ x: secondCorridorX, z: secondCorridorZ, w: secondCorridorW, d: secondCorridorD, y: secondWallY + floorSurfaceH, mat: materials.landing, text: roomText('다락 복도', secondCorridorW, secondCorridorD) });
+    room({ x: planRightLivingX, z: secondAtticZ, w: sideRoomW, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', sideRoomW, secondAtticD) });
+    room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
+  });
+
+  // ── 다락 외벽 — 앞·뒤 무릎벽 + 창 + 좌우 박공벽 + 벽높이·용마루 치수 ──────────────
+  captureInto(atticExtWallObjects, () => {
+    planYDim(frontCornerDimX, frontCornerDimZ, secondWallY, secondWallY + secondWallHeight, `다락 벽높이 ${fmtDim(secondWallHeight)}m`);
+    // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
+    planYDim(frontCornerDimX, atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`);
+    // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
+    horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [
+      [atticVentWindowX, atticVentWindowX + atticVentWindowW]
+    ], secondWallHeight, exteriorWall, materials.exteriorWall);
+    lowWall(atticVentWindowX, buildingFrontZ, atticVentWindowW, exteriorWall, secondWallY, secondCorridorWindowSillOffset, materials.exteriorWall);
+    lowWall(atticVentWindowX, buildingFrontZ, atticVentWindowW, exteriorWall, secondWallY + secondCorridorWindowTopOffset, secondWallHeight - secondCorridorWindowTopOffset, materials.exteriorWall);
+    frontSash(atticVentWindowX, buildingFrontZ - 0.04, atticVentWindowW, secondWallY + secondCorridorWindowSillOffset, secondCorridorWindowH);
+    horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [
+      [atticRoom1RearWindowX, atticRoom1RearWindowX + atticRearWindowW],
+      [atticRoom2RearWindowX, atticRoom2RearWindowX + atticRearWindowW],
+      [atticSkyWindowX, atticSkyWindowX + atticSkyWindowW]
+    ], secondWallHeight, exteriorWall, materials.exteriorWall);
+    for (const windowX of [atticRoom1RearWindowX, atticRoom2RearWindowX]) {
+      lowWall(windowX, insideZ1, atticRearWindowW, exteriorWall, secondWallY, atticRearWindowSillOffset, materials.exteriorWall);
+      lowWall(windowX, insideZ1, atticRearWindowW, exteriorWall, secondWallY + atticRearWindowTopOffset, secondWallHeight - atticRearWindowTopOffset, materials.exteriorWall);
+      frontSash(windowX, insideZ1 + 0.04, atticRearWindowW, secondWallY + atticRearWindowSillOffset, atticRearWindowH);
+    }
+    // 계단 픽스창(후면 중앙, 저-X 런 정면 — 1층에서 올라가며 하늘 보임)
+    lowWall(atticSkyWindowX, insideZ1, atticSkyWindowW, exteriorWall, secondWallY, atticSkyWindowSillOffset, materials.exteriorWall);
+    lowWall(atticSkyWindowX, insideZ1, atticSkyWindowW, exteriorWall, secondWallY + atticSkyWindowSillOffset + atticSkyWindowH, secondWallHeight - (atticSkyWindowSillOffset + atticSkyWindowH), materials.exteriorWall);
+    frontSash(atticSkyWindowX, insideZ1 + 0.04, atticSkyWindowW, secondWallY + atticSkyWindowSillOffset, atticSkyWindowH);
+    lowWall(0, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
+    lowWall(insideX1, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
+    gableEndWallWithWindow({
+      x: 0, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall,
+      windowZ: buildingFrontZ + buildingD / 2, windowW: sideGableWindowW, windowBottomY: gableBaseY + sideGableWindowSillOffset, windowH: sideGableWindowH, sashSide: -1
+    });
+    gableEndWallWithWindow({
+      x: insideX1, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall,
+      windowZ: buildingFrontZ + buildingD / 2, windowW: sideGableWindowW, windowBottomY: gableBaseY + sideGableWindowSillOffset, windowH: sideGableWindowH, sashSide: 1
+    });
+  });
+
+  // ── 다락 내벽 — 다락방 칸막이 + 문 + 다락 입구 가로벽 + 다락방 벽높이 치수 ──────────
+  captureInto(atticInnerWallObjects, () => {
+    // 다락방 문이 있는 벽 높이 — 칸막이(secondAtticWallZ) 위치, 왼쪽 벽
+    planYDim(frontCornerDimX, secondAtticWallZ, secondWallY, secondWallY + secondAtticFrontWallH, `다락방 벽 ${fmtDim(secondAtticFrontWallH)}m`);
+    // 2F attic partitions follow the same gable profile as the exterior walls.
+    horizontalWallWithGaps(planRightLivingX, secondAtticWallZ, sideRoomW, secondWallY, [
+      [secondRoom1DoorX, secondRoom1DoorX + interiorDoorW]
+    ], secondAtticFrontWallH, interiorWall);
+    horizontalWallWithGaps(secondRoom2X, secondAtticWallZ, secondRoom2W, secondWallY, [
+      [secondRoom2DoorX, secondRoom2DoorX + interiorDoorW]
+    ], secondAtticFrontWallH, interiorWall);
+    gableLongWallX({ x: stairLowXWallX, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });
+    gableLongWallX({ x: stairHighXWallX, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });
+    pocketDoorHorizontal(secondRoom1DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, -1);
+    pocketDoorHorizontal(secondRoom2DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, 1);
+    lowWall(secondRoom1DoorX, secondAtticWallZ, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방1 문 위 인방
+    lowWall(secondRoom2DoorX, secondAtticWallZ, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방2 문 위 인방
+    // 다락 입구 — 계단 개구부를 가로벽(문 구멍 1개)으로 막음. 닫으면 다락 전체가 1층과 분리(1층 개방 유지). 칸막이와 같은 Z선·높이라 벽이 한 줄로 이어짐.
+    horizontalWallWithGaps(stairClearX, stairOpeningStart, stairClearW, secondWallY, [[atticStairDoorX, atticStairDoorX + interiorDoorW]], secondAtticFrontWallH, interiorWall);
+    lowWall(atticStairDoorX, stairOpeningStart, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 문 위 인방(개구부 위 막음)
+    interiorDoorHorizontal(atticStairDoorX, stairOpeningStart, secondWallY, interiorDoorW, secondAtticDoorH);
+    label('다락 입구 단열문', atticStairDoorX + interiorDoorW / 2, secondWallY + 1.0, stairOpeningStart - 0.5, 'opening');
+  });
+}
 
 {
   const roofSideOverhang = 0.4;
@@ -3299,7 +3284,9 @@ const view = {
   extWall: false,     // 1층 외벽
   firstRoom: false,   // 1층 골조·실내
   bath: false,        // 계단하부 WC(화장실)
-  loft: false,        // 다락 바닥·골조
+  loft: false,        // 실제 다락 바닥(슬래브·방)
+  atticExtWall: false, // 다락 외벽
+  atticInnerWall: false, // 다락 내벽
   roof: false,        // 지붕
   outlet: false,      // 콘센트(1층+다락)
   // 썬룸 그룹
@@ -3335,7 +3322,9 @@ const PARTS = [
   { key: 'extWall',    arrays: [firstWallObjects] },
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
   { key: 'bath',       arrays: [bathObjects] },
-  { key: 'loft',       arrays: [secondFloorObjects] },
+  { key: 'loft',       arrays: [secondFloorObjects] },        // 실제 다락 바닥(슬래브·방)
+  { key: 'atticExtWall', arrays: [atticExtWallObjects] },     // 다락 외벽(+창·박공)
+  { key: 'atticInnerWall', arrays: [atticInnerWallObjects] }, // 다락 내벽(칸막이·문·입구벽)
   { key: 'roof',       arrays: [roofObjects] },
   { key: 'outlet',     arrays: [outletObjects, atticOutletObjects] },
   { key: 'deck',       arrays: [deckObjects] },
@@ -3368,7 +3357,7 @@ const PARTS = [
 const S1_TOGGLES = [
   ['bDeck', 'deck'], ['bDeckFloor', 'deckFloor'], ['bDeckStairFrame', 'deckStairFrame'],
   ['bSun', 'sun'], ['bFolding', 'folding'], ['bAccessory', 'accessory'],   // 포치 '외벽'(sunWall)은 자바라 외벽 제거로 버튼도 삭제
-  ['bLoft', 'loft'], ['bRoof', 'roof'],
+  ['bLoft', 'loft'], ['bAtticExtWall', 'atticExtWall'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'],
   ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bOutlet', 'outlet'],
   ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'],
   ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
@@ -3682,7 +3671,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticExtWall', 'atticInnerWall', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
@@ -4113,7 +4102,7 @@ buildStair();
 {
   const HOUSE_ARRAYS = [
     firstFloorFinishObjects, firstDimObjects, firstWallObjects, firstFloorObjects, bathObjects,
-    secondFloorObjects, roofObjects, outletObjects, atticOutletObjects,
+    secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, outletObjects, atticOutletObjects,
     stairCoreObjects, stairObjects, livingInnerWallObjects, familyInnerWallObjects,
   ];
   const seen = new Set();

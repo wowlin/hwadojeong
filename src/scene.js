@@ -77,8 +77,12 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">다락</h2>
-        <div class="seg-row" role="group" aria-label="다락 바닥·지붕">
+        <div class="seg-row" role="group" aria-label="다락 바닥·외벽·내벽">
           <button type="button" class="seg-btn" id="bLoft">다락 바닥</button>
+          <button type="button" class="seg-btn" id="bAtticExtWall">다락 외벽</button>
+          <button type="button" class="seg-btn" id="bAtticInnerWall">다락 내벽</button>
+        </div>
+        <div class="seg-row" role="group" aria-label="지붕">
           <button type="button" class="seg-btn" id="bRoof">지붕</button>
         </div>
       </section>
