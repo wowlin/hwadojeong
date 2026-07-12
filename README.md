@@ -19,7 +19,7 @@ npm test         # 문법·빌드·용어 회귀 하네스
 
 ## 방향 규약
 
-도면 해석 방향은 [ORIENTATION.md](ORIENTATION.md)를 따른다(입구·데크 = 아래, 평면 좌 = 가족방, 평면 우 = 거실+주방).
+도면 해석 방향은 [ORIENTATION.md](ORIENTATION.md)를 따른다(입구·데크 = 아래, 평면 좌 = 가족방, 평면 우 = 주방).
 
 ## 문서
 
