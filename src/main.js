@@ -4054,13 +4054,19 @@ function buildStairWalls() {
   const zStart = z0 + wt - inOv;
   const fx = familyInnerWallX - familyInnerWallW / 2;
   captureInto(livingInnerWallObjects, () => {
-    // 거실|계단실 내벽(비내력 10cm) — 사선계단 구간(턴존 시작 stairTurnStart ~ 뒤 외벽)은 통벽으로 유지.
-    const livZ = stairTurnStart, livD = (insideZ1 + inOv) - stairTurnStart;
-    box({ x: livingInnerWallX - inW / 2, z: livZ, w: inW, d: livD, y: wy, h: wallH, mat: materials.stairInnerWall });
-    // 하부 직선계단 거실측 트인 부분 — 반대편 gap 스파인벽과 대칭으로 각 단 발판 밑면까지만 계단 모양으로 채워 막음(발판 위로 안 솟게 → 위는 세로 동자 난간이 막음).
     const g = stairGeom(stairParams);
+    // 하부 직선계단 거실측 트인 부분 — 반대편 gap 스파인벽과 대칭으로 각 단 발판 밑면까지만 계단 모양으로 채워 막음(발판 위로 안 솟게 → 위는 세로 동자 난간이 막음).
     for (let i = 0; i < g.nL; i += 1) {
       box({ x: g.laneA, z: g.zFrontL + i * g.T, w: inW, d: g.T, y: g.fy, h: (i + 1) * g.R - g.treadH, mat: materials.stairInnerWall });
+    }
+    // 돌음(턴존) 거실측 트인 부분 — 통벽 대신 사선단 외측(laneA에 닿는 아래 단들) 높이를 따라 발판 밑면까지 계단모양으로 채워 계단실 안쪽에 넣음. 단 경계 z는 90°/단수 분할각으로 계산.
+    const perStep = (Math.PI / 2) / g.nWind;
+    let zPrev = g.zTurn0;
+    for (let k = 1; k <= g.nWind; k += 1) {
+      const zEdge = (k < g.nWind) ? Math.min(g.zBack, g.zTurn0 + g.W * Math.tan(perStep * k)) : g.zBack;
+      if (zEdge > zPrev + 1e-6) box({ x: g.laneA, z: zPrev, w: inW, d: zEdge - zPrev, y: g.fy, h: (g.nL + k) * g.R - g.treadH, mat: materials.stairInnerWall });
+      zPrev = zEdge;
+      if (zEdge >= g.zBack - 1e-6) break;
     }
   });
   captureInto(familyInnerWallObjects, () => {
