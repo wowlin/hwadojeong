@@ -42,7 +42,7 @@ export const winderTreadCount = 3;             // 사선(돌음) 단수 — 90°
 export const landingTreadCount = 3;            // 계단참 = 돌음 단수(평참 대신) — 턴존 안에서 층고 확보(발자국 그대로)
 export const upperStraightTreadCount = 6;      // 상부(다락쪽) 곧은계단 단수
 export const stairRiserCount = lowerStraightTreadCount + winderTreadCount + landingTreadCount + upperStraightTreadCount + 1;   // 총 단수(1층→다락) = 각 구간 합 + 다락 1단 → 파생
-export const stairTreadDepth = 0.27;
+export const stairTreadDepth = 0.26;           // 계단 디딤폭(T) — 실제 계단·계단앞 공간·WC 위치 단일 출처. 그리기와 반드시 동일
 // 1층 벽 높이 = 계단 총높이(단수×단높이) − 다락 바닥 두께. 다락 바닥 밑면이 벽 윗면 → 계단 높이 바꾸면 자동 추종.
 export const firstWallHeight = stairRiserCount * stairRiserHeight - secondFloorThickness;
 export const floorSurfaceH = 0.02;

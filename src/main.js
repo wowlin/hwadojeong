@@ -3841,7 +3841,7 @@ for (const t of document.querySelectorAll('.scheme-tab')) {
 //   → 반대 방향 상부 곧은계단(-Z, 앞으로 오름) → 마지막 단 위 = 다락 바닥.
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
-const stairParams = { R: stairRiserHeight, T: 0.26, N: stairRiserCount };   // 단높이(R)·개수(N)는 상수에서 파생(단일 출처) — 여기 숫자 박지 말 것. 디딤 T만 그리기 전용. 너비·위치는 1층 계단실 고정
+const stairParams = { R: stairRiserHeight, T: stairTreadDepth, N: stairRiserCount };   // 단높이(R)·디딤(T)·개수(N) 모두 상수 파생(단일 출처) — 여기 숫자 박지 말 것. 너비·위치는 1층 계단실 고정
 const loftFloorThickness = secondFloorThickness;   // 다락 바닥 두께(30cm) — 다락 슬래브(secondFloorThickness)와 단일 출처. 계단 높이가 바뀌어도 두께 불변, 양쪽 내벽이 밑면에 맞춤
 
 // ㄷ자 계단 좌표 — 1층 계단실(stairLowXRunX·stairHighXRunX, 뒤벽 턴존)에 맞춰 도출. 두 화면(계단·1층) 공유.
