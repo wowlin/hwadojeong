@@ -118,7 +118,7 @@ app.innerHTML = `
         </div>
       </section>
       <section class="menu-group" data-scheme="shared">
-        <h2 class="menu-title">기초</h2>
+        <h2 class="menu-title">기본</h2>
         <div class="seg-row" role="group" aria-label="기초·담장 표시">
           <button type="button" class="seg-btn" id="bF1Foundation">기초</button>
           <button type="button" class="seg-btn" id="bHedge">측백담장</button>
