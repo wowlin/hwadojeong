@@ -601,7 +601,7 @@ captureInto(firstFloorFinishObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY, h: floorFinishH, mat: materials.floorFinish });
 });
 
-// 1층 외벽(반투명) — 방 바닥 테두리선(집 발자국 0~buildingW / buildingFrontZ~+buildingD)에 맞춰 바깥면을 두고, 막대는 모두 안쪽으로만(밖으로 안 튀어나옴). 두께 0.2·높이 2.4·firstFloorY에서 시작. 1층·다락·지붕 단계 표시.
+// 1층 외벽(반투명) — 방 바닥 테두리선(집 발자국 0~buildingW / buildingFrontZ~+buildingD)에 맞춰 바깥면을 두고, 막대는 모두 안쪽으로만(밖으로 안 튀어나옴). 두께 0.3·높이 2.4·firstFloorY에서 시작. 1층·다락·지붕 단계 표시.
 {
   const wt = exteriorWall, wh = firstWallHeight, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;   // 두께·높이를 단일 상수에서 읽음(외벽 설계 시 도식·상세가 함께 갱신)
   const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
@@ -4049,7 +4049,7 @@ function drawStairAnno(p) {
 function buildStairWalls() {
   clearStairGroup(kitchenInnerWallObjects);
   clearStairGroup(familyInnerWallObjects);
-  const wt = 0.2, z0 = buildingFrontZ, wy = firstWallY + 0.003;
+  const wt = exteriorWall, z0 = buildingFrontZ, wy = firstWallY + 0.003;
   const inW = innerWallW, inOv = 0.003;   // inOv: 앞·뒤 외벽 안쪽으로 3mm만 파고들어 연결부 면겹침(z-fighting 반짝) 방지 — 폭은 안목 3.6m로 계산됨
   const N = Math.max(5, Math.round(stairParams.N));
   const loftY = firstFloorY + N * stairParams.R;          // 다락 바닥 높이(=계단 전체 높이)

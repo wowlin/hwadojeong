@@ -21,7 +21,7 @@ export const deckW = 5.5;                       // 데크 폭(가로) — 고정
 export const deckD = 3.8;                       // 데크 깊이 — 고정 상수
 export const roadW = 1.1;
 // firstWallHeight(1층 벽 높이)는 계단 총높이에서 파생 — 계단 상수 블록 뒤에서 정의(아래)
-export const exteriorWall = 0.2;               // 외벽 두께
+export const exteriorWall = 0.3;               // 외벽 두께(s2와 동일 30cm)
 export const interiorWall = 0.1;               // 내벽 두께
 export const stairRunW = 1.0;
 export const entryDoorLeafW = 1.0;     // 현관 문짝 유효폭 1000mm
