@@ -3987,6 +3987,25 @@ function drawStairCore(p) {
   for (let i = 0; i < nL; i += 1) railCylinder([railX, fy + (i + 1) * R, zFrontL + i * T + T / 2], [railX, fy + (i + 1) * R + balH, zFrontL + i * T + T / 2], postR);
   // 손잡이 — 각 세로 동자 윗끝을 잇는 경사 손잡이(첫 발판~마지막 발판)
   railCylinder([railX, fy + R + balH, zFrontL + T / 2], [railX, fy + nL * R + balH, zFrontL + (nL - 1) * T + T / 2], handR);
+  // 연장 — 돌음(턴존) 주방측(laneA) 트인 가장자리도 뒷벽까지: 벽 채움과 같은 90°/단수 분할로 각 사선단 세그먼트 중심에 세로 동자 + 손잡이 이음, 마지막은 뒷벽에 닿음.
+  {
+    const perStep = (Math.PI / 2) / nWind;
+    let zPrev = zTurn0;
+    let prevTop = [railX, fy + nL * R + balH, zFrontL + (nL - 1) * T + T / 2];   // 마지막 하부 동자 윗끝
+    for (let k = 1; k <= nWind; k += 1) {
+      const zEdge = (k < nWind) ? Math.min(zBack, zTurn0 + W * Math.tan(perStep * k)) : zBack;
+      if (zEdge > zPrev + 1e-6) {
+        const zc = (zPrev + zEdge) / 2;
+        const topY = fy + (nL + k) * R + balH;
+        railCylinder([railX, fy + (nL + k) * R, zc], [railX, topY, zc], postR);   // 세로 동자
+        railCylinder(prevTop, [railX, topY, zc], handR);                          // 손잡이 이음
+        prevTop = [railX, topY, zc];
+      }
+      zPrev = zEdge;
+      if (zEdge >= zBack - 1e-6) break;
+    }
+    railCylinder(prevTop, [railX, prevTop[1], zBack], handR);   // 손잡이 뒷벽까지 마무리
+  }
 }
 
 // 계단 화면 전용 주석(주방·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
