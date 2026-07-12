@@ -3433,14 +3433,15 @@ const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕 경사는 32도로 최대한 맞춰 설계 적용한다.\n  (태양광 설치: 28~34도가 최적 경사대)' },
   get stair() {                                            // s1 계단 사양 — ㄷ자(사선 3단) 계단. 모두 계단 상수(stairParams·stairGeom)서 자동 계산
     const g = stairGeom(stairParams);
-    const { W, R, T, N, fy, nWind, nL, nU, loftY, treadH, turnD } = g;
+    const { W, R, T, N, fy, nWind, nL, nU, loftY, treadH, nosing, turnD } = g;
     const floorH = loftY - fy;                             // 1층 층고(= 다락 바닥 높이)
     const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용)
     return { title: '계단', body: [
       '［계단］ ㄷ자 · 사선 3단 · 뒤벽 턴',
       `· 단높이      ${mm(R)} mm`,
       `· 디딤 깊이    ${mm(T)} mm`,
-      `· 디딤판      ${mm(T)} × ${mm(W)} mm  (두께 ${mm(treadH)})`,
+      `· 디딤판      ${mm(T + nosing)} × ${mm(W)} mm  (계단코 포함, 두께 ${mm(treadH)})`,
+      `· 계단코      ${mm(nosing)} mm`,
       `· 런 폭       ${mm(W)} mm`,
       `· 런 사이 틈   ${mm(stairGap)} mm`,
       `· 1층→다락    ${mm(floorH)} mm / ${N}단`,
@@ -3829,6 +3830,7 @@ function stairGeom(p) {
   const loftY = fy + N * R;                             // 다락 바닥 높이(=1층 층고)
   const landingY = fy + (nL + nWind + 1) * R;           // 계단참 높이 = 사선 맨위 단보다 한 단 위(평평 아님)
   const treadH = 0.05, riserD = 0.03;
+  const nosing = 0.02;                                  // 계단코 — 디딤판 앞코가 아래 단 위로 돌출(그리기·메모 단일 출처)
   const zBack = insideZ1;                               // 턴존이 뒤벽에 붙음
   const turnD = stairTurnD;                             // 턴존 깊이(1층 고정)
   const zTurn0 = stairTurnStart;                        // 턴존 앞 경계(= insideZ1 - turnD)
@@ -3837,14 +3839,13 @@ function stairGeom(p) {
   const flightLenL = nL * T, flightLenU = nU * T;
   const zFrontL = zTurn0 - flightLenL;                  // 하부계단 앞 끝(1층 입구)
   const zFrontU = zTurn0 - flightLenU;                  // 상부계단 앞 끝(다락 출구)
-  return { W, R, T, N, fy, nWind, nL, nU, loftY, landingY, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, flightLenL, flightLenU, zFrontL, zFrontU };
+  return { W, R, T, N, fy, nWind, nL, nU, loftY, landingY, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, flightLenL, flightLenU, zFrontL, zFrontU };
 }
 
 // 계단 본체(발판·세로막이·사선·계단참) — 계단 화면 + 1층 공유(stairCoreObjects).
 function drawStairCore(p) {
   const g = stairGeom(p);
-  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY, loftY } = g;
-  const nosing = 0.02;   // 계단코 — 디딤판 앞코가 아래 단 위로 돌출하는 길이
+  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY, loftY } = g;
   // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰. 앞코(-Z)로 nosing 돌출.
   for (let i = 0; i < nL; i += 1) {
     const topY = fy + (i + 1) * R;
