@@ -66,8 +66,8 @@ import {
 import {
   buildingFrontZ, lotX0, foundationTopY, firstFloorY, deckTopY0, lotX1, lotZ1,
   lotZ0, firstWallY, insideX0, insideZ0, insideX1, insideZ1,
-  insideD, stairGap, stairClearW, sideRoomW,
-  stairClearX, stairLowXRunX, stairHighXRunX, stairLowXWallX, stairHighXWallX,
+  insideD, stairGap, sideRoomW,
+  stairLowXRunX, stairHighXRunX, stairHighXWallX,
   planRightLivingX, planLeftFamilyX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
   innerWallW, familyInnerWallW, livingInnerWallX, familyInnerWallX,
   firstLivingX, firstFamilyX, entryGapStart, entryGapEnd, familyDoorZ, yardSashSillY,
@@ -622,7 +622,7 @@ captureInto(firstFloorFinishObjects, () => {
 // 여기선 그리지 않는다(중복 제거). 방 라벨이 없던 '계단실'만 같은 방 이름 라벨 방식으로 추가한다. 1층·다락·지붕 단계 표시.
 captureInto(firstDimObjects, () => {
   const ly = firstFloorY + 0.4;                                // 라벨 높이(방바닥 위)
-  const cx = stairClearX, cw = stairClearW;                    // 계단실 안목 폭 = 실제 계단 좌표계(양쪽 내벽 안쪽 면)
+  const cx = stairLowXRunX, cw = stairHighXWallX - stairLowXRunX;   // 계단실 안목: 거실측 벽면(stairLowXRunX)~안방측 벽면(stairHighXWallX) — 실제 계단·다락 슬래브와 동일 격자
   const zSplit = insideZ0 + stairBottomLandingD;               // 계단 앞(여유)↔계단실(계단 있는 공간) 경계 = 계단 시작선
   const y0 = firstFloorY + floorOverlayLift;
   // 계단 앞 사용가능 공간 색면(연녹) — 앞쪽 여유(계단 없는 공간)
@@ -687,9 +687,9 @@ label(`싱크대 ${fmtDim(kitchenSinkW)}x${fmtDim(kitchenSinkD)}m`, kitchenSinkX
   box({ x: ckX + 0.33, z: ckZ + 0.16, w: 0.14, d: 0.14, y: kitchenCounterY + 0.012, h: 0.004, mat: materials.guard });      // 화구2
   label('인덕션', ckX + ckW / 2, kitchenCounterY + 0.22, ckZ + ckD / 2, 'furniture');
 }
-box({ x: stairClearX, z: insideZ0, w: stairClearW, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
+box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 // '계단 앞' 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거) — 여기선 색면만.
-box({ x: stairLowXWallX, z: insideZ0, w: interiorWall, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
+box({ x: stairLowXRunX - interiorWall, z: insideZ0, w: interiorWall, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 captureInto(bathObjects, () => {
   room({ x: stairBathX, z: stairBathZ, w: stairBathW, d: stairBathD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bath, text: roomText('계단하부 WC', stairBathW, stairBathD), surfaceH: 0.018 });
   label(roomText('계단하부 WC', stairBathW, stairBathD), stairBathDoorX + stairBathDoorW / 2, firstFloorY + stairBathDoorH / 2, stairBathZ - 0.12, 'room');
@@ -725,7 +725,7 @@ captureInto(bathObjects, () => {
     label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 'mep');
   }
 });
-box({ x: stairClearX, z: stairOpeningStart, w: stairClearW, d: insideZ1 - stairOpeningStart, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stair, cast: false });
+box({ x: stairLowXRunX, z: stairOpeningStart, w: stairHighXWallX - stairLowXRunX, d: insideZ1 - stairOpeningStart, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stair, cast: false });
 room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed });   // 색면만 — 안방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
 
 // 1F walls
@@ -3230,7 +3230,7 @@ outletMarker({ x: 1.0, z: insideZ1, y: atticOutletY, axis: 'z', sign: -1, collec
 outletMarker({ x: insideX0, z: secondAtticZ + 0.4, y: atticOutletY, axis: 'x', sign: 1, collector: atticOutletObjects });
 outletMarker({ x: 7.3, z: insideZ1, y: atticOutletY, axis: 'z', sign: -1, collector: atticOutletObjects });           // 다락방2 후면
 outletMarker({ x: insideX1, z: secondAtticZ + 0.4, y: atticOutletY, axis: 'x', sign: -1, collector: atticOutletObjects });
-outletMarker({ x: stairClearX + 0.3, z: insideZ0, y: atticOutletY, axis: 'z', sign: 1, collector: atticOutletObjects });  // 복도 전면
+outletMarker({ x: stairLowXRunX + 0.3, z: insideZ0, y: atticOutletY, axis: 'z', sign: 1, collector: atticOutletObjects });  // 복도 전면
 
 // 보이는 구조물을 화면(버튼 영역 제외 캔버스) 중앙에 꽉 차게 프레이밍한다.
 // pos는 '보는 방향'으로만 쓰고 거리는 자동 계산하며, 줌 중심(target)을 경계구 중심에
