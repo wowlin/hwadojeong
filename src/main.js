@@ -3952,7 +3952,7 @@ function drawStairCore(p) {
     box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });          // 문 왼쪽 벽
     box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });      // 문 오른쪽 벽
     box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairWall, cast: false });          // 문 위 인방
-    interiorDoorHorizontal(dx0, zFrontL, fy, dW, dH, materials.wcDoor);                                                     // WC 출입문(욕실문 색)
+    interiorDoorHorizontal(dx0, zFrontL + t / 2, fy, dW, dH, materials.wcDoor);                                             // WC 출입문(욕실문 색) — 문짝을 벽 두께 중앙에 넣어 앞면 삐져나옴 제거
   }
   // WC 천장 — 상부런 발판 밑면(들쭉날쭉)을 가리는 사선 천장 패널. 단의 안쪽 뒤코너 선(z=zTurn0-jT, y=baseU+jR-treadH)을 따라 기울인 평판.
   {
