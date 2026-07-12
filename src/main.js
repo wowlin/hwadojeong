@@ -66,7 +66,7 @@ import {
 import {
   buildingFrontZ, lotX0, foundationTopY, firstFloorY, deckTopY0, lotX1, lotZ1,
   lotZ0, firstWallY, insideX0, insideZ0, insideX1, insideZ1,
-  insideD, stairGap, sideRoomW,
+  insideD, sideRoomW,
   stairLowXRunX, stairHighXRunX, stairHighXWallX,
   planRightLivingX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
   innerWallW, familyInnerWallW, livingInnerWallX, familyInnerWallX,
@@ -3439,7 +3439,7 @@ const NOTES = {
       `· 디딤판      ${mm(T + nosing)} × ${mm(W)} mm  (계단코 포함, 두께 ${mm(treadH)})`,
       `· 계단코      ${mm(nosing)} mm`,
       `· 런 폭       ${mm(W)} mm`,
-      `· 런 사이 틈   ${mm(stairGap)} mm`,
+      `· 런 사이 틈   ${mm(stairHighXRunX - stairLowXRunX - W)} mm`,   // 실제 틈 = 양쪽 벽에 붙은 두 런 사이 남는 폭(벽 두께차로 stairGap과 다름)
       `· 1층→다락    ${mm(floorH)} mm / ${N}단`,
       '',
       '［단 구성］ 아래→위',
@@ -3861,7 +3861,7 @@ function stairGeom(p) {
   const turnD = stairTurnD;                             // 턴존 깊이(1층 고정)
   const zTurn0 = stairTurnStart;                        // 턴존 앞 경계(= insideZ1 - turnD)
   const laneA = stairLowXRunX;                          // 하부(1층→) 런 = 거실측
-  const laneB = stairHighXRunX;                         // 상부(→다락) 런 = 안방측 (= laneA + W + stairGap)
+  const laneB = stairHighXRunX;                         // 상부(→다락) 런 = 안방측 내력벽 안쪽 면에 런폭만큼 안쪽(벽 붙임). 저X런과의 실제 틈은 벽 두께차로 stairGap과 다름
   const flightLenL = nL * T, flightLenU = nU * T;
   const zFrontL = zTurn0 - flightLenL;                  // 하부계단 앞 끝(1층 입구)
   const zFrontU = zTurn0 - flightLenU;                  // 상부계단 앞 끝(다락 출구)
