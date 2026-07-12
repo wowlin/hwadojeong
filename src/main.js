@@ -4018,9 +4018,14 @@ function buildStairWalls() {
   const zStart = z0 + wt - inOv;
   const fx = familyInnerWallX - familyInnerWallW / 2;
   captureInto(livingInnerWallObjects, () => {
-    // 거실|계단실 내벽(비내력 10cm) — 앞쪽(하부런 구간) 제거, 사선계단 구간(턴존 시작 stairTurnStart ~ 뒤 외벽)만 남김 → 하부 직선계단은 거실과 트임.
+    // 거실|계단실 내벽(비내력 10cm) — 사선계단 구간(턴존 시작 stairTurnStart ~ 뒤 외벽)은 통벽으로 유지.
     const livZ = stairTurnStart, livD = (insideZ1 + inOv) - stairTurnStart;
     box({ x: livingInnerWallX - inW / 2, z: livZ, w: inW, d: livD, y: wy, h: wallH, mat: materials.stairInnerWall });
+    // 하부 직선계단 거실측 트인 부분 — 반대편 gap 스파인벽과 대칭으로 각 단 높이만큼 계단 모양으로 채워 막음.
+    const g = stairGeom(stairParams);
+    for (let i = 0; i < g.nL; i += 1) {
+      box({ x: livingInnerWallX - inW / 2, z: g.zFrontL + i * g.T, w: inW, d: g.T, y: g.fy, h: (i + 1) * g.R, mat: materials.stairInnerWall });
+    }
   });
   captureInto(familyInnerWallObjects, () => {
     // 계단실|안방 내력벽 20cm(말뚝 중심) — 일단 통벽(안방 출입문 개구 없음, 나중에 다시 추가). 1층은 이 벽을 누적해 쓰고 따로 그리지 않음.
