@@ -88,9 +88,8 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bExtWall">1층 외벽</button>
           <button type="button" class="seg-btn" id="bFirstRoom">1층 골조·실내</button>
         </div>
-        <div class="seg-row" role="group" aria-label="콘센트·계단">
+        <div class="seg-row" role="group" aria-label="콘센트">
           <button type="button" class="seg-btn" id="bOutlet">콘센트</button>
-          <button type="button" class="seg-btn" id="bS1Stair">계단</button>
         </div>
         <div class="seg-row" role="group" aria-label="계단하부 WC">
           <button type="button" class="seg-btn" id="bBath">계단하부 WC</button>
@@ -98,6 +97,9 @@ app.innerHTML = `
         <div class="seg-row" role="group" aria-label="거실측 벽·안방 내력벽">
           <button type="button" class="seg-btn" id="bLivingWall">거실측 벽</button>
           <button type="button" class="seg-btn" id="bFamilyWall">안방 내력벽</button>
+        </div>
+        <div class="seg-row" role="group" aria-label="계단">
+          <button type="button" class="seg-btn" id="bS1Stair">계단</button>
         </div>
         <div class="seg-row" role="group" aria-label="바닥">
           <button type="button" class="seg-btn" id="bFirstFloorFinish">바닥</button>

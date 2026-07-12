@@ -3431,6 +3431,31 @@ function syncSegButtons() {
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕 경사는 32도로 최대한 맞춰 설계 적용한다.\n  (태양광 설치: 28~34도가 최적 경사대)' },
+  get stair() {                                            // s1 계단 사양 — ㄷ자(사선 3단) 계단. 모두 계단 상수(stairParams·stairGeom)서 자동 계산
+    const g = stairGeom(stairParams);
+    const { W, R, T, N, fy, nWind, nL, nU, loftY, treadH, turnD } = g;
+    const floorH = loftY - fy;                             // 1층 층고(= 다락 바닥 높이)
+    const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용)
+    return { title: '계단', body: [
+      '［계단］ ㄷ자 · 사선 3단 · 뒤벽 턴',
+      `· 단높이      ${mm(R)} mm`,
+      `· 디딤 깊이    ${mm(T)} mm`,
+      `· 디딤판      ${mm(T)} × ${mm(W)} mm  (두께 ${mm(treadH)})`,
+      `· 런 폭       ${mm(W)} mm`,
+      `· 런 사이 틈   ${mm(stairGap)} mm`,
+      `· 1층→다락    ${mm(floorH)} mm / ${N}단`,
+      '',
+      '［단 구성］ 아래→위',
+      `· 하부 곧은계단   ${nL}단`,
+      `· 사선(부채꼴 90°) ${nWind}단`,
+      '· 계단참        1단',
+      `· 상부 곧은계단   ${nU}단`,
+      '· 다락 진입      1단',
+      '',
+      '［계단참(턴존)］',
+      `· 크기  ${mm(W)} × ${mm(turnD)} mm  (런 폭 × 턴존 깊이)`,
+    ].join('\n') };
+  },
   get s2Roof3() {
     const deg = Math.round(s2RoofPitch * 180 / Math.PI);
     return { title: '지붕 (징크 박공)', body: [
