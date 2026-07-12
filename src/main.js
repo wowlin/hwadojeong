@@ -989,18 +989,7 @@ const housePileXs = [
   frRightX - 1.5,      // 안방 중앙말뚝 6.9
   frRightX,            // 우 외벽(안방쪽) 8.4
 ];
-captureInto(foundationObjects, () => {
-  const m = 0.1;
-  pileFoundation(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, foundationTopY, { spacingZ: 1.9, xs: housePileXs });
-});
-// 말뚝기초 높이 치수 — 기초 뷰에서만 표시
-captureInto(foundationDimObjects, () => {
-  const m = 0.1;
-  const _fg = pileGridCoords(m, buildingFrontZ + m, buildingW - 2 * m, buildingD - 2 * m, 1.7, 1.9);
-  const _pileX = housePileXs[housePileXs.length - 2];
-  const _pileZ = _fg.zs[_fg.zs.length - 2];
-  planYDim(_pileX + 0.45, _pileZ, groundTopY, foundationTopY, '말뚝기초 0.35m', 0.5);
-});
+// 집 말뚝기초(시스템말뚝) — 제거됨(사용자 요청). 매트기초만 기초로 남김.
 
 // 집 골조(철골/목조 프레임)는 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다.
 
@@ -1171,11 +1160,9 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // 위치를 PILE_POS로 확정한 뒤 main에서 drawGroundPost()로 그려, 바닥 마커와 입체 말뚝이
   // 똑같은 좌표를 쓰게 한다(예전엔 바닥만 보정하고 입체는 원좌표라 도면마다 어긋났음 → 그 회귀 차단).
   function drawGroundPost(px, pz, isFirst) {
-    captureInto(foundationObjects, () => {
-      systemPile(px, pz, postBaseY, false, materials.deckPileHead);   // 데크 높이(0.4m) 기초 — 두부 청회색(집 기초와 구분)
-    });
+    // 땅 기둥 밑 말뚝기초 — 제거됨(사용자 요청). 기둥(골조)만 남김.
     const topY = glassYatZ(pz) - beamDrop - beamH;
-    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 기둥(골조) — 말뚝 위에 얹힘
+    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 기둥(골조)
   }
   postPlaces.forEach(([px, pz], i) => {
     if (postsToGround) {
@@ -1434,20 +1421,7 @@ for (const p of [living썬룸]) {
   const fx1 = Math.min(p.dX1, buildingW);  // 안방쪽 끝: 집 너비(8.5) 안으로
   deckFootprints.push({ x: fx0, z: p.dFrontZ, w: fx1 - fx0, d: p.dWallZ - p.dFrontZ });
 }
-// 입체 데크 시스템말뚝기초 — 말뚝(두부)만. 데크 둘레보는 바닥틀(골조) 림장선이 겸함(집과 동일·중복 제거).
-for (const f of deckFootprints) {
-  captureInto(foundationObjects, () => {
-    const m = 0.1;
-    pileFoundation(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, deckTopY0, { spacingX: 1.6, spacingZ: 1.7, headMat: materials.deckPileHead });
-  });
-  // 데크 기초 높이 치수 — 기초 뷰에서만 표시
-  captureInto(foundationDimObjects, () => {
-    const m = 0.1;
-    const _dg = pileGridCoords(f.x + m, f.z + m, f.w - 2 * m, f.d - 2 * m, 1.6, 1.7);
-    planYDim(_dg.xs[1] + 0.4, _dg.zs[1], groundTopY, deckTopY0, '데크 기초 0.25m', 0.5);
-  });
-  // 데크 둘레는 바닥틀(골조)의 림장선이 겸한다 — 집과 동일하게 한 겹(중복 토대보 제거).
-}
+// 데크 말뚝기초(시스템말뚝) — 제거됨(사용자 요청).
 
 // 바닥틀(바닥 골조 장선틀)은 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다(메뉴 삭제).
 
@@ -1470,14 +1444,7 @@ captureInto(matFoundationFullObjects, () => {
   planYDim(-0.1, buildingBackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 남쪽 모서리(옆집벽·측백벽 만나는 곳 = 낮은 X·뒤 Z) 높이 치수
 });
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
-function planPileMark(px, pz, mat = materials.pileHead) {   // 말뚝 두부 위치 마커(기본 검정 — 영상의 두부 브래킷처럼)
-  planObjects.push(box({ x: px - planMarkW / 2, z: pz - planMarkW / 2, w: planMarkW, d: planMarkW, y: planY + planH + 0.001, h: 0.002, mat, cast: false, name: 'ground' }));
-}
-function planPileMarks(x0, z0, w, d, spacingX, spacingZ, matFor, xs = null) {   // matFor(px,pz) → 해당 마커 색(없으면 기본 검정). xs 지정 시 그 X열 사용.
-  const grid = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
-  const cols = xs || grid.xs;
-  for (const px of cols) for (const pz of grid.zs) planPileMark(px, pz, (matFor && matFor(px, pz)) || materials.pileHead);
-}
+// 평면 말뚝 마커 함수 — 제거됨(말뚝기초 삭제, 사용자 요청).
 // ════════════════════════════════════════════════════════════════════════════
 // ▌말뚝기초 위치(좌표) — ★잠금 영역★  사용자가 "위치를 옮겨라"라고 명시하기 전까지 절대 수정 금지.
 //   · 색·라벨 등 다른 작업은 이 블록을 건드리지 말 것. 위치는 오직 여기서만 정의한다.
@@ -1491,11 +1458,7 @@ const PILE_POS = Object.freeze({
   // 안방 3개: X=groundPosts X, Z=[앞=_abFrontZ, 가운데=groundPosts 원위치, 뒤=_abBackZ]
   anbang: 안방썬룸.groundPosts.map(([px, pz], i) => [px, i === 0 ? _abFrontZ : i === 2 ? _abBackZ : pz]),
 });
-// ── 말뚝 마커 렌더 — 위치는 PILE_POS만 읽고, 여기서는 '색'만 정한다(위치 식 작성 금지). ──
-const _hp = PILE_POS.house;
-planPileMarks(_hp.x0, _hp.z0, _hp.w, _hp.d, _hp.sx, _hp.sz, undefined, _hp.xs);                        // 집 말뚝(0.5m) — 검정, X열=housePileXs
-PILE_POS.decks.forEach((d) => planPileMarks(d.x0, d.z0, d.w, d.d, d.sx, d.sz, () => materials.deckPileHead));   // 데크 말뚝(0.4m) — 청색
-PILE_POS.anbang.forEach(([px, pz]) => planPileMark(px, pz, materials.deckPileHead));                    // 안방 말뚝(0.4m) — 청색
+// 평면 말뚝 마커 렌더 — 제거됨(말뚝기초 삭제, 사용자 요청).
 // 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
 PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
 // 담장 발자국(측백·옆집) — siteBaseObjects(공통, 항상 표시)에 넣어 모든 탭이 공유. 기초 등 다른 토글과 무관하게 바탕에 늘 깔린다.
@@ -1532,13 +1495,7 @@ captureInto(dimObjects, () => {
   for (const x of [dL.x + dL.w, buildingW]) vGuide(x);
   for (const z of [dL.z, buildingFrontZ]) hGuide(z);
 });
-// 집 말뚝 X열 간격 치수 — 뒤쪽(+Z) 말뚝 줄에서 약간 뒤로 비켜 표시(기초 위 겹침 방지). 기초 뷰 전용.
-captureInto(foundationDimObjects, () => {
-  const dimZ = buildingBackZ + 0.25;   // 말뚝 뒤줄(3.2)에서 약간 뒤쪽 — 후면 여백에
-  for (let i = 0; i < housePileXs.length - 1; i += 1) {
-    planXDim(dimZ, housePileXs[i], housePileXs[i + 1], `${fmtDim(housePileXs[i + 1] - housePileXs[i])}m`);
-  }
-});
+// 집 말뚝 X열 간격 치수 — 제거됨(말뚝기초 삭제, 사용자 요청).
 
 // ╔══════════════════════════════════════════════════════════════════════════════╗
 // ║ ▼▼▼  S2 영역 시작 — 3층 구조(현재 작업 도면)  ▼▼▼                                ║
@@ -3326,7 +3283,6 @@ function setView(pos) {
 const view = {
   // 기초 그룹
   plan: false,        // 배치도(부감) — 대지·도로·담장·말뚝·평면치수
-  foundation: false,  // 입체 기초(시스템말뚝·두부)
   matFoundationHouse: false, // 부분 매트기초(집만 50cm)
   matFoundationFull: false,  // 전체 매트기초(집+데크 50cm)
   // 집 그룹(내부구조 부품별)
@@ -3367,7 +3323,6 @@ const view = {
 
 // 부품 → 객체배열 매핑(단일 출처). 배치도(부감)에선 모든 입체 부품을 숨김.
 const PARTS = [
-  { key: 'foundation', arrays: [foundationObjects, foundationDimObjects] },
   { key: 'matFoundationHouse', arrays: [matFoundationHouseObjects] },
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
   { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects] },   // 1층 바닥 + 방 안목치수(외벽 안쪽 기준 거실·계단실·안방 너비×깊이)
@@ -3414,10 +3369,10 @@ const S1_TOGGLES = [
   ['bLoft', 'loft'], ['bRoof', 'roof'],
   ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bAnno', 'anno'], ['bOutlet', 'outlet'],
   ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'], ['bLivingWall', 'livingWall'], ['bFamilyWall', 'familyWall'],
-  ['bFoundation', 'foundation'], ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
+  ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
-const FOUNDATION_GROUP = ['foundation', 'matFoundationHouse', 'matFoundationFull'];
+const FOUNDATION_GROUP = ['matFoundationHouse', 'matFoundationFull'];
 
 function applyVisibility() {
   const isPlan = view.plan;
@@ -3431,7 +3386,7 @@ function applyVisibility() {
   for (const item of footprintObjects) item.visible = (currentScheme === 's1');
   // 배치도(부감) 전용: 말뚝 마커·평면 치수
   for (const item of planObjects) item.visible = false;   // 말뚝 위치 마커 — 배치도에서 숨김(집·썬룸 배치만 표시)
-  const planDimOn = isPlan || view.foundation || view.matFoundationHouse || view.matFoundationFull || view.s2Foundation;   // 배치도 + 말뚝/매트기초(s1) + s2 기초 — 공통 치수·기준선 노출 조건
+  const planDimOn = isPlan || view.matFoundationHouse || view.matFoundationFull || view.s2Foundation;   // 배치도 + 매트기초(s1) + s2 기초 — 공통 치수·기준선 노출 조건
   // s2 탭 바닥 기준층 — 시작 배치도의 발자국·치수는 어떤 토글(기초·측백담장·옆집담장 포함)에도 사라지지 않고 항상 그대로 유지.
   const s2Ground = (currentScheme === 's2');
   // 집·데크 크기 치수 = 현재 탭 것만(2층 탭에선 숨김)
@@ -3671,7 +3626,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'foundation', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
