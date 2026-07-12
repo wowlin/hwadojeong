@@ -3292,7 +3292,6 @@ const view = {
   familyWall: false,  // 안방 내력벽
   extWall: false,     // 1층 외벽
   firstRoom: false,   // 1층 골조·실내
-  anno: false,        // 계단 설계 도면(방·다락바닥·치수·라벨)
   bath: false,        // 계단하부 WC(화장실)
   loft: false,        // 다락 바닥·골조
   roof: false,        // 지붕
@@ -3325,13 +3324,12 @@ const view = {
 const PARTS = [
   { key: 'matFoundationHouse', arrays: [matFoundationHouseObjects] },
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
-  { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects] },   // 1층 바닥 + 방 안목치수(외벽 안쪽 기준 거실·계단실·안방 너비×깊이)
+  { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면(색상으로 구분해 바닥에 합침)
   { key: 'stair',      arrays: [stairCoreObjects] },
   { key: 'livingWall', arrays: [livingInnerWallObjects] },
   { key: 'familyWall', arrays: [familyInnerWallObjects] },
   { key: 'extWall',    arrays: [firstWallObjects] },
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
-  { key: 'anno',       arrays: [stairObjects] },
   { key: 'bath',       arrays: [bathObjects] },
   { key: 'loft',       arrays: [secondFloorObjects] },
   { key: 'roof',       arrays: [roofObjects] },
@@ -3367,7 +3365,7 @@ const S1_TOGGLES = [
   ['bDeck', 'deck'], ['bDeckFloor', 'deckFloor'], ['bDeckStairFrame', 'deckStairFrame'],
   ['bSun', 'sun'], ['bFolding', 'folding'], ['bAccessory', 'accessory'],   // 포치 '외벽'(sunWall)은 자바라 외벽 제거로 버튼도 삭제
   ['bLoft', 'loft'], ['bRoof', 'roof'],
-  ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bAnno', 'anno'], ['bOutlet', 'outlet'],
+  ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bOutlet', 'outlet'],
   ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'], ['bLivingWall', 'livingWall'], ['bFamilyWall', 'familyWall'],
   ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
 ];
@@ -3626,7 +3624,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'anno', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
