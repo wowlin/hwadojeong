@@ -626,7 +626,8 @@ captureInto(firstDimObjects, () => {
   const x1 = familyInnerWallX - familyInnerWallW / 2;         // 계단실 안목 끝   = 안방측 내력벽(20cm) 안쪽 면
   const zF = buildingFrontZ + exteriorWall, zB = buildingBackZ - exteriorWall;   // 앞·뒤 외벽 안쪽 면
   label(roomText('계단실', x1 - x0, zB - zF), (x0 + x1) / 2, ly, (zF + zB) / 2, 'room');
-  // 계단 앞 사용가능 공간 — 안방·거실 사이, 계단 시작 전 앞쪽 여유(계단실 폭 × 앞 여유 깊이)
+  // 계단 앞 사용가능 공간 — 안방·거실 사이, 계단 시작 전 앞쪽 여유(계단실 폭 × 앞 여유 깊이). 색면(연녹)으로 구분.
+  box({ x: stairClearX, z: insideZ0, w: stairClearW, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift, h: floorSurfaceH, mat: materials.stairFront, cast: false });
   label(roomText('계단 앞', stairClearW, stairBottomLandingD), stairClearX + stairClearW / 2, ly, insideZ0 + stairBottomLandingD / 2, 'room');
 });
 
