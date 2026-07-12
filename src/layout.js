@@ -4,7 +4,7 @@
 import {
   buildingBackZ, buildingD, groundTopY, foundationHeight, floorFinishH, deckFoundationH,
   neighborSetback, hedgeBoundaryGap, lotW, lotD, exteriorWall, buildingW, interiorWall,
-  stairRunW, entryFrameOuterW, yardDeckH, stairRiserCount, lowerStraightTreadCount, winderTreadCount,
+  stairRunW, entryFrameOuterW, yardDeckH, lowerStraightTreadCount, upperStraightTreadCount,
   stairTreadDepth, interiorDoorW, interiorDoorH, firstWallHeight, yardSashW, yardSashH,
   familyWindowW, kitchenSinkD, kitchenSinkH, kitchenSinkW, livingRearWindowW, familyRearWindowW,
   sideDoorH, secondCorridorWindowSillOffset, secondCorridorWindowH, atticVentWindowW, atticSkyWindowW, atticRearWindowSillOffset,
@@ -56,7 +56,6 @@ export const entryGapStart = stairClearX + (stairClearW - entryFrameOuterW) / 2;
 export const entryGapEnd = entryGapStart + entryFrameOuterW;
 export const familyDoorZ = insideZ0;
 export const yardSashSillY = firstFloorY + yardDeckH;
-export const upperStraightTreadCount = stairRiserCount - 1 - lowerStraightTreadCount - winderTreadCount;
 export const stairTurnD = 0.8;   // 계단참·사선 턴존 깊이(안전 하한 ≈ 3×디딤 0.27 = 0.81m 선까지 줄임)
 export const stairTurnStart = insideZ1 - stairTurnD;
 export const stairFirstRunStart = stairTurnStart - stairTreadDepth * lowerStraightTreadCount;

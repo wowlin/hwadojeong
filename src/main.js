@@ -54,7 +54,7 @@ import {
   lotD, roadW, firstWallHeight, exteriorWall, interiorWall,
   stairRunW, entryDoorLeafW, entryFrameOuterW, entryFrameH, interiorDoorW, interiorDoorH,
   yardSashW, yardSashH, secondFloorThickness, secondWallHeight, roofSlopeDeg,
-  roofThickness, stairRiserCount, lowerStraightTreadCount, winderTreadCount, stairTreadDepth, floorSurfaceH,
+  roofThickness, stairRiserCount, stairRiserHeight, lowerStraightTreadCount, winderTreadCount, landingTreadCount, upperStraightTreadCount, stairTreadDepth, floorSurfaceH,
   floorOverlayLift, familyWindowW, kitchenSinkW, kitchenSinkD, kitchenSinkH, livingRearWindowW,
   familyRearWindowW, sideDoorW, sideDoorH, secondAtticDoorH, secondCorridorWindowH, secondCorridorWindowSillOffset,
   atticVentWindowW, atticSkyWindowW, atticSkyWindowH, atticSkyWindowSillOffset, atticRearWindowW, atticRearWindowH,
@@ -71,7 +71,7 @@ import {
   planRightLivingX, planLeftFamilyX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
   innerWallW, familyInnerWallW, livingInnerWallX, familyInnerWallX,
   firstLivingX, firstFamilyX, entryGapStart, entryGapEnd, familyDoorZ, yardSashSillY,
-  upperStraightTreadCount, stairTurnD, stairTurnStart, stairFirstRunStart, stairOpeningStart, stairBottomLandingD,
+  stairTurnD, stairTurnStart, stairFirstRunStart, stairOpeningStart, stairBottomLandingD,
   stairBathX, stairBathZ, stairBathW, stairBathD, stairBathDoorW, stairBathDoorX,
   stairBathDoorEndX, stairBathDoorH, stairBathWallH, livingYardSashX, yardSashTopY, familyWindowX,
   familyWindowSillY, familyWindowTopY, familyWindowH, entryDoorBaseY, kitchenSinkX, kitchenSinkZ,
@@ -3821,7 +3821,7 @@ for (const t of document.querySelectorAll('.scheme-tab')) {
 //   → 반대 방향 상부 곧은계단(-Z, 앞으로 오름) → 마지막 단 위 = 다락 바닥.
 //   하부 첫 단과 상부 마지막 단(다락)이 같은 수직선상. 입·출구 앞은 통행 ≥1m.
 //   1층바닥→다락바닥 전체 높이(=개수×단높이=1층 층고)를 함께 표시하고 값 바뀌면 갱신.
-const stairParams = { R: 0.17, T: 0.26, N: 17 };   // 단높이/계단폭(디딤 깊이)/계단 개수 (너비·위치는 1층 계단실에 고정)
+const stairParams = { R: stairRiserHeight, T: 0.26, N: stairRiserCount };   // 단높이(R)·개수(N)는 상수에서 파생(단일 출처) — 여기 숫자 박지 말 것. 디딤 T만 그리기 전용. 너비·위치는 1층 계단실 고정
 const loftFloorThickness = secondFloorThickness;   // 다락 바닥 두께(30cm) — 다락 슬래브(secondFloorThickness)와 단일 출처. 계단 높이가 바뀌어도 두께 불변, 양쪽 내벽이 밑면에 맞춤
 
 // ㄷ자 계단 좌표 — 1층 계단실(stairLowXRunX·stairHighXRunX, 뒤벽 턴존)에 맞춰 도출. 두 화면(계단·1층) 공유.
@@ -3829,11 +3829,12 @@ function stairGeom(p) {
   const W = stairRunW;                                  // 런 폭 = 1층 계단실 고정
   const R = p.R, T = p.T, N = Math.max(5, Math.round(p.N));
   const fy = firstFloorY;
-  const nWind = 3;
-  const nL = Math.max(1, Math.min(lowerStraightTreadCount, N - nWind - 3));   // 하부 곧은계단 = 고정(6). 추가 단은 다락쪽(상부)으로. 작은 N에서만 축소
-  const nU = Math.max(1, N - nWind - nL - 2);           // 상부(다락쪽) 곧은계단 = 나머지 (계단참·다락이 각각 한 단을 차지 → -2)
-  const loftY = fy + N * R;                             // 다락 바닥 높이(=1층 층고)
-  const landingY = fy + (nL + nWind + 1) * R;           // 계단참 높이 = 사선 맨위 단보다 한 단 위(평평 아님)
+  const nWind = winderTreadCount;                      // 사선(돌음) 단수
+  const nLand = landingTreadCount;                     // 계단참 단수(돌음) — 평참 대신
+  const nL = lowerStraightTreadCount;                  // 하부 곧은계단 단수
+  const nU = upperStraightTreadCount;                  // 상부(다락쪽) 곧은계단 단수 (모두 상수 파생 → 발자국 고정)
+  const loftY = fy + N * R;                             // 다락 바닥 높이(=1층 층고) = 총단수×단높이
+  const landingY = fy + (nL + nWind + nLand) * R;       // 계단참 맨위(돌음 nLand단 오른 뒤) = 상부계단 시작 높이
   const treadH = 0.05, riserD = 0.03;
   const nosing = 0.02;                                  // 계단코 — 디딤판 앞코가 아래 단 위로 돌출(그리기·메모 단일 출처)
   const zBack = insideZ1;                               // 턴존이 뒤벽에 붙음
@@ -3844,13 +3845,13 @@ function stairGeom(p) {
   const flightLenL = nL * T, flightLenU = nU * T;
   const zFrontL = zTurn0 - flightLenL;                  // 하부계단 앞 끝(1층 입구)
   const zFrontU = zTurn0 - flightLenU;                  // 상부계단 앞 끝(다락 출구)
-  return { W, R, T, N, fy, nWind, nL, nU, loftY, landingY, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, flightLenL, flightLenU, zFrontL, zFrontU };
+  return { W, R, T, N, fy, nWind, nLand, nL, nU, loftY, landingY, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, flightLenL, flightLenU, zFrontL, zFrontU };
 }
 
 // 계단 본체(발판·세로막이·사선·계단참) — 계단 화면 + 1층 공유(stairCoreObjects).
 function drawStairCore(p) {
   const g = stairGeom(p);
-  const { W, R, T, fy, nWind, nL, nU, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY, loftY } = g;
+  const { W, R, T, fy, nWind, nLand, nL, nU, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY, loftY } = g;
   // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰. 앞코(-Z)로 nosing 돌출.
   for (let i = 0; i < nL; i += 1) {
     const topY = fy + (i + 1) * R;
@@ -3886,12 +3887,24 @@ function drawStairCore(p) {
   noseStrip(A1, P, [laneA + W / 2, zTurn0 - T / 2], fy + (nL + 1) * R);   // 단1 앞 = 하부런 마지막 단 위로
   noseStrip(P, Q1, cen(windPolys[0]), fy + (nL + 2) * R);                 // 단2 앞 = 단1 위로
   noseStrip(P, Q2, cen(windPolys[1]), fy + (nL + 3) * R);                 // 단3 앞 = 단2 위로
-  // 계단참(laneB 턴존만 — 상부 직선계단과 같은 폭 W) — 사선 맨위 단보다 한 단 위(landingY), 사선↔상부계단 90° 전환. 앞코(-X, 사선쪽)로 nosing 돌출.
-  box({ x: laneB - nosing, z: zTurn0, w: W + nosing, d: turnD, y: landingY - treadH, h: treadH, mat: materials.landing, cast: false });
-  // 두 런 사이 gap 공간 — 계단참에서 빼고 사선 맨위 단과 같은 높이로 내려, 사선계단 가장 위 단에 포함
+  // 계단참 = 돌음 nLand단(laneB 턴존) — 사선단과 대칭(90° 균등분할)으로 오르며 회전. 평참 대신 단으로 채워 층고↑(발자국 그대로).
+  const PL = [laneB, zTurn0];
+  const B1 = [laneB + W, zTurn0], B2 = [laneB + W, zBack], B3 = [laneB, zBack];
+  const rayHitL = (deg) => {                                  // PL에서 deg 광선이 턴존 벽(x=laneB+W 또는 z=zBack)과 만나는 점(사선단 rayHit의 대칭)
+    const a = deg * Math.PI / 180, du = Math.cos(a), dv = Math.sin(a);
+    let t = Infinity;
+    if (du > 1e-9) t = Math.min(t, W / du);
+    if (dv > 1e-9) t = Math.min(t, turnD / dv);
+    return [laneB + t * du, zTurn0 + t * dv];
+  };
+  const QL1 = rayHitL(30), QL2 = rayHitL(60);              // 90°를 30°씩(nLand=3 기준) 균등 분할
+  const landPolys = [[PL, B1, QL1], [PL, QL1, B2, QL2], [PL, QL2, B3]];
+  // 오름 순서: 뒤(gap쪽 B3, 낮음)→앞(바깥 B1, 높음). 사선 끝단에 이어 올라 상부계단 시작 높이(landingY)에 닿음.
+  for (let k = 1; k <= nLand; k += 1) {
+    flatPoly({ points: landPolys[nLand - k], y: fy + (nL + nWind + k) * R - treadH, h: treadH, mat: materials.landing, cast: false });
+  }
+  // 두 런 사이 gap — 사선 맨위 단 높이로 채워 사선계단 최상단에 포함(계단참 첫 단 밑)
   box({ x: laneA + W, z: zTurn0, w: laneB - (laneA + W), d: turnD, y: fy + (nL + nWind) * R - treadH, h: treadH, mat: materials.stair, cast: false });
-  // 계단참 앞 단높이 면(사선 맨위 단 → 계단참 한 단 올라감) — 일반 계단벽과 같은 높이(R), 윗면=계단참 발판 밑면
-  box({ x: laneB, z: zTurn0, w: riserD, d: turnD, y: landingY - treadH - R, h: R, mat: materials.stairWall, cast: false });
   // 상부 곧은계단(laneB, -Z) → 마지막 단은 다락보다 한 단 아래. 세로막이 반대편(+Z) + 발판 두께만큼 아래로
   const baseU = landingY;
   for (let j = 0; j < nU; j += 1) {

@@ -20,7 +20,7 @@ export const hedgeThickness = 0.5;             // 측백담장 두께 — 고정
 export const deckW = 5.5;                       // 데크 폭(가로) — 고정 상수
 export const deckD = 3.8;                       // 데크 깊이 — 고정 상수
 export const roadW = 1.1;
-export const firstWallHeight = 2.59;           // 1층 벽 높이 = 계단 총높이(17×0.17=2.89) − 다락 바닥 30cm → 다락 바닥 윗면이 계단 꼭대기(loftY)에 맞음
+// firstWallHeight(1층 벽 높이)는 계단 총높이에서 파생 — 계단 상수 블록 뒤에서 정의(아래)
 export const exteriorWall = 0.2;               // 외벽 두께
 export const interiorWall = 0.1;               // 내벽 두께
 export const stairRunW = 1.0;
@@ -36,10 +36,15 @@ export const secondFloorThickness = 0.30;     // 다락 바닥 슬래브 두께 
 export const secondWallHeight = 1.10;         // 다락 무릎벽 높이(가중평균 ~1.75m로 다락 1.8m 한도 안전마진)
 export const roofSlopeDeg = 33;               // 지붕 물매(도)
 export const roofThickness = 0.26;            // 지붕(단열 260T+징크) 두께
-export const stairRiserCount = 16;
-export const lowerStraightTreadCount = 6;
-export const winderTreadCount = 3;
+export const stairRiserHeight = 0.17;          // 계단 단높이(R) — 1층 층고 단일 출처. 여기만 바꾸면 벽·다락·지붕이 함께 따라감
+export const lowerStraightTreadCount = 6;      // 하부 곧은계단 단수
+export const winderTreadCount = 3;             // 사선(돌음) 단수 — 90° 회전
+export const landingTreadCount = 3;            // 계단참 = 돌음 단수(평참 대신) — 턴존 안에서 층고 확보(발자국 그대로)
+export const upperStraightTreadCount = 6;      // 상부(다락쪽) 곧은계단 단수
+export const stairRiserCount = lowerStraightTreadCount + winderTreadCount + landingTreadCount + upperStraightTreadCount + 1;   // 총 단수(1층→다락) = 각 구간 합 + 다락 1단 → 파생
 export const stairTreadDepth = 0.27;
+// 1층 벽 높이 = 계단 총높이(단수×단높이) − 다락 바닥 두께. 다락 바닥 밑면이 벽 윗면 → 계단 높이 바꾸면 자동 추종.
+export const firstWallHeight = stairRiserCount * stairRiserHeight - secondFloorThickness;
 export const floorSurfaceH = 0.02;
 export const floorOverlayLift = 0.002;
 export const familyWindowW = 1.8;
