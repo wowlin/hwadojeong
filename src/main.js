@@ -626,6 +626,8 @@ captureInto(firstDimObjects, () => {
   const x1 = familyInnerWallX - familyInnerWallW / 2;         // 계단실 안목 끝   = 안방측 내력벽(20cm) 안쪽 면
   const zF = buildingFrontZ + exteriorWall, zB = buildingBackZ - exteriorWall;   // 앞·뒤 외벽 안쪽 면
   label(roomText('계단실', x1 - x0, zB - zF), (x0 + x1) / 2, ly, (zF + zB) / 2, 'room');
+  // 계단 앞 사용가능 공간 — 안방·거실 사이, 계단 시작 전 앞쪽 여유(계단실 폭 × 앞 여유 깊이)
+  label(roomText('계단 앞', stairClearW, stairBottomLandingD), stairClearX + stairClearW / 2, ly, insideZ0 + stairBottomLandingD / 2, 'room');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
@@ -683,7 +685,7 @@ label(`싱크대 ${fmtDim(kitchenSinkW)}x${fmtDim(kitchenSinkD)}m`, kitchenSinkX
   label('인덕션', ckX + ckW / 2, kitchenCounterY + 0.22, ckZ + ckD / 2, 'furniture');
 }
 box({ x: stairClearX, z: insideZ0, w: stairClearW, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
-label(`계단 앞 ${fmtDim(stairClearW)}x${fmtDim(stairBottomLandingD)}m`, stairClearX + stairClearW / 2, firstFloorY + floorOverlayLift + 0.18, insideZ0 + stairBottomLandingD * 0.72, 'dim');
+// '계단 앞' 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거) — 여기선 색면만.
 box({ x: stairLowXWallX, z: insideZ0, w: interiorWall, d: insideD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 captureInto(bathObjects, () => {
   room({ x: stairBathX, z: stairBathZ, w: stairBathW, d: stairBathD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bath, text: roomText('계단하부 WC', stairBathW, stairBathD), surfaceH: 0.018 });
