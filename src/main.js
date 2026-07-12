@@ -1423,6 +1423,12 @@ for (const p of [living썬룸]) {
   const fx1 = Math.min(p.dX1, buildingW);  // 안방쪽 끝: 집 너비(8.5) 안으로
   deckFootprints.push({ x: fx0, z: p.dFrontZ, w: fx1 - fx0, d: p.dWallZ - p.dFrontZ });
 }
+// 포치(데크 지붕) 건축면적 산입면적 — 건축법 시행령 §119① 2호: 벽 없이 기둥으로 받친 지붕은
+//   외곽 '기둥 중심선' 안쪽 수평투영이 건축면적(기둥 안쪽엔 1m 처마 공제 없음). 지붕은 단일 패널이
+//   전면(거실+안방)을 덮고, 최외곽 기둥은 거실측(deckFootprints[0].x)~안방측(안방 땅기둥 X). 깊이=데크 수평투영.
+const deckRoofColX0 = deckFootprints[0].x;                       // 거실측 최외곽 기둥선
+const deckRoofColX1 = 안방썬룸.groundPosts[0][0];                 // 안방측 최외곽 기둥선(땅 기둥 X열)
+const deckRoofBcrArea = (deckRoofColX1 - deckRoofColX0) * deckFootprints[0].d;   // 포치 건축면적(수평투영)
 // 데크 말뚝기초(시스템말뚝) — 제거됨(사용자 요청).
 
 // 바닥틀(바닥 골조 장선틀)은 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다(메뉴 삭제).
@@ -3639,12 +3645,14 @@ const NOTES = {
       '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
     ].join('\n') };
   },
-  get siteOverviewS1() {                                   // 대지·지역 개요(1층+다락 안) — s1 도면 상단 상시 표시. 숫자는 코드(building*·이격 상수)서 파생.
+  get siteOverviewS1() {                                   // 대지·지역 개요(1층+다락 안) — s1 도면 상단 상시 표시. 숫자는 코드(building*·deckRoof·이격 상수)서 파생.
     const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
-    const bldgArea = buildingW * buildingD;                // 건축면적(1층 발자국)
-    const totalArea = bldgArea;                            // 연면적 = 1층만(다락은 용적률 비산입)
+    const houseArea = buildingW * buildingD;               // 집 건축면적(외벽 중심선 수평투영)
+    const deckRoofArea = deckRoofBcrArea;                  // 포치(데크 지붕) 건축면적 — 외곽 기둥 중심선 안쪽(§119① 2호)
+    const bldgArea = houseArea + deckRoofArea;            // 건축면적 = 집 + 포치(지붕 덮인 기둥 안쪽 전부)
+    const floorArea = houseArea;                           // 연면적 = 1층 바닥만(다락·개방 포치는 바닥면적 비산입)
     const bcr = (bldgArea / lotArea) * 100;               // 건폐율
-    const far = (totalArea / lotArea) * 100;              // 용적률
+    const far = (floorArea / lotArea) * 100;              // 용적률
     const sideGap = -lotX0;                                // 옆집(거실측) 이격 = 집 외벽~옆 경계(파생)
     const rearGap = lotZ1 - buildingBackZ;                 // 뒤 이격 = 집 뒤벽~후면 경계(파생)
     return { title: '대지 개요', body: [
@@ -3656,10 +3664,12 @@ const NOTES = {
       '',
       '[규모 검토]',
       `- 건물: ${buildingW}×${buildingD.toFixed(1)} m · 지상 1층 + 다락`,
-      `- 건축면적 ${bldgArea.toFixed(0)} ㎡ · 연면적 ${totalArea.toFixed(0)} ㎡ (다락 비산입)`,
+      `- 건축면적: 집 ${houseArea.toFixed(1)} + 포치 ${deckRoofArea.toFixed(1)} = ${bldgArea.toFixed(1)} ㎡`,
       `- 건폐율: ${bcr.toFixed(1)} %  (한도 50 %)`,
+      `- 연면적: ${floorArea.toFixed(1)} ㎡ (1층, 다락·포치 비산입)`,
       `- 용적률: ${far.toFixed(1)} %  (한도 125 %)`,
       '',
+      '* 포치 건축면적 = 기둥으로 받친 지붕 → 외곽 기둥 중심선 안쪽 수평투영(§119① 2호). 개방 포치라 연면적엔 미산입.',
       '* 성장관리계획상 층수·높이 가이드라인은 포천시청 도시과(031-538-2114) 확인 필요.',
     ].join('\n') };
   },
