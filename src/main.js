@@ -4060,7 +4060,7 @@ function buildStairWalls() {
     // 하부 직선계단 거실측 트인 부분 — 반대편 gap 스파인벽과 대칭으로 각 단 발판 밑면까지만 계단 모양으로 채워 막음(발판 위로 안 솟게 → 위는 세로 동자 난간이 막음).
     const g = stairGeom(stairParams);
     for (let i = 0; i < g.nL; i += 1) {
-      box({ x: livingInnerWallX - inW / 2, z: g.zFrontL + i * g.T, w: inW, d: g.T, y: g.fy, h: (i + 1) * g.R - g.treadH, mat: materials.stairInnerWall });
+      box({ x: g.laneA, z: g.zFrontL + i * g.T, w: inW, d: g.T, y: g.fy, h: (i + 1) * g.R - g.treadH, mat: materials.stairInnerWall });
     }
   });
   captureInto(familyInnerWallObjects, () => {
