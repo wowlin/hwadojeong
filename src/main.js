@@ -3982,6 +3982,9 @@ function drawStairCore(p) {
   const loA = fy + R, loB = fy + nL * R;
   railCylinder([railX, loA + railH, zFrontL], [railX, loB + railH, zTurn0], handR);
   post(loA, zFrontL); post(loB, zTurn0); post(fy + Math.ceil(nL / 2) * R, zFrontL + Math.ceil(nL / 2) * T);
+  // 세로 동자 — 하부 직선계단 각 발판의 깊이 중심 거실측(laneA)에 발판 위 1.0m로 하나씩
+  const balH = 1.0;
+  for (let i = 0; i < nL; i += 1) railCylinder([railX, fy + (i + 1) * R, zFrontL + i * T + T / 2], [railX, fy + (i + 1) * R + balH, zFrontL + i * T + T / 2], postR);
 }
 
 // 계단 화면 전용 주석(거실·안방 크기[1층과 동일]·라벨·층고·다락바닥) — stairObjects.
