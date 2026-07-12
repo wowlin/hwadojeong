@@ -622,13 +622,14 @@ captureInto(firstFloorFinishObjects, () => {
 // 여기선 그리지 않는다(중복 제거). 방 라벨이 없던 '계단실'만 같은 방 이름 라벨 방식으로 추가한다. 1층·다락·지붕 단계 표시.
 captureInto(firstDimObjects, () => {
   const ly = firstFloorY + 0.4;                                // 라벨 높이(방바닥 위)
-  const x0 = livingInnerWallX + innerWallW / 2;               // 계단실 안목 시작 = 거실측 내벽(10cm) 안쪽 면
-  const x1 = familyInnerWallX - familyInnerWallW / 2;         // 계단실 안목 끝   = 안방측 내력벽(20cm) 안쪽 면
-  const zF = buildingFrontZ + exteriorWall, zB = buildingBackZ - exteriorWall;   // 앞·뒤 외벽 안쪽 면
-  label(roomText('계단실', x1 - x0, zB - zF), (x0 + x1) / 2, ly, (zF + zB) / 2, 'room');
-  // 계단 앞 사용가능 공간 — 안방·거실 사이, 계단 시작 전 앞쪽 여유(계단실 폭 × 앞 여유 깊이). 색면(연녹)으로 구분.
-  box({ x: stairClearX, z: insideZ0, w: stairClearW, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift, h: floorSurfaceH, mat: materials.stairFront, cast: false });
-  label(roomText('계단 앞', stairClearW, stairBottomLandingD), stairClearX + stairClearW / 2, ly, insideZ0 + stairBottomLandingD / 2, 'room');
+  const cx = stairClearX, cw = stairClearW;                    // 계단실 안목 폭 = 실제 계단 좌표계(양쪽 내벽 안쪽 면)
+  const zF = insideZ0, zB = insideZ1, y0 = firstFloorY + floorOverlayLift;   // 앞·뒤 외벽 안쪽 면
+  // 계단실 색면(연주황) — 전체 깊이 바탕
+  box({ x: cx, z: zF, w: cw, d: zB - zF, y: y0, h: floorSurfaceH, mat: materials.stairRoom, cast: false });
+  // 계단 앞 사용가능 공간 색면(연녹) — 앞쪽 여유(계단 시작 전), 계단실 바탕 위에 얹음
+  box({ x: cx, z: zF, w: cw, d: stairBottomLandingD, y: y0 + floorOverlayLift, h: floorSurfaceH, mat: materials.stairFront, cast: false });
+  label(roomText('계단실', cw, zB - zF), cx + cw / 2, ly, (zF + zB) / 2, 'room');
+  label(roomText('계단 앞', cw, stairBottomLandingD), cx + cw / 2, ly, zF + stairBottomLandingD / 2, 'room');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
