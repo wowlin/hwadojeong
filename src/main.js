@@ -68,7 +68,7 @@ import {
   lotZ0, firstWallY, insideX0, insideZ0, insideX1, insideZ1,
   insideD, stairGap, sideRoomW,
   stairLowXRunX, stairHighXRunX, stairHighXWallX,
-  planRightLivingX, planLeftFamilyX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
+  planRightLivingX, firstLivingW, firstLivingD, firstFamilyW, firstFamilyD,
   innerWallW, familyInnerWallW, livingInnerWallX, familyInnerWallX,
   firstLivingX, firstFamilyX, entryGapStart, entryGapEnd, familyDoorZ, yardSashSillY,
   stairTurnD, stairTurnStart, stairFirstRunStart, stairOpeningStart, stairBottomLandingD,
@@ -3209,7 +3209,7 @@ outletMarker({ x: 2.7, z: insideZ0, y: outletLowY, axis: 'z', sign: 1 });       
 outletMarker({ x: insideX1, z: -0.1, y: outletLowY, axis: 'x', sign: -1 });       // 도로측 외벽
 outletMarker({ x: insideX1, z: 2.6, y: outletLowY, axis: 'x', sign: -1 });
 outletMarker({ x: 5.6, z: insideZ1, y: outletLowY, axis: 'z', sign: -1 });        // 안방 후면벽
-outletMarker({ x: planLeftFamilyX, z: 1.6, y: outletLowY, axis: 'x', sign: 1 });  // 안방 내벽
+outletMarker({ x: firstFamilyX, z: 1.6, y: outletLowY, axis: 'x', sign: 1 });  // 안방 내벽(안방쪽 벽면)
 // 1층 — 계단하부 WC(세면대 옆, 방수형)
 outletMarker({ x: stairHighXWallX, z: stairBathZ + 0.35, y: firstFloorY + 1.05, axis: 'x', sign: -1, gang: 1 });
 
