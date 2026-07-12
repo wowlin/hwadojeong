@@ -3706,7 +3706,7 @@ for (const sec of document.querySelectorAll('.menu-group')) {
   btn.addEventListener('click', () => {
     const keyList = getKeys();
     if (!keyList.length) return;
-    const target = !keyList.every((k) => view[k]);   // 하나라도 꺼졌으면 모두 켜고, 다 켜졌으면 모두 끔
+    const target = !keyList.some((k) => view[k]);   // 토글: 하나라도 켜졌으면 모두 끄고, 다 꺼졌으면 모두 켬
     for (const k of keyList) view[k] = target;
     if (target) {   // 기초(상호배타)는 동시에 못 켜므로 마지막 하나(전체 매트)만 남김
       const fk = keyList.filter((k) => FOUNDATION_GROUP.includes(k));
@@ -3722,9 +3722,9 @@ for (const sec of document.querySelectorAll('.menu-group')) {
 function syncAllButtons() {
   for (const { btn, getKeys } of groupControls) {
     const keys = getKeys();
-    const allOn = keys.length > 0 && keys.every((k) => view[k]);
-    btn.textContent = allOn ? '끄기' : '켜기';
-    btn.classList.toggle('on', allOn);
+    const anyOn = keys.some((k) => view[k]);
+    btn.textContent = anyOn ? '끄기' : '켜기';
+    btn.classList.toggle('on', anyOn);
   }
 }
 
