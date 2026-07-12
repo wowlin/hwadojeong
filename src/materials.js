@@ -27,7 +27,7 @@ export const materials = {
   vanity: new THREE.MeshLambertMaterial({ color: 0x99a13a }),
   shower: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
   stair: new THREE.MeshLambertMaterial({ color: 0xd9cffb }),
-  stairFront: new THREE.MeshLambertMaterial({ color: 0xdfeecf }),
+  stairFront: new THREE.MeshLambertMaterial({ color: 0xbfe3a0 }),
   stairRoom: new THREE.MeshLambertMaterial({ color: 0xf3c19b }),   // 계단실 바닥 구분색(연주황) — 주방·안방·계단앞과 구별
   hall: new THREE.MeshLambertMaterial({ color: 0xeeeeee }),
   landing: new THREE.MeshLambertMaterial({ color: 0xffd166 }),
