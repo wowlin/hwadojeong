@@ -3689,20 +3689,26 @@ const SEG_KEYS = {                              // 버튼 id → 제어하는 vi
   bF3Roof: ['s2Roof3'], bF3Solar: ['s2Solar3'],
 };
 for (const [id, key] of S1_TOGGLES) SEG_KEYS[id] = [key];   // s1 부품 버튼도 그룹 전체버튼 집계에 포함
-const groupControls = [];   // [{ btn, keys }] — 각 그룹의 전체버튼 + 제어 키 목록(초기 1회 산출)
+const groupControls = [];   // [{ btn, getKeys }] — 각 그룹의 전체버튼 + 제어 키 산출(현재 탭에 보이는 버튼만)
 for (const sec of document.querySelectorAll('.menu-group')) {
-  const keys = new Set();
-  for (const b of sec.querySelectorAll('.seg-btn')) for (const k of (SEG_KEYS[b.id] || [])) keys.add(k);
-  if (!keys.size) continue;
-  const keyList = [...keys];
+  if (!sec.querySelector('.seg-btn')) continue;
+  // '기본' 그룹처럼 탭 전용 버튼이 섞인 곳은 숨겨진(다른 탭) 버튼을 빼고 집계 — s1 탭 '켜기'가 s2 기초를 켜지 않게.
+  const getKeys = () => {
+    const keys = new Set();
+    for (const b of sec.querySelectorAll('.seg-btn')) { if (b.hidden) continue; for (const k of (SEG_KEYS[b.id] || [])) keys.add(k); }
+    return [...keys];
+  };
+  if (!getKeys().length && !sec.querySelectorAll('.seg-btn[data-scheme]').length) continue;
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'menu-all';
   sec.querySelector('.menu-title').appendChild(btn);
   btn.addEventListener('click', () => {
+    const keyList = getKeys();
+    if (!keyList.length) return;
     const target = !keyList.every((k) => view[k]);   // 하나라도 꺼졌으면 모두 켜고, 다 켜졌으면 모두 끔
     for (const k of keyList) view[k] = target;
-    if (target) {   // 기초 3종(상호배타)은 동시에 못 켜므로 마지막 하나(전체 매트)만 남김
+    if (target) {   // 기초(상호배타)는 동시에 못 켜므로 마지막 하나(전체 매트)만 남김
       const fk = keyList.filter((k) => FOUNDATION_GROUP.includes(k));
       for (let i = 0; i < fk.length - 1; i += 1) view[fk[i]] = false;
     }
@@ -3710,12 +3716,13 @@ for (const sec of document.querySelectorAll('.menu-group')) {
     applyVisibility();
     if (target) centerTargetHeight();
   });
-  groupControls.push({ btn, keys: keyList });
+  groupControls.push({ btn, getKeys });
 }
 // 전체버튼 라벨·상태 동기화 — 개별 토글로 view가 바뀌어도 버튼이 따라오게 applyVisibility서 호출.
 function syncAllButtons() {
-  for (const { btn, keys } of groupControls) {
-    const allOn = keys.every((k) => view[k]);
+  for (const { btn, getKeys } of groupControls) {
+    const keys = getKeys();
+    const allOn = keys.length > 0 && keys.every((k) => view[k]);
     btn.textContent = allOn ? '끄기' : '켜기';
     btn.classList.toggle('on', allOn);
   }
@@ -3773,6 +3780,8 @@ function setScheme(id) {
     const ds = sec.dataset.scheme;
     sec.hidden = !(ds === 'shared' || ds === id);   // 공통+현재 탭 그룹만 노출
   }
+  // 공통('기본') 그룹 안의 탭 전용 버튼(기초=s2 / 부분·전체=s1)은 현재 탭 것만 노출 — 각 탭에 자기 기초만 보임
+  for (const b of document.querySelectorAll('.seg-btn[data-scheme]')) b.hidden = (b.dataset.scheme !== id);
   for (const t of document.querySelectorAll('.scheme-tab')) t.classList.toggle('active', t.dataset.scheme === id);
   showPlan();   // 그 탭의 배치도(부감)로 — 켠 부품 리셋 + 부감 카메라
 }

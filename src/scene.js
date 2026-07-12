@@ -107,20 +107,14 @@ app.innerHTML = `
           <button type="button" class="seg-btn" id="bFamilyWall">안방 내력벽</button>
         </div>
       </section>
-      <section class="menu-group" data-scheme="s1">
-        <h2 class="menu-title">기초</h2>
-        <div class="seg-row" role="group" aria-label="기초 말뚝기초">
-          <button type="button" class="seg-btn" id="bFoundation">말뚝기초</button>
-        </div>
-        <div class="seg-row" role="group" aria-label="기초 부분·전체 매트기초">
-          <button type="button" class="seg-btn" id="bMatHouse">부분 매트기초</button>
-          <button type="button" class="seg-btn" id="bMatFull">전체 매트기초</button>
-        </div>
-      </section>
       <section class="menu-group" data-scheme="shared">
         <h2 class="menu-title">기본</h2>
-        <div class="seg-row" role="group" aria-label="기초·담장 표시">
-          <button type="button" class="seg-btn" id="bF1Foundation">기초</button>
+        <div class="seg-row" role="group" aria-label="기초">
+          <button type="button" class="seg-btn" id="bF1Foundation" data-scheme="s2">기초</button>
+          <button type="button" class="seg-btn" id="bMatHouse" data-scheme="s1">부분</button>
+          <button type="button" class="seg-btn" id="bMatFull" data-scheme="s1">전체</button>
+        </div>
+        <div class="seg-row" role="group" aria-label="담장">
           <button type="button" class="seg-btn" id="bHedge">측백담장</button>
           <button type="button" class="seg-btn" id="bFence">옆집담장</button>
         </div>
