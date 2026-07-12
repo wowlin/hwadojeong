@@ -20,7 +20,7 @@ export const materials = {
   exteriorWall: new THREE.MeshLambertMaterial({ color: 0xe4ded2, transparent: true, opacity: 0.58, depthWrite: false }),
   exteriorWallMark: new THREE.MeshLambertMaterial({ color: 0xff8a5c }),   // 계단 화면 외벽 자리 표시(주황) — 외벽이 안 그려지는 화면에서 공간 경계 인지용
   wallTop: new THREE.MeshLambertMaterial({ color: 0x8f8374 }),
-  living: new THREE.MeshLambertMaterial({ color: 0xfff3c4 }),
+  kitchen: new THREE.MeshLambertMaterial({ color: 0xfff3c4 }),
   bed: new THREE.MeshLambertMaterial({ color: 0xbed8ff }),
   bath: new THREE.MeshLambertMaterial({ color: 0xbff3ef }),
   toilet: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
@@ -28,7 +28,7 @@ export const materials = {
   shower: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
   stair: new THREE.MeshLambertMaterial({ color: 0xd9cffb }),
   stairFront: new THREE.MeshLambertMaterial({ color: 0xdfeecf }),
-  stairRoom: new THREE.MeshLambertMaterial({ color: 0xf3c19b }),   // 계단실 바닥 구분색(연주황) — 거실·안방·계단앞과 구별
+  stairRoom: new THREE.MeshLambertMaterial({ color: 0xf3c19b }),   // 계단실 바닥 구분색(연주황) — 주방·안방·계단앞과 구별
   hall: new THREE.MeshLambertMaterial({ color: 0xeeeeee }),
   landing: new THREE.MeshLambertMaterial({ color: 0xffd166 }),
   floorSlab: new THREE.MeshLambertMaterial({ color: 0xc9a877 }),   // 각 층 바닥(2·3층 층참) — 계단참(노랑)과 구별되는 마루색

@@ -14,7 +14,7 @@ export const deckFinishT = 0.02;   // 포세린 마감 두께 20t=2cm(데크 기
 export const deckFoundationH = 0.25;   // 데크/썬룸 기초 높이 25cm(0.4에서 15cm 낮춤, 집 0.35보다 10cm 낮게 — 단차). 말뚝기초라 높이 자유.
 export const lotW = 9.95;                      // 대지 가로 — 왼쪽(안방) 측백 여유 포함(슬랙 쪽, 변수성)
 export const lotD = 9;                         // 대지 깊이 — 앞(입구) 여유 포함(슬랙 쪽, 변수성)
-export const neighborSetback = 0.5;            // 옆집벽(거실쪽, 저X)에서 집 이격 — 법적 규제(민법 242조). 고정 상수
+export const neighborSetback = 0.5;            // 옆집벽(주방쪽, 저X)에서 집 이격 — 법적 규제(민법 242조). 고정 상수
 export const hedgeBoundaryGap = 1.0;           // 집 뒤 벽 → 측백 뒤 대지 경계선 거리 — 고정 상수(측백 0.5 + 집~측백 0.5 = 1.0)
 export const hedgeThickness = 0.5;             // 측백담장 두께 — 고정 상수(가지치기로 조정 가능하나 일단 고정)
 export const deckW = 5.5;                       // 데크 폭(가로) — 고정 상수
@@ -51,7 +51,7 @@ export const familyWindowW = 1.8;
 export const kitchenSinkW = 2.2;
 export const kitchenSinkD = 0.6;
 export const kitchenSinkH = 0.85;
-export const livingRearWindowW = 2.0;
+export const kitchenRearWindowW = 2.0;
 export const familyRearWindowW = 1.8;                       // 안방 전면창과 동일 폭
 export const sideDoorW = 0.8;
 export const sideDoorH = 2.1;
