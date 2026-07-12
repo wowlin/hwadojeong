@@ -94,10 +94,6 @@ app.innerHTML = `
         <div class="seg-row" role="group" aria-label="계단하부 WC">
           <button type="button" class="seg-btn" id="bBath">계단하부 WC</button>
         </div>
-        <div class="seg-row" role="group" aria-label="거실측 벽·안방 내력벽">
-          <button type="button" class="seg-btn" id="bLivingWall">거실측 벽</button>
-          <button type="button" class="seg-btn" id="bFamilyWall">안방 내력벽</button>
-        </div>
         <div class="seg-row" role="group" aria-label="계단">
           <button type="button" class="seg-btn" id="bS1Stair">계단</button>
         </div>

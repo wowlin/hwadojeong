@@ -87,15 +87,15 @@ test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없
   const src = readFileSync(mainJs, 'utf8');
   // (1) 부품 상태는 view 객체의 독립 boolean — 핵심 부품 키 존재
   assert.match(src, /const view = \{/, '부품 상태는 단일 view 객체');
-  for (const k of ['matFoundationHouse', 'firstFloorFinish', 'stair', 'livingWall', 'familyWall', 'extWall', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun']) {
+  for (const k of ['matFoundationHouse', 'firstFloorFinish', 'stair', 'extWall', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun']) {
     assert.match(src, new RegExp(`\\b${k}:`), `view에 부품 키 ${k} 존재`);
   }
   // (2) PARTS 테이블이 부품→객체배열을 매핑하고, 가시성은 그 테이블로 일괄(독립)
   assert.match(src, /const PARTS = \[/, '부품→객체배열 매핑 PARTS 테이블');
   assert.match(src, /for \(const p of PARTS\)[\s\S]*?const on = !isPlan && !!view\[p\.key\];/, '각 부품은 view[key]로 독립 표시(배치도일 땐 숨김)');
-  // (3) 안방 내력벽·거실측 벽은 분리된 별도 배열(부품별 토글 대상)
-  assert.match(src, /key: 'familyWall', arrays: \[familyInnerWallObjects\]/, '안방 내력벽은 familyInnerWallObjects 단독 부품');
-  assert.match(src, /key: 'livingWall', arrays: \[livingInnerWallObjects\]/, '거실측 벽은 livingInnerWallObjects 단독 부품');
+  // (3) 안방 내력벽·거실측 벽은 '계단' 토글에 합쳐짐(별도 토글 삭제) — stair 배열에 두 벽 그룹 포함
+  assert.match(src, /key: 'stair',\s*arrays: \[stairCoreObjects, livingInnerWallObjects, familyInnerWallObjects\]/, '거실측 벽·안방 내력벽은 계단(stair) 토글에 합쳐짐');
+  assert.doesNotMatch(src, /key: 'livingWall'|key: 'familyWall'/, '별도 livingWall·familyWall 토글은 제거됨');
   // (4) 프리셋 뷰 — 배치도(전부 끄고 plan만). '전체 모델' 버튼·showAll은 제거됨.
   assert.match(src, /function showPlan\(\)/, '배치도 프리셋 showPlan');
   assert.doesNotMatch(src, /function showAll\(\)/, "'전체 모델' 프리셋 showAll 제거됨");
