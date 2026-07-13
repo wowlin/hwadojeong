@@ -699,28 +699,44 @@ captureInto(interiorObjects, () => {
 box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 // '계단 앞' 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거) — 여기선 색면만.
 box({ x: stairLowXRunX - interiorWall, z: insideZ0, w: interiorWall, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
-// '화장실' 토글 = 기구 3개(세면대·변기·온수기)만. 바닥칠·안목치수는 '바닥+계단'(계단실) 화면에서 표시(중복 제거).
+// '화장실' 토글 = 기구 3개(세면대·변기·온수기) + 185cm 사람. 바닥칠·안목치수는 '바닥+계단'(계단실) 화면에서 표시(중복 제거).
 captureInto(bathObjects, () => {
-  // 세면대 — 안방쪽 벽(높은 X)·앞쪽. 문 스윙(계단쪽 앞)을 피해 천장 높은 앞부분에 둠
-  box({ x: stairBathX + 0.58, z: stairBathZ + 0.18, w: 0.32, d: 0.34, y: firstFloorY, h: 0.72, mat: materials.vanity });
-  box({ x: stairBathX + 0.62, z: stairBathZ + 0.23, w: 0.24, d: 0.22, y: firstFloorY + 0.72, h: 0.04, mat: materials.sinkBasin });
-  box({ x: stairBathX + 0.85, z: stairBathZ + 0.27, w: 0.04, d: 0.04, y: firstFloorY + 0.76, h: 0.2, mat: materials.entryFrame });   // 수전
-  label('세면대', stairBathX + 0.72, firstFloorY + 1.0, stairBathZ + 0.35, 'furniture');
-  // 양변기 — 맨 안쪽(뒤 외벽)에 물탱크 붙이고 앞(문쪽·천장 높은 방향)을 향하게 착석. 계단쪽으로 붙여 안방쪽 뒤코너를 온수기 자리로 비움
   const wcCenterX = stairBathX + interiorWall + (stairBathW - interiorWall) / 2;   // 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
+  // 세면대 — 안방측(高X) 벽 등붙임. 문 안여닫이 스윙(앞 0.7m)을 피해 그 뒤(高Z)에 설치
+  {
+    const vaW = 0.5, vaD = 0.34;                                    // 폭(Z, 벽 따라)·깊이(X, 벽에서 실내로)
+    const vaX = stairBathX + stairBathW - vaD;                      // 高X 벽 안쪽면 등붙임
+    const vaZ = stairBathZ + 0.85;                                  // 문 스윙(앞 0.7m) 뒤
+    box({ x: vaX, z: vaZ, w: vaD, d: vaW, y: firstFloorY, h: 0.72, mat: materials.vanity });                                       // 캐비닛
+    box({ x: vaX + 0.06, z: vaZ + 0.13, w: vaD - 0.12, d: vaW - 0.24, y: firstFloorY + 0.72, h: 0.04, mat: materials.sinkBasin }); // 볼
+    box({ x: vaX + vaD - 0.07, z: vaZ + vaW / 2 - 0.02, w: 0.04, d: 0.04, y: firstFloorY + 0.76, h: 0.2, mat: materials.entryFrame });   // 벽수전(高X 벽쪽)
+  }
+  // 양변기 — 맨 안쪽(뒤 외벽) 안목 X 중앙. 물탱크 뒤벽, 착석은 앞(천장 높은 방향)
   box({ x: wcCenterX - 0.44 / 2, z: stairBathZ + stairBathD - 0.62, w: 0.44, d: 0.5, y: firstFloorY, h: 0.34, mat: materials.toilet });
   box({ x: wcCenterX - 0.48 / 2, z: stairBathZ + stairBathD - 0.14, w: 0.48, d: 0.1, y: firstFloorY, h: 0.58, mat: materials.toilet });
-  label('양변기', wcCenterX, firstFloorY + 0.85, stairBathZ + stairBathD - 0.45, 'furniture');
-  // 50L 전기 온수기(예정) — 맨 안쪽 안방쪽 뒤코너. 변기를 계단쪽에 붙여 비운 폭 0.47m 자리(세로형 0.45×0.45, 높이 1.0m < 천장). 반투명 예약 표시
+  // 전기온수기(예정) 경동나비엔 ESW560-50WH(50L) — 가로형 벽걸이 711×385×385mm. 문(높이 2.0m) 위 빈 공간에 눕혀 설치. 반투명 예약 표시
   {
-    const hx = stairBathX + 0.53, hd = 0.42, hw = 0.42;
+    const hL = 0.711, hR = 0.385 / 2;                              // 실제 제원(길이·반지름)
     const heater = new THREE.Mesh(
-      new THREE.BoxGeometry(hw, 1.0, hd),
+      new THREE.CylinderGeometry(hR, hR, hL, 24),
       new THREE.MeshLambertMaterial({ color: 0x9fd0e0, transparent: true, opacity: 0.4, depthWrite: false }),
     );
-    heater.position.set(hx + hw / 2, firstFloorY + 0.5, (stairBathZ + stairBathD - 0.04) - hd / 2);
+    heater.rotation.z = Math.PI / 2;                              // 원통 축을 X(가로)로 눕힘
+    heater.position.set(wcCenterX, firstFloorY + 2.03 + hR, stairBathZ + interiorWall + hR);   // 문 위, 앞벽 안쪽면 등붙임(+Z 돌출)
     scene.add(heater);
-    label('온수기 예정 50L', stairBathX + 0.74, firstFloorY + 1.12, stairBathZ + stairBathD - 0.25, 'mep');
+  }
+  // 185cm 사람 — 사선 천장(앞 높고 뒤 낮음) 중 머리 안 닿는 앞쪽 구역(천장 ≥1.94m)에 세움. 문 스윙·기구 비켜 섬
+  {
+    const ph = 1.85, headR = 0.12, bodyH = ph - headR * 2, bodyR = 0.16;
+    const px = stairBathX + 0.35, pz = stairBathZ + 1.05;
+    const pMat = new THREE.MeshLambertMaterial({ color: 0x8aa0b4 });
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(bodyR, bodyR, bodyH, 20), pMat);
+    body.position.set(px, firstFloorY + bodyH / 2, pz);
+    scene.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(headR, 20, 14), pMat);
+    head.position.set(px, firstFloorY + bodyH + headR, pz);
+    scene.add(head);
+    label('185cm', px, firstFloorY + ph + 0.14, pz, 'mep');
   }
 });
 // 계단하부 WC 배기구 — '화장실' 토글(기구 3개)에서 분리해 1층 그룹으로 수집. 무창 WC 기계환기: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기.
@@ -3967,7 +3983,7 @@ function drawStairCore(p) {
   {
     const wcWallH = (loftY - loftFloorThickness) - fy;
     const dW = 0.7, dH = 2.0, t = interiorWall;            // 욕실문 표준(폭 0.7·높이 2.0) — 일반 방문(0.9·2.1)보다 작게
-    const dx0 = laneB + (W - dW) / 2, dx1 = dx0 + dW;
+    const dx0 = laneB + interiorWall + (W - interiorWall - dW) / 2, dx1 = dx0 + dW;   // 문 = 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
     box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });          // 문 왼쪽 벽
     box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });      // 문 오른쪽 벽
     box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairWall, cast: false });          // 문 위 인방
@@ -3989,7 +4005,7 @@ function drawStairCore(p) {
   // WC 문 안여닫이 스윙 공간 — 밖에서 밀어 안(+Z)으로 90° 열릴 때 문이 쓸고 지나가는 1/4 기둥(반경=문폭, 높이=문높이). 사선 천장에 닿는지 눈으로 확인용. 반투명.
   {
     const dW = 0.7, dH = 2.0;                            // 욕실문(앞벽 문과 동일 치수)
-    const hingeX = laneB + (W - dW) / 2;                 // 경첩 = 문 주방측(낮은 X) 모서리
+    const hingeX = laneB + interiorWall + (W - interiorWall - dW) / 2;   // 경첩 = 문(안목 중앙) 주방측(낮은 X) 모서리
     const swept = new THREE.Mesh(
       new THREE.CylinderGeometry(dW, dW, dH, 24, 1, false, 0, Math.PI / 2),   // Y축 수직 1/4기둥
       new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }),
