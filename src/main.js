@@ -869,6 +869,22 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     const loftRoom1W = firstKitchenW - interiorWall;   // 다락방1 안목 = 슬래브에서 계단실 쪽 벽두께(10cm) 제외
     room({ x: planRightKitchenX, z: secondAtticZ, w: loftRoom1W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', loftRoom1W, secondAtticD) });
     room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
+    // s2 3층 매트리스·베개를 복사해 다락방1·2 바닥에 표시 — 재질·두께·규격 s2와 동일. 베개(머리맡)=집 뒤쪽(高Z).
+    {
+      const mfy = secondWallY + floorSurfaceH + 0.01, mH = 0.1;
+      const mMat = new THREE.MeshLambertMaterial({ color: 0xe8dcc0 });   // 매트리스(베이지) — s2와 동일
+      const pMat = new THREE.MeshLambertMaterial({ color: 0xfaf6ef });   // 베개 — s2와 동일
+      const mW = 1.8, mL = 2.0;                                          // 더블 2.0×1.8 (s2 게스트룸1과 동일)
+      const bed = (roomX0, roomW) => {
+        const x0 = roomX0 + (roomW - mW) / 2;                            // 방 너비 중앙
+        const z0 = insideZ1 - mL;                                        // 머리=뒤(高Z)·발치=앞(低Z)
+        box({ x: x0, z: z0, w: mW, d: mL, y: mfy, h: mH, mat: mMat });
+        label('매트리스 2.0×1.8m', x0 + mW / 2, mfy + mH + 0.15, z0 + mL / 2, 'furniture');
+        for (const cx of [x0 + 0.5, x0 + 1.3]) box({ x: cx - 0.35, z: insideZ1 - 0.07 - 0.4, w: 0.7, d: 0.4, y: mfy + mH, h: 0.1, mat: pMat });   // 베개 2개·머리맡=뒤(高Z)
+      };
+      bed(planRightKitchenX, loftRoom1W);    // 다락방1
+      bed(secondRoom2X, secondRoom2W);       // 다락방2
+    }
   });
 
   // ── 다락 외벽 — 앞·뒤 무릎벽 + 창 + 좌우 박공벽 + 벽높이·용마루 치수 ──────────────
