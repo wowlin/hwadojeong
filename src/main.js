@@ -620,6 +620,7 @@ captureInto(firstFloorFinishObjects, () => {
 
 // 1층 방 크기 라벨 — 단일 경로(roomText '이름 크기')로만 표기. 주방·안방은 drawStairAnno의 방 라벨이 담당하므로
 // 여기선 그리지 않는다(중복 제거). 방 라벨이 없던 '계단실'만 같은 방 이름 라벨 방식으로 추가한다. 1층·다락·지붕 단계 표시.
+let firstStairRoomLabel, firstBathDimLabel;   // 계단실 라벨 ↔ 화장실 안목치수 라벨(applyVisibility에서 전환)
 captureInto(firstDimObjects, () => {
   const ly = firstFloorY + 0.4;                                // 라벨 높이(방바닥 위)
   const cx = stairLowXRunX, cw = stairHighXWallX - stairLowXRunX;   // 계단실 안목: 주방측 벽면(stairLowXRunX)~안방측 벽면(stairHighXWallX) — 실제 계단·다락 슬래브와 동일 격자
@@ -630,7 +631,9 @@ captureInto(firstDimObjects, () => {
   // 계단실 색면(연주황) — 계단이 있는 공간(계단 시작선~뒤벽)
   box({ x: cx, z: zSplit, w: cw, d: insideZ1 - zSplit, y: y0, h: floorSurfaceH, mat: materials.stairRoom, cast: false });
   label(roomText('계단 앞', cw, stairBottomLandingD), cx + cw / 2, ly, insideZ0 + stairBottomLandingD / 2, 'room');
-  label(roomText('계단실', cw, insideZ1 - zSplit), cx + cw / 2, ly, (zSplit + insideZ1) / 2, 'room');
+  firstStairRoomLabel = label(roomText('계단실', cw, insideZ1 - zSplit), cx + cw / 2, ly, (zSplit + insideZ1) / 2, 'room');
+  // 바닥+계단 동시 표시 땐 계단실 라벨 대신 이 화장실 안목치수를 같은 자리에 보여줌(applyVisibility에서 전환)
+  firstBathDimLabel = label(roomText('화장실', stairBathW, stairBathD), cx + cw / 2, ly, (zSplit + insideZ1) / 2, 'room');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
@@ -3400,6 +3403,11 @@ function applyVisibility() {
   for (const p of PARTS) {
     const on = !isPlan && !!view[p.key];
     for (const arr of p.arrays) for (const item of arr) item.visible = on;
+  }
+  // 1층 바닥+계단 동시 표시 → 계단실 라벨 숨기고 그 자리에 화장실 안목치수 표시(둘 다 firstDimObjects=바닥 토글 소속)
+  { const bothOn = !isPlan && view.firstFloorFinish && view.stair;
+    if (firstStairRoomLabel) firstStairRoomLabel.visible = !isPlan && view.firstFloorFinish && !bothOn;
+    if (firstBathDimLabel)   firstBathDimLabel.visible   = bothOn;
   }
   // 미사용 배열(삭제된 골조 토글 · 구 통합 계단벽[분리됨])
   for (const item of stairWallObjects) item.visible = false;
