@@ -1014,23 +1014,16 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   const railH = 0.10;                                         // 바닥 가로막대(기둥↔바닥 연결) 높이 10cm
   const px0 = Math.max(fX0 - deckEdge, 0) + tube / 2, px1 = dX1 - tube / 2;   // 데크 사각형 안쪽 네 꼭지점 X(주방쪽~안방쪽 끝)
   const pzF = dFrontZ + tube / 2, pzB = dWallZ - tube / 2;    // 앞(低Z)·뒤(집벽) Z
-  const topAtZ = (z) => glassYatZ(z) - beamDrop - beamH;      // 그 Z의 상단보 밑면(지붕 밑선) — 앞 낮고 뒤 높음(옆면 삼각)
+  const frameTopY = glassYatZ(pzF) - beamDrop - beamH;        // 프레임 상단 = 앞단(폴딩도어 2.4m 수용) 높이로 통일 → 아래는 직육면체, 물매는 위 사다리꼴이 전담
   const postBase = groundTopY + matFoundationH;               // 기둥 밑면 = 온통기초 윗면(데크 마감이 아니라 기초에 앉음 — 포세린은 기둥 주위에 깔림)
-  // 네 꼭지점 기둥(각관): 기초 윗면 ~ 그 위치 상단보 밑면
+  // 네 꼭지점 기둥(각관): 기초 윗면 ~ 통일 상단(네 기둥 같은 높이)
   for (const cx of [px0, px1]) for (const cz of [pzF, pzB])
-    frameLocal.push(box({ x: cx - tube / 2, z: cz - tube / 2, w: tube, d: tube, y: postBase, h: topAtZ(cz) - postBase, mat: 썬룸Frame }));
-  // 상단 테두리보(각관): 앞(수평·낮음)·뒤(수평·높음)
-  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: topAtZ(pzF) - tube, h: tube, mat: 썬룸Frame }));   // 앞 상단보
-  frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: topAtZ(pzB) - tube, h: tube, mat: 썬룸Frame }));   // 뒤 상단보
-  // 좌·우 경사 상단보(각관) — 앞 낮음→뒤 높음(삼각 빗변)
-  for (const cx of [px0, px1]) {
-    const sb = new THREE.Mesh(new THREE.BoxGeometry(tube, tube, Math.hypot(pzB - pzF, topAtZ(pzB) - topAtZ(pzF))), 썬룸Frame);
-    sb.position.set(cx, (topAtZ(pzF) + topAtZ(pzB)) / 2 - tube / 2, (pzF + pzB) / 2);
-    sb.rotation.x = -Math.atan2(topAtZ(pzB) - topAtZ(pzF), pzB - pzF);
-    sb.castShadow = true;
-    scene.add(sb);
-    frameLocal.push(sb);
-  }
+    frameLocal.push(box({ x: cx - tube / 2, z: cz - tube / 2, w: tube, d: tube, y: postBase, h: frameTopY - postBase, mat: 썬룸Frame }));
+  // 상단 테두리보(각관) 4변 — 모두 같은 높이(수평 직사각 틀, 옆면 직사각)
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: frameTopY - tube, h: tube, mat: 썬룸Frame }));   // 앞 상단보
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: frameTopY - tube, h: tube, mat: 썬룸Frame }));   // 뒤 상단보
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: frameTopY - tube, h: tube, mat: 썬룸Frame }));   // 좌 상단보
+  frameLocal.push(box({ x: px1 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: frameTopY - tube, h: tube, mat: 썬룸Frame }));   // 우 상단보
   // 바닥 가로막대(각관, 10cm) — 네 변에서 기둥↔바닥 연결(기초 윗면부터)
   frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 앞 바닥막대
   frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 뒤 바닥막대
@@ -1042,8 +1035,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     const roofBaseFrontH = 0.5, roofBaseBackH = 1.0;      // 앞단·뒤단 두께 — 윗면 물매를 만드는 경사 지붕 받침
     const bx0 = px0 - tube / 2, bx1 = px1 + tube / 2;     // 프레임 외곽 X(주방쪽~안방쪽)
     const bzF = pzF - tube / 2, bzB = pzB + tube / 2;     // 프레임 외곽 Z(앞·뒤)
-    const yBotF = topAtZ(bzF), yBotB = topAtZ(bzB);       // 밑면 = 프레임 상단(경사)에 밀착
-    const yTopF = yBotF + roofBaseFrontH, yTopB = yBotB + roofBaseBackH;   // 윗면 = 지붕 얹는 면
+    const yBotF = frameTopY, yBotB = frameTopY;           // 밑면 = 평탄한 프레임 상단(직육면체 윗면)에 밀착
+    const yTopF = frameTopY + roofBaseFrontH, yTopB = frameTopY + roofBaseBackH;   // 윗면만 경사 → 물매 전담
     const c = [
       [bx0, yBotF, bzF], [bx1, yBotF, bzF], [bx1, yTopF, bzF], [bx0, yTopF, bzF],   // 앞면(zF) 4점
       [bx0, yBotB, bzB], [bx1, yBotB, bzB], [bx1, yTopB, bzB], [bx0, yTopB, bzB],   // 뒷면(zB) 4점
@@ -1077,18 +1070,18 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   // 평평한 프레임 — 앞단(가장 낮은) 보 높이의 수평면에 사각 틀 + 내부 격자(lattice).
   // 경사 지붕(빗변)·수평 격자(밑변)·집 벽쪽 단차(수직변)로 측면에서 직각삼각형 구조가 보인다.
   // 이 수평면(flatFrameY)에 등·실링팬을 매단다.
-  const flatFrameY = glassYatZ(fFrontZ) - beamDrop - beamH;   // 앞단 보 밑면 = 가장 낮은 수평면
+  const flatFrameY = frameTopY - tube;   // 평탄한 프레임 상단보 밑면 = 수평 격자면(등·팬 매다는 면)
   if (withFlatFrame) {
-    const flatX0 = (connectRightX != null) ? connectRightX : fX0;  // 연결 시 이웃까지 이어 붙임
+    const flatX0 = (connectRightX != null) ? connectRightX : px0;  // 연결 시 이웃까지 이어 붙임. 기본은 프레임 발자국(px0~px1·pzF~pzB)에 정합
     const barW = 0.05, barH = 0.07;
-    const fw = fX1 - flatX0, fd = fWallZ - fFrontZ;
-    const xMid = flatX0 + fw / 2, zMid = fFrontZ + fd / 2;
+    const fw = px1 - flatX0, fd = pzB - pzF;
+    const xMid = flatX0 + fw / 2, zMid = pzF + fd / 2;
     // 사각 틀(둘레) + 가운데 십자(가로 1·세로 1)
-    for (const z of [fFrontZ, fWallZ, zMid]) {              // 앞·뒤 + 십자 가로
+    for (const z of [pzF, pzB, zMid]) {                    // 앞·뒤 + 십자 가로
       frameLocal.push(box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame }));
     }
-    for (const x of [flatX0, fX1, xMid]) {                  // 좌·우 + 십자 세로
-      frameLocal.push(box({ x: x - barW / 2, z: fFrontZ, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame }));
+    for (const x of [flatX0, px1, xMid]) {                 // 좌·우 + 십자 세로
+      frameLocal.push(box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame }));
     }
   }
 
