@@ -714,12 +714,12 @@ captureInto(bathObjects, () => {
   // 양변기 — 맨 안쪽(뒤 외벽) 안목 X 중앙. 물탱크 뒤벽, 착석은 앞(천장 높은 방향)
   box({ x: wcCenterX - 0.44 / 2, z: stairBathZ + stairBathD - 0.62, w: 0.44, d: 0.5, y: firstFloorY, h: 0.34, mat: materials.toilet });
   box({ x: wcCenterX - 0.48 / 2, z: stairBathZ + stairBathD - 0.14, w: 0.48, d: 0.1, y: firstFloorY, h: 0.58, mat: materials.toilet });
-  // 전기온수기(예정) 경동나비엔 ESW560-50WH(50L) — 가로형 벽걸이 711×385×385mm. 문(높이 2.0m) 위 빈 공간에 눕혀 설치. 반투명 예약 표시
+  // 전기온수기 경동나비엔 ESW560-50WH(50L) — 가로형 벽걸이 711×385×385mm. 문(높이 2.0m) 위 빈 공간에 눕혀 설치
   {
     const hL = 0.711, hR = 0.385 / 2;                              // 실제 제원(길이·반지름)
     const heater = new THREE.Mesh(
       new THREE.CylinderGeometry(hR, hR, hL, 24),
-      new THREE.MeshLambertMaterial({ color: 0x9fd0e0, transparent: true, opacity: 0.4, depthWrite: false }),
+      new THREE.MeshLambertMaterial({ color: 0x9fd0e0 }),
     );
     heater.rotation.z = Math.PI / 2;                              // 원통 축을 X(가로)로 눕힘
     heater.position.set(wcCenterX, firstFloorY + 2.03 + hR, stairBathZ + interiorWall + hR);   // 문 위, 앞벽 안쪽면 등붙임(+Z 돌출)
