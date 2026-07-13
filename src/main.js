@@ -914,24 +914,25 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     // 복도쪽 칸막이(다락방1·2 앞벽·다락 입구 가로벽)는 10→15cm, 다락방/계단쪽 면 고정하고 복도(−Z)쪽으로 5cm 확장. 세로 측벽(다락방|계단실)은 대상 아님.
     const corrWallT = atticCorridorWallT;                       // 단일 출처(constants) — 복도 안목·라벨과 함께 파생
     const corrWallZ = secondAtticWallZ - atticCorridorWallShift;
+    const corrWallMat = materials.stairInnerWall;               // 복도쪽 벽 = 반투명 흰색(계단실 내벽과 동일)
     // 다락방 문이 있는 벽 높이 — 칸막이(secondAtticWallZ) 위치, 왼쪽 벽
     planYDim(frontCornerDimX, secondAtticWallZ, secondWallY, secondWallY + secondAtticFrontWallH, `다락방 벽 ${fmtDim(secondAtticFrontWallH)}m`);
     // 2F attic partitions follow the same gable profile as the exterior walls.
     horizontalWallWithGaps(planRightKitchenX, corrWallZ, firstKitchenW, secondWallY, [
       [secondRoom1DoorX, secondRoom1DoorX + interiorDoorW]
-    ], secondAtticFrontWallH, corrWallT);
+    ], secondAtticFrontWallH, corrWallT, corrWallMat);
     horizontalWallWithGaps(secondRoom2X, corrWallZ, secondRoom2W, secondWallY, [
       [secondRoom2DoorX, secondRoom2DoorX + interiorDoorW]
-    ], secondAtticFrontWallH, corrWallT);
+    ], secondAtticFrontWallH, corrWallT, corrWallMat);
     gableLongWallX({ x: stairLowXRunX - interiorWall, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 다락방1|계단실 내벽(10cm) — 계단실(하부런 모서리)에 딱 붙임. 방 안목은 벽 안쪽부터
     gableLongWallX({ x: secondRoom2X - interiorWall, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 다락방2|계단실 내벽(10cm) — 계단실면(stairHighXWallX)에 딱 붙임. 방 안목은 벽 안쪽(secondRoom2X)부터
     pocketDoorHorizontal(secondRoom1DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, -1);
     pocketDoorHorizontal(secondRoom2DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, 1);
-    lowWall(secondRoom1DoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방1 문 위 인방
-    lowWall(secondRoom2DoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방2 문 위 인방
+    lowWall(secondRoom1DoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, corrWallMat);   // 다락방1 문 위 인방
+    lowWall(secondRoom2DoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, corrWallMat);   // 다락방2 문 위 인방
     // 다락 입구 — 계단 개구부를 가로벽(문 구멍 1개)으로 막음. 닫으면 다락 전체가 1층과 분리(1층 개방 유지). 칸막이와 같은 Z선·높이라 벽이 한 줄로 이어짐.
-    horizontalWallWithGaps(stairLowXRunX, corrWallZ, stairHighXWallX - stairLowXRunX, secondWallY, [[atticStairDoorX, atticStairDoorX + interiorDoorW]], secondAtticFrontWallH, corrWallT);   // 입구 가로벽 주방측 = 주방 벽면(stairLowXRunX)에 정렬
-    lowWall(atticStairDoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 문 위 인방(개구부 위 막음)
+    horizontalWallWithGaps(stairLowXRunX, corrWallZ, stairHighXWallX - stairLowXRunX, secondWallY, [[atticStairDoorX, atticStairDoorX + interiorDoorW]], secondAtticFrontWallH, corrWallT, corrWallMat);   // 입구 가로벽 주방측 = 주방 벽면(stairLowXRunX)에 정렬
+    lowWall(atticStairDoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, corrWallMat);   // 문 위 인방(개구부 위 막음)
     interiorDoorHorizontal(atticStairDoorX, stairOpeningStart, secondWallY, interiorDoorW, secondAtticDoorH);
     label('다락 입구 단열문', atticStairDoorX + interiorDoorW / 2, secondWallY + 1.0, stairOpeningStart - 0.5, 'opening');
   });
@@ -3156,12 +3157,8 @@ ceilingFan({ x: firstKitchenX + firstKitchenW / 2, z: insideZ0 + firstKitchenD /
 ceilingFan({ x: firstFamilyX + firstFamilyW / 2, z: insideZ0 + firstFamilyD / 2, ceilingY: firstCeilingY });
 firstFloorObjects.push(...scene.children.slice(_firstFanStart));   // 1층 주방·안방 실링팬을 1층 그룹에 추가
 
-// 다락 계단실 상부: 지붕 최고점(용마루) 밑면에 부착하는 실링팬
 const atticRidgeY = atticSecondWallTop + gableRise;
-const stairwellCeilingY = atticRidgeY - roofThickness - roofSlopeTan * Math.abs(stairwellFanZ - atticRidgeZ);
-captureSecond(() => {
-  ceilingFan({ x: stairwellFanX, z: stairwellFanZ, ceilingY: stairwellCeilingY, drop: 0.45 });
-});
+// (다락 계단실 상부 실링팬 삭제)
 
 // 뒤쪽(남측) 지붕에 태양광 3kW — 실물 모듈 8장(2열×4, 1.66×1.0m 가로형 ≈400W), 지붕 폭 중앙 정렬
 {
