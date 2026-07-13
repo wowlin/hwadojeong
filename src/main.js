@@ -33,7 +33,7 @@
 // ▌헬퍼 (x·z는 최소 모서리, 단위 m) — 무클로저 빌더는 모듈에서 import, 나머지는 main.js 전역
 //   primitives.js : box({x,z,w,d,y,h,mat,name,cast}) · flatPoly({points:[[x,z]…],y,h,mat,name}) · lerpPoint · fmtDim …
 //   builders.js   : floorFrame · systemPile/pileFoundation · yzWallPrism · roofSlab · slopedWallTopCap …
-//   main.js 전역  : label(text,x,y,z,size) · room/frontSash/sideSash/germanSlidingDoor/entryDoor/pocketDoor* · planYDim/planXDim · setView/applyVisibility
+//   main.js 전역  : label(text,x,y,z,size) · room/sideSash/entryDoor/pocketDoor* · planYDim/planXDim · setView/applyVisibility
 //
 // ▌주의 (ES모듈·strict)
 //   · 같은 이름 function/const 재정의 금지 → 앱 전체가 깨짐. 새 헬퍼는 새 이름으로.
@@ -83,7 +83,7 @@ import {
   frontCornerDimZ, frontCornerDimTickX, frontCornerDimLabelX, frontCornerDimLabelZ, secondY, frFrontZ,
   frBackZ, frLeftX, frRightX, frSecondWallY, frGableBaseY, frRidgeZ,
   frEaveZFront, frEaveZBack, deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ, deckSurfaceY,
-  stairwellFanX, stairwellFanZ, outletLowY, outletCounterY, curtainOutletY,
+  stairwellFanX, stairwellFanZ, outletLowY, outletCounterY,
   atticOutletY
 } from './layout.js';
 import {
@@ -2875,7 +2875,7 @@ captureInto(extOutletObjects, () => {
 // 안방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형)
 {
   const faucetX = buildingW;             // 외벽 바깥면(x=buildingW)
-  const faucetZ = 1.1;                    // 측면 출입문(z −0.3~0.5)에서 충분히 떨어진 솔리드 벽
+  const faucetZ = 1.1;                    // 도로측(고X) 솔리드 외벽 앞쪽
   const brass = materials.handle;         // 황동색
   const bodyX = faucetX + 0.06;           // 벽에서 약간 떨어진 수직 몸체 중심
   const spoutY = 0.42;                    // 하단 토수구
@@ -3068,11 +3068,7 @@ outletMarker({ x: firstFamilyX, z: 1.6, y: outletLowY, axis: 'x', sign: 1 });  /
 // 1층 — 계단하부 WC(세면대 옆, 방수형)
 outletMarker({ x: stairHighXWallX, z: stairBathZ + 0.35, y: firstFloorY + 1.05, axis: 'x', sign: -1, gang: 1 });
 
-// 1층 — 전동커튼용 콘센트(각 창 상부 측면, 모터 전원)
-outletMarker({ x: kitchenYardSashX - 0.12, z: insideZ0, y: curtainOutletY, axis: 'z', sign: 1, gang: 1, note: '전동커튼' });   // 주방 전면 출입창
-outletMarker({ x: familyWindowX - 0.12, z: insideZ0, y: curtainOutletY, axis: 'z', sign: 1, gang: 1 });                    // 안방 전면 창문
-outletMarker({ x: kitchenRearWindowX - 0.12, z: insideZ1, y: curtainOutletY, axis: 'z', sign: -1, gang: 1 });                 // 주방 후면창
-outletMarker({ x: familyRearWindowX - 0.12, z: insideZ1, y: curtainOutletY, axis: 'z', sign: -1, gang: 1 });                 // 안방 후면창
+// (1층 전동커튼용 콘센트 제거 — 대상 창·문[주방 도어·안방 전면창·주방/안방 후면창]이 모두 통벽으로 사라져 커튼 모터 전원 대상 없음)
 
 // 1층 — 벽걸이 에어컨용 콘센트(주방 좌측 외벽 상부). 송풍을 +X로 보내 계단실 앞을 지나 안방까지.
 outletMarker({ x: insideX0, z: insideZ0 + 0.55, y: firstFloorY + 1.95, axis: 'x', sign: 1, note: '벽걸이 에어컨\n(안방 송풍)' });
