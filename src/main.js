@@ -1033,8 +1033,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   // ── 경사 지붕 받침 사다리꼴 육면체 — 프레임 상단(경사면) 위에 얹는다. 앞 낮고·뒤 높아(roofBaseFrontH↔roofBaseBackH) 윗면이 지붕 물매를 이룸(옆면 사다리꼴). ──
   {
     const roofBaseFrontH = 0.5, roofBaseBackH = 1.0;      // 앞단·뒤단 두께 — 윗면 물매를 만드는 경사 지붕 받침
-    const bx0 = px0 - tube / 2, bx1 = px1 + tube / 2;     // 프레임 외곽 X(주방쪽~안방쪽)
-    const bzF = pzF - tube / 2, bzB = pzB + tube / 2;     // 프레임 외곽 Z(앞·뒤)
+    const bx0 = px0, bx1 = px1;     // 지붕프레임 밑면 = 도어프레임과 동일 발자국(같은 기둥 중심선)
+    const bzF = pzF, bzB = pzB;
     const yBotF = frameTopY, yBotB = frameTopY;           // 밑면 = 평탄한 프레임 상단(직육면체 윗면)에 밀착
     const yTopF = frameTopY + roofBaseFrontH, yTopB = frameTopY + roofBaseBackH;   // 윗면만 경사 → 물매 전담
     const c = [
