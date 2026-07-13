@@ -868,15 +868,15 @@ curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashT
       const mMat = new THREE.MeshLambertMaterial({ color: 0xe8dcc0 });   // 매트리스(베이지) — s2와 동일
       const pMat = new THREE.MeshLambertMaterial({ color: 0xfaf6ef });   // 베개 — s2와 동일
       const mW = 1.8, mL = 2.0;                                          // 더블 2.0×1.8 (s2 게스트룸1과 동일)
-      const bed = (roomX0, roomW) => {
-        const x0 = roomX0 + (roomW - mW) / 2;                            // 방 너비 중앙
+      const bed = (roomX0, roomW, toHighX) => {
+        const x0 = toHighX ? roomX0 + roomW - mW : roomX0;               // 방 바깥쪽 옆벽에 붙임(다락방1=低X·다락방2=高X)
         const z0 = insideZ1 - mL;                                        // 머리=뒤(高Z)·발치=앞(低Z)
         box({ x: x0, z: z0, w: mW, d: mL, y: mfy, h: mH, mat: mMat });
         label('매트리스 2.0×1.8m', x0 + mW / 2, mfy + mH + 0.15, z0 + mL / 2, 'furniture');
         for (const cx of [x0 + 0.5, x0 + 1.3]) box({ x: cx - 0.35, z: insideZ1 - 0.07 - 0.4, w: 0.7, d: 0.4, y: mfy + mH, h: 0.1, mat: pMat });   // 베개 2개·머리맡=뒤(高Z)
       };
-      bed(planRightKitchenX, loftRoom1W);    // 다락방1
-      bed(secondRoom2X, secondRoom2W);       // 다락방2
+      bed(planRightKitchenX, loftRoom1W, false);   // 다락방1 — 주방쪽 옆벽(低X)에 붙임
+      bed(secondRoom2X, secondRoom2W, true);       // 다락방2 — 안방쪽 옆벽(高X)에 붙임
     }
   });
 
