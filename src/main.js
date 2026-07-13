@@ -4099,9 +4099,10 @@ function drawStairAnno(p) {
     box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 양쪽 외벽 안쪽까지(앞쪽 통행)
     box({ x: insideX0, z: zFrontU, w: kitchenWallInner - insideX0, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 주방 위
     box({ x: familyWallInner, z: zFrontU, w: insideX1 - familyWallInner, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false }); // 안방 위
-    if (fillZend > zFrontU) {
-      box({ x: laneA, z: zFrontU, w: W, d: fillZend - zFrontU, y: loftY - loftTh, h: loftTh, mat: materials.loftHeadFill, cast: false });
-      label(`수납장 ${fmtDim(W)}×${fmtDim(fillZend - zFrontU)}m`, laneA + W / 2, loftY + 0.05, (zFrontU + fillZend) / 2, 'dim');   // 계단 위 헤드룸 한계까지 메운 다락바닥 = 저층 수납(안목 표시)
+    const suZ0 = zFrontU + interiorWall;   // 수납장 앞면 = 다락 입구 가로벽(interiorWall) 뒷면 — 다락복도쪽 벽 두께 반영(안목)
+    if (fillZend > suZ0) {
+      box({ x: laneA, z: suZ0, w: W, d: fillZend - suZ0, y: loftY - loftTh, h: loftTh, mat: materials.loftHeadFill, cast: false });
+      label(`수납장 ${fmtDim(W)}×${fmtDim(fillZend - suZ0)}m`, laneA + W / 2, loftY + 0.05, (suZ0 + fillZend) / 2, 'dim');   // 계단 위 헤드룸 한계까지 메운 다락바닥 = 저층 수납(다락복도쪽 벽 뺀 안목)
     }
   });
   // (상부 마지막 단↔다락 바닥 사이 계단벽은 두지 않음 — 30cm 두께 다락 바닥의 앞면이 그 단높이 벽 역할을 함)
