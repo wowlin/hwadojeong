@@ -1158,7 +1158,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     // ── 좌우 측면 폴딩창 — 프라이버시 벽(하부) 위·프레임 상단(hy) 아래. 각 측면 등폭 아코디언이 뒤(+Z)쪽으로 접혀 열림 ──
     const winSy = wallBaseY + privacyH;                       // 창 하단 = 프라이버시 벽 상단
     const az0 = pzF + tube / 2, az1 = pzB - tube / 2;         // 앞·뒤 기둥 안쪽면(측면 개구)
-    const nWin = Math.max(2, Math.round((az1 - az0) / 0.68)); // 등폭 짝수
+    const nWin = 2 * Math.max(1, Math.round((az1 - az0) / 0.68 / 2)); // 등폭·짝수개로 강제
     const wpw = (az1 - az0) / nWin, wStep = wpw * Math.cos(ang), wFD = wpw * Math.sin(ang);   // 짝폭·뒤로 전진/밖으로 접힘깊이
     for (const [sx, outSign] of [[px0, -1], [px1, 1]]) {      // 우측(주방쪽·밖=−X)·좌측(안방쪽·밖=+X)
       box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: winSy, h: 0.08, mat: fdFrame });        // 하부 레일(프라이버시 벽 위)
