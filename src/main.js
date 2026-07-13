@@ -4,10 +4,10 @@
 // ▌좌표계 (단위 m)
 //   X = 동서 :  +X = 동(도로측) / −X = 서      (평면도에선 동이 화면 왼쪽 = 미러)
 //   Z = 남북 :  +Z = 남(집 뒤)  / −Z = 북(정면·현관·썬룸)
-//   Y = 상하 :  지면 상단 groundTopY=0.08, 1층 바닥 firstFloorY=0.88
-//   집 발자국 : X 0~8.5, Z −0.7~3.3 (8.5×4.0m). 정면(−Z=북)에 데크/썬룸.
+//   Y = 상하 :  지면 groundTopY → +기초(foundationHeight) +바닥마감(floorFinishH) = 1층 바닥 firstFloorY
+//   집 발자국 : X 0~buildingW, Z buildingFrontZ~buildingBackZ (buildingW×buildingD). 정면(−Z=북)에 데크/썬룸.
 //   ★ 좌우/앞뒤 (주 출입문 보는 시점 — 사용자 확정, 절대 헷갈리지 말 것):
-//     왼쪽(좌) = 동 = 높은 X(8.5쪽) = 도로·안방측 │ 오른쪽(우) = 서 = 낮은 X(0쪽) = 주방측
+//     왼쪽(좌) = 동 = 높은 X(buildingW쪽) = 도로·안방측 │ 오른쪽(우) = 서 = 낮은 X(0쪽) = 주방측
 //     앞 = 정면(−Z, 현관·썬룸·마당) │ 뒤 = 집뒤(+Z, 측백·도로 — 마당 없음)
 //
 // ▌치수는 어디서 바꾸나
@@ -603,12 +603,12 @@ hedgeObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, 
 // 입체 집 기초(시스템말뚝 + 두부)는 1층 벽·실 좌표가 정의된 뒤(아래)에서 만든다 — 하중 경로에 말뚝 정렬.
 // 기초 가로/세로 길이 치수 — 제거(라벨 정리)
 
-// 1층 바닥(바닥 시공 10cm) — 골조(장선) 위 마감층. '1층 바닥' 토글(firstFloorFinishObjects). 1층 벽·계단·가구는 이 위(firstFloorY)에서 시작.
+// 1층 바닥(바닥 시공 floorFinishH) — 골조(장선) 위 마감층. '1층 바닥' 토글(firstFloorFinishObjects). 1층 벽·계단·가구는 이 위(firstFloorY)에서 시작.
 captureInto(firstFloorFinishObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: foundationTopY, h: floorFinishH, mat: materials.floorFinish });
 });
 
-// 1층 외벽(반투명) — 방 바닥 테두리선(집 발자국 0~buildingW / buildingFrontZ~+buildingD)에 맞춰 바깥면을 두고, 막대는 모두 안쪽으로만(밖으로 안 튀어나옴). 두께 0.3·높이 2.4·firstFloorY에서 시작. 1층·다락·지붕 단계 표시.
+// 1층 외벽(반투명) — 방 바닥 테두리선(집 발자국 0~buildingW / buildingFrontZ~+buildingD)에 맞춰 바깥면을 두고, 막대는 모두 안쪽으로만(밖으로 안 튀어나옴). 두께 exteriorWall·높이 firstWallHeight+secondFloorThickness·firstFloorY에서 시작. 1층·다락·지붕 단계 표시.
 {
   const wt = exteriorWall, wh = firstWallHeight + secondFloorThickness, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;   // 두께·높이를 단일 상수에서 읽음. 높이는 다락 바닥 슬래브 두께만큼 더 올려 1층↔다락 외벽이 끊기지 않고 하나로 이어지게(슬래브 옆면을 감쌈)
   const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
@@ -650,7 +650,7 @@ captureInto(firstDimObjects, () => {
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
 
-// 1F measured plan. Dimensions are in meters within an 8.5m x 4.0m footprint.
+// 1F measured plan. Dimensions are in meters within the buildingW x buildingD footprint.
 //   1층 층고·벽 두께 (제원)
 // World x is mirrored in the front camera. With the entrance at the bottom,
 // plan-left/family is the larger x side and plan-right/kitchen is the smaller x side.
@@ -666,7 +666,7 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 // 높이 치수 라벨은 세로 치수 막대(frontCornerDim*)가 있는 평면 왼쪽(도로 쪽, 높은 X) 뒤쪽
 // 모서리 바깥에 나란히 붙여, 치수 막대와 라벨이 같은 모서리에 모이게 한다.
 
-// 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 2.8m
+// 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 = floorFinishH+firstWallHeight
 planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`);
 
 room({ x: firstKitchenX, z: insideZ0, w: firstKitchenW, d: firstKitchenD, y: firstFloorY + floorOverlayLift, mat: materials.kitchen });   // 색면만 — 주방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
@@ -975,7 +975,7 @@ curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashT
     roofObjects.push(box({ x: -roofSideOverhang - 0.05, z: gz - 0.065, w: buildingW + roofSideOverhang * 2 + 0.1, d: 0.13, y: gutterY, h: 0.12, mat: materials.gutter, cast: false }));   // 처마홈통(가로)
     // 우수관: 고-X(도로측) 벽 모서리를 타고 수직으로. 처마홈통 → 벽 모서리 연결관 → 지면까지.
     const cornerZ = ez < ridgeZ ? buildingFrontZ : buildingBackZ;   // 고-X 벽의 앞/뒤 모서리
-    const dx = buildingW + 0.04;                                    // 고-X 벽 바깥면(8.54)
+    const dx = buildingW + 0.04;                                    // 고-X 벽 바깥면(buildingW+0.04)
     roofObjects.push(box({ x: dx, z: Math.min(gz, cornerZ) - 0.04, w: 0.08, d: Math.abs(cornerZ - gz) + 0.08, y: gutterY - 0.05, h: 0.08, mat: materials.gutter, cast: false }));   // 처마→벽모서리 연결관
     roofObjects.push(box({ x: dx, z: cornerZ - 0.04, w: 0.08, d: 0.08, y: groundTopY, h: (gutterY - 0.03) - groundTopY, mat: materials.gutter, cast: false }));   // 수직 우수관(벽 모서리)
   });
@@ -994,18 +994,18 @@ function captureInto(arr, fn) {
   arr.push(...scene.children.slice(s));
 }
 
-// ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격(방당 3.0m), 계단실=남는 중앙(대칭) ──
+// ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격, 계단실=남는 중앙(대칭) ──
 //   ※ 1층 벽 좌표(stairHighXWallX 등)는 차차 맞춤. 지금은 바닥·기초·골조에만 이 레이아웃을 반영.
 const 주방InnerWallX = frLeftX + FRAME_ROOM_W;    // 주방|계단실 벽 = 3.0
 const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽 = 5.2
-// 말뚝 X열을 하중 경로에 맞춤: 좌·우 외벽 + 방 중앙(1.5m) + 계단실 양 벽. 계단실 가운데 2.3m는 무주(양 벽 말뚝이 받음).
+// 말뚝 X열을 하중 경로에 맞춤: 좌·우 외벽 + 방 중앙(1.5m) + 계단실 양 벽. 계단실 가운데는 무주(양 벽 말뚝이 받음).
 const housePileXs = [
-  frLeftX,             // 좌 외벽(주방쪽) 0.1
-  frLeftX + 1.5,       // 주방 중앙말뚝 1.6
-  주방InnerWallX,       // 주방|계단실 벽 3.1
+  frLeftX,             // 좌 외벽(주방쪽, frLeftX)
+  frLeftX + 1.5,       // 주방 중앙말뚝(frLeftX+1.5)
+  주방InnerWallX,       // 주방|계단실 벽(주방InnerWallX)
   안방InnerWallX,       // 계단실|안방 벽 5.2
-  frRightX - 1.5,      // 안방 중앙말뚝 6.9
-  frRightX,            // 우 외벽(안방쪽) 8.4
+  frRightX - 1.5,      // 안방 중앙말뚝(frRightX-1.5)
+  frRightX,            // 우 외벽(안방쪽, frRightX)
 ];
 // 집 말뚝기초(시스템말뚝) — 제거됨(사용자 요청). 매트기초만 기초로 남김.
 
@@ -1163,7 +1163,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // 렉산(경사 지붕) 프레임은 둘레(테두리) 보만 둔다 — 내부 격자는 두꺼워 내부가 안 보이므로 생략.
 
   // 지지 기둥(프레임 선 위, 지면~보 밑면).
-  //  · 안방(connectRightX): 땅 기둥 3개(앞·측면중앙·집벽쪽) — 모두 건물 외곽선(fX1=8.5) 안쪽 0.1로 인셋(주방 데크 말뚝·집 말뚝열과 정렬, 한 직선). 정면 3m 무주.
+  //  · 안방(connectRightX): 땅 기둥 3개(앞·측면중앙·집벽쪽) — 모두 건물 외곽선(fX1=buildingW) 안쪽 0.1로 인셋(주방 데크 말뚝·집 말뚝열과 정렬, 한 직선). 정면 3m 무주.
   //  · 주방: 전면 3 + 양측 중앙 2 + 폴딩도어 집벽쪽 양 끝 2 = 7개(데크 위라 그대로).
   const postW = 0.12;
   const 안방PostX = fX1 - 0.1;   // 안방 땅 기둥 X열: 건물 외곽선 안쪽 0.1(중심선이 아니라 기준선 안쪽)
@@ -1437,16 +1437,16 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
 }
 
 // 주방 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 5.5m(fX1=5.5, 좌측 끝 x=5.7)
-//   지붕면은 주방+안방을 덮는 단일 패널 하나로 그린다 — 좌우 돌출은 집 지붕과 동일(frSideOverhang 40cm), 폭 = 집 외벽폭 + 양쪽 40cm = 9.3m, 중심 x=집 중심(−0.4~8.9).
+//   지붕면은 주방+안방을 덮는 단일 패널 하나로 그린다 — 좌우 돌출은 집 지붕과 동일(frSideOverhang 40cm), 폭 = 집 외벽폭 + 양쪽 frSideOverhang, 중심 x=집 중심.
 const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: buildingW + 2 * frSideOverhang, roofPanelCenterX: buildingW / 2, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭(고-X 끝 fX1=deckW=5.5)은 roofW:5.9에서 파생(지붕 프레임 공유) — deckW 바꾸려면 roofW도 함께
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 주방 썬룸의 단일 패널이 이미 덮음.
 const 안방썬룸 = 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: deckW, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
 
 // 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 두부). 두부 위에 둘레 토대보(바닥 골조)가 얹히고, 그 위에 포세린·폴딩/외벽이 올라간다.
-// 데크 기초 발자국 — 집 너비(0~8.5) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 8.5가 되게.
+// 데크 기초 발자국 — 집 너비(0~buildingW) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 buildingW가 되게.
 for (const p of [kitchen썬룸]) {
   const fx0 = Math.max(p.dX0, 0);          // 주방쪽(담장) 끝: 집 기초선 밖으로 안 나가게
-  const fx1 = Math.min(p.dX1, buildingW);  // 안방쪽 끝: 집 너비(8.5) 안으로
+  const fx1 = Math.min(p.dX1, buildingW);  // 안방쪽 끝: 집 너비(buildingW) 안으로
   deckFootprints.push({ x: fx0, z: p.dFrontZ, w: fx1 - fx0, d: p.dWallZ - p.dFrontZ });
 }
 // 포치(데크 지붕) 건축면적 산입면적 — 건축법 시행령 §119① 2호: 벽 없이 기둥으로 받친 지붕은
@@ -1499,10 +1499,10 @@ PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i =
 siteBaseObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
 siteBaseObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
 siteBaseObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThickness, d: lotD, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(좌측)
-// 평면 치수 — 가로(8.5m)는 위쪽, 세로(4m)는 양쪽, 이격 치수 + 모눈 가이드라인. 바닥+기초 공통(dimObjects).
+// 평면 치수 — 가로(buildingW)는 위쪽, 세로(buildingD)는 양쪽, 이격 치수 + 모눈 가이드라인. 바닥+기초 공통(dimObjects).
 captureInto(dimObjects, () => {
   const dL = deckFootprints[0];   // 주방 데크 기초(안방 앞 데크 제거됨)
-  // 가로 — 위쪽: 기초 8.5 / 안방 측백 0.5 (주방 0.5는 아래쪽으로 이동)
+  // 가로 — 위쪽: 기초 buildingW / 안방 측백 0.5 (주방 0.5는 아래쪽으로 이동)
   planXDim(lotZ1 + 0.4, 0, buildingW, `${fmtDim(buildingW)}m`);
   captureInto(hedgeDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - hedgeThickness, lotX1, `측백 ${fmtDim(hedgeThickness)}m`));   // 안방 측백(좌상단) — 측백담장 토글+배치도
   // 세로 — 안방(왼쪽) 건물 깊이 4 / 주방(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
@@ -1540,8 +1540,8 @@ captureInto(dimObjects, () => {
 // ║   (firstFloorObjects·roofObjects·footprintObjects…)은 값이 겹쳐 조용히 s1에       ║
 // ║   그려진다 → 여기서 쓰면 test ⑭(작업 도면 격리)가 실패한다. 절대 금지.            ║
 // ╚══════════════════════════════════════════════════════════════════════════════╝
-// ── 2층·다락 탭(s2) 배치도/기초 — 집 발자국 너비(X) 8 × 깊이(Z)는 3층 방 짧은변에서 파생 ─────────────
-// 주방측 외벽(x=0)·뒤벽(buildingBackZ=3.3)을 s1과 동일 모서리로 맞추고, 너비→x=8 / 깊이→앞(z) 방향.
+// ── 2층·다락 탭(s2) 배치도/기초 — 집 발자국 너비(X) s2W × 깊이(Z)는 3층 방 짧은변에서 파생 ─────────────
+// 주방측 외벽(x=0)·뒤벽(buildingBackZ)을 s1과 동일 모서리로 맞추고, 너비→x=s2W / 깊이→앞(z) 방향.
 // s2 계단 사양(단일 출처) — 디딤·단높이·런폭·런틈·디딤판두께 · 층고(1→2,2→3). 메모·라벨이 이 값을 그대로 표시.
 const S2_STAIR = { T: 0.27, R: 0.15, W: 0.75, g: 0.1, tTh: 0.06, nosing: 0.02, rTh: 0.03, usTh: 0.04, nUpper: [9, 9], landingSteps: 2, slabT: floorFinishH, floorH: [3.0, 3.0] };  // slabT=1층 층참=바닥 마감 두께(콘크리트 기초 위 부자재+포세린, floorFinishH 0.20). 층고 1·2층 모두 3.0m(천장고 2.7+슬래브 0.3). nosing=계단코·rTh=챌판두께·usTh=계단아래문두께·nUpper=상부런 비행별 단수(그리기·메모 단일 출처)
 const s2W = 8.5;                            // s2 집 너비(X) — 고정 상수(x=0 주방측 고정, 왼쪽 안방측으로 확장)
@@ -1593,14 +1593,14 @@ captureInto(s2Floor1Objects, () => {
 });
 // 치수 + 기준선 — s1과 같은 부분(너비=위, 깊이=양옆)
 captureInto(s2DimObjects, () => {
-  planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, `${fmtDim(s2W)}m`);          // 너비(s1 8.5m 자리)
+  planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, `${fmtDim(s2W)}m`);          // 너비(s1 자리)
   planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);        // 깊이(파생) — 안방측(s1 4.0m 자리)
   planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);         // 깊이(파생) — 주방측(s1 4.0m 자리)
-  // 기준선(회청색) — 새 끝점만: 너비 끝 x=8, 깊이 앞 z=s2FrontZ (x=0·뒤 z=3.3은 공통 기준선 사용)
+  // 기준선(회청색) — 새 끝점만: 너비 끝 x=s2W, 깊이 앞 z=s2FrontZ (x=0·뒤 z=buildingBackZ은 공통 기준선 사용)
   const gridMat2 = new THREE.MeshBasicMaterial({ color: 0x5b7185 });
   const gw = 0.02, gy = 0.009, gh = 0.002;
   const gz0 = lotZ0 - 0.6, gz1 = lotZ1 + 0.6, gx0 = lotX0 - 0.6, gx1 = lotX1 + 0.6;
-  box({ x: (s2X0 + s2W) - gw / 2, z: gz0, w: gw, d: gz1 - gz0, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });   // 너비 끝(x=8) 세로 기준선
+  box({ x: (s2X0 + s2W) - gw / 2, z: gz0, w: gw, d: gz1 - gz0, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });   // 너비 끝(x=s2W) 세로 기준선
   box({ x: gx0, z: s2FrontZ - gw / 2, w: gx1 - gx0, d: gw, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });       // 깊이 앞 가로 기준선
 });
 
@@ -2313,7 +2313,7 @@ captureInto(s2Wall1Objects, () => {
 }
 
 // ── s2 외벽 — 층별 분리(각 층 바닥 슬래브 밑면 ~ 그 층 천장). 층마다 '외벽' 버튼, 모든 층 켜면 연결 ──
-// 박공 30°(기준·초과 금지). 용마루는 긴변(X, 8.0m) 따라가고 경사는 깊이(Z, s2D) 가로지름 →
+// 박공 30°(기준·초과 금지). 용마루는 긴변(X, s2W) 따라가고 경사는 깊이(Z, s2D) 가로지름 →
 //   앞뒤벽 = 처마(평탄 상단, roofY) │ 좌우벽 = 박공 삼각(중앙서 용마루까지) → 좌우 끝에 꼭지점.
 //   층 경계(슬래브 밑면)에서 끊어 그려, 인접 층 외벽이 위·아래로 정확히 맞물림(켜면 연결).
 {
@@ -2355,14 +2355,14 @@ captureInto(s2Wall1Objects, () => {
     } else {
       box({ x: s2X0, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });     // 우(주방, x=0)
     }
-    if (leftOpen) {  // 좌측벽(x=8.0−t·高x)에 폴딩 개구부 — 앞쪽 기둥·뒤쪽 벽·상하 띠만 남김
+    if (leftOpen) {  // 좌측벽(x=s2W−t·高x)에 폴딩 개구부 — 앞쪽 기둥·뒤쪽 벽·상하 띠만 남김
       const { a0, a1, sillY, headY } = leftOpen, rd = s2BackZ - s2FrontZ;
       box({ x: s2W - t, z: s2FrontZ, w: t, d: rd, y: y0, h: sillY - y0, mat: EW });                  // 개구부 아래
       box({ x: s2W - t, z: s2FrontZ, w: t, d: rd, y: headY, h: y1 - headY, mat: EW });                // 개구부 위(인방)
       box({ x: s2W - t, z: s2FrontZ, w: t, d: a0 - s2FrontZ, y: sillY, h: headY - sillY, mat: EW });   // 앞쪽 기둥
       box({ x: s2W - t, z: a1, w: t, d: s2BackZ - a1, y: sillY, h: headY - sillY, mat: EW });          // 뒤쪽 벽 남김
     } else {
-      box({ x: s2W - t, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });  // 좌(안방, x=8.0−t)
+      box({ x: s2W - t, z: s2FrontZ, w: t, d: s2BackZ - s2FrontZ, y: y0, h: y1 - y0, mat: EW });  // 좌(안방, x=s2W−t)
     }
   };
   // 창 개구부를 여러 개 지원하는 벽 그리기 — 한 벽에 창 N개를 뚫고 나머지를 골조(기둥·창대띠·인방띠)로 채운다.
@@ -3026,7 +3026,7 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
 
 // 주방 시스템도어 양옆 전면 외벽에 외부(방수) 콘센트 2개 — 포치 '콘센트' 토글(extOutletObjects)
 captureInto(extOutletObjects, () => {
-  const kitchenSashEndX = kitchenYardSashX + yardSashW;   // 주방 도어 높은 X쪽 끝(2.825)
+  const kitchenSashEndX = kitchenYardSashX + yardSashW;   // 주방 도어 높은 X쪽 끝(kitchenYardSashX+yardSashW)
   const wallFaceZ = buildingFrontZ;                      // 전면 외벽 바깥면
   const outletY = firstFloorY + 0.32;
   const extOutlet = (ox) => {
@@ -3039,7 +3039,7 @@ captureInto(extOutletObjects, () => {
 
 // 안방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형)
 {
-  const faucetX = buildingW;             // 외벽 바깥면(x=8.5)
+  const faucetX = buildingW;             // 외벽 바깥면(x=buildingW)
   const faucetZ = 1.1;                    // 측면 출입문(z −0.3~0.5)에서 충분히 떨어진 솔리드 벽
   const brass = materials.handle;         // 황동색
   const bodyX = faucetX + 0.06;           // 벽에서 약간 떨어진 수직 몸체 중심
@@ -4131,7 +4131,7 @@ function buildStairWalls() {
   clearStairGroup(kitchenInnerWallObjects);
   clearStairGroup(familyInnerWallObjects);
   const wt = exteriorWall, z0 = buildingFrontZ, wy = firstWallY + 0.003;
-  const inW = innerWallW, inOv = 0.003;   // inOv: 앞·뒤 외벽 안쪽으로 3mm만 파고들어 연결부 면겹침(z-fighting 반짝) 방지 — 폭은 안목 3.6m로 계산됨
+  const inW = innerWallW, inOv = 0.003;   // inOv: 앞·뒤 외벽 안쪽으로 3mm만 파고들어 연결부 면겹침(z-fighting 반짝) 방지 — 폭은 안목 insideD로 계산됨
   const N = Math.max(5, Math.round(stairParams.N));
   const loftY = firstFloorY + N * stairParams.R;          // 다락 바닥 높이(=계단 전체 높이)
   const wallH = (loftY - loftFloorThickness) - wy;        // 윗면 = 다락 바닥 밑면

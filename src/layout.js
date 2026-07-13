@@ -13,10 +13,10 @@ import {
 } from './constants.js';
 
 export const buildingFrontZ = buildingBackZ - buildingD;   // 정면(북) 외벽 Z — 깊이 상수로 파생(=-0.7)
-export const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단(0.58) = 바닥재 하단
+export const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단 = 바닥재 하단(groundTopY+foundationHeight)
 export const firstFloorY = foundationTopY + floorFinishH; // 1층 바닥 표면 = 기초 윗면 + 바닥두께(20cm)
-export const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단(0.48) = 집 기초 상단(0.58)보다 0.1m 낮음
-export const deckSurfaceY = groundTopY + matFoundationH + deckPedestalH + deckFinishT;   // 데크 밟는 표면 = 온통기초(0.5)+페데스탈(0.10)+포세린(0.02) = 0.62. 실내 바닥(0.7)보다 8cm 낮음.
+export const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단 = 집 기초 상단보다 (foundationHeight-deckFoundationH)만큼 낮음
+export const deckSurfaceY = groundTopY + matFoundationH + deckPedestalH + deckFinishT;   // 데크 밟는 표면 = 온통기초(matFoundationH)+페데스탈(deckPedestalH)+포세린(deckFinishT). 실내 바닥(firstFloorY)과의 단차는 파생값.
 export const lotX0 = -neighborSetback;         // 주방(저X) 외벽(x=0)에서 옆집 이격만큼 — 고정 이격에서 파생
 export const lotX1 = lotX0 + lotW;
 export const lotZ1 = buildingBackZ + hedgeBoundaryGap;   // 후면 경계 = 집 뒤 + 측백 경계 이격(고정 상수)
@@ -59,7 +59,7 @@ export const entryGapStart = stairClearX + (stairClearW - entryFrameOuterW) / 2;
 export const entryGapEnd = entryGapStart + entryFrameOuterW;
 export const familyDoorZ = insideZ0;
 export const yardSashSillY = firstFloorY + yardDeckH;
-export const stairTurnD = 0.8;   // 계단참·사선 턴존 깊이(안전 하한 ≈ 3×디딤 0.27 = 0.81m 선까지 줄임)
+export const stairTurnD = 0.8;   // 계단참·사선 턴존 깊이(안전 하한 ≈ 3×디딤(stairTreadDepth) 선까지 줄임)
 export const stairTurnStart = insideZ1 - stairTurnD;
 export const stairFirstRunStart = stairTurnStart - stairTreadDepth * lowerStraightTreadCount;
 export const stairOpeningStart = stairTurnStart - stairTreadDepth * upperStraightTreadCount;
@@ -67,7 +67,7 @@ export const stairBottomLandingD = stairOpeningStart - insideZ0;
 export const stairBathX = stairHighXRunX;
 export const stairBathZ = stairFirstRunStart;
 export const stairBathW = stairRunW;
-export const stairBathD = insideZ1 - stairBathZ;   // WC를 계단 턴 아래까지 늘려 뒤쪽 외벽에 맞붙임(2.62m)
+export const stairBathD = insideZ1 - stairBathZ;   // WC를 계단 턴 아래까지 늘려 뒤쪽 외벽에 맞붙임(파생)
 export const stairBathDoorW = interiorDoorW;
 export const stairBathDoorX = stairBathX + (stairBathW - stairBathDoorW) / 2;
 export const stairBathDoorEndX = stairBathDoorX + stairBathDoorW;
