@@ -4054,7 +4054,7 @@ function drawStairAnno(p) {
   const loftPass = zFrontU - insideZ0;
   const loftTh = loftFloorThickness;
   const loftRestD = insideZ1 - zFrontU;
-  const kitchenWallInner = kitchenInnerWallX + innerWallW / 2;        // 주방측 벽의 계단실쪽 면 — 벽을 다 덮음
+  const kitchenWallInner = stairLowXRunX;        // 주방측 내벽의 계단실쪽 면(하부런 모서리) — 노란 다락바닥을 여기까지 채워 녹색 메움과 딱 만남(5cm 틈 제거)
   const familyWallInner = familyInnerWallX - familyInnerWallW / 2;  // 안방측 벽의 계단실쪽 면
   const nHead = Math.floor(((loftY - loftTh - 2.0) - fy) / R);   // 헤드룸 2m 확보되는 최대 단
   const fillZend = zFrontL + nHead * T;
