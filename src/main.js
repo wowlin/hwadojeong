@@ -3978,9 +3978,9 @@ function drawStairCore(p) {
     const wcWallH = (loftY - loftFloorThickness) - fy;
     const dW = 0.7, dH = 2.0, t = interiorWall;            // 욕실문 표준(폭 0.7·높이 2.0) — 일반 방문(0.9·2.1)보다 작게
     const dx0 = laneB + interiorWall + (W - interiorWall - dW) / 2, dx1 = dx0 + dW;   // 문 = 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
-    box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });          // 문 왼쪽 벽
-    box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });      // 문 오른쪽 벽
-    box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairWall, cast: false });          // 문 위 인방
+    box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairInnerWall, cast: false });          // 문 왼쪽 벽(반투명)
+    box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairInnerWall, cast: false });      // 문 오른쪽 벽(반투명)
+    box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairInnerWall, cast: false });          // 문 위 인방(반투명)
     interiorDoorHorizontal(dx0, zFrontL + t / 2, fy, dW, dH, materials.wcDoor);                                             // WC 출입문(욕실문 색) — 문짝을 벽 두께 중앙에 넣어 앞면 삐져나옴 제거
   }
   // WC 천장 — 상부런 발판 밑면(들쭉날쭉)을 가리는 사선 천장 패널. 단의 안쪽 뒤코너 선(z=zTurn0-jT, y=baseU+jR-treadH)을 따라 기울인 평판.
