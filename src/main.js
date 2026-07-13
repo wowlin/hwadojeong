@@ -510,15 +510,22 @@ captureInto(firstFloorFinishObjects, () => {
   const wt = exteriorWall, wh = firstWallHeight + secondFloorThickness, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;   // 두께·높이를 단일 상수에서 읽음. 높이는 다락 바닥 슬래브 두께만큼 더 올려 1층↔다락 외벽이 끊기지 않고 하나로 이어지게(슬래브 옆면을 감쌈)
   const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
   const W = materials.firstExtWall;
-  // 앞(−Z) 외벽 — 정면 중앙에 표준 외짝 현관문(방화문) 설치. 개구는 문틀 외곽폭(entryFrameOuterW)·높이 oh. 좌·우 벽 + 상부 인방으로 나누고 가운데에 현관문.
-  const ow = entryFrameOuterW, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭=문틀외곽/높이, 중앙 정렬
-  firstWallObjects.push(box({ x: 0, z: z0, w: ox0, d: wt, y: wy, h: wh, mat: W }));                     // 앞 외벽 — 개구 왼쪽(주방측)
-  firstWallObjects.push(box({ x: ox1, z: z0, w: buildingW - ox1, d: wt, y: wy, h: wh, mat: W }));       // 앞 외벽 — 개구 오른쪽(안방측)
-  firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 개구 상부 인방(문 위)
-  // 뒤(+Z)·좌우(±X) 외벽 미서기창 — 뒤창 2개(옆벽서 rwSide 띄움) + 옆창 2개(뒤끝서 swBack 띄움). 모두 창대 바닥+1.0·폭 1.6·높이 1.2, 좌우대칭
+  // 외벽 미서기창 공용 제원 — 앞·뒤창(옆벽서 rwSide 띄움) + 옆창(뒤끝서 swBack 띄움). 모두 창대 바닥+1.0·폭 1.6·높이 1.2, 좌우대칭
   const rwW = 1.6, rwSill = firstFloorY + 1.0, rwHead = firstFloorY + 1.0 + 1.2, rwSide = 0.6, swBack = 0.6;
-  const rwKx0 = rwSide, rwBx0 = buildingW - rwSide - rwW;   // 뒤 주방창 시작 X(우/低X) / 뒤 안방창 시작 X(좌/高X) — 옆벽서 rwSide
+  const rwKx0 = rwSide, rwBx0 = buildingW - rwSide - rwW;   // 주방창 시작 X(우/低X) / 안방창 시작 X(좌/高X) — 옆벽서 rwSide
   const swZ1 = z1 - swBack, swZ0 = swZ1 - rwW;              // 옆창 뒤끝(z1서 swBack)/앞끝 — 좌우 공용
+  // 앞(−Z) 외벽 — 정면 중앙에 표준 외짝 현관문(방화문). 개구는 문틀 외곽폭(entryFrameOuterW)·높이 oh. 안방측엔 뒤창과 대칭(왼쪽서 rwSide)인 미서기창.
+  const ow = entryFrameOuterW, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭=문틀외곽/높이, 중앙 정렬
+  firstWallObjects.push(box({ x: 0, z: z0, w: ox0, d: wt, y: wy, h: wh, mat: W }));                     // 앞 외벽 — 현관 개구 왼쪽(주방측)
+  firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 현관 개구 상부 인방(문 위)
+  captureInto(firstWallObjects, () => {
+    box({ x: ox1, z: z0, w: rwBx0 - ox1, d: wt, y: wy, h: wh, mat: W });                                // 현관~안방 앞창
+    box({ x: rwBx0 + rwW, z: z0, w: buildingW - (rwBx0 + rwW), d: wt, y: wy, h: wh, mat: W });          // 안방 앞창~안방측 끝
+    box({ x: rwBx0, z: z0, w: rwW, d: wt, y: wy, h: rwSill - wy, mat: W });                             // 창 아래 창대띠
+    box({ x: rwBx0, z: z0, w: rwW, d: wt, y: rwHead, h: (wy + wh) - rwHead, mat: W });                  // 창 위 인방
+    rearSlider(rwBx0, rwW, rwSill, rwHead - rwSill, z0 + 0.13);                                         // 미서기 2짝(유리 정면쪽)
+    label(`안방 앞 미서기창 ${fmtDim(rwW)}×${fmtDim(rwHead - rwSill)}m`, rwBx0 + rwW / 2, rwSill + 0.4, z0 - 0.1, 'opening');
+  });
   const zB = z1 - wt;
   captureInto(firstWallObjects, () => {
     box({ x: 0, z: zB, w: rwKx0, d: wt, y: wy, h: wh, mat: W });                                       // 주방측 끝~주방창
