@@ -1201,6 +1201,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     drawFold((k) => [ax0 + sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf);   // 우측 절반(低X 기둥쪽으로 밖 접힘)
     drawFold((k) => [ax1 - sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf);   // 좌측 절반(高X 기둥쪽으로 밖 접힘)
     label('전면 폴딩도어 — 중앙 양개(좌우로 접힘·밖으로)', aMid, wallBaseY + 1.45, zc - 0.25, 'opening');
+
+    // ── 좌우 측면 하부 프라이버시 벽(불투명) — 착석 시선 차단, 위는 개방 유지 ──
+    const privacyH = 1.2, privacyThick = 0.06;
+    const privacyMat = new THREE.MeshLambertMaterial({ color: 0x8a8f96, side: THREE.DoubleSide });
+    for (const sx of [fX0, fX1])
+      box({ x: sx - privacyThick / 2, z: fFrontZ, w: privacyThick, d: fWallZ - fFrontZ, y: wallBaseY, h: privacyH, mat: privacyMat });
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
 
