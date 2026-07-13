@@ -4074,13 +4074,15 @@ function drawStairAnno(p) {
   const flr = loftY - loftTh;                    // 수납장 바닥 슬래브 윗면 밑선(벽자리 띠·바닥 메움 공통)
   const suZ0 = zFrontU + interiorWall;            // 앞: 다락 입구 가로벽(다락복도쪽) 뒷면 = 안목 시작
   const suX1 = laneA + W - interiorWall;          // 계단쪽 옆벽 안쪽 면 (계단 올라오는 쪽)
-  const suZ1 = fillZend - interiorWall;           // 뒤벽 안쪽 면 (집 뒤쪽)
+  const suDepthClear = 0.8;                       // 수납장 안목 깊이(앞→뒤) — 단일 출처. 헤드룸 2m 한계보다 작을 때만 유효
+  const suZ1 = Math.min(suZ0 + suDepthClear, fillZend - interiorWall);   // 뒤벽 안쪽 면 = 안목 0.8m 또는 헤드룸 한계 중 앞쪽
+  const suZback = suZ1 + interiorWall;           // 뒤벽 바깥끝(벽자리·옆벽 뒤끝) — 안목 뒤에 벽두께
   captureInto(loftSlabs, () => {
     // 통행·주방위·안방위 노란 슬래브 제거 — 흰색 구조 슬래브(주방측·복도·안방측)가 같은 자리를 이미 덮어, 벽 밑에서 노란 바닥이 겹쳐 반짝이던 것 해소
     if (suZ1 > suZ0) {
       // 벽자리 표시(다락 벽과 같은 색 띠) — 앞·계단쪽·뒤 3변. 주방쪽은 다락방1 칸막이벽이 이미 담당.
       box({ x: laneA, z: zFrontU, w: suX1 - laneA, d: interiorWall, y: flr, h: loftTh, mat: materials.wall, cast: false });        // 앞(다락 복도쪽) 벽자리
-      box({ x: suX1, z: zFrontU, w: interiorWall, d: fillZend - zFrontU, y: flr, h: loftTh, mat: materials.wall, cast: false });   // 계단쪽 옆 벽자리
+      box({ x: suX1, z: zFrontU, w: interiorWall, d: suZback - zFrontU, y: flr, h: loftTh, mat: materials.wall, cast: false });   // 계단쪽 옆 벽자리
       box({ x: laneA, z: suZ1, w: suX1 - laneA, d: interiorWall, y: flr, h: loftTh, mat: materials.wall, cast: false });           // 뒤 벽자리
       box({ x: laneA, z: suZ0, w: suX1 - laneA, d: suZ1 - suZ0, y: flr, h: loftTh, mat: materials.bed, cast: false });             // 안목 바닥(다락방 색)
       label(`수납장 ${fmtDim(suX1 - laneA)}×${fmtDim(suZ1 - suZ0)}m`, (laneA + suX1) / 2, loftY + 0.05, (suZ0 + suZ1) / 2, 'dim');
@@ -4089,7 +4091,7 @@ function drawStairAnno(p) {
   // 수납장 실제 벽(지붕 밑선까지) → '다락 내벽' 토글. 계단쪽(세로, 지붕 슬로프 따라)+뒤(가로, 그 위치 지붕 높이). 앞벽은 다락 입구 가로벽이 이미 있음.
   captureInto(loftSuWalls, () => {
     if (suZ1 > suZ0) {
-      gableLongWallX({ x: suX1, z: zFrontU, d: fillZend - zFrontU, y: loftY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 계단쪽 옆벽
+      gableLongWallX({ x: suX1, z: zFrontU, d: suZback - zFrontU, y: loftY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 계단쪽 옆벽
       box({ x: laneA, z: suZ1, w: suX1 - laneA, d: interiorWall, y: loftY, h: secondWallHeight + roofRiseAtZ(suZ1), mat: materials.wall });               // 뒤벽
     }
   });
