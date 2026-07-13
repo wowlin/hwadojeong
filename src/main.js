@@ -746,7 +746,7 @@ captureInto(bathObjects, () => {
       new THREE.MeshLambertMaterial({ color: 0x9fd0e0 }),
     );
     heater.rotation.z = Math.PI / 2;                              // 원통 축을 X(가로)로 눕힘
-    heater.position.set(wcCenterX, firstFloorY + 2.03 + hR, stairBathZ + interiorWall + hR);   // 문 위, 앞벽 안쪽면 등붙임(+Z 돌출)
+    heater.position.set(wcCenterX, firstFloorY + 2.13 + hR, stairBathZ + interiorWall + hR);   // 문 위, 앞벽 안쪽면 등붙임(+Z 돌출) — 기존보다 10cm 상향
     scene.add(heater);
   }
   // (화장실 185cm 사람 모형 제거)
