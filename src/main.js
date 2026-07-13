@@ -3940,11 +3940,16 @@ function drawStairCore(p) {
   }
   // 두 런 분리벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로, 이 벽(두께차 자투리 폭)을 상부런(laneB) 저X 모서리 '아래'에 넣는다. 각 단 발판 밑면까지 계단모양으로 채워 하부(밑 삼각공간)를 가림.
   const gapX = laneB, gapW = stairClearW - 2 * W;
-  for (let i = 0; i < nL; i += 1) {
-    box({ x: gapX, z: zFrontL + i * T, w: gapW, d: T, y: fy, h: (i + 1) * R - treadH, mat: materials.stairSpineWall, cast: false });        // 하부런 측 — 윗면=발판 밑면(디딤면 위로 안 솟음)
+  const zFrontU = zTurn0 - nU * T;                        // 상부런 앞끝(사선 천장 높은 쪽)
+  for (let i = 0; i < nL; i += 1) {                       // 하부런(WC 앞) 측 — 앞끝을 WC 문벽(interiorWall) 뒤로 물려 겹침 방지
+    const sz0 = Math.max(zFrontL + i * T, zFrontL + interiorWall);
+    const sz1 = zFrontL + (i + 1) * T;
+    if (sz1 <= sz0) continue;
+    box({ x: gapX, z: sz0, w: gapW, d: sz1 - sz0, y: fy, h: (i + 1) * R - treadH, mat: materials.stairSpineWall, cast: false });
   }
-  for (let j = 0; j < nU; j += 1) {
-    box({ x: gapX, z: zTurn0 - (j + 1) * T, w: gapW, d: T, y: fy, h: (baseU + (j + 1) * R - treadH) - fy, mat: materials.stairSpineWall, cast: false });   // 상부런 측 — 발판 두께만큼 낮춰 발판 밑면까지만(발판과 겹침 제거)
+  {                                                        // 상부런 측 — 윗변을 사선 천장 밑선까지만(계단모양으로 안 솟게) 사선벽으로 채워 천장과 겹침 제거
+    const topAt = (z) => (baseU - treadH) + (R / T) * (zTurn0 - z) - 0.10;   // 천장 밑선 = 발판 뒤코너선 − (드롭0.05+패널두께0.05)
+    yzWallPrism({ x: gapX, thickness: gapW, mat: materials.stairSpineWall, points: [[zTurn0, fy], [zFrontU, fy], [zFrontU, topAt(zFrontU)], [zTurn0, topAt(zTurn0)]] });
   }
   // 돌음(턴존)~뒤 외벽 — 돌음계단 첫 계단참 발판 밑면까지 채워 뚫린 데 없게(위 천장까지는 트임). 계단실을 두 공간으로 분리.
   box({ x: gapX, z: zTurn0, w: gapW, d: insideZ1 - zTurn0, y: fy, h: (nL + nWind + 1) * R - treadH, mat: materials.stairSpineWall, cast: false });
@@ -3953,7 +3958,7 @@ function drawStairCore(p) {
     const wcWallH = (loftY - loftFloorThickness) - fy;
     const dW = 0.7, dH = 2.0, t = interiorWall;            // 욕실문 표준(폭 0.7·높이 2.0) — 일반 방문(0.9·2.1)보다 작게
     const dx0 = laneB + (W - dW) / 2, dx1 = dx0 + dW;
-    box({ x: laneB + gapW, z: zFrontL, w: dx0 - (laneB + gapW), d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });          // 문 왼쪽 벽 — 저X끝을 분리벽(gapW) 만큼 물려 겹침 방지
+    box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });          // 문 왼쪽 벽
     box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairWall, cast: false });      // 문 오른쪽 벽
     box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairWall, cast: false });          // 문 위 인방
     interiorDoorHorizontal(dx0, zFrontL + t / 2, fy, dW, dH, materials.wcDoor);                                             // WC 출입문(욕실문 색) — 문짝을 벽 두께 중앙에 넣어 앞면 삐져나옴 제거
@@ -3963,8 +3968,8 @@ function drawStairCore(p) {
     const baseU = landingY, zFrontU = zTurn0 - nU * T;
     const yBack = baseU - treadH, yFront = baseU + nU * R - treadH;           // 뒤(낮음)·앞(높음)
     const panelLen = Math.hypot(nU * T, nU * R), tilt = Math.atan2(R, T), th = 0.05, drop = 0.05;   // 코너선 아래(z-파이팅 회피·발판 밑면 가림)
-    const ceil = new THREE.Mesh(new THREE.BoxGeometry(W - gapW, th, panelLen), new THREE.MeshLambertMaterial({ color: 0xf2f0e8, side: THREE.DoubleSide }));   // 벽과 같은 톤·양면(내부=밑에서 봄). 폭을 분리벽(gapW) 만큼 줄여 겹침 방지
-    ceil.position.set(laneB + gapW + (W - gapW) / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zFrontU) / 2);
+    const ceil = new THREE.Mesh(new THREE.BoxGeometry(W, th, panelLen), new THREE.MeshLambertMaterial({ color: 0xf2f0e8, side: THREE.DoubleSide }));   // 벽과 같은 톤·양면(내부=밑에서 봄)
+    ceil.position.set(laneB + W / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zFrontU) / 2);
     ceil.rotation.x = tilt;
     ceil.receiveShadow = true;
     scene.add(ceil);
