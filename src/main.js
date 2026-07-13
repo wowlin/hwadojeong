@@ -1197,7 +1197,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     label('전면 폴딩도어 — 중앙 양개로 접혀 열림(가운데가 출입구)', aMid, wallBaseY + 1.45, zc - 0.3, 'opening');
 
     // ── 좌우 측면 하부 프라이버시 벽(불투명) — 착석 시선 차단, 위는 개방 유지. 포치 골조 옆면선(px0/px1·pzF~pzB)에 맞춤 ──
-    const privacyH = 1.2, privacyThick = 0.06;
+    const privacyH = 0.8, privacyThick = 0.06;
     const privacyMat = new THREE.MeshLambertMaterial({ color: 0x8a8f96, side: THREE.DoubleSide });
     for (const sx of [px0, px1])
       box({ x: sx - privacyThick / 2, z: pzF, w: privacyThick, d: pzB - pzF, y: wallBaseY, h: privacyH, mat: privacyMat });
