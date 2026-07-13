@@ -127,7 +127,3 @@ export const atticSecondWallTop = secondY + secondFloorThickness + secondWallHei
 export const atticRidgeZ = buildingFrontZ + buildingD / 2;
 export const stairwellFanX = stairClearX + stairRunW + stairGap / 2;
 export const stairwellFanZ = atticRidgeZ; // 용마루(가장 높은 곳) 바로 아래, 계단실 개구부 범위 안
-export const outletLowY = firstFloorY + 0.3;        // 일반 콘센트 높이
-export const outletCounterY = firstFloorY + 1.05;   // 주방 조리대 위 콘센트
-export const atticWallY = secondY + secondFloorThickness;
-export const atticOutletY = atticWallY + 0.3;

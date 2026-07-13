@@ -77,8 +77,7 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">포치</h2>
-        <div class="seg-row" role="group" aria-label="포치 콘센트·썬룸·폴딩도어">
-          <button type="button" class="seg-btn" id="bExtOutlet">콘센트</button>
+        <div class="seg-row" role="group" aria-label="포치 썬룸·폴딩도어">
           <button type="button" class="seg-btn" id="bSun">썬룸</button>
           <button type="button" class="seg-btn" id="bFolding">폴딩도어</button>
         </div>
@@ -88,10 +87,9 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="화장실·계단·콘센트">
+        <div class="seg-row" role="group" aria-label="화장실·계단">
           <button type="button" class="seg-btn" id="bBath">화장실</button>
           <button type="button" class="seg-btn" id="bS1Stair">계단</button>
-          <button type="button" class="seg-btn" id="bOutlet">콘센트</button>
         </div>
         <div class="seg-row" role="group" aria-label="바닥">
           <button type="button" class="seg-btn" id="bFirstFloorFinish">바닥·실내</button>
