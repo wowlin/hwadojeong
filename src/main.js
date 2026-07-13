@@ -1287,6 +1287,9 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
       label('안방쪽 측면 폴딩도어 — 집 벽쪽으로 한쪽 접힘(밖으로)', fX1 + 0.45, wallBaseY + 1.45, (fFrontZ + fWallZ) / 2, 'opening');
     }
 
+    // 정면·안방쪽 폴딩이 만나는 앞 모서리(fX1, fFrontZ) — 두 폴딩의 공용 문설주 기둥.
+    box({ x: fX1 - 0.06, z: fFrontZ - 0.06, w: 0.12, d: 0.12, y: wallBaseY, h: wallTopAtZ(fFrontZ) - wallBaseY, mat: fdFrame });
+
     // ── 옆집담장쪽 측면(低X=fX0) — 요청에 없어 그대로 유지: 아래 고정 / 위 폴딩(연통구 높이 2등분) ──
     {
       const sideX = fX0;
