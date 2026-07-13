@@ -87,6 +87,7 @@ export const familyRearWindowX = firstFamilyX + (firstFamilyW - familyRearWindow
 export const familyRearWindowSillY = firstFloorY + 0.9;     // 일반 창대(전면창과 동일)
 export const familyRearWindowTopY = yardSashTopY;           // 윗선을 주방 싱크대 창·전면 개구부와 동일선(yardSashTopY)
 export const familyRearWindowH = familyRearWindowTopY - familyRearWindowSillY;   // 파생(창대~상단)
+export const rearWindowSideOffset = 0.6;   // 앞·뒤 외벽 미서기창 옆벽 이격(끝선) — 1층 창·다락 뒤 프로젝트창이 공유하는 단일 출처
 export const secondRoom2X = stairHighXWallX + interiorWall;                      // 다락방2 안목 시작 = 계단실 내벽(10cm) 안쪽 — 내벽을 계단실에 딱 붙이고 방은 벽 안쪽부터
 export const secondRoom2W = insideX1 - secondRoom2X;
 export const secondCorridorX = insideX0;
