@@ -1134,15 +1134,15 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     box({ x: ax0, z: zc - 0.05, w: ax1 - ax0, d: 0.1, y: wallBaseY, h: sillH, mat: fdFrame });                 // 하부 문턱
     box({ x: ax0, z: zc - 0.05, w: ax1 - ax0, d: 0.1, y: hy - 0.08, h: 0.08, mat: fdFrame });                  // 상부 레일(=프레임 상단보 밑)
     // 아코디언 한 세트(경첩점 hinge[k]=[x,z]) — 등폭 짝, 열린(접힌) 상태. 선두짝(중앙쪽 끝)에 레버 손잡이.
-    const drawFold = (hinge, nF) => {
+    const drawFold = (hinge, nF, sillY = sy, headY = hy) => {
       for (let k = 0; k < nF; k += 1) {
         const [x0p, z0p] = hinge(k), [x1p, z1p] = hinge(k + 1);
         const cxp = (x0p + x1p) / 2, czp = (z0p + z1p) / 2, len = Math.hypot(x1p - x0p, z1p - z0p);
-        const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sy, h: hy - sy, mat: fdMove, cast: false });
+        const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sillY, h: headY - sillY, mat: fdMove, cast: false });
         m.rotation.y = Math.atan2(-(z1p - z0p), x1p - x0p);
       }
-      for (let k = 0; k <= nF; k += 1) { const [hx, hz] = hinge(k); box({ x: hx - 0.035, z: hz - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: fdFrame, cast: false }); }   // 경첩 세로살
-      const [lx, lz] = hinge(nF); box({ x: lx - 0.06, z: lz - 0.06, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 선두짝(중앙쪽) 손잡이
+      for (let k = 0; k <= nF; k += 1) { const [hx, hz] = hinge(k); box({ x: hx - 0.035, z: hz - 0.035, w: 0.07, d: 0.07, y: sillY, h: headY - sillY, mat: fdFrame, cast: false }); }   // 경첩 세로살
+      const [lx, lz] = hinge(nF); box({ x: lx - 0.06, z: lz - 0.06, w: 0.045, d: 0.045, y: sillY + 0.95, h: 0.28, mat: materials.handle });   // 선두짝 손잡이
     };
     // 양개 — 좌우 절반이 각자 바깥기둥쪽으로 밖(−Z) 접혀 중앙이 활짝 열림(=출입구). 등폭이라 자투리 없음.
     drawFold((k) => [ax0 + sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf);   // 우측 절반(주방쪽 기둥으로 접힘)
@@ -1154,6 +1154,18 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     const privacyMat = new THREE.MeshLambertMaterial({ color: 0x8a8f96, side: THREE.DoubleSide });
     for (const sx of [px0, px1])
       box({ x: sx - privacyThick / 2, z: pzF, w: privacyThick, d: pzB - pzF, y: wallBaseY, h: privacyH, mat: privacyMat });
+
+    // ── 좌우 측면 폴딩창 — 프라이버시 벽(하부) 위·프레임 상단(hy) 아래. 각 측면 등폭 아코디언이 뒤(+Z)쪽으로 접혀 열림 ──
+    const winSy = wallBaseY + privacyH;                       // 창 하단 = 프라이버시 벽 상단
+    const az0 = pzF + tube / 2, az1 = pzB - tube / 2;         // 앞·뒤 기둥 안쪽면(측면 개구)
+    const nWin = Math.max(2, Math.round((az1 - az0) / 0.68)); // 등폭 짝수
+    const wpw = (az1 - az0) / nWin, wStep = wpw * Math.cos(ang), wFD = wpw * Math.sin(ang);   // 짝폭·뒤로 전진/밖으로 접힘깊이
+    for (const [sx, outSign] of [[px0, -1], [px1, 1]]) {      // 우측(주방쪽·밖=−X)·좌측(안방쪽·밖=+X)
+      box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: winSy, h: 0.08, mat: fdFrame });        // 하부 레일(프라이버시 벽 위)
+      box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: hy - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일(프레임 상단보 밑)
+      drawFold((k) => [sx + (k % 2 === 0 ? 0 : outSign * wFD), az1 - wStep * k], nWin, winSy, hy); // 뒤(az1)서 등폭 접힘
+      label('측면 폴딩창 — 뒤쪽으로 접혀 열림', sx + outSign * 0.3, winSy + 0.6, (az0 + az1) / 2, 'opening');
+    }
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
 
