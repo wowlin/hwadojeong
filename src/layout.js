@@ -3,6 +3,7 @@
 
 import {
   buildingBackZ, buildingD, groundTopY, foundationHeight, floorFinishH, deckFoundationH,
+  matFoundationH, deckPedestalH, deckFinishT,
   neighborSetback, hedgeBoundaryGap, lotW, lotD, exteriorWall, buildingW, interiorWall,
   stairRunW, entryFrameOuterW, yardDeckH, lowerStraightTreadCount, upperStraightTreadCount,
   stairTreadDepth, interiorDoorW, interiorDoorH, firstWallHeight, yardSashW, yardSashH,
@@ -15,6 +16,7 @@ export const buildingFrontZ = buildingBackZ - buildingD;   // 정면(북) 외벽
 export const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단(0.58) = 바닥재 하단
 export const firstFloorY = foundationTopY + floorFinishH; // 1층 바닥 표면 = 기초 윗면 + 바닥두께(20cm)
 export const deckTopY0 = groundTopY + deckFoundationH;   // 데크/썬룸 기초 상단(0.48) = 집 기초 상단(0.58)보다 0.1m 낮음
+export const deckSurfaceY = groundTopY + matFoundationH + deckPedestalH + deckFinishT;   // 데크 밟는 표면 = 온통기초(0.5)+페데스탈(0.10)+포세린(0.02) = 0.62. 실내 바닥(0.7)보다 8cm 낮음.
 export const lotX0 = -neighborSetback;         // 주방(저X) 외벽(x=0)에서 옆집 이격만큼 — 고정 이격에서 파생
 export const lotX1 = lotX0 + lotW;
 export const lotZ1 = buildingBackZ + hedgeBoundaryGap;   // 후면 경계 = 집 뒤 + 측백 경계 이격(고정 상수)

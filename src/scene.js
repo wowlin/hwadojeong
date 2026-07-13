@@ -62,12 +62,8 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">포치</h2>
-        <div class="seg-row" role="group" aria-label="포치 데크·데크 바닥">
+        <div class="seg-row" role="group" aria-label="포치 데크·썬룸">
           <button type="button" class="seg-btn" id="bDeck">데크</button>
-          <button type="button" class="seg-btn" id="bDeckFloor">데크 바닥</button>
-        </div>
-        <div class="seg-row" role="group" aria-label="포치 데크계단틀·썬룸">
-          <button type="button" class="seg-btn" id="bDeckStairFrame">데크계단틀</button>
           <button type="button" class="seg-btn" id="bSun">썬룸</button>
         </div>
         <div class="seg-row" role="group" aria-label="포치 폴딩도어·악세사리">

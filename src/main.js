@@ -2825,57 +2825,39 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
     deckFloorObjects.push(box({ x: x0, z: z0, w: xw, d: zw, y: surfaceY - deckFinishT, h: deckFinishT, mat: materials.porcelainDeck, cast: false }));   // 틀 윗면에 2cm 포세린타일(윗면 = surfaceY) — '데크 바닥' 토글
   };
   // 데크 윗면 포세린은 썬룸 함수의 데크 마감이 '바닥' 단계부터 이미 깔므로 여기선 안 얹음(이중 방지).
-  flatRectFrame(dXa, dXb, dZa - run, dZa, step2SurfaceY);              // 앞쪽: 데크 바로 옆 = 2계단(높음)
-  flatRectFrame(dXa, dXb, dZa - 2 * run, dZa - run, step1SurfaceY);    // 앞쪽: 가장 바깥 = 1계단(낮음)
-  // 정면 계단 다리 — ① 지면에 2단 전체 외곽 사각틀, ② 가장 낮은 단 바깥 변 좌·우 끝 기둥 2개, ③ 데크 옆 단 앞·뒤 양끝 기둥 4개.
-  {
-    const gy = groundTopY;
-    const gx0 = dXa, gx1 = dXb, gz0 = dZa - 2 * run, gz1 = dZa;   // 정면 2단 전체 외곽
-    const gxw = gx1 - gx0, gzw = gz1 - gz0;
-    deckStairFrameObjects.push(box({ x: gx0, z: gz0, w: gxw, d: t, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));      // 바깥 변(z0)
-    deckStairFrameObjects.push(box({ x: gx0, z: gz1 - t, w: gxw, d: t, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));  // 데크쪽 변(z1)
-    deckStairFrameObjects.push(box({ x: gx0, z: gz0, w: t, d: gzw, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));      // 좌변(x0)
-    deckStairFrameObjects.push(box({ x: gx1 - t, z: gz0, w: t, d: gzw, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));  // 우변(x1)
-    const legW = 0.05;
-    const colH = (step1SurfaceY - deckFinishT - t) - gy;   // 1계단 기둥: 지면 틀 → 가장 낮은 단(바깥) 틀 바닥
-    deckStairFrameObjects.push(box({ x: gx0, z: gz0, w: legW, d: legW, y: gy, h: colH, mat: materials.deckStairFrame, cast: false }));        // 1계단 앞쪽 왼끝 기둥
-    deckStairFrameObjects.push(box({ x: gx1 - legW, z: gz0, w: legW, d: legW, y: gy, h: colH, mat: materials.deckStairFrame, cast: false })); // 1계단 앞쪽 오른끝 기둥
-    const col2H = (step2SurfaceY - deckFinishT - t) - gy;   // 2계단(데크 옆) 기둥: 지면 틀 → 2계단 틀 바닥
-    const z2f = dZa - run, z2b = dZa - legW;                // 2계단 앞쪽(바깥) 변 / 뒤쪽(데크쪽) 변
-    deckStairFrameObjects.push(box({ x: gx0, z: z2f, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false }));        // 2계단 앞쪽 왼끝 기둥
-    deckStairFrameObjects.push(box({ x: gx1 - legW, z: z2f, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false })); // 2계단 앞쪽 오른끝 기둥
-    deckStairFrameObjects.push(box({ x: gx0, z: z2b, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false }));        // 2계단 뒤쪽 왼끝 기둥
-    deckStairFrameObjects.push(box({ x: gx1 - legW, z: z2b, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false })); // 2계단 뒤쪽 오른끝 기둥
+  const legW = 0.05;
+  const leg = (x, z, surfaceY) => deckStairFrameObjects.push(box({ x, z, w: legW, d: legW, y: groundTopY, h: (surfaceY - deckFinishT - t) - groundTopY, mat: materials.deckStairFrame, cast: false }));
+  const groundFrame = (x0, x1, z0, z1) => {   // 지면 외곽 사각틀(전체 단 아래)
+    const xw = x1 - x0, zw = z1 - z0;
+    deckStairFrameObjects.push(box({ x: x0, z: z0, w: xw, d: t, y: groundTopY, h: t, mat: materials.deckStairFrame, cast: false }));
+    deckStairFrameObjects.push(box({ x: x0, z: z1 - t, w: xw, d: t, y: groundTopY, h: t, mat: materials.deckStairFrame, cast: false }));
+    deckStairFrameObjects.push(box({ x: x0, z: z0, w: t, d: zw, y: groundTopY, h: t, mat: materials.deckStairFrame, cast: false }));
+    deckStairFrameObjects.push(box({ x: x1 - t, z: z0, w: t, d: zw, y: groundTopY, h: t, mat: materials.deckStairFrame, cast: false }));
+  };
+  // 정면(−Z) 직선 계단 — K단 중첩(데크쪽 j=K, 바깥 j=1). 각 단 바깥 변 양끝 기둥, 맨 위 단은 데크쪽에도 양끝 기둥.
+  groundFrame(dXa, dXb, dZa - K * run, dZa);
+  for (let j = 1; j <= K; j += 1) {
+    const z1 = dZa - (K - j) * run, z0 = z1 - run, s = surfAt(j);
+    flatRectFrame(dXa, dXb, z0, z1, s);
+    leg(dXa, z0, s); leg(dXb - legW, z0, s);                             // 바깥 변 좌·우 끝
+    if (j === K) { leg(dXa, dZa - legW, s); leg(dXb - legW, dZa - legW, s); }   // 맨 위 단: 데크쪽 변 좌·우 끝
   }
-  flatRectFrame(dXb, dXb + run, dZa, dZb, step2SurfaceY);              // 왼쪽: 데크 바로 옆 = 2계단(높음)
-  flatRectFrame(dXb + run, dXb + 2 * run, dZa, dZb, step1SurfaceY);    // 왼쪽: 가장 바깥 = 1계단(낮음)
-  // 왼쪽 계단 다리 — 정면 계단과 동일: ① 지면에 2단 전체 외곽 사각틀, ② 가장 낮은 단 바깥 변 앞·뒤 끝 기둥 2개, ③ 데크 옆 단 양변 앞·뒤 끝 기둥 4개.
-  {
-    const gy = groundTopY;
-    const gx0 = dXb, gx1 = dXb + 2 * run, gz0 = dZa, gz1 = dZb;   // 왼쪽 2단 전체 외곽
-    const gxw = gx1 - gx0, gzw = gz1 - gz0;
-    deckStairFrameObjects.push(box({ x: gx0, z: gz0, w: t, d: gzw, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));      // 데크쪽 변(x0)
-    deckStairFrameObjects.push(box({ x: gx1 - t, z: gz0, w: t, d: gzw, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));  // 바깥 변(x1)
-    deckStairFrameObjects.push(box({ x: gx0, z: gz0, w: gxw, d: t, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));      // 앞 변(z0)
-    deckStairFrameObjects.push(box({ x: gx0, z: gz1 - t, w: gxw, d: t, y: gy, h: t, mat: materials.deckStairFrame, cast: false }));  // 뒤 변(z1)
-    const legW = 0.05;
-    const colH = (step1SurfaceY - deckFinishT - t) - gy;   // 1계단 기둥: 지면 틀 → 가장 낮은 단(바깥) 틀 바닥
-    deckStairFrameObjects.push(box({ x: gx1 - legW, z: gz0, w: legW, d: legW, y: gy, h: colH, mat: materials.deckStairFrame, cast: false }));        // 1계단 바깥쪽 앞끝 기둥
-    deckStairFrameObjects.push(box({ x: gx1 - legW, z: gz1 - legW, w: legW, d: legW, y: gy, h: colH, mat: materials.deckStairFrame, cast: false })); // 1계단 바깥쪽 뒤끝 기둥
-    const col2H = (step2SurfaceY - deckFinishT - t) - gy;   // 2계단(데크 옆) 기둥: 지면 틀 → 2계단 틀 바닥
-    const x2o = dXb + run - legW, x2d = dXb;                // 2계단 바깥 변 / 데크쪽 변
-    deckStairFrameObjects.push(box({ x: x2o, z: gz0, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false }));        // 2계단 바깥쪽 앞끝 기둥
-    deckStairFrameObjects.push(box({ x: x2o, z: gz1 - legW, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false })); // 2계단 바깥쪽 뒤끝 기둥
-    deckStairFrameObjects.push(box({ x: x2d, z: gz0, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false }));        // 2계단 데크쪽 앞끝 기둥
-    deckStairFrameObjects.push(box({ x: x2d, z: gz1 - legW, w: legW, d: legW, y: gy, h: col2H, mat: materials.deckStairFrame, cast: false })); // 2계단 데크쪽 뒤끝 기둥
+  // 왼쪽(+X) 직선 계단 — 대칭(데크쪽 j=K, 바깥 j=1).
+  groundFrame(dXb, dXb + K * run, dZa, dZb);
+  for (let j = 1; j <= K; j += 1) {
+    const x0 = dXb + (K - j) * run, x1 = x0 + run, s = surfAt(j);
+    flatRectFrame(x0, x1, dZa, dZb, s);
+    leg(x1 - legW, dZa, s); leg(x1 - legW, dZb - legW, s);               // 바깥 변 앞·뒤 끝
+    if (j === K) { leg(dXb, dZa, s); leg(dXb, dZb - legW, s); }          // 맨 위 단: 데크쪽 변 앞·뒤 끝
   }
 }
 // 부채꼴 코너 계단 — 앞·왼쪽 직선 계단 사이를 부채꼴(사분원)로 연결. (1단계: 첫 계단=가장 낮은 단 발판 높이의 부채꼴 프레임만, 다리·디딤판 없음)
 {
   const cdf = deckFootprints[0];                               // 데크 footprint 기준(직선 계단틀과 동일 좌표)
   const cx = cdf.x + cdf.w, cz = cdf.z;                        // 코너점(앞·왼쪽 만나는 곳)
-  const topY = deckTopY0 + FLOOR_JOIST_H + deckFinishT, baseY = groundTopY, tread = 0.3, bw = 0.05;   // 윗면=데크 밟는 표면(직선 계단틀과 동일), 각관 5×5cm
-  const rise = (topY - baseY) / 3;                              // 지면~데크 3등분 = 직선 계단 단높이(약 0.157m)
+  const topY = deckSurfaceY, baseY = groundTopY, tread = 0.3, bw = 0.05;   // 윗면=데크 밟는 표면(직선 계단틀과 동일), 각관 5×5cm
+  const K = deckStairK, rise = deckStairStepRise;              // 중간 단수 / 단높이 — 직선 계단과 동일 자동 산출
+  const surfAt = (j) => baseY + j * rise;                       // j단(1=최하) 밟는 표면
   const mat = materials.deckFanFrame;   // 부채꼴 연결부 색(직선 계단과 구분)
   const P = (r, a) => [cx + r * Math.cos(a), cz - r * Math.sin(a)];   // a: 0=+X(왼쪽 바깥), π/2=−Z(앞 바깥)
   const barXZ = (x0, z0, x1, z1, yTop) => {   // 두 XZ점을 잇는 수평 막대(윗면 yTop, 각관 bw)
@@ -2919,21 +2901,20 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
       deckFloorObjects.push(tile);
     }
   };
-  fan(2 * tread, baseY + bw);                                  // 계단 바닥(지면 베이스): 피자조각 부채꼴(바깥 반경 2·디딤), 지면 높이 — 타일 없음
-  fan(2 * tread, (topY - 2 * rise) - deckFinishT, 1 * tread, true);   // 중간(첫 계단=낮은 단): 안쪽면 1·디딤(위 단 바깥선) ~ 바깥 2·디딤 '띠'(꼭지점쪽 곧은 변 제거) + 포세린 띠
-  fan(1 * tread, (topY - 1 * rise) - deckFinishT, 0, true);    // 맨위(둘째 계단=높은 단): 피자조각 부채꼴(바깥 반경 1·디딤) + 포세린 피자조각
-  // 양끝 기둥 — 직선 계단처럼, 바깥 호(첫 단, 반경 2·디딤) 양 끝에서 지면까지 세로 기둥 2개(부채꼴 색).
-  const legW = bw, rcoOut = 2 * tread - bw / 2;
-  const exEnd = arcEndXr(rcoOut), ezEnd = arcEndZr(rcoOut);   // 바깥 호 +X쪽·−Z쪽 끝
-  const legTop = ((topY - 2 * rise) - deckFinishT) - bw;       // 첫 단(바깥 호) 프레임 막대 바닥 = 기둥 윗끝
-  deckStairFrameObjects.push(box({ x: exEnd - legW / 2, z: (cz - bw / 2) - legW / 2, w: legW, d: legW, y: baseY, h: legTop - baseY, mat, cast: false }));   // +X쪽 끝 기둥(왼쪽 계단 옆)
-  deckStairFrameObjects.push(box({ x: (cx + bw / 2) - legW / 2, z: ezEnd - legW / 2, w: legW, d: legW, y: baseY, h: legTop - baseY, mat, cast: false }));   // −Z쪽 끝 기둥(앞 계단 옆)
-  // 맨위 부채꼴(둘째 단, 반경 1·디딤) 양 끝에서도 지면까지 세로 기둥 2개.
-  const rcoTop = 1 * tread - bw / 2;
-  const exTop = arcEndXr(rcoTop), ezTop = arcEndZr(rcoTop);    // 맨위 바깥 호 +X쪽·−Z쪽 끝
-  const legTop2 = ((topY - 1 * rise) - deckFinishT) - bw;       // 둘째 단 프레임 막대 바닥 = 기둥 윗끝
-  deckStairFrameObjects.push(box({ x: exTop - legW / 2, z: (cz - bw / 2) - legW / 2, w: legW, d: legW, y: baseY, h: legTop2 - baseY, mat, cast: false }));   // +X쪽 끝 기둥
-  deckStairFrameObjects.push(box({ x: (cx + bw / 2) - legW / 2, z: ezTop - legW / 2, w: legW, d: legW, y: baseY, h: legTop2 - baseY, mat, cast: false }));   // −Z쪽 끝 기둥
+  fan(K * tread, baseY + bw);                                  // 계단 바닥(지면 베이스): 피자조각 부채꼴(바깥 반경 K·디딤), 지면 높이 — 타일 없음
+  for (let j = 1; j <= K; j += 1) {                            // 각 단: 바깥 (K−j+1)·디딤 ~ 안쪽 (K−j)·디딤 '띠'(맨위 j=K는 피자조각) + 포세린
+    const Rout = (K - j + 1) * tread, Rin = (K - j) * tread;
+    fan(Rout, surfAt(j) - deckFinishT, Rin, true);
+  }
+  // 양끝 기둥 — 직선 계단처럼, 각 단 바깥 호 양 끝(+X쪽·−Z쪽)에서 지면까지 세로 기둥(부채꼴 색).
+  const legW = bw;
+  for (let j = 1; j <= K; j += 1) {
+    const rco = (K - j + 1) * tread - bw / 2;
+    const exEnd = arcEndXr(rco), ezEnd = arcEndZr(rco);        // 바깥 호 +X쪽·−Z쪽 끝
+    const legTop = (surfAt(j) - deckFinishT) - bw;             // 그 단 프레임 막대 바닥 = 기둥 윗끝
+    deckStairFrameObjects.push(box({ x: exEnd - legW / 2, z: (cz - bw / 2) - legW / 2, w: legW, d: legW, y: baseY, h: legTop - baseY, mat, cast: false }));   // +X쪽 끝 기둥(왼쪽 계단 옆)
+    deckStairFrameObjects.push(box({ x: (cx + bw / 2) - legW / 2, z: ezEnd - legW / 2, w: legW, d: legW, y: baseY, h: legTop - baseY, mat, cast: false }));   // −Z쪽 끝 기둥(앞 계단 옆)
+  }
 }
 
 // (마당 흰색 화분 2개 제거됨 — whitePlanter 호출 삭제)
@@ -3337,7 +3318,7 @@ const view = {
   roof: false,        // 지붕
   outlet: false,      // 콘센트(1층+다락)
   // 썬룸 그룹
-  deck: false, deckFloor: false, deckStairFrame: false, sun: false, sunWall: false, folding: false, accessory: false,
+  deck: false, sun: false, sunWall: false, folding: false, accessory: false,
   // 참고(임시)
   hedge: false, fence: false,
   // 2층·다락 탭(s2)
@@ -3375,9 +3356,7 @@ const PARTS = [
   { key: 'atticInnerWall', arrays: [atticInnerWallObjects] }, // 다락 내벽(칸막이·문·입구벽)
   { key: 'roof',       arrays: [roofObjects] },
   { key: 'outlet',     arrays: [outletObjects, atticOutletObjects] },
-  { key: 'deck',       arrays: [deckObjects] },
-  { key: 'deckFloor',  arrays: [deckFloorObjects] },
-  { key: 'deckStairFrame', arrays: [deckStairFrameObjects] },
+  { key: 'deck',       arrays: [deckObjects, deckFloorObjects, deckStairFrameObjects] },   // 데크바닥·데크계단틀을 '데크' 하나로 합침
   { key: 'sun',        arrays: [썬룸Objects, 썬룸FrameObjects] },
   { key: 'sunWall',    arrays: [wallObjects] },
   { key: 'folding',    arrays: [foldingObjects] },
@@ -3403,7 +3382,7 @@ const PARTS = [
 ];
 // s1(1층·다락·포치) 부품 토글 — s2처럼 버튼(.seg-btn). [버튼 id → view 키] 단일 출처.
 const S1_TOGGLES = [
-  ['bDeck', 'deck'], ['bDeckFloor', 'deckFloor'], ['bDeckStairFrame', 'deckStairFrame'],
+  ['bDeck', 'deck'],
   ['bSun', 'sun'], ['bFolding', 'folding'], ['bAccessory', 'accessory'],   // 포치 '외벽'(sunWall)은 자바라 외벽 제거로 버튼도 삭제
   ['bLoft', 'loft'], ['bAtticExtWall', 'atticExtWall'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'],
   ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bOutlet', 'outlet'],
@@ -3725,7 +3704,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticExtWall', 'atticInnerWall', 'roof', 'deck', 'deckFloor', 'deckStairFrame', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticExtWall', 'atticInnerWall', 'roof', 'deck', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
