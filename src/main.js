@@ -993,22 +993,32 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
   const postBaseY = groundTopY + matFoundationH;   // 기둥 밑면 = 온통기초 윗면(구조 기둥은 데크 마감이 아니라 기초에 앉는다). 데크 포세린은 기둥 주위에 깔림.
+  // 주방 기둥은 데크 온통기초 안쪽으로 반단면 들여 단면 전체가 기초 위에 오게 한다(경계 = 데크 발자국과 동일 산식).
+  const _dckEdge = postW / 2;
+  const _dckX0 = Math.max(fX0 - _dckEdge, 0), _dckX1 = fX1;
+  const _dckZ1 = fWallZ, _dckZ0 = (deckDepth != null) ? fWallZ - deckDepth : fFrontZ - _dckEdge;
+  const _inDeck = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
   const groundPosts = [];      // 땅 기둥 위치(원위치) — 바닥 말뚝(PILE_POS.anbang)의 X·가운데 Z 출처
   // ★단일 출처★ 땅 기둥의 말뚝(기초)·두부·라벨·기둥은 여기서 그리지 않는다.
   // 위치를 PILE_POS로 확정한 뒤 main에서 drawGroundPost()로 그려, 바닥 마커와 입체 말뚝이
   // 똑같은 좌표를 쓰게 한다(예전엔 바닥만 보정하고 입체는 원좌표라 도면마다 어긋났음 → 그 회귀 차단).
   function drawGroundPost(px, pz, isFirst) {
-    // 땅 기둥 밑 말뚝기초 — 제거됨(사용자 요청). 기둥(골조)만 남김.
-    // 안방쪽 기둥도 온통기초 윗면(postBaseY)에 앉는다 — 집 외곽 안(buildingW)이라 집 매트기초가 받침.
+    // 안방 앞엔 온통기초가 없으므로 기둥마다 얕은 독립기초를 깔고 그 위에 기둥을 세운다(사용자 지정 높이).
+    const footH = 0.2;                          // 독립기초 높이 20cm
+    const footW = 0.4;                          // 독립기초 한 변 — 기둥 단면(postW)보다 커서 단면 전체를 받침
+    const footTopY = groundTopY + footH;
     const topY = glassYatZ(pz) - beamDrop - beamH;
-    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 기둥(골조) — 기초 윗면부터
+    썬룸FrameObjects.push(box({ x: px - footW / 2, z: pz - footW / 2, w: footW, d: footW, y: groundTopY, h: footH, mat: materials.matFoundation, cast: false }));   // 안방 독립기초(지면~윗면)
+    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: footTopY, h: topY - footTopY, mat: 썬룸Frame }));   // 기둥 — 독립기초 윗면부터
   }
   postPlaces.forEach(([px, pz], i) => {
     if (postsToGround) {
       groundPosts.push([px, pz]);   // 위치만 기록 — 렌더는 PILE_POS 확정 후 main에서(단일 출처)
     } else {
-      const topY = glassYatZ(pz) - beamDrop - beamH;
-      frameLocal.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 데크 위 기둥(주방) — 데크 기초가 받침
+      const cx = _inDeck(px, _dckX0 + postW / 2, _dckX1 - postW / 2);   // 데크 기초 안쪽으로 반단면 clamp
+      const cz = _inDeck(pz, _dckZ0 + postW / 2, _dckZ1 - postW / 2);
+      const topY = glassYatZ(cz) - beamDrop - beamH;
+      frameLocal.push(box({ x: cx - postW / 2, z: cz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 데크 위 기둥(주방) — 데크 기초 위 단면 전체
     }
   });
 
