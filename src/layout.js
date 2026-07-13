@@ -8,7 +8,7 @@ import {
   stairRunW, entryFrameOuterW, yardDeckH, lowerStraightTreadCount, upperStraightTreadCount,
   stairTreadDepth, interiorDoorW, interiorDoorH, firstWallHeight, yardSashW, yardSashH,
   familyWindowW, kitchenSinkD, kitchenSinkH, kitchenSinkW, kitchenRearWindowW, familyRearWindowW,
-  sideDoorH, secondCorridorWindowSillOffset, secondCorridorWindowH, atticVentWindowW, atticSkyWindowW, atticRearWindowSillOffset,
+  secondCorridorWindowSillOffset, secondCorridorWindowH, atticVentWindowW, atticSkyWindowW, atticRearWindowSillOffset,
   atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang, FRAME_ROOM_W, atticCorridorWallT
 } from './constants.js';
 
@@ -78,7 +78,7 @@ export const yardSashTopY = yardSashSillY + yardSashH;
 export const familyWindowX = firstFamilyX + (firstFamilyW - familyWindowW) / 2;
 export const familyWindowSillY = firstFloorY + 0.9;
 export const familyWindowTopY = yardSashTopY;
-export const familyWindowH = familyWindowTopY - familyWindowSillY;   // ≈1.28m
+export const familyWindowH = familyWindowTopY - familyWindowSillY;   // 파생(창대~상단)
 export const entryDoorBaseY = firstWallY + yardDeckH;
 export const kitchenSinkX = insideX0;   // 오른쪽(저X) 외벽에 붙임
 export const kitchenSinkZ = insideZ1 - kitchenSinkD;   // 싱크대는 뒤쪽 벽으로(앞 입구 확보)
@@ -90,10 +90,7 @@ export const kitchenRearWindowH = kitchenRearWindowTopY - kitchenRearWindowSillY
 export const familyRearWindowX = firstFamilyX + (firstFamilyW - familyRearWindowW) / 2;   // 안방 중앙
 export const familyRearWindowSillY = firstFloorY + 0.9;     // 일반 창대(전면창과 동일)
 export const familyRearWindowTopY = yardSashTopY;           // 윗선을 주방 싱크대 창·전면 개구부와 동일선(yardSashTopY)
-export const familyRearWindowH = familyRearWindowTopY - familyRearWindowSillY;   // ≈1.28m
-export const sideDoorZ = insideZ0 + 0.2;                        // 전면쪽(코너에서 0.2m 띄움)
-export const sideDoorBaseY = firstFloorY;                       // 바닥에서 시작(출입)
-export const sideDoorTopY = sideDoorBaseY + sideDoorH;
+export const familyRearWindowH = familyRearWindowTopY - familyRearWindowSillY;   // 파생(창대~상단)
 export const secondRoom2X = stairHighXWallX + interiorWall;                      // 다락방2 안목 시작 = 계단실 내벽(10cm) 안쪽 — 내벽을 계단실에 딱 붙이고 방은 벽 안쪽부터
 export const secondRoom2W = insideX1 - secondRoom2X;
 export const secondCorridorX = insideX0;
