@@ -517,7 +517,16 @@ captureInto(firstFloorFinishObjects, () => {
   // 앞(−Z) 외벽 — 정면 중앙에 표준 외짝 현관문(방화문). 개구는 문틀 외곽폭(entryFrameOuterW)·높이 oh. 안방측엔 미서기창(왼쪽=高X 끝 고정, 폭 fwW).
   const ow = entryFrameOuterW, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭=문틀외곽/높이, 중앙 정렬
   const fwW = 1.4, fwX0 = (rwBx0 + rwW) - fwW;   // 정면 안방창 폭(뒤창보다 좁음) — 왼쪽(高X, buildingW−rwSide) 고정, 오른쪽(低X) 축소
-  firstWallObjects.push(box({ x: 0, z: z0, w: ox0, d: wt, y: wy, h: wh, mat: W }));                     // 앞 외벽 — 현관 개구 왼쪽(주방측)
+  // 주방 앞(−Z) 외벽 — x=0끝~현관(ox0) 구간에 문 크기 미서기 샤시(양옆 30cm 이격·바닥까지=문으로 사용)
+  const kfwSide = 0.3, kfwH = 2.0;                                                                      // 좌우 이격 · 문 높이
+  const kfwX0 = kfwSide, kfwW = ox0 - 2 * kfwSide, kfwHead = firstFloorY + kfwH;                        // 개구 시작 X · 폭 · 상단(문 높이)
+  captureInto(firstWallObjects, () => {
+    box({ x: 0, z: z0, w: kfwX0, d: wt, y: wy, h: wh, mat: W });                                        // 주방측 끝~주방 앞문
+    box({ x: kfwX0 + kfwW, z: z0, w: ox0 - (kfwX0 + kfwW), d: wt, y: wy, h: wh, mat: W });              // 주방 앞문~현관
+    box({ x: kfwX0, z: z0, w: kfwW, d: wt, y: kfwHead, h: (wy + wh) - kfwHead, mat: W });               // 문 위 인방
+    rearSlider(kfwX0, kfwW, firstFloorY, kfwHead - firstFloorY, z0 + 0.13);                             // 미서기 2짝(유리 정면쪽·바닥까지)
+    label(`주방 앞 미서기문 ${fmtDim(kfwW)}×${fmtDim(kfwHead - firstFloorY)}m`, kfwX0 + kfwW / 2, firstFloorY + 0.4, z0 - 0.1, 'opening');
+  });
   firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 현관 개구 상부 인방(문 위)
   captureInto(firstWallObjects, () => {
     box({ x: ox1, z: z0, w: fwX0 - ox1, d: wt, y: wy, h: wh, mat: W });                                 // 현관~안방 앞창
