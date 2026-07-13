@@ -657,9 +657,9 @@ const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 
 //   다락·지붕 (제원)
 const roofSlopeTan = Math.tan(THREE.MathUtils.degToRad(roofSlopeDeg));
 const gableRise = roofSlopeTan * (buildingD / 2);
-// 안방 전면은 출입창이 아니라 일반 창문 — 통상 규격: 폭 1800, 창대(sill) 바닥+900, 상단은 현관·주방 도어와 동일선
-// 싱크대 창: 상판+백스플래시 위에서 시작, 윗선은 전면 도어와 동일선(2.18), 싱크대 위로 센터링
-// 안방 측면(도로측) 전면쪽 작은 출입문 — 800×2100 여닫이. 바깥 작은 공간으로 출입.
+// 안방 전면은 출입창이 아니라 일반 창문 — 통상 규격: 폭 familyWindowW·창대 familyWindowSillY·상단 yardSashTopY(현관·주방 도어와 동일선)
+// 싱크대 창: 상판+백스플래시 위에서 시작, 윗선은 전면 도어와 동일선(yardSashTopY), 싱크대 위로 센터링
+// 안방 측면(도로측) 전면쪽 작은 출입문 — sideDoorW×sideDoorH 여닫이. 바깥 작은 공간으로 출입.
 const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 // 다락 정면 복도쪽: 기존 창 2개 제거 → 중앙 환기창 1개
 // 계단 픽스창 — 1층에서 올라갈 때 첫 구간(저-X 런)은 후면(+Z)을 보고 오르므로, 후면에 둬야 올라가며 하늘이 보임
@@ -996,14 +996,14 @@ function captureInto(arr, fn) {
 
 // ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격, 계단실=남는 중앙(대칭) ──
 //   ※ 1층 벽 좌표(stairHighXWallX 등)는 차차 맞춤. 지금은 바닥·기초·골조에만 이 레이아웃을 반영.
-const 주방InnerWallX = frLeftX + FRAME_ROOM_W;    // 주방|계단실 벽 = 3.0
-const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽 = 5.2
+const 주방InnerWallX = frLeftX + FRAME_ROOM_W;    // 주방|계단실 벽
+const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽
 // 말뚝 X열을 하중 경로에 맞춤: 좌·우 외벽 + 방 중앙(1.5m) + 계단실 양 벽. 계단실 가운데는 무주(양 벽 말뚝이 받음).
 const housePileXs = [
   frLeftX,             // 좌 외벽(주방쪽, frLeftX)
   frLeftX + 1.5,       // 주방 중앙말뚝(frLeftX+1.5)
   주방InnerWallX,       // 주방|계단실 벽(주방InnerWallX)
-  안방InnerWallX,       // 계단실|안방 벽 5.2
+  안방InnerWallX,       // 계단실|안방 벽
   frRightX - 1.5,      // 안방 중앙말뚝(frRightX-1.5)
   frRightX,            // 우 외벽(안방쪽, frRightX)
 ];
@@ -1085,7 +1085,7 @@ function campingChair({ cx, cz, faceAngle = 0, color = 0x47535f, baseY = groundT
 }
 
 // 1층 주방 앞 썬룸 — 지붕 길이(전면 돌출) 4m. 지붕 = 리얼징크(불투명).
-//  · 데크 상단(집 바닥 높이)에서 시작, 앞단(최저) 기둥 2.4m, 건물쪽은 1층 높이에 부착
+//  · 데크 상단(집 바닥 높이)에서 시작, 앞단(최저) 기둥, 건물쪽은 1층 높이에 부착
 //  · 프레임/기둥은 지붕 가장자리에서 20cm 안쪽(3면 세로벽이 이 선에 설치)
 //  roofLowX/roofW로 X 범위를 지정해 주방 앞·안방 앞에 같은 형식으로 각각 설치한다.
 function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, withWalls = true, deckDepth = null, postsToGround = false, connectRightX = null, withFan = true, withShortPostDim = false, withFlatFrame = true, withGutter = false, withDownspout = false, withDeck = true, withRoofPanel = true, roofPanelW = null, roofPanelCenterX = null }) {
@@ -1172,7 +1172,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ], [fX0, fWallZ], [fX1, fWallZ]];
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
-  const postBaseY = deckSurfaceY;   // 새 데크 표면(0.62) — 땅 기둥/데크 기둥/폴딩을 데크 위에 통일(온통기초+페데스탈+포세린)
+  const postBaseY = deckSurfaceY;   // 새 데크 표면(deckSurfaceY) — 땅 기둥/데크 기둥/폴딩을 데크 위에 통일(온통기초+페데스탈+포세린)
   const groundPosts = [];      // 땅 기둥 위치(원위치) — 바닥 말뚝(PILE_POS.anbang)의 X·가운데 Z 출처
   // ★단일 출처★ 땅 기둥의 말뚝(기초)·두부·라벨·기둥은 여기서 그리지 않는다.
   // 위치를 PILE_POS로 확정한 뒤 main에서 drawGroundPost()로 그려, 바닥 마커와 입체 말뚝이
@@ -1208,7 +1208,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // 평평한 프레임 — 앞단(가장 낮은) 보 높이의 수평면에 사각 틀 + 내부 격자(lattice).
   // 경사 지붕(빗변)·수평 격자(밑변)·집 벽쪽 단차(수직변)로 측면에서 직각삼각형 구조가 보인다.
   // 이 수평면(flatFrameY)에 등·실링팬을 매단다.
-  const flatFrameY = glassYatZ(fFrontZ) - beamDrop - beamH;   // 앞단 보 밑면 = 가장 낮은 수평면(2.4m)
+  const flatFrameY = glassYatZ(fFrontZ) - beamDrop - beamH;   // 앞단 보 밑면 = 가장 낮은 수평면
   if (withFlatFrame) {
     const flatX0 = (connectRightX != null) ? connectRightX : fX0;  // 연결 시 이웃까지 이어 붙임
     const barW = 0.05, barH = 0.07;
@@ -1233,7 +1233,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     const fdMove = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });     // 접힌(움직인) 짝 유리 — 약간 짙게
     const fdFrame = new THREE.MeshLambertMaterial({ color: 0x3a3f45 });   // 폴딩 알루미늄 프레임(다크그레이)
     const glaze = 0.05, sillH = 0.1, mullW = 0.05, fdPanel = 0.65;        // (옆집담장쪽 측면 세로살 간격)
-    const wallBaseY = deckSurfaceY;   // 폴딩도어 베이스 = 새 데크 표면(0.62) — 데크와 높이 일치
+    const wallBaseY = deckSurfaceY;   // 폴딩도어 베이스 = 새 데크 표면(deckSurfaceY) — 데크와 높이 일치
     const fdH = 2.4;                                                       // s2 표준 폴딩도어 높이 — 위 남는 부분은 고정 유리
     const sy = wallBaseY + sillH, hy = wallBaseY + fdH;                    // 폴딩 유리 하단(문턱 위)·상단
     const pw = 0.68, ang = 60 * Math.PI / 180, sStep = pw * Math.cos(ang), fD = pw * Math.sin(ang);   // s2와 동일: 짝폭·접힘각·짝당 전진/접힘깊이
@@ -1300,12 +1300,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
 
-  // 썬룸 바닥 — 포세린 타일 마감(건식). 50cm 온통기초 위 페데스탈(높이조절 받침)에 포세린을 얹는다.
+  // 썬룸 바닥 — 포세린 타일 마감(건식). matFoundationH 온통기초 위 페데스탈(높이조절 받침)에 포세린을 얹는다.
   const deckTopY = deckSurfaceY;                  // 데크 상단 = 온통기초(0.5)+페데스탈(0.10)+포세린(0.02) — 단일 출처
   const deckThickness = 0.02;                    // 포세린 마감 두께 2cm
   const deckEdge = postW / 2;                    // 기둥(프레임 선)이 데크 위에 완전히 얹히도록 기둥 바깥면까지 확장
   const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge; // 오른쪽: 연결 시 이웃 데크까지 이어 붙임
-  const dX1 = fX1;                               // 고-X(안방쪽)는 개방부라 돌출 없이 유리벽 선까지만(데크 폭 = 5.5)
+  const dX1 = fX1;                               // 고-X(안방쪽)는 개방부라 돌출 없이 유리벽 선까지만(데크 폭 = deckW)
   const dWallZ = fWallZ;                          // 건물쪽은 벽에 붙임
   // deckDepth가 지정되면 건물 벽에서 그 거리까지만 데크를 깐다(부분 데크).
   const dFrontZ = (deckDepth != null) ? dWallZ - deckDepth : fFrontZ - deckEdge;
@@ -1417,7 +1417,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
 //  outward: 가장자리에서 계단이 뻗는 방향(±1). steps: 계단 수.
 function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3, frameTopY = null, mat = materials.porcelainDeck }) {
   const rise = (topY - baseY) / steps;              // 3계단 = 3개의 단높이(데크가 맨 위 단)
-  const tileT = deckFinishT;                        // 포세린 타일 두께(데크 바닥과 동일 2cm)
+  const tileT = deckFinishT;                        // 포세린 타일 두께(데크 바닥과 동일)
   for (let i = 0; i < steps - 1; i += 1) {          // 중간 디딤판 steps-1개(맨 위는 데크). i=0: 데크에 가장 가까운 단
     // 데크처럼: 계단틀(디딤바) 윗면 위에 얇은 포세린 타일을 얹는다. frameTopY=틀 디딤바 윗면 높이(주면 타일 모드, 없으면 솔리드 블록).
     const treadFrameTop = frameTopY != null ? frameTopY(i) : null;
@@ -1436,9 +1436,9 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
   }
 }
 
-// 주방 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 5.5m(fX1=5.5, 좌측 끝 x=5.7)
-//   지붕면은 주방+안방을 덮는 단일 패널 하나로 그린다 — 좌우 돌출은 집 지붕과 동일(frSideOverhang 40cm), 폭 = 집 외벽폭 + 양쪽 frSideOverhang, 중심 x=집 중심.
-const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: buildingW + 2 * frSideOverhang, roofPanelCenterX: buildingW / 2, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭(고-X 끝 fX1=deckW=5.5)은 roofW:5.9에서 파생(지붕 프레임 공유) — deckW 바꾸려면 roofW도 함께
+// 주방 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 deckW(fX1=deckW, 좌측 끝 파생)
+//   지붕면은 주방+안방을 덮는 단일 패널 하나로 그린다 — 좌우 돌출은 집 지붕과 동일(frSideOverhang), 폭 = 집 외벽폭 + 양쪽 frSideOverhang, 중심 x=집 중심.
+const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: buildingW + 2 * frSideOverhang, roofPanelCenterX: buildingW / 2, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭(고-X 끝 fX1=deckW)은 roofW:5.9에서 파생(지붕 프레임 공유) — deckW 바꾸려면 roofW도 함께
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 주방 썬룸의 단일 패널이 이미 덮음.
 const 안방썬룸 = 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: deckW, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
 
@@ -1464,10 +1464,10 @@ const planY = 0.003, planH = 0.002;   // 평면(높이 0 취급) — 대지 위 
 // 기초 발자국(집 + 데크) — 단일 출처(footprintObjects). 모든 화면에 동일 표시.
 footprintObjects.push(box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
 for (const f of deckFootprints) {
-  footprintObjects.push(box({ x: f.x, z: f.z, w: f.w, d: f.d, y: planY, h: planH, mat: materials.deckFoundation, cast: false, name: 'ground' }));   // 데크 기초(0.4m) — 청회색으로 집 기초(0.5m)와 구분
+  footprintObjects.push(box({ x: f.x, z: f.z, w: f.w, d: f.d, y: planY, h: planH, mat: materials.deckFoundation, cast: false, name: 'ground' }));   // 데크 기초(deckFoundationH) — 청회색으로 집 기초(matFoundationH)와 구분
 }
-// 매트(온통)기초 — 말뚝기초의 대안. 50cm 콘크리트 슬래브. 부분=집만, 전체=집+데크(상호 단독 토글).
-const MAT_H = matFoundationH;   // 매트기초 높이 50cm(단일 출처: constants.matFoundationH)
+// 매트(온통)기초 — 말뚝기초의 대안. matFoundationH 콘크리트 슬래브. 부분=집만, 전체=집+데크(상호 단독 토글).
+const MAT_H = matFoundationH;   // 매트기초 높이(단일 출처: constants.matFoundationH)
 captureInto(matFoundationHouseObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트
   planYDim(-0.1, buildingBackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 남쪽 모서리(옆집벽·측백벽 만나는 곳 = 낮은 X·뒤 Z) 높이 치수
@@ -1505,7 +1505,7 @@ captureInto(dimObjects, () => {
   // 가로 — 위쪽: 기초 buildingW / 안방 측백 0.5 (주방 0.5는 아래쪽으로 이동)
   planXDim(lotZ1 + 0.4, 0, buildingW, `${fmtDim(buildingW)}m`);
   captureInto(hedgeDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - hedgeThickness, lotX1, `측백 ${fmtDim(hedgeThickness)}m`));   // 안방 측백(좌상단) — 측백담장 토글+배치도
-  // 세로 — 안방(왼쪽) 건물 깊이 4 / 주방(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
+  // 세로 — 안방(왼쪽) 건물 깊이 buildingD / 주방(오른쪽) 뒤 이격 합 1m + 건물 깊이 buildingD + 데크 깊이
   planZDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m');          // 안방 건물 깊이
   captureInto(hedgeDimObjects, () => planZDim(lotX1 + 0.35, lotZ1 - hedgeThickness, lotZ1, `측백 ${fmtDim(hedgeThickness)}m`));   // 뒤(가로) 측백 — 측백담장 토글+배치도
   captureInto(gapDimObjects, () => planZDim(lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m'));   // 뒤 이격 합 1m — 공통(집-담장 이격)
@@ -1546,7 +1546,7 @@ captureInto(dimObjects, () => {
 const S2_STAIR = { T: 0.27, R: 0.15, W: 0.75, g: 0.1, tTh: 0.06, nosing: 0.02, rTh: 0.03, usTh: 0.04, nUpper: [9, 9], landingSteps: 2, slabT: floorFinishH, floorH: [3.0, 3.0] };  // slabT=1층 층참=바닥 마감 두께(콘크리트 기초 위 부자재+포세린, floorFinishH 0.20). 층고 1·2층 모두 3.0m(천장고 2.7+슬래브 0.3). nosing=계단코·rTh=챌판두께·usTh=계단아래문두께·nUpper=상부런 비행별 단수(그리기·메모 단일 출처)
 const s2W = 8.5;                            // s2 집 너비(X) — 고정 상수(x=0 주방측 고정, 왼쪽 안방측으로 확장)
 const s2X0 = 0;                             // 주방측 외벽 — s1과 동일(x=0, 옆집 이격 0.5 유지)
-const s2BackZ = buildingBackZ;             // 뒤벽 — s1과 동일(3.3, 측백 이격 1.0 유지, 부지 경계서 1m 고정)
+const s2BackZ = buildingBackZ;             // 뒤벽 — s1과 동일(buildingBackZ, 측백 이격 1.0 유지, 부지 경계서 1m 고정)
 const s2WallT = 0.3;                        // s2 외벽 두께(단일 출처) — 외벽·계단 들임 기준
 const s2Floor2SlabT = 0.3;                  // 2층 바닥 슬래브 두께(30cm) — 치수·외벽 단일 출처
 const s2Floor3SlabT = 0.3;                  // 3층 바닥 슬래브 두께 — 치수·외벽 단일 출처(한 값만 유지)
@@ -1594,8 +1594,8 @@ captureInto(s2Floor1Objects, () => {
 // 치수 + 기준선 — s1과 같은 부분(너비=위, 깊이=양옆)
 captureInto(s2DimObjects, () => {
   planXDim(lotZ1 + 0.4, s2X0, s2X0 + s2W, `${fmtDim(s2W)}m`);          // 너비(s1 자리)
-  planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);        // 깊이(파생) — 안방측(s1 4.0m 자리)
-  planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);         // 깊이(파생) — 주방측(s1 4.0m 자리)
+  planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);        // 깊이(파생) — 안방측(s1 buildingD 자리)
+  planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);         // 깊이(파생) — 주방측(s1 buildingD 자리)
   // 기준선(회청색) — 새 끝점만: 너비 끝 x=s2W, 깊이 앞 z=s2FrontZ (x=0·뒤 z=buildingBackZ은 공통 기준선 사용)
   const gridMat2 = new THREE.MeshBasicMaterial({ color: 0x5b7185 });
   const gw = 0.02, gy = 0.009, gh = 0.002;
@@ -2919,7 +2919,7 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
 // 썬룸 화목난로(캠핑용) — 측면 폴딩 "앞에서 3번째 짝"의 하부만 불연패널(연통홀), 상부는 기존 폴딩 유리 유지.
 {
   const deckTop = groundTopY + deckFoundationH + deckFinishT;
-  const fWallZ = buildingFrontZ;                          // -0.7 (집 벽쪽 끝)
+  const fWallZ = buildingFrontZ;                          // buildingFrontZ (집 벽쪽 끝)
   const roofRun = Math.sqrt(4.0 * 4.0 - 0.2 * 0.2);       // 썬룸 수평투영(폴딩 내부값과 동일 ≈3.995)
   const fFrontZ = (buildingFrontZ - roofRun) + 0.2;       // 폴딩 앞단(≈-4.50)
   const panelZ = (fWallZ - fFrontZ) / 6;                  // 측면 한 짝 폭(Z) ≈0.633
@@ -2945,7 +2945,7 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
   const flueH = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.8, 14), materials.guard);
   flueH.rotation.z = Math.PI / 2; flueH.position.set(0.1, flueY, stZ); flueH.castShadow = true; scene.add(flueH);
   // 연통 수직부 — 윗끝이 그 위치(z=stZ)의 썬룸 지붕면보다 1m 위로 오게 길이 산정.
-  // 지붕면 높이는 썬룸 물매 파라미터(targetWallPostH 2.8 / targetFrontPostH 2.6 / beam)를 동일하게 재현.
+  // 지붕면 높이는 썬룸 물매 파라미터(targetWallPostH / targetFrontPostH / beam)를 동일하게 재현.
   const _beamDrop = 0.04, _beamH = 0.12, _frameInset = 0.2, _slope = 4.0;
   const yAtWall = firstFloorY + 2.8 + _beamDrop + _beamH;
   const targetGlassAtFront = firstFloorY + 2.6 + _beamDrop + _beamH;
