@@ -82,8 +82,8 @@ app.innerHTML = `
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">다락</h2>
         <div class="seg-row" role="group" aria-label="다락 바닥·내벽">
-          <button type="button" class="seg-btn" id="bLoft">다락 바닥</button>
-          <button type="button" class="seg-btn" id="bAtticInnerWall">다락 내벽</button>
+          <button type="button" class="seg-btn" id="bLoft">바닥</button>
+          <button type="button" class="seg-btn" id="bAtticInnerWall">내벽</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s1">
