@@ -4096,7 +4096,7 @@ function drawStairAnno(p) {
   const flr = loftY - loftTh;                    // 수납장 바닥 슬래브 윗면 밑선(벽자리 띠·바닥 메움 공통)
   const suZ0 = zFrontU + interiorWall;            // 앞: 다락 입구 가로벽(다락복도쪽) 뒷면 = 안목 시작
   const suX1 = laneA + W - interiorWall;          // 계단쪽 옆벽 안쪽 면 (계단 올라오는 쪽)
-  const suDepthClear = 0.8;                       // 수납장 안목 깊이(앞→뒤) — 단일 출처. 헤드룸 2m 한계보다 작을 때만 유효
+  const suDepthClear = 0.6;                       // 수납장 안목 깊이(앞→뒤) — 단일 출처. 헤드룸 2m 한계보다 작을 때만 유효
   const suZ1 = Math.min(suZ0 + suDepthClear, fillZend - interiorWall);   // 뒤벽 안쪽 면 = 안목 0.8m 또는 헤드룸 한계 중 앞쪽
   const suZback = suZ1 + interiorWall;           // 뒤벽 바깥끝(벽자리·옆벽 뒤끝) — 안목 뒤에 벽두께
   captureInto(loftSlabs, () => {
