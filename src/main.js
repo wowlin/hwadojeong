@@ -1048,17 +1048,16 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
       [bx0, yBotF, bzF], [bx1, yBotF, bzF], [bx1, yTopF, bzF], [bx0, yTopF, bzF],   // 앞면(zF) 4점
       [bx0, yBotB, bzB], [bx1, yBotB, bzB], [bx1, yTopB, bzB], [bx0, yTopB, bzB],   // 뒷면(zB) 4점
     ];
-    const quads = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [3, 2, 6, 7], [0, 3, 7, 4], [1, 2, 6, 5]];   // 앞·뒤·밑·윗·좌·우
-    const pos = [];
-    for (const [a, b, cc, d] of quads) for (const i of [a, b, cc, a, cc, d]) pos.push(...c[i]);
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    geo.computeVertexNormals();
-    const roofBaseMat = 썬룸Frame.clone(); roofBaseMat.side = THREE.DoubleSide;
-    const rb = new THREE.Mesh(geo, roofBaseMat);
-    rb.castShadow = true; rb.receiveShadow = true;
-    scene.add(rb);
-    frameLocal.push(rb);
+    const edges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];   // 육면체 12모서리 = 각관
+    for (const [i, j] of edges) {
+      const a = new THREE.Vector3(...c[i]), b = new THREE.Vector3(...c[j]);
+      const m = new THREE.Mesh(new THREE.BoxGeometry(tube, tube, a.distanceTo(b) + tube), 썬룸Frame);   // +tube: 모서리 접합부 겹침
+      m.position.copy(a).add(b).multiplyScalar(0.5);
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), b.clone().sub(a).normalize());
+      m.castShadow = true;
+      scene.add(m);
+      frameLocal.push(m);
+    }
   }
 
   // ── 썬룸 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
