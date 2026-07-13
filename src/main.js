@@ -977,16 +977,16 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ], [fX0, fWallZ], [fX1, fWallZ]];
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
-  const postBaseY = deckSurfaceY;   // 새 데크 표면(deckSurfaceY) — 땅 기둥/데크 기둥/폴딩을 데크 위에 통일(온통기초+페데스탈+포세린)
+  const postBaseY = groundTopY + matFoundationH;   // 기둥 밑면 = 온통기초 윗면(구조 기둥은 데크 마감이 아니라 기초에 앉는다). 데크 포세린은 기둥 주위에 깔림.
   const groundPosts = [];      // 땅 기둥 위치(원위치) — 바닥 말뚝(PILE_POS.anbang)의 X·가운데 Z 출처
   // ★단일 출처★ 땅 기둥의 말뚝(기초)·두부·라벨·기둥은 여기서 그리지 않는다.
   // 위치를 PILE_POS로 확정한 뒤 main에서 drawGroundPost()로 그려, 바닥 마커와 입체 말뚝이
   // 똑같은 좌표를 쓰게 한다(예전엔 바닥만 보정하고 입체는 원좌표라 도면마다 어긋났음 → 그 회귀 차단).
   function drawGroundPost(px, pz, isFirst) {
     // 땅 기둥 밑 말뚝기초 — 제거됨(사용자 요청). 기둥(골조)만 남김.
-    // 안방쪽엔 데크가 없으므로(withDeck:false) 데크 표면이 아니라 지면(groundTopY)부터 세운다 — 주방쪽 데크 기둥은 데크 위, 안방쪽은 바닥.
+    // 안방쪽 기둥도 온통기초 윗면(postBaseY)에 앉는다 — 집 외곽 안(buildingW)이라 집 매트기초가 받침.
     const topY = glassYatZ(pz) - beamDrop - beamH;
-    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: groundTopY, h: topY - groundTopY, mat: 썬룸Frame }));   // 기둥(골조) — 지면부터
+    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 기둥(골조) — 기초 윗면부터
   }
   postPlaces.forEach(([px, pz], i) => {
     if (postsToGround) {
@@ -1266,7 +1266,8 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
 //   지붕면은 주방+안방을 덮는 단일 패널 하나로 그린다 — 좌우 돌출은 집 지붕과 동일(frSideOverhang), 폭 = 집 외벽폭 + 양쪽 frSideOverhang, 중심 x=집 중심.
 const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: buildingW + 2 * frSideOverhang, roofPanelCenterX: buildingW / 2, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭(고-X 끝 fX1=deckW)은 roofW:5.9에서 파생(지붕 프레임 공유) — deckW 바꾸려면 roofW도 함께
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 주방 썬룸의 단일 패널이 이미 덮음.
-const 안방썬룸 = 썬룸({ roofLowX: 5.7, roofW: 3.0, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: deckW, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
+// 안방 프레임 폭 = 데크 끝(deckW)~집 외곽(buildingW). fX1 = roofLowX+roofW-frameInset(0.2) = buildingW라야 집 밖으로 안 튀어나감(기둥열 = buildingW−0.1).
+const 안방썬룸 = 썬룸({ roofLowX: deckW, roofW: buildingW - deckW + 0.2, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: deckW, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
 
 // 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 두부). 두부 위에 둘레 토대보(바닥 골조)가 얹히고, 그 위에 포세린·폴딩/외벽이 올라간다.
 // 데크 기초 발자국 — 집 너비(0~buildingW) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 buildingW가 되게.
