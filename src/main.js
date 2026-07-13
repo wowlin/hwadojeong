@@ -1237,6 +1237,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
       }
       label('오른쪽(서) 측면 — 아래 고정 / 위 밖으로 열림(연통구 높이 2등분)', sideX - 0.4, splitY + 0.55, (fFrontZ + fWallZ) / 2, 'opening');
     }
+
+    // ── 좌우 측면 하부 프라이버시 벽(불투명) — 착석 시선 차단, 위는 개방 유지 ──
+    const privacyH = 1.2, privacyThick = 0.06;
+    const privacyMat = new THREE.MeshLambertMaterial({ color: 0x8a8f96, side: THREE.DoubleSide });
+    for (const sx of [fX0, fX1])
+      box({ x: sx - privacyThick / 2, z: fFrontZ, w: privacyThick, d: fWallZ - fFrontZ, y: wallBaseY, h: privacyH, mat: privacyMat });
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
 
