@@ -2993,7 +2993,7 @@ const view = {
   roof: false,        // 지붕
   solar: false,       // 태양광(지붕에서 분리)
   // 썬룸 그룹 (악세사리는 '데크'에 합침)
-  deck: false, sun: false, sunWall: false, folding: false,
+  deck: false, sun: false, sunWall: false, folding: false, frame: false,   // frame=포치 골조(폴딩도어·지붕 지지)
   // 참고(임시)
   hedge: false, fence: false,
   // 2층·다락 탭(s2)
@@ -3030,7 +3030,8 @@ const PARTS = [
   { key: 'roof',       arrays: [roofObjects] },
   { key: 'solar',      arrays: [solarObjects] },              // 지붕에서 분리한 태양광
   { key: 'deck',       arrays: [deckObjects, deckFloorObjects, deckStairFrameObjects, extrasObjects] },   // 데크바닥·데크계단틀+악세사리(화분·의자·테이블·그릴)를 '데크' 하나로 합침
-  { key: 'sun',        arrays: [썬룸Objects, 썬룸FrameObjects] },
+  { key: 'sun',        arrays: [썬룸Objects] },
+  { key: 'frame',      arrays: [썬룸FrameObjects] },   // 포치 골조(기둥·보·평프레임) — 폴딩도어·지붕 지지. 데크 기초 위(deckSurfaceY)에 앉음
   { key: 'sunWall',    arrays: [wallObjects] },
   { key: 'folding',    arrays: [foldingObjects] },
   { key: 'hedge',      arrays: [hedgeObjects] },
@@ -3055,7 +3056,7 @@ const PARTS = [
 // s1(1층·다락·포치) 부품 토글 — s2처럼 버튼(.seg-btn). [버튼 id → view 키] 단일 출처.
 const S1_TOGGLES = [
   ['bDeck', 'deck'],   // 데크(악세사리 합침)
-  ['bSun', 'sun'], ['bFolding', 'folding'],
+  ['bSun', 'sun'], ['bFolding', 'folding'], ['bFrame', 'frame'],
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
   ['bExtWall', 'extWall'],
   ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bBath', 'bath'],

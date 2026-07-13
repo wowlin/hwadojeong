@@ -84,6 +84,9 @@ app.innerHTML = `
         <div class="seg-row" role="group" aria-label="포치 데크">
           <button type="button" class="seg-btn" id="bDeck">데크</button>
         </div>
+        <div class="seg-row" role="group" aria-label="포치 프레임">
+          <button type="button" class="seg-btn" id="bFrame">프레임</button>
+        </div>
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">1층</h2>
