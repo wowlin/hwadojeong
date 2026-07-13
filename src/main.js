@@ -89,7 +89,7 @@ import {
 import {
   firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
-  outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
+  outletObjects, extOutletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, hedgeDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Ecu3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects, deckStairFrameObjects,
   stairObjects, stairCoreObjects, stairWallObjects, kitchenInnerWallObjects, familyInnerWallObjects,
@@ -3023,8 +3023,8 @@ extrasObjects.push(...scene.children.slice(_grillStart));
 // ╚══════════════════════════════════════════════════════════════════════════════╝
 const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동수전·실내 계단 → 1층 그룹
 
-// 주방 시스템도어 양옆 전면 외벽에 외부(방수) 콘센트 2개
-{
+// 주방 시스템도어 양옆 전면 외벽에 외부(방수) 콘센트 2개 — 포치 '콘센트' 토글(extOutletObjects)
+captureInto(extOutletObjects, () => {
   const kitchenSashEndX = kitchenYardSashX + yardSashW;   // 주방 도어 높은 X쪽 끝(2.825)
   const wallFaceZ = buildingFrontZ;                      // 전면 외벽 바깥면
   const outletY = firstFloorY + 0.32;
@@ -3034,7 +3034,7 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
   };
   extOutlet(kitchenYardSashX - 0.2);    // 도어 좌측(코너쪽)
   extOutlet(kitchenSashEndX + 0.2);     // 도어 우측(현관쪽)
-}
+});
 
 // 안방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형)
 {
@@ -3070,7 +3070,7 @@ const _firstFixturesStart = scene.children.length;   // 외부 콘센트·부동
 
 // 계단실 양쪽 내벽은 1층 원래 내벽(stairWallObjects) 1벌을 계단 화면과 공유 — 여기서 따로 그리지 않음(중복 제거).
 
-firstFloorObjects.push(...scene.children.slice(_firstFixturesStart));   // 외부설비를 1층 그룹에 추가(계단 본체·계단실 벽은 stairCoreObjects·stairWallObjects로 공유 표시)
+{ const _sep = new Set(extOutletObjects); firstFloorObjects.push(...scene.children.slice(_firstFixturesStart).filter((o) => !_sep.has(o))); }   // 외부설비를 1층 그룹에 추가(외부 콘센트는 포치 '콘센트' 그룹으로 분리, 계단 본체·계단실 벽은 stairCoreObjects·stairWallObjects로 공유 표시)
 
 function ceilingFan({ x, z, ceilingY, bladeCount = 5, bladeLength = 0.62, drop = 0.3 }) {
   const dropY = ceilingY - drop;
@@ -3307,9 +3307,10 @@ const view = {
   atticInnerWall: false, // 다락 내벽
   roof: false,        // 지붕
   solar: false,       // 태양광(지붕에서 분리)
-  outlet: false,      // 콘센트(1층+다락)
-  // 썬룸 그룹
-  deck: false, sun: false, sunWall: false, folding: false, accessory: false,
+  outlet: false,      // 실내 콘센트(1층+다락)
+  extOutlet: false, // 외부(방수) 콘센트 — 포치 '콘센트'
+  // 썬룸 그룹 (악세사리는 '데크'에 합침)
+  deck: false, sun: false, sunWall: false, folding: false,
   // 참고(임시)
   hedge: false, fence: false,
   // 2층·다락 탭(s2)
@@ -3345,12 +3346,12 @@ const PARTS = [
   { key: 'atticInnerWall', arrays: [atticInnerWallObjects] }, // 다락 내벽(칸막이·문·입구벽)
   { key: 'roof',       arrays: [roofObjects] },
   { key: 'solar',      arrays: [solarObjects] },              // 지붕에서 분리한 태양광
-  { key: 'outlet',     arrays: [outletObjects, atticOutletObjects] },
-  { key: 'deck',       arrays: [deckObjects, deckFloorObjects, deckStairFrameObjects] },   // 데크바닥·데크계단틀을 '데크' 하나로 합침
+  { key: 'outlet',     arrays: [outletObjects, atticOutletObjects] },   // 실내 콘센트(1층+다락)
+  { key: 'extOutlet', arrays: [extOutletObjects] },                 // 외부(방수) 콘센트 — 포치
+  { key: 'deck',       arrays: [deckObjects, deckFloorObjects, deckStairFrameObjects, extrasObjects] },   // 데크바닥·데크계단틀+악세사리(화분·의자·테이블·그릴)를 '데크' 하나로 합침
   { key: 'sun',        arrays: [썬룸Objects, 썬룸FrameObjects] },
   { key: 'sunWall',    arrays: [wallObjects] },
   { key: 'folding',    arrays: [foldingObjects] },
-  { key: 'accessory',  arrays: [extrasObjects] },
   { key: 'hedge',      arrays: [hedgeObjects] },
   { key: 'fence',      arrays: [fenceObjects] },
   { key: 's2Foundation', arrays: [s2FoundationObjects] },
@@ -3372,10 +3373,10 @@ const PARTS = [
 ];
 // s1(1층·다락·포치) 부품 토글 — s2처럼 버튼(.seg-btn). [버튼 id → view 키] 단일 출처.
 const S1_TOGGLES = [
-  ['bDeck', 'deck'],
-  ['bSun', 'sun'], ['bFolding', 'folding'], ['bAccessory', 'accessory'],   // 포치 '외벽'(sunWall)은 자바라 외벽 제거로 버튼도 삭제
+  ['bDeck', 'deck'],   // 데크(악세사리 합침)
+  ['bSun', 'sun'], ['bFolding', 'folding'], ['bExtOutlet', 'extOutlet'],   // 포치 콘센트(외부 방수)
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
-  ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bOutlet', 'outlet'],
+  ['bExtWall', 'extWall'], ['bOutlet', 'outlet'],
   ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'],
   ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
 ];
