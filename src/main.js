@@ -1153,12 +1153,14 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
       box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame });
     }
     const fanBlade = (52 * 0.0254) / 2 - 0.1;                              // 실링팬 지름 52인치 → 날개 길이(중심 오프셋 0.1 반영)
+    const fanDrop = 0.3;                                                   // 실링팬 봉 길이(천장→허브)
+    const lightDrop = fanDrop + 0.10;                                      // 전등은 실링팬 날개보다 10cm 아래로 줄에 매닮
     Array.from({ length: 7 }, (_, i) => flatX0 + (i * fw) / 6).forEach((x, i) => {   // 앞뒤 세로 장선 7개 균등 배치(양 끝 포함)
       const n = i + 1;                                                     // 1-based 번호
       const hasLight = n === 2 || n === 4 || n === 6, hasFan = n === 3 || n === 5;
       box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame });
-      if (hasLight) ceilingLight({ x, z: zMid, ceilingY: flatFrameY });    // 2·4·6번 장선 중앙 전등
-      else if (hasFan) ceilingFan({ x, z: zMid, ceilingY: flatFrameY, bladeLength: fanBlade });   // 3·5번 장선 중앙 실링팬(52인치)
+      if (hasLight) ceilingLight({ x, z: zMid, ceilingY: flatFrameY, drop: lightDrop });    // 2·4·6번 장선 중앙 전등(줄로 날개 아래까지 내림)
+      else if (hasFan) ceilingFan({ x, z: zMid, ceilingY: flatFrameY, bladeLength: fanBlade, drop: fanDrop });   // 3·5번 장선 중앙 실링팬(52인치)
     });
   }
 
@@ -2820,16 +2822,24 @@ function ceilingFan({ x, z, ceilingY, bladeCount = 5, bladeLength = 0.62, drop =
   }
 }
 
-// 천장 직부등 — 하우징 + 발광 렌즈(썬룸 조명과 동일 규격). 천장면에 바로 부착.
-function ceilingLight({ x, z, ceilingY }) {
+// 천장 직부등 — 하우징 + 발광 렌즈(썬룸 조명과 동일 규격). drop=0이면 천장면 직부, drop>0이면 줄로 그만큼 내려 매닮.
+function ceilingLight({ x, z, ceilingY, drop = 0 }) {
+  const baseY = ceilingY - drop;
+  if (drop > 0) {   // 천장에서 늘어뜨리는 줄
+    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, drop, 8), materials.guard);
+    cord.position.set(x, ceilingY - drop / 2, z);
+    cord.castShadow = true;
+    cord.receiveShadow = false;
+    scene.add(cord);
+  }
   const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.1, 0.05, 16), materials.guard);
-  housing.position.set(x, ceilingY - 0.025, z);
+  housing.position.set(x, baseY - 0.025, z);
   housing.castShadow = false;
   housing.receiveShadow = false;
   scene.add(housing);
   const lensMat = new THREE.MeshLambertMaterial({ color: 0xfff4cf, emissive: 0xffe39c, emissiveIntensity: 0.9 });
   const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.035, 16), lensMat);
-  lens.position.set(x, ceilingY - 0.06, z);
+  lens.position.set(x, baseY - 0.06, z);
   lens.castShadow = false;
   lens.receiveShadow = false;
   scene.add(lens);
