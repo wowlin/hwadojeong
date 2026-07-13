@@ -984,9 +984,10 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   const px0 = Math.max(fX0 - deckEdge, 0) + tube / 2, px1 = dX1 - tube / 2;   // 데크 사각형 안쪽 네 꼭지점 X(주방쪽~안방쪽 끝)
   const pzF = dFrontZ + tube / 2, pzB = dWallZ - tube / 2;    // 앞(低Z)·뒤(집벽) Z
   const topAtZ = (z) => glassYatZ(z) - beamDrop - beamH;      // 그 Z의 상단보 밑면(지붕 밑선) — 앞 낮고 뒤 높음(옆면 삼각)
-  // 네 꼭지점 기둥(각관): 바닥 ~ 그 위치 상단보 밑면
+  const postBase = groundTopY + matFoundationH;               // 기둥 밑면 = 온통기초 윗면(데크 마감이 아니라 기초에 앉음 — 포세린은 기둥 주위에 깔림)
+  // 네 꼭지점 기둥(각관): 기초 윗면 ~ 그 위치 상단보 밑면
   for (const cx of [px0, px1]) for (const cz of [pzF, pzB])
-    frameLocal.push(box({ x: cx - tube / 2, z: cz - tube / 2, w: tube, d: tube, y: deckSurfaceY, h: topAtZ(cz) - deckSurfaceY, mat: 썬룸Frame }));
+    frameLocal.push(box({ x: cx - tube / 2, z: cz - tube / 2, w: tube, d: tube, y: postBase, h: topAtZ(cz) - postBase, mat: 썬룸Frame }));
   // 상단 테두리보(각관): 앞(수평·낮음)·뒤(수평·높음)
   frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: topAtZ(pzF) - tube, h: tube, mat: 썬룸Frame }));   // 앞 상단보
   frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: topAtZ(pzB) - tube, h: tube, mat: 썬룸Frame }));   // 뒤 상단보
@@ -999,11 +1000,11 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     scene.add(sb);
     frameLocal.push(sb);
   }
-  // 바닥 가로막대(각관, 10cm) — 네 변에서 기둥↔바닥 연결
-  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 앞 바닥막대
-  frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 뒤 바닥막대
-  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 좌 바닥막대
-  frameLocal.push(box({ x: px1 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 우 바닥막대
+  // 바닥 가로막대(각관, 10cm) — 네 변에서 기둥↔바닥 연결(기초 윗면부터)
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 앞 바닥막대
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 뒤 바닥막대
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 좌 바닥막대
+  frameLocal.push(box({ x: px1 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 우 바닥막대
 
   // ── 썬룸 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
   if (withGutter) {
