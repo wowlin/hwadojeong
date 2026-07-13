@@ -669,17 +669,17 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`);
 
 room({ x: firstKitchenX, z: insideZ0, w: firstKitchenW, d: firstKitchenD, y: firstFloorY + floorOverlayLift, mat: materials.kitchen });   // 색면만 — 주방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
-// 주방 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 실외기는 통풍 좋은 곳에 별도.
-{
+// 주방 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 앞(−Z)에서 20cm 이격. '1층 바닥' 토글(firstFloorFinishObjects). 실외기는 통풍 좋은 곳에 별도.
+captureInto(firstFloorFinishObjects, () => {
   const acW = 0.85, acH = 0.30, acD = 0.22;
-  const acZ = insideZ0 + 1.2;
+  const acZ = insideZ0 + 0.2;
   const acY = firstFloorY + firstWallHeight - 0.45;
   box({ x: insideX0, z: acZ, w: acD, d: acW, y: acY, h: acH, mat: materials.wall });                                           // 본체(흰색)
   box({ x: insideX0 + 0.05, z: acZ + 0.06, w: acD - 0.04, d: acW - 0.12, y: acY - 0.015, h: 0.025, mat: materials.openingEdge });   // 하부 토출 슬릿
   label('벽걸이 에어컨', insideX0 + 0.55, acY + 0.17, acZ + acW / 2, 'mep');
-}
-// 에어컨 실외기 — 후면(뒤) 주방(서)쪽 코너, 측백 향해(+Z) 토출. 배관은 서측 외벽 따라 뒤로.
-{
+});
+// 에어컨 실외기 — 후면(뒤) 주방(서)쪽 코너, 측백 향해(+Z) 토출. 배관은 서측 외벽 따라 뒤로. '1층 바닥' 토글(firstFloorFinishObjects).
+captureInto(firstFloorFinishObjects, () => {
   const esW = 0.8, esD = 0.35, esH = 0.6;
   const esX = 0.3;                          // 서(주방)측 코너
   const esZ = buildingBackZ + 0.1;          // 집 뒤 벽 바로 뒤(집~측백 사이)
@@ -687,7 +687,7 @@ room({ x: firstKitchenX, z: insideZ0, w: firstKitchenW, d: firstKitchenD, y: fir
   box({ x: esX, z: esZ, w: esW, d: esD, y: groundTopY, h: esH, mat: materials.guard });                                 // 실외기 본체
   box({ x: esX + 0.15, z: esZ + esD - 0.02, w: esW - 0.3, d: 0.025, y: groundTopY + 0.13, h: 0.42, mat: materials.openingEdge });   // 토출 팬그릴(측백쪽 +Z)
   label('에어컨 실외기', esX + esW / 2, groundTopY + esH + 0.28, esZ + 0.2, 'mep');
-}
+});
 captureInto(interiorObjects, () => {   // 주방 싱크대 — '실내' 토글
   box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY, h: kitchenSinkH, mat: materials.sinkCabinet });
   box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY + kitchenSinkH, h: 0.05, mat: materials.counter });
@@ -828,7 +828,7 @@ function curtainRail({ x, z, len, headY, axis = 'x', sign = 1 }) {
 curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashTopY, axis: 'x', sign: 1 });           // 주방 전면 출입창(도어 — 유지)
 // (창 제거된 안방 전면창·주방 후면창·안방 후면창의 커튼레일도 함께 삭제 — 통벽에 붕 뜨지 않게)
 
-{ const _sep = new Set([...bathObjects, ...interiorObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구는 bathObjects·interiorObjects로 분리)
+{ const _sep = new Set([...bathObjects, ...interiorObjects, ...firstFloorFinishObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구·에어컨/실외기는 각 그룹으로 분리)
 
 // 다락 = 3개 토글로 분리: 실제 다락바닥(secondFloorObjects) · 다락 외벽(atticExtWallObjects) · 다락 내벽(atticInnerWallObjects).
 // 공유 좌표는 여기서 한 번 계산해 세 그룹이 공유(단일 출처).
@@ -3137,7 +3137,7 @@ function coveLight({ x, z, len, axis = 'z', ceilingY }) {
 const _firstFanStart = scene.children.length;
 ceilingFan({ x: firstKitchenX + firstKitchenW / 2, z: insideZ0 + firstKitchenD / 2, ceilingY: firstCeilingY });
 ceilingFan({ x: firstFamilyX + firstFamilyW / 2, z: insideZ0 + firstFamilyD / 2, ceilingY: firstCeilingY });
-firstFloorObjects.push(...scene.children.slice(_firstFanStart));   // 1층 주방·안방 실링팬을 1층 그룹에 추가
+firstFloorFinishObjects.push(...scene.children.slice(_firstFanStart));   // 1층 주방·안방 실링팬(각 방 천장 가운데) — '1층 바닥' 토글로 이동
 
 const atticRidgeY = atticSecondWallTop + gableRise;
 // (다락 계단실 상부 실링팬 삭제)
