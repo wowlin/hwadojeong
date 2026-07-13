@@ -4101,7 +4101,7 @@ function drawStairAnno(p) {
     box({ x: familyWallInner, z: zFrontU, w: insideX1 - familyWallInner, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false }); // 안방 위
     const suZ0 = zFrontU + interiorWall;   // 수납장 안목 앞선 = 다락 입구 가로벽(interiorWall) 뒷면 — 안목 치수만 벽 뒤에서 잰다(바닥 메움은 벽 밑까지 채움)
     if (fillZend > zFrontU) {
-      box({ x: laneA, z: zFrontU, w: W, d: fillZend - zFrontU, y: loftY - loftTh, h: loftTh, mat: materials.loftHeadFill, cast: false });   // 바닥 메움 = 다락 입구벽 밑(zFrontU)까지 빈틈 없이
+      box({ x: laneA, z: zFrontU, w: W, d: fillZend - zFrontU, y: loftY - loftTh, h: loftTh, mat: materials.bed, cast: false });   // 바닥 메움 = 다락 입구벽 밑(zFrontU)까지 빈틈 없이. 색은 다락방 바닥과 동일
       label(`수납장 ${fmtDim(W)}×${fmtDim(fillZend - suZ0)}m`, laneA + W / 2, loftY + 0.05, (suZ0 + fillZend) / 2, 'dim');   // 계단 위 헤드룸 한계까지 메운 다락바닥 = 저층 수납(다락복도쪽 벽 뺀 안목)
     }
   });
