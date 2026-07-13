@@ -1100,16 +1100,17 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     }
   }
 
-  // ── 리얼징크 단물매 지붕 — 경사 받침 윗면 선을 그대로 연장해 얹는다. 뒤=집 벽(dWallZ)에서 시작, 앞으로 처마 eaveOverhang·좌우 sideOverhang 내밈. ──
+  // ── 리얼징크 단물매 지붕 — 경사 받침 각관 윗면 위에 얹는다. 뒤=집 벽(dWallZ)에서 시작, 앞·왼쪽(안방·高x) 처마 넓게. ──
   {
-    const eaveOverhang = 0.6, sideOverhang = 0.4;         // 앞 처마·좌우 처마 내밈
+    const frontOverhang = 1.0;                             // 앞 처마
+    const leftOverhang = 1.0, rightOverhang = 0.4;         // 왼쪽(안방·高x=px1)·오른쪽(주방·低x=px0) 처마
     const zincT = 0.06;                                    // 리얼징크 마감 두께
     const slope = (roofBaseBackH - roofBaseFrontH) / (pzB - pzF);   // 물매(Δy/Δz, 앞→뒤 상승) — 받침 윗면과 동일
-    const yAt = (z) => frameTopY + roofBaseFrontH + slope * (z - pzF);   // 받침 윗면 경사선의 연장
-    const eaveZ = pzF - eaveOverhang;                      // 앞 처마 끝(低Z)
+    const restY = (z) => frameTopY + roofBaseFrontH + tube / 2 + slope * (z - pzF);   // 받침 각관 윗면(지붕이 얹히는 면) 경사선
+    const eaveZ = pzF - frontOverhang;                     // 앞 처마 끝(低Z)
     const ridgeZ = dWallZ;                                 // 뒤 끝 = 집 벽에서 시작
-    const rx0 = px0 - sideOverhang, rx1 = px1 + sideOverhang;   // 좌우 처마
-    const eaveY = yAt(eaveZ), ridgeY = yAt(ridgeZ);
+    const rx0 = px0 - rightOverhang, rx1 = px1 + leftOverhang;   // 좌우 처마
+    const eaveY = restY(eaveZ) + zincT, ridgeY = restY(ridgeZ) + zincT;   // 윗면 = 받침 윗면 + 마감 두께(밑면이 받침 위에 얹힘)
     // roofSlab과 동일한 8꼭지점 프리즘(윗면 eaveY..ridgeY, 두께 아래로) — X범위만 포치 폭에 맞춤
     const v = new Float32Array([
       rx0, eaveY, eaveZ, rx1, eaveY, eaveZ, rx1, ridgeY, ridgeZ, rx0, ridgeY, ridgeZ,
@@ -1134,12 +1135,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   if (withFlatFrame) {
     const flatX0 = (connectRightX != null) ? connectRightX : px0;  // 연결 시 이웃까지 이어 붙임. 기본은 프레임 발자국(px0~px1·pzF~pzB)에 정합
     const fw = px1 - flatX0, fd = pzB - pzF;
-    const xMid = flatX0 + fw / 2, zMid = pzF + fd / 2;
-    // 사각 틀(둘레) + 가운데 십자(가로 1·세로 1)
-    for (const z of [pzF, pzB, zMid]) {                    // 앞·뒤 + 십자 가로
+    const zMid = pzF + fd / 2;
+    // 가로 틀(앞·뒤·가운데) + 앞뒤 세로 장선 6개(균등 간격)
+    for (const z of [pzF, pzB, zMid]) {                    // 앞·뒤 + 가운데 가로
       box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame });
     }
-    for (const x of [flatX0, px1, xMid]) {                 // 좌·우 + 십자 세로
+    for (const x of Array.from({ length: 6 }, (_, i) => flatX0 + (i * fw) / 5)) {   // 앞뒤 세로 장선 6개 균등 배치(양 끝 포함)
       box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame });
     }
   }
