@@ -613,7 +613,7 @@ captureInto(firstFloorFinishObjects, () => {
   const wt = exteriorWall, wh = firstWallHeight + secondFloorThickness, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;   // 두께·높이를 단일 상수에서 읽음. 높이는 다락 바닥 슬래브 두께만큼 더 올려 1층↔다락 외벽이 끊기지 않고 하나로 이어지게(슬래브 옆면을 감쌈)
   const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
   const W = materials.firstExtWall;
-  // 앞(−Z) 외벽 — 정면 중앙에 표준 외짝 현관문(방화문) 설치. 개구는 문틀 외곽폭(entryFrameOuterW)·높이 2.1m. 좌·우 벽 + 상부 인방으로 나누고 가운데에 현관문.
+  // 앞(−Z) 외벽 — 정면 중앙에 표준 외짝 현관문(방화문) 설치. 개구는 문틀 외곽폭(entryFrameOuterW)·높이 oh. 좌·우 벽 + 상부 인방으로 나누고 가운데에 현관문.
   const ow = entryFrameOuterW, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭=문틀외곽/높이, 중앙 정렬
   firstWallObjects.push(box({ x: 0, z: z0, w: ox0, d: wt, y: wy, h: wh, mat: W }));                     // 앞 외벽 — 개구 왼쪽(주방측)
   firstWallObjects.push(box({ x: ox1, z: z0, w: buildingW - ox1, d: wt, y: wy, h: wh, mat: W }));       // 앞 외벽 — 개구 오른쪽(안방측)
@@ -2775,7 +2775,7 @@ captureInto(s2Wall1Objects, () => {
     const arrayCenterX = s2W / 2;
     const startX = arrayCenterX - arrayW / 2 + panelW / 2;
     const rowStepZ = (panelL + gapZ) * cosS;
-    const arrayCenterZ = 1.9;                  // 용마루(0.4)~뒤 벽(3.3) 사이
+    const arrayCenterZ = 1.9;                  // 용마루~뒤 벽 사이
     const startZ = arrayCenterZ - ((rows - 1) / 2) * rowStepZ;
     const liftN = panelThk / 2 + 0.03;
     const panelGeo = new THREE.BoxGeometry(panelW, panelThk, panelL);
@@ -2968,7 +2968,7 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
 // 안방 썬룸 아래 자갈 마당에 웨버 켈틀 그릴(지름 50cm) — 소품 그룹(전체일 때만 표시)
 const _grillStart = scene.children.length;
 {
-  const gx = 7.0;                          // 안방 썬룸 폭(5.6~8.5) 중앙
+  const gx = 7.0;                          // 안방 썬룸 폭 중앙
   const gz = -3.3;                         // 1m 데크 앞쪽 개방 자갈 구역(지붕 아래)
   const baseY = groundTopY;
   const R = 0.25;                          // 반지름(지름 50cm)
