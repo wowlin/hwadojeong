@@ -10,6 +10,7 @@ export const secondFloorObjects = [];      // 다락 바닥(실제 바닥 슬래
 export const atticExtWallObjects = [];      // 다락 외벽(+ 창·박공·벽높이 치수)
 export const atticInnerWallObjects = [];    // 다락 내벽(칸막이·문·입구벽)
 export const roofObjects = [];
+export const solarObjects = [];     // s1 지붕 태양광 패널(3kW) — 지붕에서 분리한 '태양광' 토글
 export const deckObjects = [];      // 데크 바닥·계단(데크 토글)
 export const 썬룸Objects = [];   // 썬룸 구조물: 지붕·팬·조명·치수·외피(썬룸 토글)
 export const 썬룸FrameObjects = []; // 썬룸 철골 골조: 기둥·보·평프레임(골조 토글 또는 썬룸 토글 중 하나라도 켜지면 표시)

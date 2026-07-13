@@ -61,6 +61,14 @@ app.innerHTML = `
         </div>
       </section>
       <section class="menu-group" data-scheme="s1">
+        <h2 class="menu-title">외벽·지붕</h2>
+        <div class="seg-row" role="group" aria-label="외벽·지붕·태양광">
+          <button type="button" class="seg-btn" id="bExtWall">외벽</button>
+          <button type="button" class="seg-btn" id="bRoof">지붕</button>
+          <button type="button" class="seg-btn" id="bSolar">태양광</button>
+        </div>
+      </section>
+      <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">포치</h2>
         <div class="seg-row" role="group" aria-label="포치 데크·썬룸">
           <button type="button" class="seg-btn" id="bDeck">데크</button>
@@ -73,19 +81,14 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">다락</h2>
-        <div class="seg-row" role="group" aria-label="다락 바닥·외벽·내벽">
+        <div class="seg-row" role="group" aria-label="다락 바닥·내벽">
           <button type="button" class="seg-btn" id="bLoft">다락 바닥</button>
-          <button type="button" class="seg-btn" id="bAtticExtWall">다락 외벽</button>
           <button type="button" class="seg-btn" id="bAtticInnerWall">다락 내벽</button>
-        </div>
-        <div class="seg-row" role="group" aria-label="지붕">
-          <button type="button" class="seg-btn" id="bRoof">지붕</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="1층 외벽·골조·실내">
-          <button type="button" class="seg-btn" id="bExtWall">1층 외벽</button>
+        <div class="seg-row" role="group" aria-label="1층 골조·실내">
           <button type="button" class="seg-btn" id="bFirstRoom">1층 골조·실내</button>
         </div>
         <div class="seg-row" role="group" aria-label="콘센트">

@@ -3196,11 +3196,11 @@ captureSecond(() => {
       panel.castShadow = true;
       panel.receiveShadow = false;
       scene.add(panel);
-      roofObjects.push(panel);
-      roofObjects.push(addGeometryEdges(panel, 0x9aa0a8));
+      solarObjects.push(panel);
+      solarObjects.push(addGeometryEdges(panel, 0x9aa0a8));
     }
   }
-  roofObjects.push(label('태양광 3kW (8장)', arrayCenterX, surfaceY(arrayCenterZ) + 0.55, arrayCenterZ, 'mep'));
+  solarObjects.push(label('태양광 3kW (8장)', arrayCenterX, surfaceY(arrayCenterZ) + 0.55, arrayCenterZ, 'mep'));
 }
 
 // 전기 콘센트 위치 표시 — 벽면에 흰 플레이트 + 콘센트 구멍(어두운 사각)을 붙인다.
@@ -3321,14 +3321,14 @@ const view = {
   // 집 그룹(내부구조 부품별)
   firstFloorFinish: false, // 집 1층 바닥재
   stair: false,       // ㄷ자 계단 본체
-  extWall: false,     // 1층 외벽
+  extWall: false,     // 외벽(1층+다락 합침)
   firstRoom: false,   // 1층 골조·실내
   bath: false,        // 화장실
   interior: false,    // 1층 실내 가구(안방 침대·주방 싱크대)
   loft: false,        // 실제 다락 바닥(슬래브·방)
-  atticExtWall: false, // 다락 외벽
   atticInnerWall: false, // 다락 내벽
   roof: false,        // 지붕
+  solar: false,       // 태양광(지붕에서 분리)
   outlet: false,      // 콘센트(1층+다락)
   // 썬룸 그룹
   deck: false, sun: false, sunWall: false, folding: false, accessory: false,
@@ -3360,14 +3360,14 @@ const PARTS = [
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
   { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면(색상으로 구분해 바닥에 합침)
   { key: 'stair',      arrays: [stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 주방측 벽·안방 내력벽을 계단 토글에 합침
-  { key: 'extWall',    arrays: [firstWallObjects] },
+  { key: 'extWall',    arrays: [firstWallObjects, atticExtWallObjects] },   // 1층 외벽+다락 외벽을 하나의 '외벽'으로 합침
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
   { key: 'bath',       arrays: [bathObjects] },
   { key: 'interior',   arrays: [interiorObjects] },   // 1층 실내 가구(안방 침대·주방 싱크대)
   { key: 'loft',       arrays: [secondFloorObjects] },        // 실제 다락 바닥(슬래브·방)
-  { key: 'atticExtWall', arrays: [atticExtWallObjects] },     // 다락 외벽(+창·박공)
   { key: 'atticInnerWall', arrays: [atticInnerWallObjects] }, // 다락 내벽(칸막이·문·입구벽)
   { key: 'roof',       arrays: [roofObjects] },
+  { key: 'solar',      arrays: [solarObjects] },              // 지붕에서 분리한 태양광
   { key: 'outlet',     arrays: [outletObjects, atticOutletObjects] },
   { key: 'deck',       arrays: [deckObjects, deckFloorObjects, deckStairFrameObjects] },   // 데크바닥·데크계단틀을 '데크' 하나로 합침
   { key: 'sun',        arrays: [썬룸Objects, 썬룸FrameObjects] },
@@ -3397,7 +3397,7 @@ const PARTS = [
 const S1_TOGGLES = [
   ['bDeck', 'deck'],
   ['bSun', 'sun'], ['bFolding', 'folding'], ['bAccessory', 'accessory'],   // 포치 '외벽'(sunWall)은 자바라 외벽 제거로 버튼도 삭제
-  ['bLoft', 'loft'], ['bAtticExtWall', 'atticExtWall'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'],
+  ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
   ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bOutlet', 'outlet'],
   ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'], ['bInterior', 'interior'],
   ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
@@ -3717,7 +3717,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticExtWall', 'atticInnerWall', 'roof', 'deck', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'matFoundationHouse', 'matFoundationFull', 'firstFloorFinish', 'stair', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticInnerWall', 'roof', 'deck', 'sun', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
