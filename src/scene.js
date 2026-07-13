@@ -80,6 +80,7 @@ app.innerHTML = `
         <div class="seg-row" role="group" aria-label="포치 데크·폴딩">
           <button type="button" class="seg-btn" id="bDeck">데크</button>
           <button type="button" class="seg-btn" id="bFolding">폴딩</button>
+          <button type="button" class="seg-btn" id="bSunRoof">지붕</button>
         </div>
         <div class="seg-row" role="group" aria-label="포치 프레임">
           <button type="button" class="seg-btn" id="bFrame">프레임</button>

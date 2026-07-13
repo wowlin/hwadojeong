@@ -78,7 +78,7 @@ import {
 } from './layout.js';
 import {
   firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
-  썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
+  썬룸FrameObjects, 썬룸RoofObjects, wallObjects, foldingObjects, extrasObjects,
   hedgeObjects, fenceObjects, foundationObjects, matFoundationFullObjects,
   footprintObjects, planObjects, dimObjects,
   planOnlyDimObjects, hedgeDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects, s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Ecu3Objects, s2Stair2Objects, s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects, s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects, deckStairFrameObjects,
@@ -1035,6 +1035,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   const wallLocal = [];      // 썬룸 외벽(다누몰 자바라) — 별도 토글
   const foldingLocal = [];   // 주방 데크 3면 폴딩도어 — 외벽 대안(상호배타)
   const extrasLocal = [];    // 캠핑 가구(의자 등)
+  const roofLocal = [];      // 포치 징크 지붕(경사 단물매) — '지붕' 토글
   const foundationLocal = []; // 땅 기둥 시스템말뚝(+두부·라벨) — 기초 그룹으로 분류(썬룸 토글 무관, 기초 뷰에도 표시)
 
   // 프레임(지붕 가장자리 20cm 안쪽): 벽측 보 + 앞단 보 + 양측 경사 보
@@ -1077,9 +1078,9 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   box({ x: px0 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: postBase, h: railH, mat: 썬룸Frame });   // 좌 바닥막대
   box({ x: px1 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: postBase, h: railH, mat: 썬룸Frame });   // 우 바닥막대
 
+  const roofBaseFrontH = 0.3, roofBaseBackH = 0.7;      // 앞단·뒤단 두께 — 윗면 물매를 만드는 경사 지붕 받침(지붕 물매 단일 출처)
   // ── 경사 지붕 받침 사다리꼴 육면체 — 프레임 상단(경사면) 위에 얹는다. 앞 낮고·뒤 높아(roofBaseFrontH↔roofBaseBackH) 윗면이 지붕 물매를 이룸(옆면 사다리꼴). ──
   {
-    const roofBaseFrontH = 0.3, roofBaseBackH = 0.7;      // 앞단·뒤단 두께 — 윗면 물매를 만드는 경사 지붕 받침
     const bx0 = px0, bx1 = px1;     // 지붕프레임 밑면 = 도어프레임과 동일 발자국(같은 기둥 중심선)
     const bzF = pzF, bzB = pzB;
     const yBotF = frameTopY, yBotB = frameTopY;           // 밑면 = 평탄한 프레임 상단(직육면체 윗면)에 밀착
@@ -1099,13 +1100,39 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     }
   }
 
+  // ── 리얼징크 단물매 지붕 — 경사 받침 윗면 선을 그대로 연장해 얹는다. 뒤=집 벽(dWallZ)에서 시작, 앞으로 처마 eaveOverhang·좌우 sideOverhang 내밈. ──
+  {
+    const eaveOverhang = 0.6, sideOverhang = 0.4;         // 앞 처마·좌우 처마 내밈
+    const zincT = 0.06;                                    // 리얼징크 마감 두께
+    const slope = (roofBaseBackH - roofBaseFrontH) / (pzB - pzF);   // 물매(Δy/Δz, 앞→뒤 상승) — 받침 윗면과 동일
+    const yAt = (z) => frameTopY + roofBaseFrontH + slope * (z - pzF);   // 받침 윗면 경사선의 연장
+    const eaveZ = pzF - eaveOverhang;                      // 앞 처마 끝(低Z)
+    const ridgeZ = dWallZ;                                 // 뒤 끝 = 집 벽에서 시작
+    const rx0 = px0 - sideOverhang, rx1 = px1 + sideOverhang;   // 좌우 처마
+    const eaveY = yAt(eaveZ), ridgeY = yAt(ridgeZ);
+    // roofSlab과 동일한 8꼭지점 프리즘(윗면 eaveY..ridgeY, 두께 아래로) — X범위만 포치 폭에 맞춤
+    const v = new Float32Array([
+      rx0, eaveY, eaveZ, rx1, eaveY, eaveZ, rx1, ridgeY, ridgeZ, rx0, ridgeY, ridgeZ,
+      rx0, eaveY - zincT, eaveZ, rx1, eaveY - zincT, eaveZ, rx1, ridgeY - zincT, ridgeZ, rx0, ridgeY - zincT, ridgeZ,
+    ]);
+    const idx = [0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1, 3, 2, 6, 3, 6, 7, 0, 3, 7, 0, 7, 4, 1, 5, 6, 1, 6, 2];
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(v, 3));
+    g.setIndex(idx); g.clearGroups(); g.addGroup(0, 12, 0); g.addGroup(12, 24, 1);
+    g.computeVertexNormals();
+    const roofMesh = new THREE.Mesh(g, [materials.roof, materials.roofEdge]);   // 윗면=리얼징크, 옆·밑=드립엣지
+    roofMesh.castShadow = true; roofMesh.receiveShadow = true;
+    scene.add(roofMesh);
+    roofLocal.push(roofMesh);
+  }
+
   // 평평한 프레임 — 앞단(가장 낮은) 보 높이의 수평면에 사각 틀 + 내부 격자(lattice).
   // 경사 지붕(빗변)·수평 격자(밑변)·집 벽쪽 단차(수직변)로 측면에서 직각삼각형 구조가 보인다.
   // 이 수평면(flatFrameY)에 등·실링팬을 매단다.
-  const flatFrameY = frameTopY - tube;   // 평탄한 프레임 상단보 밑면 = 수평 격자면(등·팬 매다는 면)
+  const barW = 0.05, barH = 0.07;
+  const flatFrameY = (frameTopY + roofBaseFrontH) - barH;   // 장선(수평 격자) = 평평함 유지 가능한 최상단: 경사 지붕의 가장 낮은 앞단 밑면에 윗면을 맞춤
   if (withFlatFrame) {
     const flatX0 = (connectRightX != null) ? connectRightX : px0;  // 연결 시 이웃까지 이어 붙임. 기본은 프레임 발자국(px0~px1·pzF~pzB)에 정합
-    const barW = 0.05, barH = 0.07;
     const fw = px1 - flatX0, fd = pzB - pzF;
     const xMid = flatX0 + fw / 2, zMid = pzF + fd / 2;
     // 사각 틀(둘레) + 가운데 십자(가로 1·세로 1)
@@ -1230,6 +1257,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   const _wallSet = new Set(wallLocal);
   const _foldingSet = new Set(foldingLocal);
   const _extrasSet = new Set(extrasLocal);
+  const _roofSet = new Set(roofLocal);
   const _foundationSet = new Set(foundationLocal);
   for (const o of scene.children.slice(_addStart)) {
     if (_floorSet.has(o)) deckFloorObjects.push(o);
@@ -1237,6 +1265,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     else if (_wallSet.has(o)) wallObjects.push(o);
     else if (_foldingSet.has(o)) foldingObjects.push(o);
     else if (_extrasSet.has(o)) extrasObjects.push(o);
+    else if (_roofSet.has(o)) 썬룸RoofObjects.push(o);
     else if (_foundationSet.has(o)) foundationObjects.push(o);
     else 썬룸FrameObjects.push(o);
   }
@@ -2880,7 +2909,7 @@ const view = {
   roof: false,        // 지붕
   solar: false,       // 태양광(지붕에서 분리)
   // 썬룸 그룹 (악세사리는 '데크'에 합침)
-  deck: false, sunWall: false, folding: false, frame: false,   // frame=포치 골조(폴딩도어 지지)
+  deck: false, sunWall: false, folding: false, frame: false, sunRoof: false,   // frame=포치 골조(폴딩도어 지지), sunRoof=포치 징크 지붕
   // 참고(임시)
   hedge: false, fence: false,
   // 2층·다락 탭(s2)
@@ -2918,6 +2947,7 @@ const PARTS = [
   { key: 'solar',      arrays: [solarObjects] },              // 지붕에서 분리한 태양광
   { key: 'deck',       arrays: [deckObjects, deckFloorObjects, deckStairFrameObjects, extrasObjects] },   // 데크바닥·데크계단틀+악세사리(화분·의자·테이블·그릴)를 '데크' 하나로 합침
   { key: 'frame',      arrays: [썬룸FrameObjects] },   // 포치 골조(기둥·보·평프레임) — 폴딩도어·지붕 지지. 데크 기초 위(deckSurfaceY)에 앉음
+  { key: 'sunRoof',  arrays: [썬룸RoofObjects] },    // 포치 징크 단물매 지붕(경사 받침 위)
   { key: 'sunWall',    arrays: [wallObjects] },
   { key: 'folding',    arrays: [foldingObjects] },
   { key: 'hedge',      arrays: [hedgeObjects] },
@@ -2942,7 +2972,7 @@ const PARTS = [
 // s1(1층·다락·포치) 부품 토글 — s2처럼 버튼(.seg-btn). [버튼 id → view 키] 단일 출처.
 const S1_TOGGLES = [
   ['bDeck', 'deck'],   // 데크(악세사리 합침)
-  ['bFolding', 'folding'], ['bFrame', 'frame'],
+  ['bFolding', 'folding'], ['bSunRoof', 'sunRoof'], ['bFrame', 'frame'],
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
   ['bExtWall', 'extWall'],
   ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bBath', 'bath'],

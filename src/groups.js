@@ -16,6 +16,7 @@ export const deckObjects = [];      // 데크 바닥·계단(데크 토글)
 export const 썬룸FrameObjects = []; // 썬룸 철골 골조: 기둥·보·평프레임(골조 토글 또는 썬룸 토글 중 하나라도 켜지면 표시)
 export const wallObjects = [];      // 썬룸 외벽: 다누몰 자바라 폴딩창(외벽 토글 — 시공 업체 별도)
 export const foldingObjects = [];   // 주방 데크 3면 폴딩도어(폴딩도어 토글 — 외벽과 상호배타)
+export const 썬룸RoofObjects = [];  // 포치 징크 지붕(경사 단물매) — '지붕' 토글
 export const extrasObjects = [];    // 소품: 의자·그릴·화분(전체일 때만 표시)
 export const hedgeObjects = [];        // 측백나무 생울타리(뒤·좌측) — 측백담장 토글
 export const fenceObjects = [];        // 우측 콘크리트 담장(옆집 경계) — 옆집담장 토글
