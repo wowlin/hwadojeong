@@ -699,7 +699,14 @@ captureInto(interiorObjects, () => {
     // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
     planYDim(frontCornerDimX, atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`);
     // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
-    horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [], secondWallHeight, exteriorWall, materials.exteriorWall);   // 앞 무릎벽 — 환기창 제거로 통벽
+    // 앞 무릎벽 — 정면 중앙 환기용 프로젝트(어닝)창 1개. 상부경첩·하부 바깥밀이라 비 올 때도 환기.
+    const atticVentWinW = 0.6, atticVentWinH = 0.6, atticVentSillY = secondWallY + 0.3;   // 폭×높 0.6·창대 바닥+0.3 → 윗선 바닥+0.9, 무릎벽(secondWallHeight) 꼭대기까지 인방 0.2m
+    const atticVentX0 = (buildingW - atticVentWinW) / 2, atticVentX1 = atticVentX0 + atticVentWinW;   // 정면 중앙 정렬
+    horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [[atticVentX0, atticVentX1]], secondWallHeight, exteriorWall, materials.exteriorWall);   // 앞 무릎벽 — 중앙 환기창 개구
+    lowWall(atticVentX0, buildingFrontZ, atticVentWinW, exteriorWall, secondWallY, atticVentSillY - secondWallY, materials.exteriorWall);                                       // 창 아래 띠(창대)
+    lowWall(atticVentX0, buildingFrontZ, atticVentWinW, exteriorWall, atticVentSillY + atticVentWinH, (secondWallY + secondWallHeight) - (atticVentSillY + atticVentWinH), materials.exteriorWall);   // 창 위 띠(인방)
+    frontAwningSash(atticVentX0, buildingFrontZ + 0.13, atticVentWinW, atticVentSillY, atticVentWinH, -1);   // 유리짝(低Z 바깥으로 밀어 열림)
+    label(`다락 환기 프로젝트창 ${fmtDim(atticVentWinW)}×${fmtDim(atticVentWinH)}m`, buildingW / 2, atticVentSillY + 0.4, buildingFrontZ - 0.1, 'opening');
     horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [], secondWallHeight, exteriorWall, materials.exteriorWall);   // 뒤 무릎벽 — 다락방 후면창·계단 픽스창 제거로 통벽
     lowWall(0, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
     lowWall(insideX1, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
