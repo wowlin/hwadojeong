@@ -870,12 +870,12 @@ curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashT
       const z0 = insideZ1 - mL, pZ = insideZ1 - 0.07 - 0.4;             // 매트: 머리=뒤(高Z)·발치=앞(低Z) / 베개 z=머리맡
       const mat = (x0, w, txt) => { box({ x: x0, z: z0, w, d: mL, y: mfy, h: mH, mat: mMat }); label(txt, x0 + w / 2, mfy + mH + 0.15, z0 + mL / 2, 'furniture'); };
       const pil = (cx) => box({ x: cx - 0.35, z: pZ, w: 0.7, d: 0.4, y: mfy + mH, h: 0.1, mat: pMat });
-      // 다락방1(주방쪽/低X) ← 게스트룸1: 더블 2.0×1.8, 주방쪽 옆벽(低X)에 붙임, 베개 2개
-      { const w = 1.8, x0 = planRightKitchenX; mat(x0, w, '매트리스 2.0×1.8m'); pil(x0 + 0.5); pil(x0 + 1.3); }
-      // 다락방2(안방쪽/高X) ← 게스트룸2: 싱글 2.0×1.1 2개(안방쪽 옆벽에 나란히·10cm 간격), 각 베개 1개
-      { const w = 1.1, gap = 0.1, x1 = secondRoom2X + secondRoom2W;
-        mat(x1 - w, w, '매트리스 2.0×1.1m'); pil(x1 - w / 2);
-        mat(x1 - 2 * w - gap, w, '매트리스 2.0×1.1m'); pil(x1 - 1.5 * w - gap); }
+      // 다락방1(주방쪽/低X): 싱글 2.0×1.1 2개(주방쪽 옆벽에 나란히·10cm 간격), 각 베개 1개 — 양방 교체
+      { const w = 1.1, gap = 0.1, x0 = planRightKitchenX;
+        mat(x0, w, '매트리스 2.0×1.1m'); pil(x0 + w / 2);
+        mat(x0 + w + gap, w, '매트리스 2.0×1.1m'); pil(x0 + 1.5 * w + gap); }
+      // 다락방2(안방쪽/高X): 더블 2.0×1.8, 안방쪽 옆벽(高X)에 붙임, 베개 2개 — 양방 교체
+      { const w = 1.8, x1 = secondRoom2X + secondRoom2W, x0 = x1 - w; mat(x0, w, '매트리스 2.0×1.8m'); pil(x0 + 0.5); pil(x0 + 1.3); }
     }
   });
 
