@@ -707,9 +707,10 @@ captureInto(bathObjects, () => {
   box({ x: stairBathX + 0.85, z: stairBathZ + 0.27, w: 0.04, d: 0.04, y: firstFloorY + 0.76, h: 0.2, mat: materials.entryFrame });   // 수전
   label('세면대', stairBathX + 0.72, firstFloorY + 1.0, stairBathZ + 0.35, 'furniture');
   // 양변기 — 맨 안쪽(뒤 외벽)에 물탱크 붙이고 앞(문쪽·천장 높은 방향)을 향하게 착석. 계단쪽으로 붙여 안방쪽 뒤코너를 온수기 자리로 비움
-  box({ x: stairBathX + 0.06, z: stairBathZ + stairBathD - 0.62, w: 0.44, d: 0.5, y: firstFloorY, h: 0.34, mat: materials.toilet });
-  box({ x: stairBathX + 0.04, z: stairBathZ + stairBathD - 0.14, w: 0.48, d: 0.1, y: firstFloorY, h: 0.58, mat: materials.toilet });
-  label('양변기', stairBathX + 0.28, firstFloorY + 0.85, stairBathZ + stairBathD - 0.45, 'furniture');
+  const wcCenterX = stairBathX + interiorWall + (stairBathW - interiorWall) / 2;   // 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
+  box({ x: wcCenterX - 0.44 / 2, z: stairBathZ + stairBathD - 0.62, w: 0.44, d: 0.5, y: firstFloorY, h: 0.34, mat: materials.toilet });
+  box({ x: wcCenterX - 0.48 / 2, z: stairBathZ + stairBathD - 0.14, w: 0.48, d: 0.1, y: firstFloorY, h: 0.58, mat: materials.toilet });
+  label('양변기', wcCenterX, firstFloorY + 0.85, stairBathZ + stairBathD - 0.45, 'furniture');
   // 50L 전기 온수기(예정) — 맨 안쪽 안방쪽 뒤코너. 변기를 계단쪽에 붙여 비운 폭 0.47m 자리(세로형 0.45×0.45, 높이 1.0m < 천장). 반투명 예약 표시
   {
     const hx = stairBathX + 0.53, hd = 0.42, hw = 0.42;

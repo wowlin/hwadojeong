@@ -67,7 +67,7 @@ export const stairBathZ = stairFirstRunStart;
 export const stairBathW = stairRunW;
 export const stairBathD = insideZ1 - stairBathZ;   // WC를 계단 턴 아래까지 늘려 뒤쪽 외벽에 맞붙임(2.62m)
 export const stairBathDoorW = interiorDoorW;
-export const stairBathDoorX = stairBathX + (stairBathW - stairBathDoorW) / 2;
+export const stairBathDoorX = stairBathX + interiorWall + (stairBathW - interiorWall - stairBathDoorW) / 2;   // 문 = 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
 export const stairBathDoorEndX = stairBathDoorX + stairBathDoorW;
 export const stairBathDoorH = interiorDoorH;
 export const stairBathWallH = firstWallHeight;
