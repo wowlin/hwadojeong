@@ -4078,11 +4078,20 @@ function drawStairAnno(p) {
   // 다락 바닥 슬래브 — '다락 바닥' 토글(secondFloorObjects)로 분리(anno엔 안 넣음). 주방 위·안방 위 다락바닥은 계단실(가운데)만 비우고 양쪽을 뒤 외벽까지, 앞쪽 통행 바닥과 zFrontU에서 이어짐. 1층 계단 위 메움은 헤드룸 2m 확보되는 단까지(구별색).
   captureInto(loftSlabs, () => {
     // 통행·주방위·안방위 노란 슬래브 제거 — 흰색 구조 슬래브(주방측·복도·안방측)가 같은 자리를 이미 덮어, 벽 밑에서 노란 바닥이 겹쳐 반짝이던 것 해소
-    const suZ0 = zFrontU + interiorWall;   // 수납장 안목 앞선 = 다락 입구 가로벽(interiorWall) 뒷면 — 안목 치수·바닥색은 벽 뒤부터
-    box({ x: laneA, z: zFrontU, w: W, d: interiorWall, y: loftY - loftTh, h: loftTh, mat: materials.wall, cast: false });   // 수납장 앞 10cm = 다락 입구 가로벽이 서는 자리 → 다락 벽과 같은 색으로 표시
-    if (fillZend > suZ0) {
-      box({ x: laneA, z: suZ0, w: W, d: fillZend - suZ0, y: loftY - loftTh, h: loftTh, mat: materials.bed, cast: false });   // 바닥 메움 = 벽 뒤(suZ0)부터 헤드룸 한계까지. 색은 다락방 바닥과 동일
-      label(`수납장 ${fmtDim(W)}×${fmtDim(fillZend - suZ0)}m`, laneA + W / 2, loftY + 0.05, (suZ0 + fillZend) / 2, 'dim');   // 계단 위 헤드룸 한계까지 메운 다락바닥 = 저층 수납(다락복도쪽 벽 뺀 안목)
+    const flr = loftY - loftTh;                    // 수납장 바닥 슬래브 윗면 밑선(벽자리 띠·바닥 메움 공통)
+    const suZ0 = zFrontU + interiorWall;            // 앞: 다락 입구 가로벽(다락복도쪽) 뒷면 = 안목 시작
+    const suX1 = laneA + W - interiorWall;          // 계단쪽 옆벽 안쪽 면 (계단 올라오는 쪽)
+    const suZ1 = fillZend - interiorWall;           // 뒤벽 안쪽 면 (집 뒤쪽)
+    if (suZ1 > suZ0) {
+      // 벽자리 표시(다락 벽과 같은 색 띠) — 앞·계단쪽·뒤 3변. 주방쪽은 다락방1 칸막이벽이 이미 담당.
+      box({ x: laneA, z: zFrontU, w: suX1 - laneA, d: interiorWall, y: flr, h: loftTh, mat: materials.wall, cast: false });        // 앞(다락 복도쪽) 벽자리
+      box({ x: suX1, z: zFrontU, w: interiorWall, d: fillZend - zFrontU, y: flr, h: loftTh, mat: materials.wall, cast: false });   // 계단쪽 옆 벽자리
+      box({ x: laneA, z: suZ1, w: suX1 - laneA, d: interiorWall, y: flr, h: loftTh, mat: materials.wall, cast: false });           // 뒤 벽자리
+      box({ x: laneA, z: suZ0, w: suX1 - laneA, d: suZ1 - suZ0, y: flr, h: loftTh, mat: materials.bed, cast: false });             // 안목 바닥(다락방 색)
+      label(`수납장 ${fmtDim(suX1 - laneA)}×${fmtDim(suZ1 - suZ0)}m`, (laneA + suX1) / 2, loftY + 0.05, (suZ0 + suZ1) / 2, 'dim');
+      // 실제 벽(지붕 밑선까지) — 계단쪽(세로, 지붕 슬로프 따라) + 뒤(가로, 그 위치 지붕 높이). 앞벽은 다락 입구 가로벽이 이미 있음.
+      gableLongWallX({ x: suX1, z: zFrontU, d: fillZend - zFrontU, y: loftY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 계단쪽 옆벽
+      box({ x: laneA, z: suZ1, w: suX1 - laneA, d: interiorWall, y: loftY, h: secondWallHeight + roofRiseAtZ(suZ1), mat: materials.wall });               // 뒤벽
     }
   });
   // (상부 마지막 단↔다락 바닥 사이 계단벽은 두지 않음 — 30cm 두께 다락 바닥의 앞면이 그 단높이 벽 역할을 함)
