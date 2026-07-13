@@ -14,7 +14,7 @@
 //   · 건물·층고·기초·바닥재 : "주요 제원" 블록 (buildingW, foundationHeight, firstWallHeight …)
 //   · 다락·지붕 각도/두께   : secondWallHeight, roofSlopeDeg, roofThickness
 //   · 대지(부지) 형상       : lotNW/lotNE/lotSE/lotSW 코너 (도로·측백·치수 자동 추종)
-//   · 창호/문 크기·위치     : 1층 섹션의 yardSash*, familyWindow*, kitchenRearWindow*, entryDoor*
+//   · 창호/문 크기·위치     : 1층 섹션의 yardSash*, familyWindow*, kitchenRearWindow*
 //   · 썬룸                : 썬룸() 내부 targetFrontPostH / targetWallPostH / roofSlopeLength
 //   · 데크 계단             : deckStairs({...}) 호출부
 //   · 색·재질               : 상단 materials = { … } 객체
@@ -33,7 +33,7 @@
 // ▌헬퍼 (x·z는 최소 모서리, 단위 m) — 무클로저 빌더는 모듈에서 import, 나머지는 main.js 전역
 //   primitives.js : box({x,z,w,d,y,h,mat,name,cast}) · flatPoly({points:[[x,z]…],y,h,mat,name}) · lerpPoint · fmtDim …
 //   builders.js   : floorFrame · systemPile/pileFoundation · yzWallPrism · roofSlab · slopedWallTopCap …
-//   main.js 전역  : label(text,x,y,z,size) · room/sideSash/entryDoor/pocketDoor* · planYDim/planXDim · setView/applyVisibility
+//   main.js 전역  : label(text,x,y,z,size) · room/sideSash/pocketDoor* · planYDim/planXDim · setView/applyVisibility
 //
 // ▌주의 (ES모듈·strict)
 //   · 같은 이름 function/const 재정의 금지 → 앱 전체가 깨짐. 새 헬퍼는 새 이름으로.
@@ -50,7 +50,7 @@ import {
 import {
   buildingW, buildingD, buildingBackZ, groundTopY, floorFinishH, deckFinishT, lotW,
   lotD, roadW, firstWallHeight, exteriorWall, interiorWall,
-  stairRunW, entryDoorLeafW, entryFrameOuterW, interiorDoorW, interiorDoorH,
+  stairRunW, interiorDoorW, interiorDoorH,
   secondFloorThickness, secondWallHeight, roofSlopeDeg,
   roofThickness, stairRiserCount, stairRiserHeight, lowerStraightTreadCount, winderTreadCount, landingTreadCount, upperStraightTreadCount, stairTreadDepth, floorSurfaceH,
   floorOverlayLift, kitchenSinkW, kitchenSinkD, kitchenSinkH,
@@ -360,18 +360,7 @@ function pocketDoorVertical(x, z, y, h = interiorDoorH, slideDir = 1, dw = inter
   box({ x: x - 0.065, z, w: 0.02, d: dw, y: y + 0.08, h: 0.035, mat: materials.openingEdge });
 }
 
-function entryDoor(x, z, outerW, leafW, y) {
-  const frameW = (outerW - leafW) / 2;
-  const doorH = 2.1;
-  const frameH = 2.18;
-  box({ x, z: z - 0.02, w: frameW, d: 0.12, y, h: frameH, mat: materials.windowFrame });
-  box({ x: x + outerW - frameW, z: z - 0.02, w: frameW, d: 0.12, y, h: frameH, mat: materials.windowFrame });
-  box({ x, z: z - 0.02, w: outerW, d: 0.12, y: y + doorH, h: frameH - doorH, mat: materials.windowFrame });
-  box({ x: x + frameW, z, w: leafW, d: 0.08, y, h: doorH, mat: materials.windowFrame });   // 문짝 색 = 다른 문·창과 동일(회색)
-  box({ x: x + frameW + leafW - 0.18, z: z - 0.035, w: 0.06, d: 0.04, y: y + 1.02, h: 0.06, mat: materials.handle });
-}
-
-// 측면 외짝 방화문(Z스팬·+X면) — entryDoor의 축(X↔Z)만 바꾼 것. x = 바깥면(高X), z = 개구 앞 모서리.
+// 측면 외짝 방화문(Z스팬·+X면) — 외짝문을 X↔Z축만 바꿔 옆벽에 세운 것. x = 바깥면(高X), z = 개구 앞 모서리.
 function sideEntryDoor(x, z, outerD, leafD, y, doorH) {
   const frameD = (outerD - leafD) / 2;
   const frameH = doorH + 0.08;
@@ -524,22 +513,19 @@ captureInto(firstFloorFinishObjects, () => {
   const rwW = 1.6, rwSill = firstFloorY + 1.0, rwHead = firstFloorY + 1.0 + 1.2, rwSide = rearWindowSideOffset, swBack = 0.6;
   const rwKx0 = rwSide, rwBx0 = buildingW - rwSide - rwW;   // 주방창 시작 X(우/低X) / 안방창 시작 X(좌/高X) — 옆벽서 rwSide
   const swZ1 = z1 - swBack, swZ0 = swZ1 - rwW;              // 옆창 뒤끝(z1서 swBack)/앞끝 — 좌우 공용
-  // 앞(−Z) 외벽 — 정면 중앙에 표준 외짝 현관문(방화문). 개구는 문틀 외곽폭(entryFrameOuterW)·높이 oh. 안방측엔 미서기창(왼쪽=高X 끝 고정, 폭 fwW).
-  const ow = entryFrameOuterW, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭=문틀외곽/높이, 중앙 정렬
+  // 앞(−Z) 외벽 — 별도 현관문 없음(포치 폴딩도어→주방 앞 미서기문이 출입 역할). 안방측엔 미서기창(왼쪽=高X 끝 고정, 폭 fwW).
   const fwW = 1.4, fwX0 = (rwBx0 + rwW) - fwW;   // 정면 안방창 폭(뒤창보다 좁음) — 왼쪽(高X, buildingW−rwSide) 고정, 오른쪽(低X) 축소
   // 주방 앞(−Z) 외벽 — 주방 안목(firstKitchenX~+W)서 좌우 30cm 뺀 문 크기 미서기 샤시(바닥까지=문으로 사용)
-  const kfwSide = 0.3, kfwH = 2.0, kfwPanel = 0.8, kfwN = 3;                                            // 좌우 이격 · 문 높이 · 미서기 한짝 폭 · 짝수(0.8×3=2.4m, 4짝은 현관과 겹쳐 3짝)
+  const kfwSide = 0.3, kfwH = 2.0, kfwPanel = 0.8, kfwN = 4;                                            // 좌우 이격 · 문 높이 · 미서기 한짝 폭 · 짝수(0.8×4=3.2m, 현관 삭제로 왼쪽 확장)
   const kfwX0 = firstKitchenX + kfwSide, kfwW = kfwPanel * kfwN, kfwHead = firstFloorY + kfwH;          // 오른쪽(주방쪽·低X) 고정 시작 X · 폭(한짝×짝수, 왼쪽 확장) · 상단(문 높이)
   captureInto(firstWallObjects, () => {
     box({ x: 0, z: z0, w: kfwX0, d: wt, y: wy, h: wh, mat: W });                                        // 주방측 끝~주방 앞문
-    box({ x: kfwX0 + kfwW, z: z0, w: ox0 - (kfwX0 + kfwW), d: wt, y: wy, h: wh, mat: W });              // 주방 앞문~현관
+    box({ x: kfwX0 + kfwW, z: z0, w: fwX0 - (kfwX0 + kfwW), d: wt, y: wy, h: wh, mat: W });              // 미서기문~안방창(현관 자리까지 통벽)
     box({ x: kfwX0, z: z0, w: kfwW, d: wt, y: kfwHead, h: (wy + wh) - kfwHead, mat: W });               // 문 위 인방
     rearSlider(kfwX0, kfwW, firstFloorY, kfwHead - firstFloorY, z0 + 0.13, kfwN);                       // 미서기 kfwN짝(유리 정면쪽·바닥까지)
     label(`주방 앞 미서기문 ${fmtDim(kfwW)}×${fmtDim(kfwHead - firstFloorY)}m`, kfwX0 + kfwW / 2, firstFloorY + 0.4, z0 - 0.1, 'opening');
   });
-  firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 현관 개구 상부 인방(문 위)
   captureInto(firstWallObjects, () => {
-    box({ x: ox1, z: z0, w: fwX0 - ox1, d: wt, y: wy, h: wh, mat: W });                                 // 현관~안방 앞창
     box({ x: fwX0 + fwW, z: z0, w: buildingW - (fwX0 + fwW), d: wt, y: wy, h: wh, mat: W });            // 안방 앞창~안방측 끝
     box({ x: fwX0, z: z0, w: fwW, d: wt, y: wy, h: rwSill - wy, mat: W });                              // 창 아래 창대띠
     box({ x: fwX0, z: z0, w: fwW, d: wt, y: rwHead, h: (wy + wh) - rwHead, mat: W });                   // 창 위 인방
@@ -582,7 +568,6 @@ captureInto(firstFloorFinishObjects, () => {
   });
   firstWallObjects.push(box({ x: buildingW - wt, z: dz0, w: wt, d: doorD, y: wy + sideDoorH, h: wh - sideDoorH, mat: W }));   // 좌 외벽 — 개구 상부 인방(문 위)
   captureInto(firstWallObjects, () => sideEntryDoor(buildingW + 0.04, dz0, doorD, sideDoorLeaf, wy, sideDoorH));    // 안방 측면 표준 작은 외짝문
-  captureInto(firstWallObjects, () => entryDoor(ox0, z0 - 0.04, ow, entryDoorLeafW, wy));   // 정면 중앙 표준 현관문(외짝 방화문, 문짝 유효폭 entryDoorLeafW)
   // 계단실 양쪽 세로 내벽 2개(주방|계단실·계단실|안방)는 여기서 그리지 않음 — buildStairWalls()에서 동적으로 그림.
   //   윗면이 다락 바닥 밑면(loftY - 30cm)에 맞도록 계단 높이에 따라 벽 높이가 변하기 때문(계단·1층 공유).
 }
