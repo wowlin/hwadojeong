@@ -965,64 +965,45 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   const fX1 = roofHighX - frameInset;
   const fFrontZ = frontZ + frameInset;
   const fWallZ = wallZ;                          // 벽측은 건물에 부착
-  // connectRightX가 지정되면 오른쪽(낮은 X) 프레임을 별도로 두지 않고 이웃 썬룸 프레임선까지 보를 연장한다.
-  const beamX0 = (connectRightX != null) ? connectRightX : fX0;
-  frameLocal.push(box({ x: beamX0, z: fWallZ - 0.04, w: fX1 - beamX0, d: 0.08, y: glassYatZ(fWallZ) - beamDrop - beamH, h: beamH, mat: 썬룸Frame }));
-  frameLocal.push(box({ x: beamX0, z: fFrontZ - 0.04, w: fX1 - beamX0, d: 0.08, y: glassYatZ(fFrontZ) - beamDrop - beamH, h: beamH, mat: 썬룸Frame }));
-  const sideLen = Math.hypot(fFrontZ - fWallZ, glassYatZ(fFrontZ) - glassYatZ(fWallZ));
-  const sideMidZ = (fWallZ + fFrontZ) / 2;
-  const sideMidY = (glassYatZ(fWallZ) + glassYatZ(fFrontZ)) / 2 - beamDrop - beamH / 2;
-  const sideXs = (connectRightX != null) ? [fX1 - 0.04] : [fX0 + 0.04, fX1 - 0.04]; // 오른쪽 측면 보 생략
-  for (const sx of sideXs) {
-    const sideBeam = new THREE.Mesh(new THREE.BoxGeometry(0.08, beamH, sideLen), 썬룸Frame);
-    sideBeam.position.set(sx, sideMidY, sideMidZ);
-    sideBeam.rotation.x = -tilt;
-    sideBeam.castShadow = true;
-    sideBeam.receiveShadow = false;
-    scene.add(sideBeam);
-    frameLocal.push(sideBeam);
-  }
-  // 렉산(경사 지붕) 프레임은 둘레(테두리) 보만 둔다 — 내부 격자는 두꺼워 내부가 안 보이므로 생략.
-
-  // 지지 기둥(프레임 선 위, 지면~보 밑면).
-  //  · 안방(connectRightX): 땅 기둥 3개(앞·측면중앙·집벽쪽) — 모두 건물 외곽선(fX1=buildingW) 안쪽 0.1로 인셋(주방 데크 말뚝·집 말뚝열과 정렬, 한 직선). 정면 3m 무주.
-  //  · 주방: 전면 3 + 양측 중앙 2 + 폴딩도어 집벽쪽 양 끝 2 = 7개(데크 위라 그대로).
+  // 데크 기둥 clamp·발자국 기준(반단면)
   const postW = 0.12;
-  const 안방PostX = fX1 - 0.1;   // 안방 땅 기둥 X열: 건물 외곽선 안쪽 0.1(중심선이 아니라 기준선 안쪽)
-  const postPlaces = (connectRightX != null)
-    ? [[안방PostX, fFrontZ], [안방PostX, sideMidZ], [안방PostX, fWallZ]]
-    : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ], [fX0, fWallZ], [fX1, fWallZ]];
-  // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
-  // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
-  const postBaseY = groundTopY + matFoundationH;   // 기둥 밑면 = 온통기초 윗면(구조 기둥은 데크 마감이 아니라 기초에 앉는다). 데크 포세린은 기둥 주위에 깔림.
-  // 주방 기둥은 데크 온통기초 안쪽으로 반단면 들여 단면 전체가 기초 위에 오게 한다(경계 = 데크 발자국과 동일 산식).
-  const _dckEdge = postW / 2;
-  const _dckX0 = Math.max(fX0 - _dckEdge, 0), _dckX1 = fX1;
-  const _dckZ1 = fWallZ, _dckZ0 = (deckDepth != null) ? fWallZ - deckDepth : fFrontZ - _dckEdge;
-  const _inDeck = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
-  const groundPosts = [];      // 땅 기둥 위치(원위치) — 바닥 말뚝(PILE_POS.anbang)의 X·가운데 Z 출처
-  // ★단일 출처★ 땅 기둥의 말뚝(기초)·두부·라벨·기둥은 여기서 그리지 않는다.
-  // 위치를 PILE_POS로 확정한 뒤 main에서 drawGroundPost()로 그려, 바닥 마커와 입체 말뚝이
-  // 똑같은 좌표를 쓰게 한다(예전엔 바닥만 보정하고 입체는 원좌표라 도면마다 어긋났음 → 그 회귀 차단).
-  function drawGroundPost(px, pz, isFirst) {
-    // 안방 앞엔 온통기초가 없으므로 기둥마다 얕은 독립기초를 깔고 그 위에 기둥을 세운다(사용자 지정 높이).
-    const footH = 0.2;                          // 독립기초 높이 20cm
-    const footW = 0.4;                          // 독립기초 한 변 — 기둥 단면(postW)보다 커서 단면 전체를 받침
-    const footTopY = groundTopY + footH;
-    const topY = glassYatZ(pz) - beamDrop - beamH;
-    썬룸FrameObjects.push(box({ x: px - footW / 2, z: pz - footW / 2, w: footW, d: footW, y: groundTopY, h: footH, mat: materials.matFoundation, cast: false }));   // 안방 독립기초(지면~윗면)
-    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: footTopY, h: topY - footTopY, mat: 썬룸Frame }));   // 기둥 — 독립기초 윗면부터
+  const deckEdge = postW / 2;
+  // 데크 식탁 배치 기준(단일 출처) — nDeckTables만 바꾸면 데크가 딱 그만큼 高X로 늘고 줆.
+  const dTW = 0.85, dTD = 0.72, dReserveW = 1.2;                        // 식탁 윗판 폭·깊이 · 난로 예약 폭
+  const dOff = dTD / 2 + 0.30, dChairBack = dOff + 0.33, dAisle = 0.9, dEndGap = 0.9;   // 의자 중심·등받이 뒤끝·둘레 통로(s2 1층 동일 기준)
+  const deckExtraW = withFurniture ? Math.max(0, (fX0 + dReserveW) + nDeckTables * dTW + 2 * dEndGap - fX1) : 0;   // 식탁행+통로가 넘치는 만큼만 데크 高X 확장
+  const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge;
+  const dX1 = fX1 + deckExtraW;                  // 데크 高X 끝(안방쪽)
+  const dWallZ = fWallZ;
+  const dFrontZ = (deckDepth != null) ? dWallZ - deckDepth : fFrontZ - deckEdge;
+
+  // ── 포치 프레임(각관 골조) — 기초(데크) 사각형에 맞춤. 네 꼭지점만 기둥, 중간기둥 없음. ──
+  // 앞(低Z)은 2.4m 폴딩도어가 들어가는 직육면체, 뒤(집벽쪽)는 지붕 물매만큼 더 높아 옆면이 삼각. 모든 선 = 각관.
+  const tube = 0.08;                                          // 각관 단면 8cm
+  const railH = 0.10;                                         // 바닥 가로막대(기둥↔바닥 연결) 높이 10cm
+  const px0 = Math.max(fX0 - deckEdge, 0) + tube / 2, px1 = dX1 - tube / 2;   // 데크 사각형 안쪽 네 꼭지점 X(주방쪽~안방쪽 끝)
+  const pzF = dFrontZ + tube / 2, pzB = dWallZ - tube / 2;    // 앞(低Z)·뒤(집벽) Z
+  const topAtZ = (z) => glassYatZ(z) - beamDrop - beamH;      // 그 Z의 상단보 밑면(지붕 밑선) — 앞 낮고 뒤 높음(옆면 삼각)
+  // 네 꼭지점 기둥(각관): 바닥 ~ 그 위치 상단보 밑면
+  for (const cx of [px0, px1]) for (const cz of [pzF, pzB])
+    frameLocal.push(box({ x: cx - tube / 2, z: cz - tube / 2, w: tube, d: tube, y: deckSurfaceY, h: topAtZ(cz) - deckSurfaceY, mat: 썬룸Frame }));
+  // 상단 테두리보(각관): 앞(수평·낮음)·뒤(수평·높음)
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: topAtZ(pzF) - tube, h: tube, mat: 썬룸Frame }));   // 앞 상단보
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: topAtZ(pzB) - tube, h: tube, mat: 썬룸Frame }));   // 뒤 상단보
+  // 좌·우 경사 상단보(각관) — 앞 낮음→뒤 높음(삼각 빗변)
+  for (const cx of [px0, px1]) {
+    const sb = new THREE.Mesh(new THREE.BoxGeometry(tube, tube, Math.hypot(pzB - pzF, topAtZ(pzB) - topAtZ(pzF))), 썬룸Frame);
+    sb.position.set(cx, (topAtZ(pzF) + topAtZ(pzB)) / 2 - tube / 2, (pzF + pzB) / 2);
+    sb.rotation.x = -Math.atan2(topAtZ(pzB) - topAtZ(pzF), pzB - pzF);
+    sb.castShadow = true;
+    scene.add(sb);
+    frameLocal.push(sb);
   }
-  postPlaces.forEach(([px, pz], i) => {
-    if (postsToGround) {
-      groundPosts.push([px, pz]);   // 위치만 기록 — 렌더는 PILE_POS 확정 후 main에서(단일 출처)
-    } else {
-      const cx = _inDeck(px, _dckX0 + postW / 2, _dckX1 - postW / 2);   // 데크 기초 안쪽으로 반단면 clamp
-      const cz = _inDeck(pz, _dckZ0 + postW / 2, _dckZ1 - postW / 2);
-      const topY = glassYatZ(cz) - beamDrop - beamH;
-      frameLocal.push(box({ x: cx - postW / 2, z: cz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 데크 위 기둥(주방) — 데크 기초 위 단면 전체
-    }
-  });
+  // 바닥 가로막대(각관, 10cm) — 네 변에서 기둥↔바닥 연결
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: (px1 - px0) + tube, d: tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 앞 바닥막대
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzB - tube / 2, w: (px1 - px0) + tube, d: tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 뒤 바닥막대
+  frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 좌 바닥막대
+  frameLocal.push(box({ x: px1 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: deckSurfaceY, h: railH, mat: 썬룸Frame }));   // 우 바닥막대
 
   // ── 썬룸 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
   if (withGutter) {
@@ -1136,16 +1117,6 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   // 썬룸 바닥 — 포세린 타일 마감(건식). matFoundationH 온통기초 위 페데스탈(높이조절 받침)에 포세린을 얹는다.
   const deckTopY = deckSurfaceY;                  // 데크 상단 = 온통기초(0.5)+페데스탈(0.10)+포세린(0.02) — 단일 출처
   const deckThickness = 0.02;                    // 포세린 마감 두께 2cm
-  const deckEdge = postW / 2;                    // 기둥(프레임 선)이 데크 위에 완전히 얹히도록 기둥 바깥면까지 확장
-  // 데크 식탁 배치 기준(단일 출처) — nDeckTables만 바꾸면 데크가 딱 그만큼 高X로 늘고 줆(지붕·기초와 별개).
-  const dTW = 0.85, dTD = 0.72, dReserveW = 1.2;                        // 식탁 윗판 폭·깊이 · 난로 예약 폭
-  const dOff = dTD / 2 + 0.30, dChairBack = dOff + 0.33, dAisle = 0.9, dEndGap = 0.9;   // 의자 중심·등받이 뒤끝·둘레 통로(s2 1층 동일 기준)
-  const deckExtraW = withFurniture ? Math.max(0, (fX0 + dReserveW) + nDeckTables * dTW + 2 * dEndGap - fX1) : 0;   // 식탁행+통로가 넘치는 만큼만 데크 高X 확장
-  const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge; // 오른쪽: 연결 시 이웃 데크까지 이어 붙임
-  const dX1 = fX1 + deckExtraW;                  // 고-X(안방쪽) — 데크 폭 = deckW + 식탁이 필요로 하는 확장분(지붕은 불변)
-  const dWallZ = fWallZ;                          // 건물쪽은 벽에 붙임
-  // deckDepth가 지정되면 건물 벽에서 그 거리까지만 데크를 깐다(부분 데크).
-  const dFrontZ = (deckDepth != null) ? dWallZ - deckDepth : fFrontZ - deckEdge;
   if (withDeck) {                                  // 데크 바닥 마감(없는 썬룸은 지붕·기둥만)
     const pX0 = Math.max(dX0, 0), pX1 = Math.min(dX1, buildingW);   // 데크 발자국(0~buildingW) 안으로 clamp — 테두리 밖으로 안 튀어나오게
     const deck = new THREE.Mesh(
@@ -1186,13 +1157,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     planYDim(dimX - 0.018, fWallZ - 0.018, firstFloorY, firstFloorY + wallPostHeight, `집 벽쪽 높이 ${fmtDim(wallPostHeight)}m`);
   }
 
-  // 가장 짧은(앞단) 기둥 높이 — 기둥이 지면에 서는 개방형 썬룸용(안방 앞). 왼쪽(높은 X) 기둥 바깥에 표기.
-  if (withShortPostDim) {
-    const fpTopY = glassYatZ(fFrontZ) - beamDrop - beamH;   // 앞단 보 밑면
-    const fpH = fpTopY - postBaseY;                          // 지면(postBaseY)~보 밑면 = 가장 짧은 기둥
-    const dimX2 = fX1 + 0.25;                                // 왼쪽 기둥 바깥으로 치수선
-    planYDim(dimX2 - 0.018, fFrontZ - 0.018, postBaseY, postBaseY + fpH, `최저(앞단) 기둥 ${fmtDim(fpH)}m`);
-  }
+  // (앞단 최저 기둥 치수 — 안방 개방 포치 제거로 삭제. 주방 데크 기둥은 데크 위에 앉음.)
 
   // 썬룸 천장: 실링팬(옵션) + 양옆 조명(오른쪽 1, 왼쪽 1) — 추가된 평평한 프레임에 매단다
   const 썬룸CenterX = (fX0 + fX1) / 2;
@@ -1262,7 +1227,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     else 썬룸Objects.push(o);
   }
 
-  return { dX0, dX1, dFrontZ, dWallZ, deckTopY, groundPosts, drawGroundPost };   // 데크 사각형(계단 배치) + 땅 기둥 말뚝 위치 + 입체 땅기둥 렌더러(단일 출처)
+  return { dX0, dX1, dFrontZ, dWallZ, deckTopY };   // 데크 사각형(계단 배치·발자국 단일 출처)
 }
 
 // 데크 계단 — 데크 상단에서 지면까지 3계단(합성목). 가장자리 한 변을 따라 바깥으로 내려간다.
