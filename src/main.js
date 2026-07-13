@@ -4169,8 +4169,8 @@ function buildStair() {
     // 계단참·다락통행·내벽높이 라벨은 '바닥'이 아니라 각자 토글로 분리 → 바닥 화면에서 제외.
     const _moved = new Set([...stairInfo.loftSlabs, ...stairInfo.stairLandingAnno, ...stairInfo.loftPassAnno, ...stairInfo.innerWallAnno, ...stairInfo.loftSuWalls]);
     stairObjects.push(...scene.children.slice(_s).filter((o) => !_moved.has(o)));  // 분리분 제외 → '바닥'엔 안 뜸
-    secondFloorObjects.push(...stairInfo.loftSlabs, ...stairInfo.loftPassAnno);    // 다락 바닥 슬래브 + '다락 통행' 라벨 → '다락' 토글
-    atticInnerWallObjects.push(...stairInfo.loftSuWalls);                          // 수납장 실제 벽(계단쪽·뒤) → '다락 내벽' 토글
+    secondFloorObjects.push(...stairInfo.loftPassAnno);                            // '다락 통행' 라벨 → '다락' 토글
+    atticInnerWallObjects.push(...stairInfo.loftSuWalls, ...stairInfo.loftSlabs);  // 붙박이장(수납장) 전체 — 실제 벽 + 바닥 슬래브·벽자리·라벨 → '내벽' 토글
     stairCoreObjects.push(...stairInfo.stairLandingAnno);                          // '돌음' 라벨 → '계단' 토글
     familyInnerWallObjects.push(...stairInfo.innerWallAnno); }                     // '내벽 높이' 막대+라벨 → '안방 내력벽' 토글(막대가 그 벽에 붙음)
   applyVisibility();
