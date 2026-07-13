@@ -632,8 +632,8 @@ captureInto(firstDimObjects, () => {
   box({ x: cx, z: zSplit, w: cw, d: insideZ1 - zSplit, y: y0, h: floorSurfaceH, mat: materials.stairRoom, cast: false });
   label(roomText('계단 앞', cw, stairBottomLandingD), cx + cw / 2, ly, insideZ0 + stairBottomLandingD / 2, 'room');
   firstStairRoomLabel = label(roomText('계단실', cw, insideZ1 - zSplit), cx + cw / 2, ly, (zSplit + insideZ1) / 2, 'room');
-  // 바닥+계단 동시 표시 땐 계단실 라벨 대신 이 화장실 안목치수를 같은 자리에 보여줌(applyVisibility에서 전환)
-  firstBathDimLabel = label(roomText('화장실', stairBathW, stairBathD), cx + cw / 2, ly, (zSplit + insideZ1) / 2, 'room');
+  // 바닥+계단 동시 표시 땐 계단실 라벨 대신 이 화장실 안목치수를 보여줌 — 화장실 색면 정중앙(applyVisibility에서 전환)
+  firstBathDimLabel = label(roomText('화장실', stairBathW, stairBathD), stairBathX + stairBathW / 2, ly, stairBathZ + stairBathD / 2, 'room');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
