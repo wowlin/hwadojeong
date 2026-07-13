@@ -1127,7 +1127,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     const sy = wallBaseY + sillH, hy = wallBaseY + fdDoorH;               // 유리 하단(문턱 위)·상단(=프레임 상단, 딱 맞음)
     const ax0 = px0 + tube / 2, ax1 = px1 - tube / 2, aMid = (ax0 + ax1) / 2, zc = pzF;   // 두 기둥 안쪽면·중앙(양개 분할)·프레임 앞 평면
     const half = aMid - ax0;
-    const nHalf = Math.max(2, Math.round(half / 0.68));                   // 각 절반 짝수(등폭)
+    const nHalf = 5;                                                      // 각 절반 5짝(양개·등폭)
     const pw = half / nHalf;                                             // 짝폭 = 절반폭 정확 분할 → 자투리 없음
     const ang = 60 * Math.PI / 180, sStep = pw * Math.cos(ang), fD = pw * Math.sin(ang);   // 접힘각·짝당 전진/접힘깊이
     // 문턱(하부)·상부 레일 — 전폭(프레임 앞단 개구부에 딱 맞음)
