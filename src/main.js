@@ -3915,6 +3915,20 @@ function drawStairCore(p) {
     const rH = i === 0 ? R - treadH : R;
     box({ x: laneA, z: zFrontL + i * T, w: W, d: riserD, y: rY, h: rH, mat: materials.stairWall, cast: false });
   }
+  // 하부 계단 중간 단에 선 185cm 사람 — 화장실 사람과 동일 피규어(계단 화면 공유)
+  {
+    const stepIdx = Math.floor(nL / 2), feetY = fy + (stepIdx + 1) * R;   // 하부런 중간 단 디딤 윗면
+    const px = laneA + W / 2, pz = zFrontL + stepIdx * T + T / 2;          // 런 X 중앙·중간 단 디딤 Z 중앙
+    const ph = 1.85, headR = 0.12, bodyH = ph - headR * 2, bodyR = 0.16;
+    const pMat = new THREE.MeshLambertMaterial({ color: 0x8aa0b4 });
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(bodyR, bodyR, bodyH, 20), pMat);
+    body.position.set(px, feetY + bodyH / 2, pz);
+    scene.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(headR, 20, 14), pMat);
+    head.position.set(px, feetY + bodyH + headR, pz);
+    scene.add(head);
+    label('185cm', px, feetY + ph + 0.14, pz, 'mep');
+  }
   // 사선 3단 — 회전 중심(안쪽 코너 P)에서 90°를 30°씩 균등 분할(보행선 디딤이 단마다 같아지게 = 돌음계단 안전 표준). 분할선이 턴존 경계와 만나는 점이 Q1·Q2.
   const P = [laneA + W, zTurn0];
   const A1 = [laneA, zTurn0], A2 = [laneA, zBack], A3 = [laneA + W, zBack];
