@@ -66,7 +66,7 @@ import {
 import {
   buildingFrontZ, lotX0, foundationTopY, firstFloorY, deckTopY0, lotX1, lotZ1,
   lotZ0, firstWallY, insideX0, insideZ0, insideX1, insideZ1,
-  insideD, sideRoomW,
+  insideD,
   stairLowXRunX, stairHighXRunX, stairHighXWallX, stairClearW,
   planRightKitchenX, firstKitchenW, firstKitchenD, firstFamilyW, firstFamilyD,
   innerWallW, familyInnerWallW, kitchenInnerWallX, familyInnerWallX,
