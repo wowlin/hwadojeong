@@ -749,19 +749,7 @@ captureInto(bathObjects, () => {
     heater.position.set(wcCenterX, firstFloorY + 2.03 + hR, stairBathZ + interiorWall + hR);   // 문 위, 앞벽 안쪽면 등붙임(+Z 돌출)
     scene.add(heater);
   }
-  // 185cm 사람 — 사선 천장(앞 높고 뒤 낮음) 중 머리 안 닿는 앞쪽 구역(천장 ≥1.94m)에 세움. 문 스윙·기구 비켜 섬
-  {
-    const ph = 1.85, headR = 0.12, bodyH = ph - headR * 2, bodyR = 0.16;
-    const px = stairBathX + 0.35, pz = stairBathZ + 1.05;
-    const pMat = new THREE.MeshLambertMaterial({ color: 0x8aa0b4 });
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(bodyR, bodyR, bodyH, 20), pMat);
-    body.position.set(px, firstFloorY + bodyH / 2, pz);
-    scene.add(body);
-    const head = new THREE.Mesh(new THREE.SphereGeometry(headR, 20, 14), pMat);
-    head.position.set(px, firstFloorY + bodyH + headR, pz);
-    scene.add(head);
-    label('185cm', px, firstFloorY + ph + 0.14, pz, 'mep');
-  }
+  // (화장실 185cm 사람 모형 제거)
 });
 // 계단하부 WC 배기구 — '화장실' 토글(기구 3개)에서 분리해 1층 그룹으로 수집. 무창 WC 기계환기: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기.
 {
