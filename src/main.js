@@ -771,7 +771,7 @@ box({ x: stairLowXRunX, z: stairOpeningStart, w: stairHighXWallX - stairLowXRunX
 room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed });   // 색면만 — 안방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
 
 // 1F walls
-horizontalWallWithGaps(0, buildingFrontZ, 8.5, firstWallY, [
+horizontalWallWithGaps(0, buildingFrontZ, buildingW, firstWallY, [
   [kitchenYardSashX, kitchenYardSashX + yardSashW],
   [familyWindowX, familyWindowX + familyWindowW],
   [entryGapStart, entryGapEnd]
@@ -1009,14 +1009,14 @@ function captureInto(arr, fn) {
 
 // ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격(방당 3.0m), 계단실=남는 중앙(대칭) ──
 //   ※ 1층 벽 좌표(stairHighXWallX 등)는 차차 맞춤. 지금은 바닥·기초·골조에만 이 레이아웃을 반영.
-const 주방InnerWallX = frLeftX + FRAME_ROOM_W;    // 주방|계단실 벽 = 3.1
-const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽 = 5.4 (건물 중심 4.25에 대칭)
+const 주방InnerWallX = frLeftX + FRAME_ROOM_W;    // 주방|계단실 벽 = 3.0
+const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽 = 5.2
 // 말뚝 X열을 하중 경로에 맞춤: 좌·우 외벽 + 방 중앙(1.5m) + 계단실 양 벽. 계단실 가운데 2.3m는 무주(양 벽 말뚝이 받음).
 const housePileXs = [
   frLeftX,             // 좌 외벽(주방쪽) 0.1
   frLeftX + 1.5,       // 주방 중앙말뚝 1.6
   주방InnerWallX,       // 주방|계단실 벽 3.1
-  안방InnerWallX,       // 계단실|안방 벽 5.4
+  안방InnerWallX,       // 계단실|안방 벽 5.2
   frRightX - 1.5,      // 안방 중앙말뚝 6.9
   frRightX,            // 우 외벽(안방쪽) 8.4
 ];
@@ -1506,7 +1506,7 @@ siteBaseObjects.push(box({ x: lotX1 - hedgeThickness, z: lotZ0, w: hedgeThicknes
 captureInto(dimObjects, () => {
   const dL = deckFootprints[0];   // 주방 데크 기초(안방 앞 데크 제거됨)
   // 가로 — 위쪽: 기초 8.5 / 안방 측백 0.5 (주방 0.5는 아래쪽으로 이동)
-  planXDim(lotZ1 + 0.4, 0, buildingW, '8.5m');
+  planXDim(lotZ1 + 0.4, 0, buildingW, `${fmtDim(buildingW)}m`);
   captureInto(hedgeDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - hedgeThickness, lotX1, `측백 ${fmtDim(hedgeThickness)}m`));   // 안방 측백(좌상단) — 측백담장 토글+배치도
   // 세로 — 안방(왼쪽) 건물 깊이 4 / 주방(오른쪽) 뒤 이격 합 1m + 건물 깊이 4 + 데크 깊이
   planZDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m');          // 안방 건물 깊이

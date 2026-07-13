@@ -1,7 +1,7 @@
 // constants.js — main.js에서 추출한 리터럴 치수 상수(파생·식 제외, 순수 리터럴만).
 // 의존: 없음. 변경 시 영향 범위가 넓으니 단일 출처로 관리.
 
-export const buildingW = 8.5;                 // 집 가로(동서) — 고정 상수
+export const buildingW = 8.2;                 // 집 가로(동서) — 방 너비(주방·안방)로 조정. 주방측 벽 x=0 고정(옆집담장 이격 0.5m 유지), 안방쪽으로 축소
 export const buildingD = 4.0;                 // 집 깊이(남북) — 고정 상수. 앞 벽 Z(buildingFrontZ)는 layout에서 buildingBackZ−buildingD로 파생
 export const buildingBackZ = 3.3;             // 후면(남) 외벽 Z — 집 Z 위치 앵커(집+이격 고정, 대지 경계 파생)
 export const groundTopY = 0;                  // 지면 상단(0 기준 — 높이 계산 단순화)
@@ -75,7 +75,7 @@ export const FRAME_FLANGE = 0.045;     // C형강 플랜지(벽 길이 방향)
 export const TRACK_H = 0.05;           // 상·하 트랙(러너) 높이
 export const frEaveOverhang = 0.6;
 export const frSideOverhang = 0.4;
-export const FRAME_ROOM_W = 3.0;                        // 방 기초 폭(외벽 중심선~계단벽 중심선) = 말뚝 1.5m × 2칸
+export const FRAME_ROOM_W = 2.85;                       // 방 기초 폭(외벽 중심선~계단벽 중심선) — 안방 안목 = FRAME_ROOM_W−0.25 = 2.6
 export const FLOOR_JOIST_H = 0.2;          // 바닥 장선 춤(200mm)
 export const FLOOR_JOIST_W = 0.045;        // 바닥 장선 폭
 export const FLOOR_RIM_W = 0.05;           // 둘레 림장선 폭(집 기본)
