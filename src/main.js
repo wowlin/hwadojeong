@@ -2802,17 +2802,19 @@ const _stairStart = scene.children.length;
 deckStairs({ axis: 'z', span0: sideDoorZ, span1: sideDoorZ + sideDoorW, edge: buildingW, outward: 1, topY: firstFloorY });
 deckFloorObjects.push(...scene.children.slice(_stairStart));   // 계단 포세린 디딤판 — 데크 바닥 포세린과 동일하게 '데크 바닥' 토글에서 계단틀 위에 표시
 
-// 데크 계단틀 — 앞쪽(−Z)·왼쪽(高X) 계단을 '납작한 직사각형 테두리'로 표시. 계단 윗단(데크 상단) 높이에 공중에 뜬 것처럼. 썬룸 '데크계단틀' 토글(deckStairFrameObjects).
+// 데크 계단틀 — 앞쪽(−Z)·왼쪽(高X) 계단 + 부채꼴 코너를 '납작한 직사각형 테두리'로 표시. 지면~데크(deckSurfaceY)를 실사용 단높이(≈0.16m)로 등분해 단수 자동 산출. 윗면 포세린은 '데크' 토글(deckFloorObjects), 각관 틀·다리는 deckStairFrameObjects.
+const DECK_STAIR_RISE = 0.16;   // 목표 단높이 — 데크 높이가 바뀌면 단수가 자동으로 따라옴(실사용 계단)
+const deckStairNRise = Math.max(2, Math.round((deckSurfaceY - groundTopY) / DECK_STAIR_RISE));   // 지면~데크 등분 수(=오름 수)
+const deckStairK = deckStairNRise - 1;                       // 중간 디딤단 수(맨 위 단 = 데크)
+const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각 단높이
 {
   const df = deckFootprints[0];                     // 데크 footprint(집 기초선 안으로 clamp된 폭) — 계단을 데크보다 크게 그리지 않도록 동일 좌표 사용
   const dXa = df.x, dXb = df.x + df.w, dZa = df.z, dZb = df.z + df.d;
   const tread = 0.3, t = 0.05;                      // 디딤 폭 / 각관 굵기(5×5cm, 구조 보이게) — 단높이·디딤폭은 이 값과 무관
   const run = tread;                                // 한단 크기 — 수평 깊이 한 디딤(0.3m)
-  // 밟는 표면(포세린 윗면) 균등 단차: 지면(바닥)→1계단→2계단→데크표면 = 3구간 등분(단 하나 제거).
-  const deckSurfaceY = deckTopY0 + FLOOR_JOIST_H + deckFinishT;   // 데크 밟는 표면
-  const stepRise = (deckSurfaceY - groundTopY) / 3;              // 지면~데크 3등분 = 각 계단 단높이(약 0.157m)
-  const step1SurfaceY = groundTopY + stepRise;                  // 1계단 밟는 표면(지면 다음, 가장 낮은 단)
-  const step2SurfaceY = groundTopY + 2 * stepRise;              // 2계단 밟는 표면(데크 직전, 가장 높은 단)
+  // 밟는 표면(포세린 윗면) 균등 단차 — 지면~데크(deckSurfaceY)를 목표 단높이(≈0.16m)로 등분해 단수 자동 산출(실사용 계단).
+  const K = deckStairK, stepRise = deckStairStepRise;   // 중간 디딤단 수(데크가 맨 위 단) / 각 단높이
+  const surfAt = (j) => groundTopY + j * stepRise;      // j단(1=최하) 밟는 표면(데크는 맨 위=nRise단)
   const flatRectFrame = (x0, x1, z0, z1, surfaceY) => {   // 밟는 표면 surfaceY에 맞춰 4변 틀 + 윗면 포세린 한 단
     const xw = x1 - x0, zw = z1 - z0;
     const baseY = surfaceY - deckFinishT - t;            // 틀 막대 바닥 = 표면에서 타일 2cm + 막대 t 만큼 아래
@@ -4099,9 +4101,10 @@ function drawStairAnno(p) {
     box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 양쪽 외벽 안쪽까지(앞쪽 통행)
     box({ x: insideX0, z: zFrontU, w: kitchenWallInner - insideX0, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 주방 위
     box({ x: familyWallInner, z: zFrontU, w: insideX1 - familyWallInner, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false }); // 안방 위
-    const suZ0 = zFrontU + interiorWall;   // 수납장 안목 앞선 = 다락 입구 가로벽(interiorWall) 뒷면 — 안목 치수만 벽 뒤에서 잰다(바닥 메움은 벽 밑까지 채움)
-    if (fillZend > zFrontU) {
-      box({ x: laneA, z: zFrontU, w: W, d: fillZend - zFrontU, y: loftY - loftTh, h: loftTh, mat: materials.bed, cast: false });   // 바닥 메움 = 다락 입구벽 밑(zFrontU)까지 빈틈 없이. 색은 다락방 바닥과 동일
+    const suZ0 = zFrontU + interiorWall;   // 수납장 안목 앞선 = 다락 입구 가로벽(interiorWall) 뒷면 — 안목 치수·바닥색은 벽 뒤부터
+    box({ x: laneA, z: zFrontU, w: W, d: interiorWall, y: loftY - loftTh, h: loftTh, mat: materials.wall, cast: false });   // 수납장 앞 10cm = 다락 입구 가로벽이 서는 자리 → 다락 벽과 같은 색으로 표시
+    if (fillZend > suZ0) {
+      box({ x: laneA, z: suZ0, w: W, d: fillZend - suZ0, y: loftY - loftTh, h: loftTh, mat: materials.bed, cast: false });   // 바닥 메움 = 벽 뒤(suZ0)부터 헤드룸 한계까지. 색은 다락방 바닥과 동일
       label(`수납장 ${fmtDim(W)}×${fmtDim(fillZend - suZ0)}m`, laneA + W / 2, loftY + 0.05, (suZ0 + fillZend) / 2, 'dim');   // 계단 위 헤드룸 한계까지 메운 다락바닥 = 저층 수납(다락복도쪽 벽 뺀 안목)
     }
   });
