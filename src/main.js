@@ -961,8 +961,9 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   // 똑같은 좌표를 쓰게 한다(예전엔 바닥만 보정하고 입체는 원좌표라 도면마다 어긋났음 → 그 회귀 차단).
   function drawGroundPost(px, pz, isFirst) {
     // 땅 기둥 밑 말뚝기초 — 제거됨(사용자 요청). 기둥(골조)만 남김.
+    // 안방쪽엔 데크가 없으므로(withDeck:false) 데크 표면이 아니라 지면(groundTopY)부터 세운다 — 주방쪽 데크 기둥은 데크 위, 안방쪽은 바닥.
     const topY = glassYatZ(pz) - beamDrop - beamH;
-    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: postBaseY, h: topY - postBaseY, mat: 썬룸Frame }));   // 기둥(골조)
+    썬룸FrameObjects.push(box({ x: px - postW / 2, z: pz - postW / 2, w: postW, d: postW, y: groundTopY, h: topY - groundTopY, mat: 썬룸Frame }));   // 기둥(골조) — 지면부터
   }
   postPlaces.forEach(([px, pz], i) => {
     if (postsToGround) {
