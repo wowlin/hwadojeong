@@ -9,7 +9,7 @@ import {
   stairTreadDepth, interiorDoorW, interiorDoorH, firstWallHeight, yardSashW, yardSashH,
   familyWindowW, kitchenSinkD, kitchenSinkH, kitchenSinkW, kitchenRearWindowW, familyRearWindowW,
   sideDoorH, secondCorridorWindowSillOffset, secondCorridorWindowH, atticVentWindowW, atticSkyWindowW, atticRearWindowSillOffset,
-  atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang, FRAME_ROOM_W
+  atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang, FRAME_ROOM_W, atticCorridorWallT
 } from './constants.js';
 
 export const buildingFrontZ = buildingBackZ - buildingD;   // 정면(북) 외벽 Z — 깊이 상수로 파생(=-0.7)
@@ -101,6 +101,8 @@ export const secondCorridorZ = insideZ0;
 export const secondCorridorW = insideX1 - insideX0;
 export const secondCorridorD = stairBottomLandingD;
 export const secondAtticWallZ = secondCorridorZ + secondCorridorD;
+export const atticCorridorWallShift = atticCorridorWallT - interiorWall;        // 복도쪽 칸막이벽이 복도로 들어온 깊이(10→15면 0.05)
+export const secondCorridorClearD = secondCorridorD - atticCorridorWallShift;    // 다락 복도 안목 깊이 = 구조폭 − 복도쪽 벽 확장분 (바닥 표시·라벨 단일 출처)
 export const secondAtticZ = secondAtticWallZ + interiorWall;
 export const secondAtticD = insideZ1 - secondAtticZ;
 export const secondRoom1DoorX = planRightKitchenX + firstKitchenW - interiorDoorW - 0.10;   // 계단실 쪽 벽(1층 주방측 내벽면)에서 10cm 띄움

@@ -25,6 +25,7 @@ export const roadW = 1.1;
 // firstWallHeight(1층 벽 높이)는 계단 총높이에서 파생 — 계단 상수 블록 뒤에서 정의(아래)
 export const exteriorWall = 0.3;               // 외벽 두께(s2와 동일 30cm)
 export const interiorWall = 0.1;               // 내벽 두께
+export const atticCorridorWallT = 0.15;        // 다락 복도쪽 칸막이벽 두께 — 벽·복도 안목·라벨 단일 출처. interiorWall보다 두꺼운 만큼 복도쪽으로 확장(복도 깊이 감소)
 export const stairRunW = 1.0;
 export const entryDoorLeafW = 1.0;     // 현관 문짝 유효폭 1000mm
 export const entryFrameOuterW = 1.1;   // 문틀 외곽(좌우 프레임 50mm씩 포함)

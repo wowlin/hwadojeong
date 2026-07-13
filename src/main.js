@@ -56,7 +56,7 @@ import {
   yardSashW, yardSashH, secondFloorThickness, secondWallHeight, roofSlopeDeg,
   roofThickness, stairRiserCount, stairRiserHeight, lowerStraightTreadCount, winderTreadCount, landingTreadCount, upperStraightTreadCount, stairTreadDepth, floorSurfaceH,
   floorOverlayLift, familyWindowW, kitchenSinkW, kitchenSinkD, kitchenSinkH, kitchenRearWindowW,
-  familyRearWindowW, sideDoorW, sideDoorH, secondAtticDoorH, secondCorridorWindowH, secondCorridorWindowSillOffset,
+  familyRearWindowW, sideDoorW, sideDoorH, secondAtticDoorH, secondCorridorWindowH, secondCorridorWindowSillOffset, atticCorridorWallT,
   atticVentWindowW, atticSkyWindowW, atticSkyWindowH, atticSkyWindowSillOffset, atticRearWindowW, atticRearWindowH,
   atticRearWindowSillOffset, sideGableWindowW, sideGableWindowH, sideGableWindowSillOffset, STUD_SPACING,
   FRAME_WEB, FRAME_FLANGE, TRACK_H, frEaveOverhang, frSideOverhang, FRAME_ROOM_W,
@@ -78,7 +78,7 @@ import {
   kitchenCounterY, kitchenRearWindowX, kitchenRearWindowSillY, kitchenRearWindowTopY, kitchenRearWindowH, familyRearWindowX,
   familyRearWindowSillY, familyRearWindowTopY, familyRearWindowH, sideDoorZ, sideDoorBaseY, sideDoorTopY,
   secondRoom2X, secondRoom2W, secondCorridorX, secondCorridorZ, secondCorridorW, secondCorridorD,
-  secondAtticWallZ, secondAtticZ, secondAtticD, secondRoom1DoorX, secondRoom2DoorX, secondCorridorWindowTopOffset,
+  secondAtticWallZ, secondAtticZ, secondAtticD, secondRoom1DoorX, secondRoom2DoorX, secondCorridorWindowTopOffset, atticCorridorWallShift, secondCorridorClearD,
   atticVentWindowX, atticSkyWindowX, atticRearWindowTopOffset, atticRoom1RearWindowX, atticRoom2RearWindowX, frontCornerDimX,
   frontCornerDimZ, frontCornerDimTickX, frontCornerDimLabelX, frontCornerDimLabelZ, secondY, frFrontZ,
   frBackZ, frLeftX, frRightX, frSecondWallY, frGableBaseY, frRidgeZ,
@@ -87,7 +87,7 @@ import {
   atticOutletY
 } from './layout.js';
 import {
-  firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, deckObjects,
+  firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   outletObjects, atticOutletObjects, hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   foundationDimObjects, footprintObjects, planObjects, dimObjects,
@@ -865,7 +865,7 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     box({ x: planRightKitchenX, z: insideZ0, w: stairLowXRunX - planRightKitchenX, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 주방측 슬래브 → 주방 벽면(stairLowXRunX)까지(내벽 밑까지 채워 틈 제거)
     box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: secondCorridorD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 복도 슬래브 주방측 = 주방 벽면(stairLowXRunX), 안방측 = 안방 벽면(stairHighXWallX) — 뒤 다락바닥·1층과 정렬
     box({ x: stairHighXWallX, z: insideZ0, w: insideX1 - stairHighXWallX, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 안방측 슬래브 → 안방 내력벽 계단면(stairHighXWallX)부터(내벽 밑까지 채워 틈 제거)
-    room({ x: secondCorridorX, z: secondCorridorZ, w: secondCorridorW, d: secondCorridorD, y: secondWallY + floorSurfaceH, mat: materials.landing, text: roomText('다락 복도', secondCorridorW, secondCorridorD) });
+    room({ x: secondCorridorX, z: secondCorridorZ, w: secondCorridorW, d: secondCorridorClearD, y: secondWallY + floorSurfaceH, mat: materials.landing, text: roomText('다락 복도', secondCorridorW, secondCorridorClearD) });   // 안목 = 복도쪽 벽 확장분 반영(단일 출처)
     const loftRoom1W = firstKitchenW - interiorWall;   // 다락방1 안목 = 슬래브에서 계단실 쪽 벽두께(10cm) 제외
     room({ x: planRightKitchenX, z: secondAtticZ, w: loftRoom1W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', loftRoom1W, secondAtticD) });
     room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
@@ -912,8 +912,8 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
   // ── 다락 내벽 — 다락방 칸막이 + 문 + 다락 입구 가로벽 + 다락방 벽높이 치수 ──────────
   captureInto(atticInnerWallObjects, () => {
     // 복도쪽 칸막이(다락방1·2 앞벽·다락 입구 가로벽)는 10→15cm, 다락방/계단쪽 면 고정하고 복도(−Z)쪽으로 5cm 확장. 세로 측벽(다락방|계단실)은 대상 아님.
-    const corrWallT = 0.15;
-    const corrWallZ = secondAtticWallZ - (corrWallT - interiorWall);
+    const corrWallT = atticCorridorWallT;                       // 단일 출처(constants) — 복도 안목·라벨과 함께 파생
+    const corrWallZ = secondAtticWallZ - atticCorridorWallShift;
     // 다락방 문이 있는 벽 높이 — 칸막이(secondAtticWallZ) 위치, 왼쪽 벽
     planYDim(frontCornerDimX, secondAtticWallZ, secondWallY, secondWallY + secondAtticFrontWallH, `다락방 벽 ${fmtDim(secondAtticFrontWallH)}m`);
     // 2F attic partitions follow the same gable profile as the exterior walls.
