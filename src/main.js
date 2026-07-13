@@ -2800,7 +2800,7 @@ const atticRidgeY = atticSecondWallTop + gableRise;
   const roofSlopeRad = THREE.MathUtils.degToRad(roofSlopeDeg);
   const cosS = Math.cos(roofSlopeRad);
   const sinS = Math.sin(roofSlopeRad);
-  const surfaceY = (z) => atticRidgeY - roofSlopeTan * (z - atticRidgeZ);
+  const surfaceY = (z) => (atticRidgeY + roofThickness) - roofSlopeTan * (z - atticRidgeZ);   // 지붕 마감 윗면 = 구조 밑면(atticRidgeY) + 지붕두께 — 패널이 지붕 위에 얹히게
   const panelW = 1.66;   // X 폭(실물 모듈 가로)
   const panelL = 1.0;    // 경사 방향 길이
   const panelThk = 0.05;
