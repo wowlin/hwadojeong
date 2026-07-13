@@ -864,19 +864,18 @@ curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashT
     room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
     // s2 3층 매트리스·베개를 복사해 다락방1·2 바닥에 표시 — 재질·두께·규격 s2와 동일. 베개(머리맡)=집 뒤쪽(高Z).
     {
-      const mfy = secondWallY + floorSurfaceH + 0.01, mH = 0.1;
+      const mfy = secondWallY + floorSurfaceH + 0.01, mH = 0.1, mL = 2.0;
       const mMat = new THREE.MeshLambertMaterial({ color: 0xe8dcc0 });   // 매트리스(베이지) — s2와 동일
       const pMat = new THREE.MeshLambertMaterial({ color: 0xfaf6ef });   // 베개 — s2와 동일
-      const mW = 1.8, mL = 2.0;                                          // 더블 2.0×1.8 (s2 게스트룸1과 동일)
-      const bed = (roomX0, roomW, toHighX) => {
-        const x0 = toHighX ? roomX0 + roomW - mW : roomX0;               // 방 바깥쪽 옆벽에 붙임(다락방1=低X·다락방2=高X)
-        const z0 = insideZ1 - mL;                                        // 머리=뒤(高Z)·발치=앞(低Z)
-        box({ x: x0, z: z0, w: mW, d: mL, y: mfy, h: mH, mat: mMat });
-        label('매트리스 2.0×1.8m', x0 + mW / 2, mfy + mH + 0.15, z0 + mL / 2, 'furniture');
-        for (const cx of [x0 + 0.5, x0 + 1.3]) box({ x: cx - 0.35, z: insideZ1 - 0.07 - 0.4, w: 0.7, d: 0.4, y: mfy + mH, h: 0.1, mat: pMat });   // 베개 2개·머리맡=뒤(高Z)
-      };
-      bed(planRightKitchenX, loftRoom1W, false);   // 다락방1 — 주방쪽 옆벽(低X)에 붙임
-      bed(secondRoom2X, secondRoom2W, true);       // 다락방2 — 안방쪽 옆벽(高X)에 붙임
+      const z0 = insideZ1 - mL, pZ = insideZ1 - 0.07 - 0.4;             // 매트: 머리=뒤(高Z)·발치=앞(低Z) / 베개 z=머리맡
+      const mat = (x0, w, txt) => { box({ x: x0, z: z0, w, d: mL, y: mfy, h: mH, mat: mMat }); label(txt, x0 + w / 2, mfy + mH + 0.15, z0 + mL / 2, 'furniture'); };
+      const pil = (cx) => box({ x: cx - 0.35, z: pZ, w: 0.7, d: 0.4, y: mfy + mH, h: 0.1, mat: pMat });
+      // 다락방1(주방쪽/低X) ← 게스트룸1: 더블 2.0×1.8, 주방쪽 옆벽(低X)에 붙임, 베개 2개
+      { const w = 1.8, x0 = planRightKitchenX; mat(x0, w, '매트리스 2.0×1.8m'); pil(x0 + 0.5); pil(x0 + 1.3); }
+      // 다락방2(안방쪽/高X) ← 게스트룸2: 싱글 2.0×1.1 2개(안방쪽 옆벽에 나란히·10cm 간격), 각 베개 1개
+      { const w = 1.1, gap = 0.1, x1 = secondRoom2X + secondRoom2W;
+        mat(x1 - w, w, '매트리스 2.0×1.1m'); pil(x1 - w / 2);
+        mat(x1 - 2 * w - gap, w, '매트리스 2.0×1.1m'); pil(x1 - 1.5 * w - gap); }
     }
   });
 
