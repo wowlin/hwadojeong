@@ -3938,8 +3938,8 @@ function drawStairCore(p) {
     const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
     box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
-  // 두 런 분리벽 겸 WC 저X벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로 이 벽(두께차 자투리 5cm)을 상부런(laneB) 저X 모서리에 세운다. 하부·상부 단수가 같아 계단형이 필요 없다: 바닥~사선 천장 밑선까지 사선벽 한 장으로 통합(중복·반짝임 없음). 앞끝은 WC 문벽 뒤로 물려 겹침 제거.
-  const gapX = laneB, gapW = stairClearW - 2 * W;
+  // 두 런 분리벽 겸 WC 저X벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로 이 벽(내벽 두께 interiorWall=10cm)을 상부런(laneB) 저X 모서리에 세운다. 하부·상부 단수가 같아 계단형이 필요 없다: 바닥~사선 천장 밑선까지 사선벽 한 장으로 통합(중복·반짝임 없음). 앞끝은 WC 문벽 뒤로 물려 겹침 제거.
+  const gapX = laneB, gapW = interiorWall;
   {
     const topAt = (z) => (baseU - treadH) + (R / T) * (zTurn0 - z) - 0.10;   // 천장 밑선 = 발판 뒤코너선 − (드롭0.05+패널두께0.05)
     const zF = zFrontL + interiorWall;                     // 앞끝을 문벽(interiorWall) 뒤로 물림
