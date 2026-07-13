@@ -408,6 +408,23 @@ function rearSlider(x, w, sillY, h, zc) {
   box({ x: x + pw + 0.06, z: zc - trk - 0.085, w: 0.045, d: 0.045, y: sillY + 0.26, h: 0.28, mat: materials.handle });   // 미닫이 손잡이
 }
 
+// 옆(좌·우 외벽·±X면) 미서기 창 — 2짝(앞짝 고정 + 뒤짝 미닫이). 짝을 Z로 나눔·유리는 X면. xc = 유리 중심 X면
+function sideRearSlider(z, w, sillY, h, xc) {
+  const F = materials.windowFrame, trk = 0.03, pd = w / 2, mullD = 0.05;
+  const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
+  const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
+  box({ x: xc - 0.06, z, w: 0.12, d: w, y: sillY, h: 0.08, mat: F });                     // 하부 레일(2트랙 전폭)
+  box({ x: xc - 0.06, z, w: 0.12, d: w, y: sillY + h - 0.08, h: 0.08, mat: F });          // 상부 레일
+  const pane = (zp, xt, mat) => {
+    box({ x: xt - 0.025, z: zp, w: 0.05, d: pd, y: sillY, h, mat, cast: false });                     // 유리
+    box({ x: xt - 0.035, z: zp, w: 0.07, d: mullD, y: sillY, h, mat: F, cast: false });               // 앞 세로살
+    box({ x: xt - 0.035, z: zp + pd - mullD, w: 0.07, d: mullD, y: sillY, h, mat: F, cast: false });   // 뒤 세로살
+  };
+  pane(z, xc + trk, slGlass);        // 앞짝 고정 — 바깥트랙(低Z)
+  pane(z + pd, xc - trk, slMove);    // 뒤짝 미닫이 — 안쪽트랙(高Z)
+  box({ x: xc - trk - 0.085, z: z + pd + 0.06, w: 0.045, d: 0.045, y: sillY + 0.26, h: 0.28, mat: materials.handle });   // 미닫이 손잡이
+}
+
 // 정면/배면 프로젝트(어닝)창 — X스팬·±Z면. 상부 경첩·하부 바깥으로 밀림. outZ = 외부 방향(+1: 뒤 高Z 바깥, -1: 앞 低Z 바깥)
 function frontAwningSash(x, z, w, sillY, h, outZ) {
   const frame = 0.05, F = materials.windowFrame;
@@ -498,9 +515,10 @@ captureInto(firstFloorFinishObjects, () => {
   firstWallObjects.push(box({ x: 0, z: z0, w: ox0, d: wt, y: wy, h: wh, mat: W }));                     // 앞 외벽 — 개구 왼쪽(주방측)
   firstWallObjects.push(box({ x: ox1, z: z0, w: buildingW - ox1, d: wt, y: wy, h: wh, mat: W }));       // 앞 외벽 — 개구 오른쪽(안방측)
   firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 개구 상부 인방(문 위)
-  // 뒤(+Z) 외벽 — 두 미서기창 개구로 분할. 주방창은 싱크대 중심에, 안방창은 뒤에서 볼 때 그와 좌우대칭(중심 미러). 창대 바닥+1.0·폭 1.5·높이 1.2
-  const rwW = 1.5, rwSill = firstFloorY + 1.0, rwHead = firstFloorY + 1.0 + 1.2, rwKcx = kitchenSinkX + kitchenSinkW / 2;
-  const rwKx0 = rwKcx - rwW / 2, rwBx0 = (buildingW - rwKcx) - rwW / 2;   // 주방창 시작 X / 안방창 시작 X(중심 미러)
+  // 뒤(+Z)·좌우(±X) 외벽 미서기창 — 뒤창 2개(옆벽서 rwSide 띄움) + 옆창 2개(뒤끝서 swBack 띄움). 모두 창대 바닥+1.0·폭 1.6·높이 1.2, 좌우대칭
+  const rwW = 1.6, rwSill = firstFloorY + 1.0, rwHead = firstFloorY + 1.0 + 1.2, rwSide = 0.6, swBack = 0.6;
+  const rwKx0 = rwSide, rwBx0 = buildingW - rwSide - rwW;   // 뒤 주방창 시작 X(우/低X) / 뒤 안방창 시작 X(좌/高X) — 옆벽서 rwSide
+  const swZ1 = z1 - swBack, swZ0 = swZ1 - rwW;              // 옆창 뒤끝(z1서 swBack)/앞끝 — 좌우 공용
   const zB = z1 - wt;
   captureInto(firstWallObjects, () => {
     box({ x: 0, z: zB, w: rwKx0, d: wt, y: wy, h: wh, mat: W });                                       // 주방측 끝~주방창
@@ -513,12 +531,28 @@ captureInto(firstFloorFinishObjects, () => {
       label(`${tag} 미서기창 ${fmtDim(rwW)}×${fmtDim(rwHead - rwSill)}m`, a + rwW / 2, rwSill + 0.4, z1 + 0.1, 'opening');
     }
   });
-  firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(주방, x=0) 외벽 — 바깥면 x=0
+  // 우(주방, x=0) 외벽 — 바깥면 x=0. 뒤끝서 swBack 띄운 옆 미서기창 개구로 분할(뒤창과 동일 크기·창대)
+  captureInto(firstWallObjects, () => {
+    box({ x: 0, z: z0 + wt, w: wt, d: swZ0 - (z0 + wt), y: wy, h: wh, mat: W });                 // 앞끝~옆창
+    box({ x: 0, z: swZ1, w: wt, d: (z1 - wt) - swZ1, y: wy, h: wh, mat: W });                    // 옆창~뒤끝
+    box({ x: 0, z: swZ0, w: wt, d: rwW, y: wy, h: rwSill - wy, mat: W });                        // 창 아래 창대띠
+    box({ x: 0, z: swZ0, w: wt, d: rwW, y: rwHead, h: (wy + wh) - rwHead, mat: W });             // 창 위 인방
+    sideRearSlider(swZ0, rwW, rwSill, rwHead - rwSill, 0.13);                                    // 미서기 2짝
+    label(`주방 옆 미서기창 ${fmtDim(rwW)}×${fmtDim(rwHead - rwSill)}m`, -0.1, rwSill + 0.4, swZ0 + rwW / 2, 'opening');
+  });
   // 좌(안방, x=buildingW) 외벽 — 앞에서 30cm 들어간 곳에 표준 작은(보조) 외짝문(측면). 문 개구로 앞·뒤 벽 조각 + 상부 인방으로 분할.
   const sideDoorLeaf = 0.7, sideDoorH = 2.0, sideDoorOuter = sideDoorLeaf + 0.1;   // 표준 작은 외짝문: 유효폭 0.7·높이 2.0·문틀외곽 0.8(좌우 프레임 50mm씩)
   const doorD = sideDoorOuter, dz0 = z0 + wt + 0.3, dz1 = dz0 + doorD;   // 문 앞 모서리 = 앞 외벽 안쪽면 +30cm
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: dz0 - (z0 + wt), y: wy, h: wh, mat: W }));    // 좌 외벽 — 개구 앞쪽(정면측)
-  firstWallObjects.push(box({ x: buildingW - wt, z: dz1, w: wt, d: (z1 - wt) - dz1, y: wy, h: wh, mat: W }));        // 좌 외벽 — 개구 뒤쪽(집뒤측)
+  // 좌 외벽 — 측문 뒤쪽. 뒤끝서 swBack 띄운 옆 미서기창 개구로 분할(뒤창과 동일 크기·창대)
+  firstWallObjects.push(box({ x: buildingW - wt, z: dz1, w: wt, d: swZ0 - dz1, y: wy, h: wh, mat: W }));            // 좌 외벽 — 측문 뒤~옆창
+  captureInto(firstWallObjects, () => {
+    box({ x: buildingW - wt, z: swZ1, w: wt, d: (z1 - wt) - swZ1, y: wy, h: wh, mat: W });                          // 옆창~뒤끝
+    box({ x: buildingW - wt, z: swZ0, w: wt, d: rwW, y: wy, h: rwSill - wy, mat: W });                              // 창 아래 창대띠
+    box({ x: buildingW - wt, z: swZ0, w: wt, d: rwW, y: rwHead, h: (wy + wh) - rwHead, mat: W });                   // 창 위 인방
+    sideRearSlider(swZ0, rwW, rwSill, rwHead - rwSill, buildingW - 0.13);                                           // 미서기 2짝
+    label(`안방 옆 미서기창 ${fmtDim(rwW)}×${fmtDim(rwHead - rwSill)}m`, buildingW + 0.1, rwSill + 0.4, swZ0 + rwW / 2, 'opening');
+  });
   firstWallObjects.push(box({ x: buildingW - wt, z: dz0, w: wt, d: doorD, y: wy + sideDoorH, h: wh - sideDoorH, mat: W }));   // 좌 외벽 — 개구 상부 인방(문 위)
   captureInto(firstWallObjects, () => sideEntryDoor(buildingW + 0.04, dz0, doorD, sideDoorLeaf, wy, sideDoorH));    // 안방 측면 표준 작은 외짝문
   captureInto(firstWallObjects, () => entryDoor(ox0, z0 - 0.04, ow, entryDoorLeafW, wy));   // 정면 중앙 표준 현관문(외짝 방화문, 문짝 유효폭 entryDoorLeafW)
