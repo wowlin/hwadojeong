@@ -45,7 +45,7 @@ import { materials } from './materials.js';
 import { stage, scene, houseGroup, camera, renderer, controls } from './scene.js';
 import { box, addGeometryEdges, flatPoly, fmtDim, railCylinder } from './primitives.js';
 import {
-  yzWallPrism, gableEndWallThicknessCap, slopedWallTopCap, wallEndThicknessFace, roofSlab,
+  yzWallPrism, slopedWallTopCap, wallEndThicknessFace, roofSlab,
 } from './builders.js';
 import {
   buildingW, buildingD, buildingBackZ, groundTopY, floorFinishH, deckFinishT, lotW,
@@ -107,12 +107,6 @@ sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 24;
 scene.add(sun);
 
-// 창 없는 통짜 박공 삼각벽(외벽 창 제거용)
-function gableEndWallSolid({ x, z, d, y, rise, thickness = 0.08, mat }) {
-  const z0 = z, z1 = z + d, zMid = z + d / 2, y0 = y, y1 = y + rise;
-  yzWallPrism({ x, thickness, mat, points: [[z0, y0], [z1, y0], [zMid, y1]] });
-  gableEndWallThicknessCap({ x0: x, x1: x + thickness, z0, zMid, z1, y0, y1, mat: materials.wallTop });
-}
 
 function roofRiseAtZ(z) {
   const ridgeZ = buildingFrontZ + buildingD / 2;
@@ -709,10 +703,46 @@ captureInto(interiorObjects, () => {
     frontAwningSash(atticVentX0, buildingFrontZ + 0.13, atticVentWinW, atticVentSillY, atticVentWinH, -1);   // 유리짝(低Z 바깥으로 밀어 열림)
     label(`다락 환기 프로젝트창 ${fmtDim(atticVentWinW)}×${fmtDim(atticVentWinH)}m`, buildingW / 2, atticVentSillY + 0.4, buildingFrontZ - 0.1, 'opening');
     horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [], secondWallHeight, exteriorWall, materials.exteriorWall);   // 뒤 무릎벽 — 다락방 후면창·계단 픽스창 제거로 통벽
-    lowWall(0, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
-    lowWall(insideX1, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
-    gableEndWallSolid({ x: 0, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall });        // 좌 박공벽 — 창 제거
-    gableEndWallSolid({ x: insideX1, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall });  // 우 박공벽 — 창 제거
+    // ── 좌·우 옆(박공)벽 — 각 다락방 바깥벽. 용마루 밑 최고 구간에 미서기 환기창 1개씩(2짝 편개) ──
+    // 창대 바닥+0.9(추락안전선 근접·바닥매트 위) · 폭(깊이Z)1.2×높0.8 · 앞끝은 방 앞벽(secondAtticZ)서 0.1m 띄움
+    const atticSideWinW = 1.2, atticSideWinH = 0.8, atticSideSillY = secondWallY + 0.9, atticSideHeadY = secondWallY + 0.9 + 0.8;
+    const atticSideZ0 = secondAtticZ + 0.1, atticSideZ1 = atticSideZ0 + atticSideWinW;   // 방 앞벽서 0.1m 띄운 앞끝
+    const wallZ1 = buildingFrontZ + buildingD;                                            // 옆벽 Z 뒤끝(집 깊이 전체)
+    const roofUnderY = (z) => gableBaseY + roofRiseAtZ(z);                                // 박공벽 밑선(=지붕 밑면) Y
+    // za~zb 한 구간을 바닥(by)부터 박공 밑선까지 세움 — 구간 내 용마루(atticRidgeZ)는 꼭지점으로 꺾음
+    const gableSeg = (x, za, zb, by) => {
+      const pts = [[za, by], [zb, by], [zb, roofUnderY(zb)]];
+      if (za < atticRidgeZ && atticRidgeZ < zb) pts.push([atticRidgeZ, roofUnderY(atticRidgeZ)]);
+      pts.push([za, roofUnderY(za)]);
+      yzWallPrism({ x, thickness: exteriorWall, mat: materials.exteriorWall, points: pts });
+    };
+    const sideSlider = (xc) => {   // 2짝 편개 미서기 — 짝을 Z로 나눔(옆벽=X면). 앞짝 고정 + 뒤짝 미닫이(앞으로 슬라이드)
+      const F = materials.windowFrame, sy = atticSideSillY, hy = atticSideHeadY;
+      const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
+      const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
+      const pd = atticSideWinW / 2, mullD = 0.05, trk = 0.03;
+      box({ x: xc - 0.06, z: atticSideZ0, w: 0.12, d: atticSideWinW, y: sy, h: 0.08, mat: F });         // 하부 레일(2트랙 전폭)
+      box({ x: xc - 0.06, z: atticSideZ0, w: 0.12, d: atticSideWinW, y: hy - 0.08, h: 0.08, mat: F });   // 상부 레일
+      const pane = (zp, xt, mat) => {
+        box({ x: xt - 0.025, z: zp, w: 0.05, d: pd, y: sy, h: hy - sy, mat, cast: false });                     // 유리
+        box({ x: xt - 0.035, z: zp, w: 0.07, d: mullD, y: sy, h: hy - sy, mat: F, cast: false });               // 앞 세로살
+        box({ x: xt - 0.035, z: zp + pd - mullD, w: 0.07, d: mullD, y: sy, h: hy - sy, mat: F, cast: false });   // 뒤 세로살
+      };
+      pane(atticSideZ0, xc + trk, slGlass);        // 앞짝 고정 — 바깥트랙
+      pane(atticSideZ0 + pd, xc - trk, slMove);    // 뒤짝 미닫이 — 안쪽트랙
+      box({ x: xc - trk - 0.085, z: atticSideZ0 + pd + 0.06, w: 0.045, d: 0.045, y: sy + 0.26, h: 0.28, mat: materials.handle });   // 미닫이 손잡이
+    };
+    const gableSideWall = (x, xc) => {
+      gableSeg(x, buildingFrontZ, atticSideZ0, secondWallY);                                                                        // 창 앞쪽 벽(바닥~지붕)
+      gableSeg(x, atticSideZ1, wallZ1, secondWallY);                                                                                // 창 뒤쪽 벽(바닥~지붕)
+      box({ x, z: atticSideZ0, w: exteriorWall, d: atticSideWinW, y: secondWallY, h: atticSideSillY - secondWallY, mat: materials.exteriorWall });   // 창 아래 띠(창대)
+      gableSeg(x, atticSideZ0, atticSideZ1, atticSideHeadY);                                                                        // 창 위(인방~지붕)
+      sideSlider(xc);
+    };
+    gableSideWall(0, 0.13);                    // 우(주방/低X) 박공벽 — 다락방1
+    gableSideWall(insideX1, buildingW - 0.13); // 좌(안방/高X) 박공벽 — 다락방2
+    label(`다락방1 미서기창 ${fmtDim(atticSideWinW)}×${fmtDim(atticSideWinH)}m`, -0.1, atticSideSillY + 0.4, atticSideZ0 + atticSideWinW / 2, 'opening');
+    label(`다락방2 미서기창 ${fmtDim(atticSideWinW)}×${fmtDim(atticSideWinH)}m`, buildingW + 0.1, atticSideSillY + 0.4, atticSideZ0 + atticSideWinW / 2, 'opening');
   });
 
   // ── 다락 내벽 — 다락방 칸막이 + 문 + 다락 입구 가로벽 + 다락방 벽높이 치수 ──────────
