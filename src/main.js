@@ -67,7 +67,7 @@ import {
   buildingFrontZ, lotX0, foundationTopY, firstFloorY, deckTopY0, lotX1, lotZ1,
   lotZ0, firstWallY, insideX0, insideZ0, insideX1, insideZ1,
   insideD, sideRoomW,
-  stairLowXRunX, stairHighXRunX, stairHighXWallX,
+  stairLowXRunX, stairHighXRunX, stairHighXWallX, stairClearW,
   planRightKitchenX, firstKitchenW, firstKitchenD, firstFamilyW, firstFamilyD,
   innerWallW, familyInnerWallW, kitchenInnerWallX, familyInnerWallX,
   firstKitchenX, firstFamilyX, entryGapStart, entryGapEnd, familyDoorZ, yardSashSillY,
@@ -3938,8 +3938,8 @@ function drawStairCore(p) {
     const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
     box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
-  // 두 런(1층 하부런 ↔ 2층 상부런) 사이 gap 칸막이 — 각 단 발판 밑면까지 계단모양으로 채워 양쪽 계단 하부(밑 삼각공간)를 가림. 주방쪽(하부런) 막이는 발판 밑면까지만(발판 위로 안 솟게).
-  const gapX = laneA + W, gapW = laneB - (laneA + W);
+  // 두 런 분리벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로, 이 벽(두께차 자투리 폭)을 상부런(laneB) 저X 모서리 '아래'에 넣는다. 각 단 발판 밑면까지 계단모양으로 채워 하부(밑 삼각공간)를 가림.
+  const gapX = laneB, gapW = stairClearW - 2 * W;
   for (let i = 0; i < nL; i += 1) {
     box({ x: gapX, z: zFrontL + i * T, w: gapW, d: T, y: fy, h: (i + 1) * R - treadH, mat: materials.stairSpineWall, cast: false });        // 1층 하부런 측 — 윗면=발판 밑면(디딤면 위로 안 솟음)
   }

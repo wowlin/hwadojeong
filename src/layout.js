@@ -45,7 +45,7 @@ export const stairHighXClearX = familyInnerWallX + familyInnerWallW / 2;      //
 export const planLeftFamilyX = stairHighXClearX;
 export const sideRoomW = (insideX1 - insideX0 - stairClearW - interiorWall * 2) / 2;   // 레거시(현재 미사용, 참고용)
 // 계단 두 런 — 양쪽 내벽 안쪽 면에 직접 붙임(단일 출처=벽). 벽 두께·위치가 바뀌면 런이 자동으로 벽에 붙어 따라온다.
-export const stairLowXRunX = kitchenInnerWallX + innerWallW / 2;                       // 하부런 = 주방측 내벽 안쪽 면
+export const stairLowXRunX = stairHighXWallX - 2 * stairRunW;                          // 하부런 = 상부런에 딱 붙임(런 사이 틈 0) — 두께차 자투리는 주방측 계단벽 옆 5cm 띠로
 export const stairHighXRunX = familyInnerWallX - familyInnerWallW / 2 - stairRunW;    // 상부런 = 안방측 내력벽 안쪽 면(런폭만큼 안쪽)
 export const firstKitchenD = sideRoomD;
 export const firstFamilyD = sideRoomD;
