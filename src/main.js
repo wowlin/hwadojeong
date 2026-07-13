@@ -1218,7 +1218,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     const TW = 0.85, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;
     const woodT = materials.woodFrame;
     const off = TD / 2 + 0.30;                                  // 테이블 가장자리→의자 중심
-    const chairBack = off + 0.33, aisle = 0.6;                  // 의자 등받이 뒤끝 · 둘레 통로
+    const chairBack = off + 0.33, aisle = 0.9, endGap = 0.9;    // 의자 등받이 뒤끝 · 뒤 통로 0.9 · 테이블 끝 0.9 (s2 1층과 동일 기준)
     const tzX0 = fX0 + reserveW;                                // 테이블 영역 우측 끝(난로 영역 옆)
     const rowCx = (tzX0 + fX1) / 2;                             // 테이블 행 중심 x
     const cxs = [rowCx - TW, rowCx, rowCx + TW];               // 식탁 3개를 좌우로 이어 붙임
@@ -1233,9 +1233,9 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
       campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: deckSurfaceY });          // 앞쪽 — 테이블(+z) 향함
       campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: deckSurfaceY });    // 뒤쪽 — 테이블(−z) 향함
     }
-    // 식탁·의자 둘레 이동공간(반투명 청록) — 데크 안으로 clamp(난로 영역 침범 금지).
-    const zx0 = Math.max(tzX0, cxs[0] - TW / 2 - aisle), zx1 = Math.min(fX1, cxs[cxs.length - 1] + TW / 2 + aisle);
-    const zz0 = Math.max(dFrontZ, cz0 - chairBack - aisle), zz1 = Math.min(dWallZ, cz0 + chairBack + aisle);
+    // 식탁·의자 둘레 이동공간(반투명 청록) — s2 1층과 동일 기준(의자 등받이 뒤끝 + 통로 0.9, clamp 없이 원본 그대로).
+    const zx0 = cxs[0] - TW / 2 - endGap, zx1 = cxs[cxs.length - 1] + TW / 2 + endGap;
+    const zz0 = cz0 - chairBack - aisle, zz1 = cz0 + chairBack + aisle;
     box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: deckSurfaceY + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
     label(`식탁 ${cxs.length}(${fmtDim(TW)}×${fmtDim(TD)}) + 반고 햄프턴 DLX`, rowCx, deckSurfaceY + 1.15, cz0, 'furniture');
   }
