@@ -1037,6 +1037,30 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   frameLocal.push(box({ x: px0 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 좌 바닥막대
   frameLocal.push(box({ x: px1 - tube / 2, z: pzF - tube / 2, w: tube, d: (pzB - pzF) + tube, y: postBase, h: railH, mat: 썬룸Frame }));   // 우 바닥막대
 
+  // ── 경사 지붕 받침 사다리꼴 육면체 — 프레임 상단(경사면) 위에 얹는다. 앞 낮고·뒤 높아(roofBaseFrontH↔roofBaseBackH) 윗면이 지붕 물매를 이룸(옆면 사다리꼴). ──
+  {
+    const roofBaseFrontH = 0.5, roofBaseBackH = 1.0;      // 앞단·뒤단 두께 — 윗면 물매를 만드는 경사 지붕 받침
+    const bx0 = px0 - tube / 2, bx1 = px1 + tube / 2;     // 프레임 외곽 X(주방쪽~안방쪽)
+    const bzF = pzF - tube / 2, bzB = pzB + tube / 2;     // 프레임 외곽 Z(앞·뒤)
+    const yBotF = topAtZ(bzF), yBotB = topAtZ(bzB);       // 밑면 = 프레임 상단(경사)에 밀착
+    const yTopF = yBotF + roofBaseFrontH, yTopB = yBotB + roofBaseBackH;   // 윗면 = 지붕 얹는 면
+    const c = [
+      [bx0, yBotF, bzF], [bx1, yBotF, bzF], [bx1, yTopF, bzF], [bx0, yTopF, bzF],   // 앞면(zF) 4점
+      [bx0, yBotB, bzB], [bx1, yBotB, bzB], [bx1, yTopB, bzB], [bx0, yTopB, bzB],   // 뒷면(zB) 4점
+    ];
+    const quads = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [3, 2, 6, 7], [0, 3, 7, 4], [1, 2, 6, 5]];   // 앞·뒤·밑·윗·좌·우
+    const pos = [];
+    for (const [a, b, cc, d] of quads) for (const i of [a, b, cc, a, cc, d]) pos.push(...c[i]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.computeVertexNormals();
+    const roofBaseMat = 썬룸Frame.clone(); roofBaseMat.side = THREE.DoubleSide;
+    const rb = new THREE.Mesh(geo, roofBaseMat);
+    rb.castShadow = true; rb.receiveShadow = true;
+    scene.add(rb);
+    frameLocal.push(rb);
+  }
+
   // ── 썬룸 물받이(앞단 처마 홈통) + (옵션) 왼쪽(고-X) 모서리 기둥 우수관 ──
   if (withGutter) {
     const gutterMat = materials.gutter || new THREE.MeshLambertMaterial({ color: 0x9aa1a8 });
