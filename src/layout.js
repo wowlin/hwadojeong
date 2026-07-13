@@ -105,8 +105,8 @@ export const atticCorridorWallShift = atticCorridorWallT - interiorWall;        
 export const secondCorridorClearD = secondCorridorD - atticCorridorWallShift;    // 다락 복도 안목 깊이 = 구조폭 − 복도쪽 벽 확장분 (바닥 표시·라벨 단일 출처)
 export const secondAtticZ = secondAtticWallZ + interiorWall;
 export const secondAtticD = insideZ1 - secondAtticZ;
-export const secondRoom1DoorX = planRightKitchenX + firstKitchenW - interiorDoorW - 0.80;   // 계단실 쪽 벽(1층 주방측 내벽면)에서 80cm 띄움
-export const secondRoom2DoorX = secondRoom2X + 0.80;                                    // 계단실 쪽 벽(1층 안방측 내력벽면)에서 80cm 띄움
+export const secondRoom1DoorX = planRightKitchenX + firstKitchenW - interiorDoorW - 0.60;   // 계단실 쪽 벽(1층 주방측 내벽면)에서 60cm 띄움
+export const secondRoom2DoorX = secondRoom2X + 0.60;                                    // 계단실 쪽 벽(1층 안방측 내력벽면)에서 60cm 띄움
 export const secondCorridorWindowTopOffset = secondCorridorWindowSillOffset + secondCorridorWindowH;
 export const atticVentWindowX = (buildingW - atticVentWindowW) / 2;   // 정면 중앙
 export const atticSkyWindowX = (stairClearX + stairHighXWallX) / 2 - atticSkyWindowW / 2;   // 계단실 가로 중앙
