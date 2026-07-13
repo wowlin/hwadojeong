@@ -1203,13 +1203,13 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const _furnStart = scene.children.length;
   if (withFurniture) {
     const tableZ = 썬룸CenterZ - 0.05;
-    igtTable({ cx: 썬룸CenterX - 1.05, cz: tableZ, bays: 4, sideTableSide: -1, baseY: firstFloorY });
-    igtTable({ cx: 썬룸CenterX + 1.25, cz: tableZ, bays: 3, sideTableSide: 1, baseY: firstFloorY });
-    campingChair({ cx: 썬룸CenterX - 1.05, cz: tableZ - 0.72, faceAngle: 0, baseY: firstFloorY });
-    campingChair({ cx: 썬룸CenterX - 1.05, cz: tableZ + 0.72, faceAngle: Math.PI, baseY: firstFloorY });
-    campingChair({ cx: 썬룸CenterX + 1.25, cz: tableZ - 0.72, faceAngle: 0, baseY: firstFloorY });
-    campingChair({ cx: 썬룸CenterX + 1.25, cz: tableZ + 0.72, faceAngle: Math.PI, baseY: firstFloorY });
-    label('스노우피크 IGT(4·3칸) + 반고 햄프턴 DLX', 썬룸CenterX, firstFloorY + 1.15, tableZ + 0.05, 'furniture');
+    igtTable({ cx: 썬룸CenterX - 1.05, cz: tableZ, bays: 4, sideTableSide: -1, baseY: deckSurfaceY });
+    igtTable({ cx: 썬룸CenterX + 1.25, cz: tableZ, bays: 3, sideTableSide: 1, baseY: deckSurfaceY });
+    campingChair({ cx: 썬룸CenterX - 1.05, cz: tableZ - 0.72, faceAngle: 0, baseY: deckSurfaceY });
+    campingChair({ cx: 썬룸CenterX - 1.05, cz: tableZ + 0.72, faceAngle: Math.PI, baseY: deckSurfaceY });
+    campingChair({ cx: 썬룸CenterX + 1.25, cz: tableZ - 0.72, faceAngle: 0, baseY: deckSurfaceY });
+    campingChair({ cx: 썬룸CenterX + 1.25, cz: tableZ + 0.72, faceAngle: Math.PI, baseY: deckSurfaceY });
+    label('스노우피크 IGT(4·3칸) + 반고 햄프턴 DLX', 썬룸CenterX, deckSurfaceY + 1.15, tableZ + 0.05, 'furniture');
   }
   extrasLocal.push(...scene.children.slice(_furnStart));
 
