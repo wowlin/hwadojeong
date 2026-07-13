@@ -917,8 +917,8 @@ curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashT
     // 다락 입구 — 계단 개구부를 가로벽(문 구멍 1개)으로 막음. 닫으면 다락 전체가 1층과 분리(1층 개방 유지). 칸막이와 같은 Z선·높이라 벽이 한 줄로 이어짐.
     horizontalWallWithGaps(stairLowXRunX, corrWallZ, stairHighXWallX - stairLowXRunX, secondWallY, [[atticStairDoorX, atticStairDoorX + interiorDoorW]], secondAtticFrontWallH, corrWallT, corrWallMat);   // 입구 가로벽 주방측 = 주방 벽면(stairLowXRunX)에 정렬
     lowWall(atticStairDoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, corrWallMat);   // 문 위 인방(개구부 위 막음)
-    interiorDoorHorizontal(atticStairDoorX, stairOpeningStart, secondWallY, interiorDoorW, secondAtticDoorH);
-    label('다락 입구 단열문', atticStairDoorX + interiorDoorW / 2, secondWallY + 1.0, stairOpeningStart - 0.5, 'opening');
+    pocketDoorHorizontal(atticStairDoorX, stairOpeningStart, secondWallY, interiorDoorW, secondAtticDoorH, -1, materials.interiorDoor);   // 슬라이드(포켓)식 — 주방측(低X)으로 미끄러짐
+    label('다락 입구 단열문(슬라이드)', atticStairDoorX + interiorDoorW / 2, secondWallY + 1.0, stairOpeningStart - 0.5, 'opening');
     // 다락 복도 양쪽(주방쪽 低X·안방쪽 高X) 끝 붙박이장 — 깊이 0.8m(옆 외벽에서 복도 안쪽으로), 복도 앞~뒤 전 깊이, 지붕 밑선까지 채우는 경사 상단.
     {
       const clD = 0.8, clZ = secondCorridorZ, clW = secondCorridorClearD;   // 깊이(X)·복도 Z앞선·폭(Z=복도 안목 깊이)
