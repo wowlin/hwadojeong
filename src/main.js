@@ -61,7 +61,7 @@ import {
   atticRearWindowSillOffset, sideGableWindowW, sideGableWindowH, sideGableWindowSillOffset, STUD_SPACING,
   FRAME_WEB, FRAME_FLANGE, TRACK_H, frEaveOverhang, frSideOverhang, FRAME_ROOM_W,
   FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_RIM_W, DECK_RIM_W, FLOOR_JOIST_SPACING, planMarkW,
-  hedgeThickness, deckW, deckD
+  hedgeThickness, deckW, deckD, matFoundationH
 } from './constants.js';
 import {
   buildingFrontZ, lotX0, foundationTopY, firstFloorY, deckTopY0, lotX1, lotZ1,
@@ -82,7 +82,7 @@ import {
   atticVentWindowX, atticSkyWindowX, atticRearWindowTopOffset, atticRoom1RearWindowX, atticRoom2RearWindowX, frontCornerDimX,
   frontCornerDimZ, frontCornerDimTickX, frontCornerDimLabelX, frontCornerDimLabelZ, secondY, frFrontZ,
   frBackZ, frLeftX, frRightX, frSecondWallY, frGableBaseY, frRidgeZ,
-  frEaveZFront, frEaveZBack, deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ,
+  frEaveZFront, frEaveZBack, deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ, deckSurfaceY,
   stairwellFanX, stairwellFanZ, outletLowY, outletCounterY, curtainOutletY,
   atticOutletY
 } from './layout.js';
@@ -1303,8 +1303,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
 
-  // 썬룸 바닥 — 포세린 타일 마감(건식). 데크 기초(0.4m·집보다 0.1m 낮음)+토대보 위에 마감층이 얹힌다.
-  const deckTopY = deckTopY0 + 0.20 + 0.02;        // 데크 상단 = 기초(0.48) + 장선(0.20) + 포세린(0.02) = 0.70
+  // 썬룸 바닥 — 포세린 타일 마감(건식). 50cm 온통기초 위 페데스탈(높이조절 받침)에 포세린을 얹는다.
+  const deckTopY = deckSurfaceY;                  // 데크 상단 = 온통기초(0.5)+페데스탈(0.10)+포세린(0.02) — 단일 출처
   const deckThickness = 0.02;                    // 포세린 마감 두께 2cm
   const deckEdge = postW / 2;                    // 기둥(프레임 선)이 데크 위에 완전히 얹히도록 기둥 바깥면까지 확장
   const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge; // 오른쪽: 연결 시 이웃 데크까지 이어 붙임
@@ -1470,7 +1470,7 @@ for (const f of deckFootprints) {
   footprintObjects.push(box({ x: f.x, z: f.z, w: f.w, d: f.d, y: planY, h: planH, mat: materials.deckFoundation, cast: false, name: 'ground' }));   // 데크 기초(0.4m) — 청회색으로 집 기초(0.5m)와 구분
 }
 // 매트(온통)기초 — 말뚝기초의 대안. 50cm 콘크리트 슬래브. 부분=집만, 전체=집+데크(상호 단독 토글).
-const MAT_H = 0.5;   // 매트기초 높이 50cm
+const MAT_H = matFoundationH;   // 매트기초 높이 50cm(단일 출처: constants.matFoundationH)
 captureInto(matFoundationHouseObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: MAT_H, mat: materials.matFoundation });   // 집 매트
   planYDim(-0.1, buildingBackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 남쪽 모서리(옆집벽·측백벽 만나는 곳 = 낮은 X·뒤 Z) 높이 치수
@@ -4099,9 +4099,9 @@ function drawStairAnno(p) {
     box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 양쪽 외벽 안쪽까지(앞쪽 통행)
     box({ x: insideX0, z: zFrontU, w: kitchenWallInner - insideX0, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 주방 위
     box({ x: familyWallInner, z: zFrontU, w: insideX1 - familyWallInner, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false }); // 안방 위
-    const suZ0 = zFrontU + interiorWall;   // 수납장 앞면 = 다락 입구 가로벽(interiorWall) 뒷면 — 다락복도쪽 벽 두께 반영(안목)
-    if (fillZend > suZ0) {
-      box({ x: laneA, z: suZ0, w: W, d: fillZend - suZ0, y: loftY - loftTh, h: loftTh, mat: materials.loftHeadFill, cast: false });
+    const suZ0 = zFrontU + interiorWall;   // 수납장 안목 앞선 = 다락 입구 가로벽(interiorWall) 뒷면 — 안목 치수만 벽 뒤에서 잰다(바닥 메움은 벽 밑까지 채움)
+    if (fillZend > zFrontU) {
+      box({ x: laneA, z: zFrontU, w: W, d: fillZend - zFrontU, y: loftY - loftTh, h: loftTh, mat: materials.loftHeadFill, cast: false });   // 바닥 메움 = 다락 입구벽 밑(zFrontU)까지 빈틈 없이
       label(`수납장 ${fmtDim(W)}×${fmtDim(fillZend - suZ0)}m`, laneA + W / 2, loftY + 0.05, (suZ0 + fillZend) / 2, 'dim');   // 계단 위 헤드룸 한계까지 메운 다락바닥 = 저층 수납(다락복도쪽 벽 뺀 안목)
     }
   });

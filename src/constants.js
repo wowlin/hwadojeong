@@ -12,6 +12,8 @@ export const pileCapH = 0.12;                  // 두부 헤드 브래킷 높이
 export const floorFinishH = 0.20;                              // 1층 바닥 두께 20cm — 기초 윗면에서 시작(바닥 표면=기초 윗면+0.20)
 export const deckFinishT = 0.02;   // 포세린 마감 두께 20t=2cm(데크 기초 위에 얹힘 — 건식)
 export const deckFoundationH = 0.25;   // 데크/썬룸 기초 높이 25cm(0.4에서 15cm 낮춤, 집 0.35보다 10cm 낮게 — 단차). 말뚝기초라 높이 자유.
+export const matFoundationH = 0.5;   // 온통(매트)기초 높이 50cm — 데크 기초는 이것만 남음. 데크는 이 위에 페데스탈+포세린.
+export const deckPedestalH = 0.10;   // 데크 페데스탈(높이조절 받침) 높이 — 온통기초 위, 데크 표면을 실내 바닥보다 8cm 낮게(중간).
 export const lotW = 9.95;                      // 대지 가로 — 왼쪽(안방) 측백 여유 포함(슬랙 쪽, 변수성)
 export const lotD = 9;                         // 대지 깊이 — 앞(입구) 여유 포함(슬랙 쪽, 변수성)
 export const neighborSetback = 0.5;            // 옆집벽(주방쪽, 저X)에서 집 이격 — 법적 규제(민법 242조). 고정 상수
