@@ -620,20 +620,24 @@ captureInto(firstFloorFinishObjects, () => {
 
 // 1층 방 크기 라벨 — 단일 경로(roomText '이름 크기')로만 표기. 주방·안방은 drawStairAnno의 방 라벨이 담당하므로
 // 여기선 그리지 않는다(중복 제거). 방 라벨이 없던 '계단실'만 같은 방 이름 라벨 방식으로 추가한다. 1층·다락·지붕 단계 표시.
-let firstStairRoomLabel, firstBathDimLabel;   // 계단실 라벨 ↔ 화장실 안목치수 라벨(applyVisibility에서 전환)
+let firstStairRoomLabel, firstBathDimLabel, firstBathClearFill;   // 계단실 라벨 ↔ 화장실 안목(자홍 바닥칠+안목치수)(applyVisibility에서 전환)
 captureInto(firstDimObjects, () => {
   const ly = firstFloorY + 0.4;                                // 라벨 높이(방바닥 위)
   const cx = stairLowXRunX, cw = stairHighXWallX - stairLowXRunX;   // 계단실 안목: 주방측 벽면(stairLowXRunX)~안방측 벽면(stairHighXWallX) — 실제 계단·다락 슬래브와 동일 격자
   const zSplit = insideZ0 + stairBottomLandingD;               // 계단 앞(여유)↔계단실(계단 있는 공간) 경계 = 계단 시작선
   const y0 = firstFloorY + floorOverlayLift;
+  // 화장실 안목(벽 뺀 실바닥) — 계단쪽 분리벽·앞 문벽(각 interiorWall) 뺀 안쪽 사각형
+  const bcX = stairBathX + interiorWall, bcW = stairBathW - interiorWall;
+  const bcZ = stairBathZ + interiorWall, bcD = stairBathD - interiorWall;
   // 계단 앞 사용가능 공간 색면(연녹) — 앞쪽 여유(계단 없는 공간)
   box({ x: cx, z: insideZ0, w: cw, d: stairBottomLandingD, y: y0, h: floorSurfaceH, mat: materials.stairFront, cast: false });
   // 계단실 색면(연주황) — 계단이 있는 공간(계단 시작선~뒤벽)
   box({ x: cx, z: zSplit, w: cw, d: insideZ1 - zSplit, y: y0, h: floorSurfaceH, mat: materials.stairRoom, cast: false });
   label(roomText('계단 앞', cw, stairBottomLandingD), cx + cw / 2, ly, insideZ0 + stairBottomLandingD / 2, 'room');
   firstStairRoomLabel = label(roomText('계단실', cw, insideZ1 - zSplit), cx + cw / 2, ly, (zSplit + insideZ1) / 2, 'room');
-  // 바닥+계단 동시 표시 땐 계단실 라벨 대신 이 화장실 안목치수를 보여줌 — 화장실 색면 정중앙(applyVisibility에서 전환)
-  firstBathDimLabel = label(roomText('화장실', stairBathW, stairBathD), stairBathX + stairBathW / 2, ly, stairBathZ + stairBathD / 2, 'room');
+  // 바닥+계단 동시 표시 땐 계단실 라벨 대신 화장실 안목(자홍 바닥칠 + 안목치수)을 보여줌(applyVisibility에서 전환)
+  firstBathClearFill = box({ x: bcX, z: bcZ, w: bcW, d: bcD, y: y0 + 0.006, h: floorSurfaceH, mat: materials.bathClear, cast: false });
+  firstBathDimLabel = label(roomText('화장실', bcW, bcD), bcX + bcW / 2, ly, bcZ + bcD / 2, 'room');
 });
 
 const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
@@ -695,12 +699,8 @@ captureInto(interiorObjects, () => {
 box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 // '계단 앞' 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거) — 여기선 색면만.
 box({ x: stairLowXRunX - interiorWall, z: insideZ0, w: interiorWall, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
+// '화장실' 토글 = 기구 3개(세면대·변기·온수기)만. 바닥칠·안목치수는 '바닥+계단'(계단실) 화면에서 표시(중복 제거).
 captureInto(bathObjects, () => {
-  // 화장실 안목(벽 뺀 실바닥) — 계단쪽 분리벽·앞 문벽(각 interiorWall)을 뺀 안쪽 사각형에만 바닥칠
-  const bathClearX = stairBathX + interiorWall, bathClearW = stairBathW - interiorWall;
-  const bathClearZ = stairBathZ + interiorWall, bathClearD = stairBathD - interiorWall;
-  room({ x: bathClearX, z: bathClearZ, w: bathClearW, d: bathClearD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bathClear, text: roomText('화장실', bathClearW, bathClearD), surfaceH: 0.018 });
-  label(roomText('화장실', stairBathW, stairBathD), stairBathDoorX + stairBathDoorW / 2, firstFloorY + stairBathDoorH / 2, stairBathZ - 0.12, 'room');
   // 세면대 — 안방쪽 벽(높은 X)·앞쪽. 문 스윙(계단쪽 앞)을 피해 천장 높은 앞부분에 둠
   box({ x: stairBathX + 0.58, z: stairBathZ + 0.18, w: 0.32, d: 0.34, y: firstFloorY, h: 0.72, mat: materials.vanity });
   box({ x: stairBathX + 0.62, z: stairBathZ + 0.23, w: 0.24, d: 0.22, y: firstFloorY + 0.72, h: 0.04, mat: materials.sinkBasin });
@@ -721,18 +721,18 @@ captureInto(bathObjects, () => {
     scene.add(heater);
     label('온수기 예정 50L', stairBathX + 0.74, firstFloorY + 1.12, stairBathZ + stairBathD - 0.25, 'mep');
   }
-  // 계단하부 WC는 외벽에 안 접한 무창 화장실 → 기계환기 필수: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기
-  {
-    const ventX = stairBathX + stairBathW / 2;
-    // WC 천장은 계단 밑 경사면 → 뒤쪽 실사용 천장선은 바닥+약 1.3m(벽 절반). 배기팬은 그 천장선 바로 아래(WC 실내 공기 안)여야 실제로 배기됨.
-    const capY = firstFloorY + 1.08;
-    box({ x: ventX - 0.12, z: insideZ1 - 0.06, w: 0.24, d: 0.06, y: capY, h: 0.22, mat: materials.guard });           // 실내 벽붙이 배기팬 그릴(천장선 바로 아래)
-    box({ x: ventX - 0.05, z: insideZ1 - 0.11, w: 0.1, d: 0.06, y: capY + 0.06, h: 0.1, mat: materials.guard });      // 팬 흡입구
-    box({ x: ventX - 0.13, z: buildingBackZ, w: 0.26, d: 0.05, y: capY, h: 0.22, mat: materials.entryFrame });          // 뒤 외벽 외부 환기캡(방수 후드)
-    box({ x: ventX - 0.14, z: buildingBackZ + 0.03, w: 0.28, d: 0.06, y: capY - 0.03, h: 0.05, mat: materials.entryFrame });  // 하단 빗물막이 립
-    label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 'mep');
-  }
 });
+// 계단하부 WC 배기구 — '화장실' 토글(기구 3개)에서 분리해 1층 그룹으로 수집. 무창 WC 기계환기: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기.
+{
+  const ventX = stairBathX + stairBathW / 2;
+  // WC 천장은 계단 밑 경사면 → 뒤쪽 실사용 천장선은 바닥+약 1.3m(벽 절반). 배기팬은 그 천장선 바로 아래(WC 실내 공기 안)여야 실제로 배기됨.
+  const capY = firstFloorY + 1.08;
+  box({ x: ventX - 0.12, z: insideZ1 - 0.06, w: 0.24, d: 0.06, y: capY, h: 0.22, mat: materials.guard });           // 실내 벽붙이 배기팬 그릴(천장선 바로 아래)
+  box({ x: ventX - 0.05, z: insideZ1 - 0.11, w: 0.1, d: 0.06, y: capY + 0.06, h: 0.1, mat: materials.guard });      // 팬 흡입구
+  box({ x: ventX - 0.13, z: buildingBackZ, w: 0.26, d: 0.05, y: capY, h: 0.22, mat: materials.entryFrame });          // 뒤 외벽 외부 환기캡(방수 후드)
+  box({ x: ventX - 0.14, z: buildingBackZ + 0.03, w: 0.28, d: 0.06, y: capY - 0.03, h: 0.05, mat: materials.entryFrame });  // 하단 빗물막이 립
+  label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 'mep');
+}
 box({ x: stairLowXRunX, z: stairOpeningStart, w: stairHighXWallX - stairLowXRunX, d: insideZ1 - stairOpeningStart, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stair, cast: false });
 room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed });   // 색면만 — 안방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
 
@@ -3408,6 +3408,7 @@ function applyVisibility() {
   { const bothOn = !isPlan && view.firstFloorFinish && view.stair;
     if (firstStairRoomLabel) firstStairRoomLabel.visible = !isPlan && view.firstFloorFinish && !bothOn;
     if (firstBathDimLabel)   firstBathDimLabel.visible   = bothOn;
+    if (firstBathClearFill)  firstBathClearFill.visible  = bothOn;   // 화장실 안목 자홍 바닥칠 — 바닥+계단 동시일 때만
   }
   // 미사용 배열(삭제된 골조 토글 · 구 통합 계단벽[분리됨])
   for (const item of stairWallObjects) item.visible = false;
