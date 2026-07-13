@@ -55,7 +55,6 @@ import {
   roofThickness, stairRiserCount, stairRiserHeight, lowerStraightTreadCount, winderTreadCount, landingTreadCount, upperStraightTreadCount, stairTreadDepth, floorSurfaceH,
   floorOverlayLift, kitchenSinkW, kitchenSinkD, kitchenSinkH,
   secondAtticDoorH, atticCorridorWallT,
-  frSideOverhang, FRAME_ROOM_W,
   hedgeThickness, deckW, deckD, matFoundationH
 } from './constants.js';
 import {
@@ -74,7 +73,6 @@ import {
   secondAtticWallZ, secondAtticZ, secondAtticD, secondRoom1DoorX, secondRoom2DoorX, atticCorridorWallShift, secondCorridorClearD,
   frontCornerDimX,
   frontCornerDimZ, secondY,
-  frLeftX, frRightX,
   deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ, deckSurfaceY
 } from './layout.js';
 import {
@@ -872,20 +870,7 @@ function captureInto(arr, fn) {
   arr.push(...scene.children.slice(s));
 }
 
-// ── 집 기초·골조 레이아웃 — 방 기초는 외벽 중심선에서 1.5m 간격, 계단실=남는 중앙(대칭) ──
-//   ※ 1층 벽 좌표(stairHighXWallX 등)는 차차 맞춤. 지금은 바닥·기초·골조에만 이 레이아웃을 반영.
-const 주방InnerWallX = frLeftX + FRAME_ROOM_W;    // 주방|계단실 벽
-const 안방InnerWallX = frRightX - FRAME_ROOM_W;   // 계단실|안방 벽
-// 말뚝 X열을 하중 경로에 맞춤: 좌·우 외벽 + 방 중앙(1.5m) + 계단실 양 벽. 계단실 가운데는 무주(양 벽 말뚝이 받음).
-const housePileXs = [
-  frLeftX,             // 좌 외벽(주방쪽, frLeftX)
-  frLeftX + 1.5,       // 주방 중앙말뚝(frLeftX+1.5)
-  주방InnerWallX,       // 주방|계단실 벽(주방InnerWallX)
-  안방InnerWallX,       // 계단실|안방 벽
-  frRightX - 1.5,      // 안방 중앙말뚝(frRightX-1.5)
-  frRightX,            // 우 외벽(안방쪽, frRightX)
-];
-// 집 말뚝기초(시스템말뚝) — 제거됨(사용자 요청). 매트기초만 기초로 남김.
+// (집 말뚝 X열·계단실 벽 좌표 제거 — 말뚝기초 삭제로 남은 참조 없음. 매트기초만 기초로 남김.)
 
 // 집 골조(철골/목조 프레임)는 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다.
 
@@ -1304,12 +1289,10 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
   }
 }
 
-// 주방 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 deckW(fX1=deckW, 좌측 끝 파생)
-//   지붕면은 주방+안방을 덮는 단일 패널 하나로 그린다 — 좌우 돌출은 집 지붕과 동일(frSideOverhang), 폭 = 집 외벽폭 + 양쪽 frSideOverhang, 중심 x=집 중심.
-const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, nDeckTables: 4, withPostDims: true, withGutter: true, roofPanelW: buildingW + 2 * frSideOverhang, roofPanelCenterX: buildingW / 2, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭 = deckW(roofW:5.9 파생) + 식탁 nDeckTables가 필요로 하는 확장(deckExtraW). 8인석=nDeckTables:4. 줄이려면 이 숫자만 낮추면 데크도 함께 줆(지붕은 불변)
-// 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 주방 썬룸의 단일 패널이 이미 덮음.
-// 안방 프레임 폭 = 데크 끝(deckW)~집 외곽(buildingW). fX1 = roofLowX+roofW-frameInset(0.2) = buildingW라야 집 밖으로 안 튀어나감(기둥열 = buildingW−0.1).
-const 안방썬룸 = 썬룸({ roofLowX: deckW, roofW: buildingW - deckW + 0.2, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: deckW, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
+// 주방 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 deckW(fX1=deckW, 좌측 끝 파생).
+//   지붕면은 이 썬룸 폭(roofW)까지만 — 안방 개방 포치 제거로 집 전폭 덮지 않음(기초=데크 위에만).
+const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, nDeckTables: 4, withPostDims: true, withGutter: true, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭 = deckW(roofW:5.9 파생) + 식탁 nDeckTables가 필요로 하는 확장(deckExtraW). 8인석=nDeckTables:4. 지붕은 이 썬룸 폭(roofW)까지만 — 기초(데크) 위에만 프레임·지붕.
+// (안방 앞 개방 포치 제거 — 기초 없는 부분이라 사용자 요청으로 프레임·지붕·땅기둥 전부 삭제. 포치는 데크 기초 위에만 존재.)
 
 // 데크 기초 — 집과 동일한 시스템말뚝기초(말뚝 + 두부). 두부 위에 둘레 토대보(바닥 골조)가 얹히고, 그 위에 포세린·폴딩/외벽이 올라간다.
 // 데크 기초 발자국 — 집 너비(0~buildingW) 안으로 정렬(엣지 돌출 제거). 인접 데크 겹침을 없애 폭 합이 buildingW가 되게.
@@ -1322,7 +1305,7 @@ for (const p of [kitchen썬룸]) {
 //   외곽 '기둥 중심선' 안쪽 수평투영이 건축면적(기둥 안쪽엔 1m 처마 공제 없음). 지붕은 단일 패널이
 //   전면(주방+안방)을 덮고, 최외곽 기둥은 주방측(deckFootprints[0].x)~안방측(안방 땅기둥 X). 깊이=데크 수평투영.
 const deckRoofColX0 = deckFootprints[0].x;                       // 주방측 최외곽 기둥선
-const deckRoofColX1 = 안방썬룸.groundPosts[0][0];                 // 안방측 최외곽 기둥선(땅 기둥 X열)
+const deckRoofColX1 = deckW;                                     // 안방측 최외곽 기둥선 = 주방 데크 高X 프레임선(fX1=deckW), 안방 개방 포치 제거로 여기까지
 const deckRoofBcrArea = (deckRoofColX1 - deckRoofColX0) * deckFootprints[0].d;   // 포치 건축면적(수평투영)
 // 데크 말뚝기초(시스템말뚝) — 제거됨(사용자 요청).
 
@@ -1343,23 +1326,7 @@ captureInto(matFoundationFullObjects, () => {
   planYDim(-0.1, buildingBackZ + 0.1, groundTopY, groundTopY + MAT_H, '기초 0.5m');   // 남쪽 모서리(옆집벽·측백벽 만나는 곳 = 낮은 X·뒤 Z) 높이 치수
 });
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
-// 평면 말뚝 마커 함수 — 제거됨(말뚝기초 삭제, 사용자 요청).
-// ════════════════════════════════════════════════════════════════════════════
-// ▌말뚝기초 위치(좌표) — ★잠금 영역★  사용자가 "위치를 옮겨라"라고 명시하기 전까지 절대 수정 금지.
-//   · 색·라벨 등 다른 작업은 이 블록을 건드리지 말 것. 위치는 오직 여기서만 정의한다.
-//   · 안방 앞/뒤 Z는 사용자가 직접 맞춘 값(test/smoke.test.js ⑤가 강제).
-// ════════════════════════════════════════════════════════════════════════════
-const _abFrontZ = deckFootprints[0].z + 0.1;                          // 안방 앞 말뚝 Z (사용자 확정 — 옛 파랑 자리)
-const _abBackZ = deckFootprints[0].z + deckFootprints[0].d - 0.1;     // 안방 뒤 말뚝 Z (사용자 확정 — 옛 초록 자리)
-const PILE_POS = Object.freeze({
-  house: { x0: 0.1, z0: buildingFrontZ + 0.1, w: buildingW - 0.2, d: buildingD - 0.2, sx: 1.7, sz: 1.9, xs: housePileXs },   // X열은 하중 경로(housePileXs) 단일 출처 — 입체 말뚝과 동일
-  decks: deckFootprints.map((f) => ({ x0: f.x + 0.1, z0: f.z + 0.1, w: f.w - 0.2, d: f.d - 0.2, sx: 1.6, sz: 1.7 })),
-  // 안방 3개: X=groundPosts X, Z=[앞=_abFrontZ, 가운데=groundPosts 원위치, 뒤=_abBackZ]
-  anbang: 안방썬룸.groundPosts.map(([px, pz], i) => [px, i === 0 ? _abFrontZ : i === 2 ? _abBackZ : pz]),
-});
-// 평면 말뚝 마커 렌더 — 제거됨(말뚝기초 삭제, 사용자 요청).
-// 입체(기초·1층·다락·지붕) 안방 땅 기둥 말뚝·기둥 — 바닥 마커와 똑같은 PILE_POS.anbang 좌표로 그린다(단일 출처).
-PILE_POS.anbang.forEach(([px, pz], i) => 안방썬룸.drawGroundPost(px, pz, i === 0));
+// (평면 말뚝 마커·PILE_POS 좌표표 제거 — 말뚝기초 삭제 + 안방 개방 포치 삭제로 남은 참조가 없어짐.)
 // 담장 발자국(측백·옆집) — siteBaseObjects(공통, 항상 표시)에 넣어 모든 탭이 공유. 기초 등 다른 토글과 무관하게 바탕에 늘 깔린다.
 siteBaseObjects.push(box({ x: lotX0 - 0.2, z: lotZ0, w: 0.2, d: lotD, y: planY, h: planH, mat: fenceMat, cast: false, name: 'ground' }));        // 옆집담장(우측 콘크리트)
 siteBaseObjects.push(box({ x: lotX0, z: lotZ1 - hedgeThickness, w: lotW, d: hedgeThickness, y: planY, h: planH, mat: materials.hedge, cast: false, name: 'ground' }));   // 측백(후면)
