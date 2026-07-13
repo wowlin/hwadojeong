@@ -699,14 +699,30 @@ captureInto(interiorObjects, () => {
     // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
     planYDim(frontCornerDimX, atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`);
     // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
-    // 앞 무릎벽 — 정면 중앙 환기용 프로젝트(어닝)창 1개. 상부경첩·하부 바깥밀이라 비 올 때도 환기.
-    const atticVentWinW = 0.6, atticVentWinH = 0.6, atticVentSillY = secondWallY + 0.3;   // 폭×높 0.6·창대 바닥+0.3 → 윗선 바닥+0.9, 무릎벽(secondWallHeight) 꼭대기까지 인방 0.2m
+    // 앞 무릎벽 — 정면 중앙 환기용 슬라이딩(2짝 미서기)창 1개. 처마가 비를 막아줘 개구 넓은 미서기로 환기 극대화.
+    const atticVentWinW = 1.6, atticVentWinH = 0.6, atticVentSillY = secondWallY + 0.3;   // 폭 1.6(짝 0.8×2)×높 0.6·창대 바닥+0.3 → 윗선 바닥+0.9, 무릎벽(secondWallHeight) 꼭대기까지 인방 0.2m
     const atticVentX0 = (buildingW - atticVentWinW) / 2, atticVentX1 = atticVentX0 + atticVentWinW;   // 정면 중앙 정렬
+    const atticVentHeadY = atticVentSillY + atticVentWinH;
     horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [[atticVentX0, atticVentX1]], secondWallHeight, exteriorWall, materials.exteriorWall);   // 앞 무릎벽 — 중앙 환기창 개구
     lowWall(atticVentX0, buildingFrontZ, atticVentWinW, exteriorWall, secondWallY, atticVentSillY - secondWallY, materials.exteriorWall);                                       // 창 아래 띠(창대)
-    lowWall(atticVentX0, buildingFrontZ, atticVentWinW, exteriorWall, atticVentSillY + atticVentWinH, (secondWallY + secondWallHeight) - (atticVentSillY + atticVentWinH), materials.exteriorWall);   // 창 위 띠(인방)
-    frontAwningSash(atticVentX0, buildingFrontZ + 0.13, atticVentWinW, atticVentSillY, atticVentWinH, -1);   // 유리짝(低Z 바깥으로 밀어 열림)
-    label(`다락 환기 프로젝트창 ${fmtDim(atticVentWinW)}×${fmtDim(atticVentWinH)}m`, buildingW / 2, atticVentSillY + 0.4, buildingFrontZ - 0.1, 'opening');
+    lowWall(atticVentX0, buildingFrontZ, atticVentWinW, exteriorWall, atticVentHeadY, (secondWallY + secondWallHeight) - atticVentHeadY, materials.exteriorWall);   // 창 위 띠(인방)
+    {   // 2짝 편개 미서기 — 왼쪽 고정 짝 + 오른쪽 미닫이 짝(왼쪽으로 슬라이드). 앞벽(低Z 바깥)이라 짝을 Z로 나란히
+      const zc = buildingFrontZ + 0.13, F = materials.windowFrame;
+      const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
+      const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
+      const pw = atticVentWinW / 2, mullW = 0.05, trk = 0.03;
+      box({ x: atticVentX0, z: zc - 0.06, w: atticVentWinW, d: 0.12, y: atticVentSillY, h: 0.08, mat: F });          // 하부 레일(2트랙 전폭)
+      box({ x: atticVentX0, z: zc - 0.06, w: atticVentWinW, d: 0.12, y: atticVentHeadY - 0.08, h: 0.08, mat: F });    // 상부 레일(2트랙 전폭)
+      const pane = (xp, zt, mat) => {
+        box({ x: xp, z: zt - 0.025, w: pw, d: 0.05, y: atticVentSillY, h: atticVentWinH, mat, cast: false });                     // 유리
+        box({ x: xp, z: zt - 0.035, w: mullW, d: 0.07, y: atticVentSillY, h: atticVentWinH, mat: F, cast: false });               // 좌 세로살
+        box({ x: xp + pw - mullW, z: zt - 0.035, w: mullW, d: 0.07, y: atticVentSillY, h: atticVentWinH, mat: F, cast: false });   // 우 세로살
+      };
+      pane(atticVentX0, zc + trk, slGlass);        // 왼쪽 고정 짝 — 바깥트랙
+      pane(atticVentX0 + pw, zc - trk, slMove);    // 오른쪽 미닫이 짝 — 안쪽트랙, 왼쪽으로 슬라이드
+      box({ x: atticVentX0 + pw + 0.06, z: zc - trk - 0.085, w: 0.045, d: 0.045, y: atticVentSillY + 0.26, h: 0.28, mat: materials.handle });   // 미닫이 손잡이(만남대측)
+    }
+    label(`다락 환기 슬라이드창 ${fmtDim(atticVentWinW)}×${fmtDim(atticVentWinH)}m (2짝 편개)`, buildingW / 2, atticVentSillY + 0.4, buildingFrontZ - 0.1, 'opening');
     horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [], secondWallHeight, exteriorWall, materials.exteriorWall);   // 뒤 무릎벽 — 다락방 후면창·계단 픽스창 제거로 통벽
     lowWall(0, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
     lowWall(insideX1, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
