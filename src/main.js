@@ -938,8 +938,9 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
   const roofSideOverhang = 0.4;
   const roofEaveOverhang = 0.6;
   const secondWallTop = secondY + secondFloorThickness + secondWallHeight;
-  const ridgeY = secondWallTop + gableRise;
-  const outerEaveY = secondWallTop - roofSlopeTan * roofEaveOverhang;
+  // 지붕 밑면(roofSlab는 eaveY/ridgeY가 윗면)이 다락 벽 윗면(secondWallTop)에 얹히도록 두께(roofThickness)만큼 올림
+  const ridgeY = secondWallTop + gableRise + roofThickness;
+  const outerEaveY = secondWallTop - roofSlopeTan * roofEaveOverhang + roofThickness;
   const ridgeZ = buildingFrontZ + buildingD / 2;
   // 다락 위 지붕 구성: 단열 260T(다락 천장 단열층) + 그 위 징크 마감
   materials.roofInsul = new THREE.MeshLambertMaterial({ color: 0xe6d9b8, side: THREE.DoubleSide });   // 단열재 260T
