@@ -373,10 +373,9 @@ function entryDoor(x, z, outerW, leafW, y) {
 }
 
 // 측면 외짝 방화문(Z스팬·+X면) — entryDoor의 축(X↔Z)만 바꾼 것. x = 바깥면(高X), z = 개구 앞 모서리.
-function sideEntryDoor(x, z, outerD, leafD, y) {
+function sideEntryDoor(x, z, outerD, leafD, y, doorH) {
   const frameD = (outerD - leafD) / 2;
-  const doorH = 2.1;
-  const frameH = 2.18;
+  const frameH = doorH + 0.08;
   box({ x: x - 0.12, z, w: 0.12, d: frameD, y, h: frameH, mat: materials.windowFrame });                          // 앞 세로틀
   box({ x: x - 0.12, z: z + outerD - frameD, w: 0.12, d: frameD, y, h: frameH, mat: materials.windowFrame });     // 뒤 세로틀
   box({ x: x - 0.12, z, w: 0.12, d: outerD, y: y + doorH, h: frameH - doorH, mat: materials.windowFrame });       // 상부 인방틀
@@ -486,12 +485,13 @@ captureInto(firstFloorFinishObjects, () => {
   firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 개구 상부 인방(문 위)
   firstWallObjects.push(box({ x: 0, z: z1 - wt, w: buildingW, d: wt, y: wy, h: wh, mat: W }));          // 뒤(+Z) 외벽 — 바깥면 z=z1
   firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(주방, x=0) 외벽 — 바깥면 x=0
-  // 좌(안방, x=buildingW) 외벽 — 앞에서 30cm 들어간 곳에 표준 외짝 방화문(측면). 문 개구로 앞·뒤 벽 조각 + 상부 인방으로 분할.
-  const doorD = entryFrameOuterW, dz0 = z0 + wt + 0.3, dz1 = dz0 + doorD;   // 문 앞 모서리 = 앞 외벽 안쪽면 +30cm, 폭 = 문틀 외곽(정면 현관문과 동일)
+  // 좌(안방, x=buildingW) 외벽 — 앞에서 30cm 들어간 곳에 표준 작은(보조) 외짝문(측면). 문 개구로 앞·뒤 벽 조각 + 상부 인방으로 분할.
+  const sideDoorLeaf = 0.7, sideDoorH = 2.0, sideDoorOuter = sideDoorLeaf + 0.1;   // 표준 작은 외짝문: 유효폭 0.7·높이 2.0·문틀외곽 0.8(좌우 프레임 50mm씩)
+  const doorD = sideDoorOuter, dz0 = z0 + wt + 0.3, dz1 = dz0 + doorD;   // 문 앞 모서리 = 앞 외벽 안쪽면 +30cm
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: dz0 - (z0 + wt), y: wy, h: wh, mat: W }));    // 좌 외벽 — 개구 앞쪽(정면측)
   firstWallObjects.push(box({ x: buildingW - wt, z: dz1, w: wt, d: (z1 - wt) - dz1, y: wy, h: wh, mat: W }));        // 좌 외벽 — 개구 뒤쪽(집뒤측)
-  firstWallObjects.push(box({ x: buildingW - wt, z: dz0, w: wt, d: doorD, y: wy + oh, h: wh - oh, mat: W }));        // 좌 외벽 — 개구 상부 인방(문 위)
-  captureInto(firstWallObjects, () => sideEntryDoor(buildingW + 0.04, dz0, doorD, entryDoorLeafW, wy));             // 안방 측면 표준 외짝 방화문
+  firstWallObjects.push(box({ x: buildingW - wt, z: dz0, w: wt, d: doorD, y: wy + sideDoorH, h: wh - sideDoorH, mat: W }));   // 좌 외벽 — 개구 상부 인방(문 위)
+  captureInto(firstWallObjects, () => sideEntryDoor(buildingW + 0.04, dz0, doorD, sideDoorLeaf, wy, sideDoorH));    // 안방 측면 표준 작은 외짝문
   captureInto(firstWallObjects, () => entryDoor(ox0, z0 - 0.04, ow, entryDoorLeafW, wy));   // 정면 중앙 표준 현관문(외짝 방화문, 문짝 유효폭 entryDoorLeafW)
   // 계단실 양쪽 세로 내벽 2개(주방|계단실·계단실|안방)는 여기서 그리지 않음 — buildStairWalls()에서 동적으로 그림.
   //   윗면이 다락 바닥 밑면(loftY - 30cm)에 맞도록 계단 높이에 따라 벽 높이가 변하기 때문(계단·1층 공유).
