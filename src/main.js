@@ -2806,59 +2806,6 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
   extrasObjects.push(...scene.children.slice(_stoveStart));   // 난로·연통·카세트를 '데크' 토글(extrasObjects)에 소속 — 데크와 함께 표시
 }
 
-// 안방 썬룸 아래 자갈 마당에 웨버 켈틀 그릴(지름 50cm) — 소품 그룹(전체일 때만 표시)
-const _grillStart = scene.children.length;
-{
-  const gx = 7.0;                          // 안방 썬룸 폭 중앙
-  const gz = -3.3;                         // 1m 데크 앞쪽 개방 자갈 구역(지붕 아래)
-  const baseY = groundTopY;
-  const R = 0.25;                          // 반지름(지름 50cm)
-  const bowlCenterY = baseY + 0.7;         // 다리 위 보울(조리부) 중심
-  const kettleMat = new THREE.MeshLambertMaterial({ color: 0x1c1c1e });   // 켈틀 블랙
-  const lidMat = new THREE.MeshLambertMaterial({ color: 0x242428 });
-  const metalMat = new THREE.MeshLambertMaterial({ color: 0x3a3d42 });
-  const grateMat = new THREE.MeshLambertMaterial({ color: 0x9a9da1 });
-
-  // 보울(하반구) + 조리 그레이트
-  const bowl = new THREE.Mesh(new THREE.SphereGeometry(R, 28, 18, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), kettleMat);
-  bowl.position.set(gx, bowlCenterY, gz); bowl.castShadow = true; scene.add(bowl);
-  const grate = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.9, R * 0.9, 0.012, 28), grateMat);
-  grate.position.set(gx, bowlCenterY + 0.005, gz); scene.add(grate);
-  // 뚜껑(상반구)
-  const lid = new THREE.Mesh(new THREE.SphereGeometry(R * 1.02, 28, 18, 0, Math.PI * 2, 0, Math.PI / 2), lidMat);
-  lid.position.set(gx, bowlCenterY + 0.02, gz); lid.castShadow = true; scene.add(lid);
-  const lidTopY = bowlCenterY + 0.02 + R * 1.02;
-  // 상단 공기구멍 캡 + 손잡이(가로 바 + 지지대 2개)
-  const vent = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.02, 12), metalMat);
-  vent.position.set(gx, lidTopY - 0.01, gz); scene.add(vent);
-  const hbar = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.15, 12), metalMat);
-  hbar.rotation.z = Math.PI / 2; hbar.position.set(gx, lidTopY + 0.05, gz); scene.add(hbar);
-  for (const dx of [-0.055, 0.055]) {
-    const hp = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.05, 8), metalMat);
-    hp.position.set(gx + dx, lidTopY + 0.025, gz); scene.add(hp);
-  }
-  // 삼각대 다리 3개(보울 하부 → 지면으로 벌어짐) + 뒤쪽 바퀴 2개
-  const up = new THREE.Vector3(0, 1, 0);
-  const legTopY = bowlCenterY - R * 0.8;
-  for (let i = 0; i < 3; i += 1) {
-    const ang = (i / 3) * Math.PI * 2 + Math.PI / 6;
-    const p0 = new THREE.Vector3(gx + Math.cos(ang) * R * 0.3, legTopY, gz + Math.sin(ang) * R * 0.3);
-    const p1 = new THREE.Vector3(gx + Math.cos(ang) * R * 1.7, baseY, gz + Math.sin(ang) * R * 1.7);
-    const dir = new THREE.Vector3().subVectors(p1, p0);
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.013, dir.length(), 8), metalMat);
-    leg.position.copy(p0).addScaledVector(dir, 0.5);
-    leg.quaternion.setFromUnitVectors(up, dir.clone().normalize());
-    leg.castShadow = true; scene.add(leg);
-    if (i >= 1) {  // 뒤쪽 두 다리 밑 바퀴
-      const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 16), kettleMat);
-      wheel.rotation.z = Math.PI / 2;
-      wheel.position.set(p1.x, baseY + 0.07, p1.z);
-      wheel.castShadow = true; scene.add(wheel);
-    }
-  }
-  label('웨버 그릴 Ø50cm', gx, lidTopY + 0.4, gz, 'furniture');
-}
-extrasObjects.push(...scene.children.slice(_grillStart));
 
 // ╔══════════════════════════════════════════════════════════════════════════════╗
 // ║ ▲▲▲  S2 영역 끝  ▲▲▲   (아래부터는 s1(1층+다락)·공유 부재 — s2 아님)             ║
