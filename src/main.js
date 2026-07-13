@@ -3960,10 +3960,12 @@ function drawStairCore(p) {
   // WC 천장 — 상부런 발판 밑면(들쭉날쭉)을 가리는 사선 천장 패널. 단의 안쪽 뒤코너 선(z=zTurn0-jT, y=baseU+jR-treadH)을 따라 기울인 평판.
   {
     const baseU = landingY, zFrontU = zTurn0 - nU * T;
-    const yBack = baseU - treadH, yFront = baseU + nU * R - treadH;           // 뒤(낮음)·앞(높음)
-    const panelLen = Math.hypot(nU * T, nU * R), tilt = Math.atan2(R, T), th = 0.05, drop = 0.05;   // 코너선 아래(z-파이팅 회피·발판 밑면 가림)
+    const zF = zFrontU + interiorWall;                                       // 앞끝을 WC 문벽(interiorWall) 뒤로 물려 문벽과 겹침 제거
+    const dz = zTurn0 - zF;
+    const yBack = baseU - treadH, yFront = baseU + (R / T) * dz - treadH;     // 뒤(낮음)·앞(높음, 물린 앞끝 기준)
+    const panelLen = Math.hypot(dz, (R / T) * dz), tilt = Math.atan2(R, T), th = 0.05, drop = 0.05;   // 코너선 아래(z-파이팅 회피·발판 밑면 가림)
     const ceil = new THREE.Mesh(new THREE.BoxGeometry(W, th, panelLen), new THREE.MeshLambertMaterial({ color: 0xf2f0e8, side: THREE.DoubleSide }));   // 벽과 같은 톤·양면(내부=밑에서 봄)
-    ceil.position.set(laneB + W / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zFrontU) / 2);
+    ceil.position.set(laneB + W / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zF) / 2);
     ceil.rotation.x = tilt;
     ceil.receiveShadow = true;
     scene.add(ceil);
