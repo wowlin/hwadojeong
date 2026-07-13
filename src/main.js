@@ -882,6 +882,8 @@ curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashT
   // ── 다락 외벽 — 앞·뒤 무릎벽 + 창 + 좌우 박공벽 + 벽높이·용마루 치수 ──────────────
   captureInto(atticExtWallObjects, () => {
     planYDim(frontCornerDimX, frontCornerDimZ, secondWallY, secondWallY + secondWallHeight, `다락 벽높이 ${fmtDim(secondWallHeight)}m`);
+    // 다락 벽높이 아래(1층 구간) — 1층 바닥면(firstFloorY)~천장(firstWallY+firstWallHeight, =다락 바닥 밑면)
+    planYDim(frontCornerDimX, frontCornerDimZ, firstFloorY, firstWallY + firstWallHeight, `1층 바닥~천장 ${fmtDim((firstWallY + firstWallHeight) - firstFloorY)}m`);
     // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
     planYDim(frontCornerDimX, atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`);
     // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
