@@ -1148,8 +1148,11 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     const joistBlue = new THREE.MeshLambertMaterial({ color: 0x3355cc });  // 3·5번 장선
     Array.from({ length: 7 }, (_, i) => flatX0 + (i * fw) / 6).forEach((x, i) => {   // 앞뒤 세로 장선 7개 균등 배치(양 끝 포함)
       const n = i + 1;                                                     // 1-based 번호
-      const mat = (n === 2 || n === 4 || n === 6) ? joistRed : (n === 3 || n === 5) ? joistBlue : 썬룸Frame;
+      const isRed = n === 2 || n === 4 || n === 6, isBlue = n === 3 || n === 5;
+      const mat = isRed ? joistRed : isBlue ? joistBlue : 썬룸Frame;
       box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat });
+      if (isRed) ceilingLight({ x, z: zMid, ceilingY: flatFrameY });       // 빨간 장선 중앙 전등
+      else if (isBlue) ceilingFan({ x, z: zMid, ceilingY: flatFrameY });   // 파란 장선 중앙 실링팬
     });
   }
 
