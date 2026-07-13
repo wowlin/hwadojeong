@@ -535,7 +535,15 @@ captureInto(firstFloorFinishObjects, () => {
   const zB = z1 - wt;
   captureInto(firstWallObjects, () => {
     box({ x: 0, z: zB, w: rwKx0, d: wt, y: wy, h: wh, mat: W });                                       // 주방측 끝~주방창
-    box({ x: rwKx0 + rwW, z: zB, w: rwBx0 - (rwKx0 + rwW), d: wt, y: wy, h: wh, mat: W });             // 주방창~안방창 사이
+    // 화장실(계단하부 WC) 뒤 외벽 — 변기 위 프로젝트(어닝)창 개구. 안목 X 중앙 정렬·창대 물탱크 위.
+    const wcWinW = 0.6, wcWinH = 0.4, wcWinCx = stairBathX + interiorWall + (stairBathW - interiorWall) / 2;   // 폭0.6×높0.4·화장실 안목 X 중앙(변기 직상)
+    const wcWinX0 = wcWinCx - wcWinW / 2, wcWinSill = firstFloorY + 0.7, wcWinHead = firstFloorY + 0.7 + wcWinH;   // 창대 바닥+0.7(변기 물탱크 위)
+    box({ x: rwKx0 + rwW, z: zB, w: wcWinX0 - (rwKx0 + rwW), d: wt, y: wy, h: wh, mat: W });            // 주방창~화장실창
+    box({ x: wcWinX0 + wcWinW, z: zB, w: rwBx0 - (wcWinX0 + wcWinW), d: wt, y: wy, h: wh, mat: W });    // 화장실창~안방창
+    box({ x: wcWinX0, z: zB, w: wcWinW, d: wt, y: wy, h: wcWinSill - wy, mat: W });                     // 창 아래 창대띠
+    box({ x: wcWinX0, z: zB, w: wcWinW, d: wt, y: wcWinHead, h: (wy + wh) - wcWinHead, mat: W });       // 창 위 인방
+    frontAwningSash(wcWinX0, z1 - 0.13, wcWinW, wcWinSill, wcWinH, 1);                                  // 프로젝트(어닝)창 — 高Z 바깥으로 밀어 열림
+    label(`화장실 뒤 프로젝트창 ${fmtDim(wcWinW)}×${fmtDim(wcWinH)}m`, wcWinCx, wcWinSill + 0.4, z1 + 0.1, 'opening');
     box({ x: rwBx0 + rwW, z: zB, w: buildingW - (rwBx0 + rwW), d: wt, y: wy, h: wh, mat: W });         // 안방창~안방측 끝
     for (const [a, tag] of [[rwKx0, '주방'], [rwBx0, '안방']]) {
       box({ x: a, z: zB, w: rwW, d: wt, y: wy, h: rwSill - wy, mat: W });                              // 창 아래 창대띠
