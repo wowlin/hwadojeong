@@ -92,7 +92,7 @@ export const familyRearWindowH = familyRearWindowTopY - familyRearWindowSillY;  
 export const sideDoorZ = insideZ0 + 0.2;                        // 전면쪽(코너에서 0.2m 띄움)
 export const sideDoorBaseY = firstFloorY;                       // 바닥에서 시작(출입)
 export const sideDoorTopY = sideDoorBaseY + sideDoorH;
-export const secondRoom2X = firstFamilyX;                                       // 다락방2 = 1층 안방 발자국에 정렬(내력벽 안방면부터)
+export const secondRoom2X = stairHighXWallX + interiorWall;                      // 다락방2 안목 시작 = 계단실 내벽(10cm) 안쪽 — 내벽을 계단실에 딱 붙이고 방은 벽 안쪽부터
 export const secondRoom2W = insideX1 - secondRoom2X;
 export const secondCorridorX = insideX0;
 export const secondCorridorZ = insideZ0;

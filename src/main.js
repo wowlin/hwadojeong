@@ -826,7 +826,11 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: secondCorridorD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 복도 슬래브 주방측 = 주방 벽면(stairLowXRunX), 안방측 = 안방 벽면(stairHighXWallX) — 뒤 다락바닥·1층과 정렬
     box({ x: stairHighXWallX, z: insideZ0, w: insideX1 - stairHighXWallX, d: insideD, y: secondY, h: secondFloorThickness, mat: slabMat });   // 안방측 슬래브 → 안방 내력벽 계단면(stairHighXWallX)부터(내벽 밑까지 채워 틈 제거)
     room({ x: secondCorridorX, z: secondCorridorZ, w: secondCorridorW, d: secondCorridorD, y: secondWallY + floorSurfaceH, mat: materials.landing, text: roomText('다락 복도', secondCorridorW, secondCorridorD) });
-    room({ x: planRightKitchenX, z: secondAtticZ, w: firstKitchenW, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', firstKitchenW, secondAtticD) });
+    const loftRoom1W = kitchenInnerWallX - innerWallW / 2 - planRightKitchenX;   // 다락방1 안목 = 주방 외벽 안쪽~계단실 내벽 주방면(벽두께 제외)
+    const loftClosetX = kitchenInnerWallX + innerWallW / 2;                       // 수납장 시작 = 계단실 내벽 계단실면
+    const loftClosetW = stairLowXRunX - loftClosetX;                             // 수납장 폭 = 내벽 계단실면~하부런 모서리(계단실 5cm 자투리)
+    room({ x: planRightKitchenX, z: secondAtticZ, w: loftRoom1W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방1', loftRoom1W, secondAtticD) });
+    room({ x: loftClosetX, z: secondAtticZ, w: loftClosetW, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('수납장', loftClosetW, secondAtticD) });
     room({ x: secondRoom2X, z: secondAtticZ, w: secondRoom2W, d: secondAtticD, y: secondWallY + floorSurfaceH + 0.004, mat: materials.bed, text: roomText('다락방2', secondRoom2W, secondAtticD) });
   });
 
@@ -879,8 +883,8 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     horizontalWallWithGaps(secondRoom2X, secondAtticWallZ, secondRoom2W, secondWallY, [
       [secondRoom2DoorX, secondRoom2DoorX + interiorDoorW]
     ], secondAtticFrontWallH, interiorWall);
-    gableLongWallX({ x: stairLowXRunX - interiorWall, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 다락 내벽 10cm 통일 — 계단실면을 다락방1 경계(stairLowXRunX=칸막이1 끝)에 맞춤
-    gableLongWallX({ x: secondRoom2X - interiorWall, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 다락 내벽 10cm 통일 — 안방면을 다락방2 경계(secondRoom2X=칸막이2 시작)에 맞춤(1층 내력벽 20cm과 별개)
+    gableLongWallX({ x: kitchenInnerWallX - innerWallW / 2, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: innerWallW, mat: materials.wall });   // 다락방1|계단실 내벽(10cm) — 1층 주방 내벽에 겹쳐 세움. 계단실면 옆 5cm 자투리는 수납장
+    gableLongWallX({ x: secondRoom2X - interiorWall, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 다락방2|계단실 내벽(10cm) — 계단실면(stairHighXWallX)에 딱 붙임. 방 안목은 벽 안쪽(secondRoom2X)부터
     pocketDoorHorizontal(secondRoom1DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, -1);
     pocketDoorHorizontal(secondRoom2DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, 1);
     lowWall(secondRoom1DoorX, secondAtticWallZ, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방1 문 위 인방
