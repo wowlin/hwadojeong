@@ -4077,9 +4077,7 @@ function drawStairAnno(p) {
   const fillZend = zFrontL + nHead * T;
   // 다락 바닥 슬래브 — '다락 바닥' 토글(secondFloorObjects)로 분리(anno엔 안 넣음). 주방 위·안방 위 다락바닥은 계단실(가운데)만 비우고 양쪽을 뒤 외벽까지, 앞쪽 통행 바닥과 zFrontU에서 이어짐. 1층 계단 위 메움은 헤드룸 2m 확보되는 단까지(구별색).
   captureInto(loftSlabs, () => {
-    box({ x: insideX0, z: insideZ0, w: insideX1 - insideX0, d: loftPass, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 양쪽 외벽 안쪽까지(앞쪽 통행)
-    box({ x: insideX0, z: zFrontU, w: kitchenWallInner - insideX0, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false });   // 주방 위
-    box({ x: familyWallInner, z: zFrontU, w: insideX1 - familyWallInner, d: loftRestD, y: loftY - loftTh, h: loftTh, mat: materials.landing, cast: false }); // 안방 위
+    // 통행·주방위·안방위 노란 슬래브 제거 — 흰색 구조 슬래브(주방측·복도·안방측)가 같은 자리를 이미 덮어, 벽 밑에서 노란 바닥이 겹쳐 반짝이던 것 해소
     const suZ0 = zFrontU + interiorWall;   // 수납장 안목 앞선 = 다락 입구 가로벽(interiorWall) 뒷면 — 안목 치수·바닥색은 벽 뒤부터
     box({ x: laneA, z: zFrontU, w: W, d: interiorWall, y: loftY - loftTh, h: loftTh, mat: materials.wall, cast: false });   // 수납장 앞 10cm = 다락 입구 가로벽이 서는 자리 → 다락 벽과 같은 색으로 표시
     if (fillZend > suZ0) {
