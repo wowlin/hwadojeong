@@ -786,7 +786,7 @@ captureInto(interiorObjects, () => {
     planYDim(frontCornerDimX, atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`);
     // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
     // 앞 무릎벽 — 좌우 옆벽서 atticFrontVentSide 이격한 환기용 프로젝트(어닝)창 2개(주방쪽·안방쪽). 상부경첩·하부 바깥밀이라 창짝이 추락방지 난간 역할(낮은 창대에도 안전) + 처마와 무관하게 비 막힘.
-    const atticVentWinW = 0.6, atticVentWinH = 0.4, atticVentSillY = secondWallY + 0.5;   // 폭0.6×높0.4·창대 바닥+0.5 → 윗선 바닥+0.9(고정), 무릎벽(secondWallHeight) 꼭대기까지 인방 0.2m
+    const atticVentWinW = 0.6, atticVentWinH = 0.4, atticVentSillY = secondWallY + 0.4;   // 폭0.6×높0.4·창대 바닥+0.4 → 윗선 바닥+0.8, 무릎벽(secondWallHeight) 꼭대기까지 인방
     const atticFrontVentSide = 1.6;                                                       // 좌우 옆벽서 창까지 이격(끝선)
     const atticVentKx0 = atticFrontVentSide, atticVentBx0 = buildingW - atticFrontVentSide - atticVentWinW;   // 주방쪽(低X)·안방쪽(高X) 창 시작 X
     const atticVentHeadY = atticVentSillY + atticVentWinH;
