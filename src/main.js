@@ -3938,15 +3938,17 @@ function drawStairCore(p) {
     const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
     box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
-  // 두 런 분리벽 겸 WC 저X벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로 이 벽(내벽 두께 interiorWall=10cm)을 상부런(laneB) 저X 모서리에 세운다. 하부·상부 단수가 같아 계단형이 필요 없다: 바닥~사선 천장 밑선까지 사선벽 한 장으로 통합(중복·반짝임 없음). 앞끝은 WC 문벽 뒤로 물려 겹침 제거.
+  // 두 런 분리벽 겸 WC 저X벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로 이 벽(내벽 두께 interiorWall=10cm)을 상부런(laneB) 저X 모서리에 세운다.
+  // 앞끝(WC 문벽 뒤)~뒤 외벽까지 한 덩어리 벽 하나: 윗변은 앞쪽 WC 사선 천장 밑선을 따르고, 돌음(턴존)에선 첫 계단참 발판 밑면 높이로 이어진다. 계단실을 두 공간으로 분리.
   const gapX = laneB, gapW = interiorWall;
   {
-    const topAt = (z) => (baseU - treadH) + (R / T) * (zTurn0 - z) - 0.10;   // 천장 밑선 = 발판 뒤코너선 − (드롭0.05+패널두께0.05)
-    const zF = zFrontL + interiorWall;                     // 앞끝을 문벽(interiorWall) 뒤로 물림
-    yzWallPrism({ x: gapX, thickness: gapW, mat: materials.stairSpineWall, points: [[zTurn0, fy], [zF, fy], [zF, topAt(zF)], [zTurn0, topAt(zTurn0)]] });
+    const topAt = (z) => (baseU - treadH) + (R / T) * (zTurn0 - z) - 0.10;   // WC 천장 밑선 = 발판 뒤코너선 − (드롭0.05+패널두께0.05)
+    const zF = zFrontL + interiorWall;                                       // 앞끝을 WC 문벽 뒤로 물림
+    const backTop = fy + (nL + nWind + 1) * R - treadH;                      // 돌음(턴존) 윗변 = 첫 계단참 발판 밑면
+    yzWallPrism({ x: gapX, thickness: gapW, mat: materials.stairSpineWall, points: [
+      [zF, fy], [insideZ1, fy], [insideZ1, backTop], [zTurn0, backTop], [zTurn0, topAt(zTurn0)], [zF, topAt(zF)],
+    ] });
   }
-  // 돌음(턴존)~뒤 외벽 — 돌음계단 첫 계단참 발판 밑면까지 채워 뚫린 데 없게(위 천장까지는 트임). 계단실을 두 공간으로 분리.
-  box({ x: gapX, z: zTurn0, w: gapW, d: insideZ1 - zTurn0, y: fy, h: (nL + nWind + 1) * R - treadH, mat: materials.stairSpineWall, cast: false });
   // 계단하부 WC(상부런 laneB 아래·안방측 공간) 앞벽 — 트인 전면을 막아 화장실로 사용. 가운데 출입문 1개. 윗면=다락 바닥 밑면.
   {
     const wcWallH = (loftY - loftFloorThickness) - fy;
