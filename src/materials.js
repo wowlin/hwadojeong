@@ -23,6 +23,7 @@ export const materials = {
   kitchen: new THREE.MeshLambertMaterial({ color: 0xfff3c4 }),
   bed: new THREE.MeshLambertMaterial({ color: 0xbed8ff }),
   bath: new THREE.MeshLambertMaterial({ color: 0xbff3ef }),
+  bathClear: new THREE.MeshLambertMaterial({ color: 0xff4fa3 }),   // 화장실 안목(벽 뺀 실바닥) 확인용 구분색(자홍) — 화장실색·계단실색과 뚜렷이 구별
   toilet: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
   vanity: new THREE.MeshLambertMaterial({ color: 0x99a13a }),
   shower: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
