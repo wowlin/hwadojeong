@@ -1140,11 +1140,11 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     const flatX0 = (connectRightX != null) ? connectRightX : px0;  // 연결 시 이웃까지 이어 붙임. 기본은 프레임 발자국(px0~px1·pzF~pzB)에 정합
     const fw = px1 - flatX0, fd = pzB - pzF;
     const zMid = pzF + fd / 2;
-    // 가로 틀(앞·뒤·가운데) + 앞뒤 세로 장선 6개(균등 간격)
+    // 가로 틀(앞·뒤·가운데) + 앞뒤 세로 장선 7개(균등 간격)
     for (const z of [pzF, pzB, zMid]) {                    // 앞·뒤 + 가운데 가로
       box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame });
     }
-    for (const x of Array.from({ length: 6 }, (_, i) => flatX0 + (i * fw) / 5)) {   // 앞뒤 세로 장선 6개 균등 배치(양 끝 포함)
+    for (const x of Array.from({ length: 7 }, (_, i) => flatX0 + (i * fw) / 6)) {   // 앞뒤 세로 장선 7개 균등 배치(양 끝 포함)
       box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame });
     }
   }
