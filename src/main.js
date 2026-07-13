@@ -696,7 +696,10 @@ box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: stai
 // '계단 앞' 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거) — 여기선 색면만.
 box({ x: stairLowXRunX - interiorWall, z: insideZ0, w: interiorWall, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 captureInto(bathObjects, () => {
-  room({ x: stairBathX, z: stairBathZ, w: stairBathW, d: stairBathD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bath, text: roomText('화장실', stairBathW, stairBathD), surfaceH: 0.018 });
+  // 화장실 안목(벽 뺀 실바닥) — 계단쪽 분리벽·앞 문벽(각 interiorWall)을 뺀 안쪽 사각형에만 바닥칠
+  const bathClearX = stairBathX + interiorWall, bathClearW = stairBathW - interiorWall;
+  const bathClearZ = stairBathZ + interiorWall, bathClearD = stairBathD - interiorWall;
+  room({ x: bathClearX, z: bathClearZ, w: bathClearW, d: bathClearD, y: firstFloorY + floorOverlayLift + 0.006, mat: materials.bath, text: roomText('화장실', bathClearW, bathClearD), surfaceH: 0.018 });
   label(roomText('화장실', stairBathW, stairBathD), stairBathDoorX + stairBathDoorW / 2, firstFloorY + stairBathDoorH / 2, stairBathZ - 0.12, 'room');
   // 세면대 — 안방쪽 벽(높은 X)·앞쪽. 문 스윙(계단쪽 앞)을 피해 천장 높은 앞부분에 둠
   box({ x: stairBathX + 0.58, z: stairBathZ + 0.18, w: 0.32, d: 0.34, y: firstFloorY, h: 0.72, mat: materials.vanity });
