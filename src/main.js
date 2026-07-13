@@ -1144,9 +1144,13 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     for (const z of [pzF, pzB, zMid]) {                    // 앞·뒤 + 가운데 가로
       box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame });
     }
-    for (const x of Array.from({ length: 7 }, (_, i) => flatX0 + (i * fw) / 6)) {   // 앞뒤 세로 장선 7개 균등 배치(양 끝 포함)
-      box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame });
-    }
+    const joistRed = new THREE.MeshLambertMaterial({ color: 0xcc3333 });   // 2·4·6번 장선
+    const joistBlue = new THREE.MeshLambertMaterial({ color: 0x3355cc });  // 3·5번 장선
+    Array.from({ length: 7 }, (_, i) => flatX0 + (i * fw) / 6).forEach((x, i) => {   // 앞뒤 세로 장선 7개 균등 배치(양 끝 포함)
+      const n = i + 1;                                                     // 1-based 번호
+      const mat = (n === 2 || n === 4 || n === 6) ? joistRed : (n === 3 || n === 5) ? joistBlue : 썬룸Frame;
+      box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat });
+    });
   }
 
   // 전면 폴딩도어 — 포치 도어프레임 앞단 개구부(두 앞기둥 사이·2.4m)에 딱 맞춤. 중앙 양개로 접혀 열리며, 열린 가운데가 출입구.
