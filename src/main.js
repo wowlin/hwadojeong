@@ -812,13 +812,18 @@ captureInto(interiorObjects, () => {
     // 뒤 무릎벽 — 좌우 옆벽서 1층 뒤 미서기창과 끝선 맞춘(rearWindowSideOffset) 프로젝트(어닝)창 2개(주방쪽·안방쪽). 앞 환기창과 동일 규격.
     const backVentKx0 = rearWindowSideOffset;                                                    // 주방쪽(低X) 시작 — 옆벽서 이격, 1층 창 끝선과 정렬
     const backVentBx0 = buildingW - rearWindowSideOffset - atticVentWinW;                        // 안방쪽(高X) 시작 — 끝선(buildingW−이격)에서 창폭만큼 안쪽
-    horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [[backVentKx0, backVentKx0 + atticVentWinW], [backVentBx0, backVentBx0 + atticVentWinW]], secondWallHeight, exteriorWall, materials.exteriorWall);   // 뒤 무릎벽 — 창 2개 개구
+    const backFixW = 1.2, backFixX0 = (buildingW - backFixW) / 2;                                // 중앙 픽스창 — 폭 1.2·정면 중앙, 좌우 프로젝트창과 같은 창대·높이(atticVent…)
+    horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [[backVentKx0, backVentKx0 + atticVentWinW], [backVentBx0, backVentBx0 + atticVentWinW], [backFixX0, backFixX0 + backFixW]], secondWallHeight, exteriorWall, materials.exteriorWall);   // 뒤 무릎벽 — 창 3개 개구(좌우 환기 + 중앙 픽스)
     for (const bx0 of [backVentKx0, backVentBx0]) {
       lowWall(bx0, insideZ1, atticVentWinW, exteriorWall, secondWallY, atticVentSillY - secondWallY, materials.exteriorWall);                              // 창 아래 띠(창대)
       lowWall(bx0, insideZ1, atticVentWinW, exteriorWall, atticVentHeadY, (secondWallY + secondWallHeight) - atticVentHeadY, materials.exteriorWall);       // 창 위 띠(인방)
       frontAwningSash(bx0, buildingBackZ - 0.13, atticVentWinW, atticVentSillY, atticVentWinH, 1);   // 유리짝(高Z 바깥으로 밀어 열림)
       label(`다락 뒤 환기 프로젝트창 ${fmtDim(atticVentWinW)}×${fmtDim(atticVentWinH)}m`, bx0 + atticVentWinW / 2, atticVentSillY + 0.4, buildingBackZ + 0.1, 'opening');
     }
+    lowWall(backFixX0, insideZ1, backFixW, exteriorWall, secondWallY, atticVentSillY - secondWallY, materials.exteriorWall);                               // 중앙 픽스창 아래 띠(창대)
+    lowWall(backFixX0, insideZ1, backFixW, exteriorWall, atticVentHeadY, (secondWallY + secondWallHeight) - atticVentHeadY, materials.exteriorWall);        // 중앙 픽스창 위 띠(인방)
+    frontFixSash(backFixX0, buildingBackZ - 0.13, backFixW, atticVentSillY, atticVentWinH);   // 중앙 고정 유리(비개폐)
+    label(`다락 뒤 중앙 픽스창 ${fmtDim(backFixW)}×${fmtDim(atticVentWinH)}m`, backFixX0 + backFixW / 2, atticVentSillY + 0.4, buildingBackZ + 0.1, 'opening');
     // ── 좌·우 옆(박공)벽 — 각 다락방 바깥벽. 용마루 밑 최고 구간에 미서기 환기창 1개씩(2짝 편개) ──
     // 창대 바닥+0.9(추락안전선 근접·바닥매트 위) · 폭(깊이Z)1.2×높0.8 · 앞끝은 방 앞벽(secondAtticZ)서 0.1m 띄움
     const atticSideWinW = 1.2, atticSideWinH = 0.8, atticSideSillY = secondWallY + 0.9, atticSideHeadY = secondWallY + 0.9 + 0.8;
