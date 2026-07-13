@@ -391,21 +391,30 @@ function frontFixSash(x, z, w, sillY, h) {
   box({ x: x + frame, z: glassZ, w: w - frame * 2, d: 0.04, y: sillY + frame, h: h - frame * 2, mat: materials.glass });   // 단일 유리
 }
 
-// 배면(뒤 외벽·+Z면) 미서기 창 — 2짝(좌짝 고정 + 우짝 미닫이). 짝을 X로 나눔·유리는 Z면. zc = 유리 중심 Z면
-function rearSlider(x, w, sillY, h, zc) {
-  const F = materials.windowFrame, trk = 0.03, pw = w / 2, mullW = 0.05;
+// 배면(뒤 외벽·+Z면) 미서기 창 — n짝(기본 2짝: 좌고정+우미닫이 / 4짝: 양끝 고정+가운데 2짝 미닫이, 중앙서 열림). 짝을 X로 나눔·유리는 Z면. zc = 유리 중심 Z면
+function rearSlider(x, w, sillY, h, zc, n = 2) {
+  const F = materials.windowFrame, trk = 0.03, pw = w / n, mullW = 0.05;
   const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
   const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
-  box({ x, z: zc - 0.06, w, d: 0.12, y: sillY, h: 0.08, mat: F });                     // 하부 레일(2트랙 전폭)
+  box({ x, z: zc - 0.06, w, d: 0.12, y: sillY, h: 0.08, mat: F });                     // 하부 레일(전폭)
   box({ x, z: zc - 0.06, w, d: 0.12, y: sillY + h - 0.08, h: 0.08, mat: F });          // 상부 레일
   const pane = (xp, zt, mat) => {
     box({ x: xp, z: zt - 0.025, w: pw, d: 0.05, y: sillY, h, mat, cast: false });                     // 유리
     box({ x: xp, z: zt - 0.035, w: mullW, d: 0.07, y: sillY, h, mat: F, cast: false });               // 좌 세로살
     box({ x: xp + pw - mullW, z: zt - 0.035, w: mullW, d: 0.07, y: sillY, h, mat: F, cast: false });   // 우 세로살
   };
-  pane(x, zc + trk, slGlass);        // 좌짝 고정 — 바깥트랙(高Z)
-  pane(x + pw, zc - trk, slMove);    // 우짝 미닫이 — 안쪽트랙(低Z)
-  box({ x: x + pw + 0.06, z: zc - trk - 0.085, w: 0.045, d: 0.045, y: sillY + 0.26, h: 0.28, mat: materials.handle });   // 미닫이 손잡이
+  // 짝 배치 — 2짝: 좌 고정·우 미닫이 / 4짝: 양끝 고정·가운데 2짝 미닫이. 고정=바깥트랙(高Z), 미닫이=안쪽트랙(低Z)
+  const isFixed = (i) => (n === 2) ? (i === 0) : (i === 0 || i === n - 1);
+  for (let i = 0; i < n; i += 1) {
+    const fixed = isFixed(i);
+    pane(x + i * pw, zc + (fixed ? trk : -trk), fixed ? slGlass : slMove);
+  }
+  if (n === 2) {
+    box({ x: x + pw + 0.06, z: zc - trk - 0.085, w: 0.045, d: 0.045, y: sillY + 0.26, h: 0.28, mat: materials.handle });     // 미닫이 손잡이
+  } else {
+    box({ x: x + 2 * pw - 0.105, z: zc - trk - 0.085, w: 0.045, d: 0.045, y: sillY + 0.26, h: 0.28, mat: materials.handle }); // 좌중 미닫이 손잡이(중앙)
+    box({ x: x + 2 * pw + 0.06, z: zc - trk - 0.085, w: 0.045, d: 0.045, y: sillY + 0.26, h: 0.28, mat: materials.handle });  // 우중 미닫이 손잡이(중앙)
+  }
 }
 
 // 옆(좌·우 외벽·±X면) 미서기 창 — 2짝(앞짝 고정 + 뒤짝 미닫이). 짝을 Z로 나눔·유리는 X면. xc = 유리 중심 X면
@@ -524,7 +533,7 @@ captureInto(firstFloorFinishObjects, () => {
     box({ x: 0, z: z0, w: kfwX0, d: wt, y: wy, h: wh, mat: W });                                        // 주방측 끝~주방 앞문
     box({ x: kfwX0 + kfwW, z: z0, w: ox0 - (kfwX0 + kfwW), d: wt, y: wy, h: wh, mat: W });              // 주방 앞문~현관
     box({ x: kfwX0, z: z0, w: kfwW, d: wt, y: kfwHead, h: (wy + wh) - kfwHead, mat: W });               // 문 위 인방
-    rearSlider(kfwX0, kfwW, firstFloorY, kfwHead - firstFloorY, z0 + 0.13);                             // 미서기 2짝(유리 정면쪽·바닥까지)
+    rearSlider(kfwX0, kfwW, firstFloorY, kfwHead - firstFloorY, z0 + 0.13, 4);                          // 미서기 4짝(유리 정면쪽·바닥까지)
     label(`주방 앞 미서기문 ${fmtDim(kfwW)}×${fmtDim(kfwHead - firstFloorY)}m`, kfwX0 + kfwW / 2, firstFloorY + 0.4, z0 - 0.1, 'opening');
   });
   firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 현관 개구 상부 인방(문 위)
