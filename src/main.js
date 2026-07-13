@@ -195,6 +195,13 @@ function gableEndWallWithWindow({
   sideSash(x + (sashSide > 0 ? thickness + 0.04 : 0), windowZ0, windowW, windowBottomY, windowH);
 }
 
+// 창 없는 통짜 박공 삼각벽(외벽 창 제거용)
+function gableEndWallSolid({ x, z, d, y, rise, thickness = 0.08, mat }) {
+  const z0 = z, z1 = z + d, zMid = z + d / 2, y0 = y, y1 = y + rise;
+  yzWallPrism({ x, thickness, mat, points: [[z0, y0], [z1, y0], [zMid, y1]] });
+  gableEndWallThicknessCap({ x0: x, x1: x + thickness, z0, zMid, z1, y0, y1, mat: materials.wallTop });
+}
+
 function roofRiseAtZ(z) {
   const ridgeZ = buildingFrontZ + buildingD / 2;
   const halfDepth = buildingD / 2;
@@ -773,23 +780,13 @@ room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstF
 // 1F walls
 horizontalWallWithGaps(0, buildingFrontZ, buildingW, firstWallY, [
   [kitchenYardSashX, kitchenYardSashX + yardSashW],
-  [familyWindowX, familyWindowX + familyWindowW],
   [entryGapStart, entryGapEnd]
-], firstWallHeight, exteriorWall, materials.exteriorWall);
-// 주방 전면: 안방과 동일한 출입 가능 샷시(데크로 통하는 전면 도어창) — 상부 인방만
+], firstWallHeight, exteriorWall, materials.exteriorWall);   // 안방 전면창 개구 제거(통벽), 문 개구 2개(주방 도어·현관)만 유지
+// 주방 전면 도어 상부 인방 + 현관 상부 인방(안방창 창대·인방 삭제)
 lowWall(kitchenYardSashX, buildingFrontZ, yardSashW, exteriorWall, yardSashTopY, firstWallY + firstWallHeight - yardSashTopY, materials.exteriorWall);
-lowWall(familyWindowX, buildingFrontZ, familyWindowW, exteriorWall, firstWallY, familyWindowSillY - firstWallY, materials.exteriorWall);          // 안방 창 아래(창대벽 900)
-lowWall(familyWindowX, buildingFrontZ, familyWindowW, exteriorWall, familyWindowTopY, firstWallY + firstWallHeight - familyWindowTopY, materials.exteriorWall);   // 안방 창 위(인방)
 lowWall(entryGapStart, buildingFrontZ, entryFrameOuterW, exteriorWall, entryDoorBaseY + entryFrameH, firstWallY + firstWallHeight - entryDoorBaseY - entryFrameH, materials.exteriorWall);
-// 후면 벽: 주방은 싱크대용 창(전면에서 이동), 안방 후면 창
-horizontalWallWithGaps(0, insideZ1, buildingW, firstWallY, [
-  [kitchenRearWindowX, kitchenRearWindowX + kitchenRearWindowW],
-  [familyRearWindowX, familyRearWindowX + familyRearWindowW]
-], firstWallHeight, exteriorWall, materials.exteriorWall);
-lowWall(kitchenRearWindowX, insideZ1, kitchenRearWindowW, exteriorWall, firstWallY, kitchenRearWindowSillY - firstWallY, materials.exteriorWall);
-lowWall(kitchenRearWindowX, insideZ1, kitchenRearWindowW, exteriorWall, kitchenRearWindowTopY, firstWallY + firstWallHeight - kitchenRearWindowTopY, materials.exteriorWall);
-lowWall(familyRearWindowX, insideZ1, familyRearWindowW, exteriorWall, firstWallY, familyRearWindowSillY - firstWallY, materials.exteriorWall);
-lowWall(familyRearWindowX, insideZ1, familyRearWindowW, exteriorWall, familyRearWindowTopY, firstWallY + firstWallHeight - familyRearWindowTopY, materials.exteriorWall);
+// 후면 벽 — 싱크대창·안방 후면창 제거로 통벽(솔리드)
+horizontalWallWithGaps(0, insideZ1, buildingW, firstWallY, [], firstWallHeight, exteriorWall, materials.exteriorWall);
 lowWall(0, buildingFrontZ, exteriorWall, buildingD, firstWallY, firstWallHeight, materials.exteriorWall);
 verticalWallWithGaps(insideX1, buildingFrontZ, buildingD, firstWallY, [
   [sideDoorZ, sideDoorZ + sideDoorW]
@@ -800,9 +797,7 @@ lowWall(insideX1, sideDoorZ, exteriorWall, sideDoorW, sideDoorTopY, firstWallY +
 germanSlidingDoor(kitchenYardSashX, buildingFrontZ - 0.04, yardSashW, yardSashSillY, yardSashH); // 주방 전면 독일식 시스템도어(출입·현관 높이 2.1m)
 label('주방 독일식 시스템도어 VATON PS', kitchenYardSashX + yardSashW / 2, yardSashTopY + 0.14, buildingFrontZ - 0.35, 'opening');
 entryDoor(entryGapStart, buildingFrontZ - 0.04, entryFrameOuterW, entryDoorLeafW, entryDoorBaseY);
-frontSash(familyWindowX, buildingFrontZ - 0.04, familyWindowW, familyWindowSillY, familyWindowH);   // 안방 전면 창문(1800×1280, 창대 900)
-frontSash(kitchenRearWindowX, insideZ1 + 0.04, kitchenRearWindowW, kitchenRearWindowSillY, kitchenRearWindowH); // 싱크대용 창(후면)
-frontSash(familyRearWindowX, insideZ1 + 0.04, familyRearWindowW, familyRearWindowSillY, familyRearWindowH);
+// (외벽 창짝 제거 — 안방 전면창·싱크대 후면창·안방 후면창 삭제. 문 3개[주방 도어·현관·측면 출입문]는 유지)
 sideDoor(insideX1 + 0.04, sideDoorZ, sideDoorW, sideDoorBaseY, sideDoorH);   // 안방 측면 출입문(전면쪽, 도로측 창 대신)
 label('안방 측면 출입문', insideX1 + 0.5, sideDoorTopY + 0.05, sideDoorZ + sideDoorW / 2, 'opening');
 // 안방 포켓도어(문짝+개구)는 벽과 같은 '계단' 그룹에서 단일 출처로 그림 → buildStairWalls()의 familyInnerWallObjects 블록. 여기선 안 그림.
@@ -842,10 +837,8 @@ function curtainRail({ x, z, len, headY, axis = 'x', sign = 1 }) {
     box({ x: sign > 0 ? x : x - proj, z: z - 0.05, w: proj, d: len + 0.1, y, h: boxH, mat: curtainBoxMat, cast: false, receive: false });
   }
 }
-curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashTopY, axis: 'x', sign: 1 });           // 주방 전면 출입창
-curtainRail({ x: familyWindowX, z: insideZ0, len: familyWindowW, headY: familyWindowTopY, axis: 'x', sign: 1 });          // 안방 전면 창문
-curtainRail({ x: kitchenRearWindowX, z: insideZ1, len: kitchenRearWindowW, headY: kitchenRearWindowTopY, axis: 'x', sign: -1 }); // 주방 후면창
-curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: familyRearWindowTopY, axis: 'x', sign: -1 }); // 안방 후면창
+curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashTopY, axis: 'x', sign: 1 });           // 주방 전면 출입창(도어 — 유지)
+// (창 제거된 안방 전면창·주방 후면창·안방 후면창의 커튼레일도 함께 삭제 — 통벽에 붕 뜨지 않게)
 
 { const _sep = new Set([...bathObjects, ...interiorObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구는 bathObjects·interiorObjects로 분리)
 
@@ -893,36 +886,12 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     // 용마루(뾰족) 높이 — 왼쪽(도로측) 벽, 박공 꼭짓점(z=용마루 중앙)
     planYDim(frontCornerDimX, atticRidgeZ, secondWallY, secondWallY + atticPeakH, `용마루 ${fmtDim(atticPeakH)}m`);
     // 2F exterior walls use a 1.15m loft eave wall; the gable rise is calculated from a 33 degree roof pitch.
-    horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [
-      [atticVentWindowX, atticVentWindowX + atticVentWindowW]
-    ], secondWallHeight, exteriorWall, materials.exteriorWall);
-    lowWall(atticVentWindowX, buildingFrontZ, atticVentWindowW, exteriorWall, secondWallY, secondCorridorWindowSillOffset, materials.exteriorWall);
-    lowWall(atticVentWindowX, buildingFrontZ, atticVentWindowW, exteriorWall, secondWallY + secondCorridorWindowTopOffset, secondWallHeight - secondCorridorWindowTopOffset, materials.exteriorWall);
-    frontSash(atticVentWindowX, buildingFrontZ - 0.04, atticVentWindowW, secondWallY + secondCorridorWindowSillOffset, secondCorridorWindowH);
-    horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [
-      [atticRoom1RearWindowX, atticRoom1RearWindowX + atticRearWindowW],
-      [atticRoom2RearWindowX, atticRoom2RearWindowX + atticRearWindowW],
-      [atticSkyWindowX, atticSkyWindowX + atticSkyWindowW]
-    ], secondWallHeight, exteriorWall, materials.exteriorWall);
-    for (const windowX of [atticRoom1RearWindowX, atticRoom2RearWindowX]) {
-      lowWall(windowX, insideZ1, atticRearWindowW, exteriorWall, secondWallY, atticRearWindowSillOffset, materials.exteriorWall);
-      lowWall(windowX, insideZ1, atticRearWindowW, exteriorWall, secondWallY + atticRearWindowTopOffset, secondWallHeight - atticRearWindowTopOffset, materials.exteriorWall);
-      frontSash(windowX, insideZ1 + 0.04, atticRearWindowW, secondWallY + atticRearWindowSillOffset, atticRearWindowH);
-    }
-    // 계단 픽스창(후면 중앙, 저-X 런 정면 — 1층에서 올라가며 하늘 보임)
-    lowWall(atticSkyWindowX, insideZ1, atticSkyWindowW, exteriorWall, secondWallY, atticSkyWindowSillOffset, materials.exteriorWall);
-    lowWall(atticSkyWindowX, insideZ1, atticSkyWindowW, exteriorWall, secondWallY + atticSkyWindowSillOffset + atticSkyWindowH, secondWallHeight - (atticSkyWindowSillOffset + atticSkyWindowH), materials.exteriorWall);
-    frontSash(atticSkyWindowX, insideZ1 + 0.04, atticSkyWindowW, secondWallY + atticSkyWindowSillOffset, atticSkyWindowH);
+    horizontalWallWithGaps(0, buildingFrontZ, buildingW, secondWallY, [], secondWallHeight, exteriorWall, materials.exteriorWall);   // 앞 무릎벽 — 환기창 제거로 통벽
+    horizontalWallWithGaps(0, insideZ1, buildingW, secondWallY, [], secondWallHeight, exteriorWall, materials.exteriorWall);   // 뒤 무릎벽 — 다락방 후면창·계단 픽스창 제거로 통벽
     lowWall(0, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
     lowWall(insideX1, buildingFrontZ, exteriorWall, buildingD, secondWallY, secondWallHeight, materials.exteriorWall);
-    gableEndWallWithWindow({
-      x: 0, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall,
-      windowZ: buildingFrontZ + buildingD / 2, windowW: sideGableWindowW, windowBottomY: gableBaseY + sideGableWindowSillOffset, windowH: sideGableWindowH, sashSide: -1
-    });
-    gableEndWallWithWindow({
-      x: insideX1, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall,
-      windowZ: buildingFrontZ + buildingD / 2, windowW: sideGableWindowW, windowBottomY: gableBaseY + sideGableWindowSillOffset, windowH: sideGableWindowH, sashSide: 1
-    });
+    gableEndWallSolid({ x: 0, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall });        // 좌 박공벽 — 창 제거
+    gableEndWallSolid({ x: insideX1, z: buildingFrontZ, d: buildingD, y: gableBaseY, rise: gableRise, thickness: exteriorWall, mat: materials.exteriorWall });  // 우 박공벽 — 창 제거
   });
 
   // ── 다락 내벽 — 다락방 칸막이 + 문 + 다락 입구 가로벽 + 다락방 벽높이 치수 ──────────
