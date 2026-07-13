@@ -3987,6 +3987,10 @@ function drawStairCore(p) {
   for (let i = 0; i < nL; i += 1) railCylinder([railX, fy + (i + 1) * R, zFrontL + i * T + T / 2], [railX, fy + (i + 1) * R + balH, zFrontL + i * T + T / 2], postR);
   // 손잡이 — 각 세로 동자 윗끝을 잇는 경사 손잡이(첫 발판~마지막 발판)
   railCylinder([railX, fy + R + balH, zFrontL + T / 2], [railX, fy + nL * R + balH, zFrontL + (nL - 1) * T + T / 2], handR);
+  // 상부 직선계단(laneB, -Z) — 하부런과 같은 난간: 트인 계단실쪽(laneB) 가장자리에 발판마다 세로 동자 + 경사 손잡이.
+  const railXU = laneB + 0.06;
+  for (let j = 0; j < nU; j += 1) railCylinder([railXU, landingY + (j + 1) * R, zTurn0 - j * T - T / 2], [railXU, landingY + (j + 1) * R + balH, zTurn0 - j * T - T / 2], postR);
+  railCylinder([railXU, landingY + R + balH, zTurn0 - T / 2], [railXU, landingY + nU * R + balH, zTurn0 - (nU - 1) * T - T / 2], handR);
   // 연장 — 돌음(턴존) 주방측(laneA) 트인 가장자리도 뒷벽까지: 벽 채움과 같은 90°/단수 분할로 각 사선단 세그먼트 중심에 세로 동자 + 손잡이 이음, 마지막은 뒷벽에 닿음.
   {
     const perStep = (Math.PI / 2) / nWind;
