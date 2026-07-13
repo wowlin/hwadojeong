@@ -372,6 +372,18 @@ function entryDoor(x, z, outerW, leafW, y) {
   box({ x: x + frameW + leafW - 0.18, z: z - 0.035, w: 0.06, d: 0.04, y: y + 1.02, h: 0.06, mat: materials.handle });
 }
 
+// 측면 외짝 방화문(Z스팬·+X면) — entryDoor의 축(X↔Z)만 바꾼 것. x = 바깥면(高X), z = 개구 앞 모서리.
+function sideEntryDoor(x, z, outerD, leafD, y) {
+  const frameD = (outerD - leafD) / 2;
+  const doorH = 2.1;
+  const frameH = 2.18;
+  box({ x: x - 0.12, z, w: 0.12, d: frameD, y, h: frameH, mat: materials.windowFrame });                          // 앞 세로틀
+  box({ x: x - 0.12, z: z + outerD - frameD, w: 0.12, d: frameD, y, h: frameH, mat: materials.windowFrame });     // 뒤 세로틀
+  box({ x: x - 0.12, z, w: 0.12, d: outerD, y: y + doorH, h: frameH - doorH, mat: materials.windowFrame });       // 상부 인방틀
+  box({ x: x - 0.08, z: z + frameD, w: 0.08, d: leafD, y, h: doorH, mat: materials.windowFrame });                // 문짝
+  box({ x: x - 0.055, z: z + frameD + leafD - 0.18, w: 0.06, d: 0.06, y: y + 1.02, h: 0.04, mat: materials.handle });   // 실내측 손잡이
+}
+
 // 정면 픽스창(X스팬·-Z면) — 미들바 없는 단일 고정 유리. 비개폐(픽스).
 function frontFixSash(x, z, w, sillY, h) {
   const frame = 0.05, glassZ = z - 0.035;
@@ -474,7 +486,12 @@ captureInto(firstFloorFinishObjects, () => {
   firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 개구 상부 인방(문 위)
   firstWallObjects.push(box({ x: 0, z: z1 - wt, w: buildingW, d: wt, y: wy, h: wh, mat: W }));          // 뒤(+Z) 외벽 — 바깥면 z=z1
   firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(주방, x=0) 외벽 — 바깥면 x=0
-  firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
+  // 좌(안방, x=buildingW) 외벽 — 앞에서 30cm 들어간 곳에 표준 외짝 방화문(측면). 문 개구로 앞·뒤 벽 조각 + 상부 인방으로 분할.
+  const doorD = entryFrameOuterW, dz0 = z0 + wt + 0.3, dz1 = dz0 + doorD;   // 문 앞 모서리 = 앞 외벽 안쪽면 +30cm, 폭 = 문틀 외곽(정면 현관문과 동일)
+  firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: dz0 - (z0 + wt), y: wy, h: wh, mat: W }));    // 좌 외벽 — 개구 앞쪽(정면측)
+  firstWallObjects.push(box({ x: buildingW - wt, z: dz1, w: wt, d: (z1 - wt) - dz1, y: wy, h: wh, mat: W }));        // 좌 외벽 — 개구 뒤쪽(집뒤측)
+  firstWallObjects.push(box({ x: buildingW - wt, z: dz0, w: wt, d: doorD, y: wy + oh, h: wh - oh, mat: W }));        // 좌 외벽 — 개구 상부 인방(문 위)
+  captureInto(firstWallObjects, () => sideEntryDoor(buildingW + 0.04, dz0, doorD, entryDoorLeafW, wy));             // 안방 측면 표준 외짝 방화문
   captureInto(firstWallObjects, () => entryDoor(ox0, z0 - 0.04, ow, entryDoorLeafW, wy));   // 정면 중앙 표준 현관문(외짝 방화문, 문짝 유효폭 entryDoorLeafW)
   // 계단실 양쪽 세로 내벽 2개(주방|계단실·계단실|안방)는 여기서 그리지 않음 — buildStairWalls()에서 동적으로 그림.
   //   윗면이 다락 바닥 밑면(loftY - 30cm)에 맞도록 계단 높이에 따라 벽 높이가 변하기 때문(계단·1층 공유).
@@ -908,7 +925,7 @@ function campingChair({ cx, cz, faceAngle = 0, color = 0x47535f, baseY = groundT
 //  · 데크 상단(집 바닥 높이)에서 시작, 앞단(최저) 기둥, 건물쪽은 1층 높이에 부착
 //  · 프레임/기둥은 지붕 가장자리에서 20cm 안쪽(3면 세로벽이 이 선에 설치)
 //  roofLowX/roofW로 X 범위를 지정해 주방 앞·안방 앞에 같은 형식으로 각각 설치한다.
-function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, withWalls = true, deckDepth = null, postsToGround = false, connectRightX = null, withFan = true, withShortPostDim = false, withFlatFrame = true, withGutter = false, withDownspout = false, withDeck = true, withRoofPanel = true, roofPanelW = null, roofPanelCenterX = null }) {
+function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPostDims = true, withWalls = true, deckDepth = null, postsToGround = false, connectRightX = null, withFan = true, withShortPostDim = false, withFlatFrame = true, withGutter = false, withDownspout = false, withDeck = true, withRoofPanel = true, roofPanelW = null, roofPanelCenterX = null }) {
   const frameInset = 0.2;                      // 가장자리에서 20cm 안쪽
   const beamH = 0.12;
   const beamDrop = 0.04;
@@ -1135,8 +1152,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const deckTopY = deckSurfaceY;                  // 데크 상단 = 온통기초(0.5)+페데스탈(0.10)+포세린(0.02) — 단일 출처
   const deckThickness = 0.02;                    // 포세린 마감 두께 2cm
   const deckEdge = postW / 2;                    // 기둥(프레임 선)이 데크 위에 완전히 얹히도록 기둥 바깥면까지 확장
+  // 데크 식탁 배치 기준(단일 출처) — nDeckTables만 바꾸면 데크가 딱 그만큼 高X로 늘고 줆(지붕·기초와 별개).
+  const dTW = 0.85, dTD = 0.72, dReserveW = 1.2;                        // 식탁 윗판 폭·깊이 · 난로 예약 폭
+  const dOff = dTD / 2 + 0.30, dChairBack = dOff + 0.33, dAisle = 0.9, dEndGap = 0.9;   // 의자 중심·등받이 뒤끝·둘레 통로(s2 1층 동일 기준)
+  const deckExtraW = withFurniture ? Math.max(0, (fX0 + dReserveW) + nDeckTables * dTW + 2 * dEndGap - fX1) : 0;   // 식탁행+통로가 넘치는 만큼만 데크 高X 확장
   const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge; // 오른쪽: 연결 시 이웃 데크까지 이어 붙임
-  const dX1 = fX1;                               // 고-X(안방쪽)는 개방부라 돌출 없이 유리벽 선까지만(데크 폭 = deckW)
+  const dX1 = fX1 + deckExtraW;                  // 고-X(안방쪽) — 데크 폭 = deckW + 식탁이 필요로 하는 확장분(지붕은 불변)
   const dWallZ = fWallZ;                          // 건물쪽은 벽에 붙임
   // deckDepth가 지정되면 건물 벽에서 그 거리까지만 데크를 깐다(부분 데크).
   const dFrontZ = (deckDepth != null) ? dWallZ - deckDepth : fFrontZ - deckEdge;
@@ -1211,33 +1232,29 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
   const _furnStart = scene.children.length;
   if (withFurniture) {
     // 데크 우측(低x=주방쪽) = 난로 영역(붉은 예약 구획) — 기존 s1 화목난로 자리. 나머지엔 s2 1층과 동일한 식탁·의자.
-    const reserveW = 1.2;                                       // 오른쪽 난로 영역 폭
-    box({ x: fX0, z: dFrontZ, w: reserveW, d: dWallZ - dFrontZ, y: deckSurfaceY + 0.006, h: 0.012, mat: materials.leftZone, cast: false });   // 난로 영역
-    label('화목난로 영역', fX0 + reserveW / 2, deckSurfaceY + 0.9, (dFrontZ + dWallZ) / 2, 'furniture');
-    // 식탁·의자(s2 1층에서 복사) — 난로 영역 왼쪽(高x) 나머지 데크에 한 행. 윗판 85×72·높이 0.72, 의자=반고 햄프턴 DLX.
-    const TW = 0.85, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;
-    const woodT = materials.woodFrame;
-    const off = TD / 2 + 0.30;                                  // 테이블 가장자리→의자 중심
-    const chairBack = off + 0.33, aisle = 0.9, endGap = 0.9;    // 의자 등받이 뒤끝 · 뒤 통로 0.9 · 테이블 끝 0.9 (s2 1층과 동일 기준)
-    const tzX0 = fX0 + reserveW;                                // 테이블 영역 우측 끝(난로 영역 옆)
-    const rowCx = (tzX0 + fX1) / 2;                             // 테이블 행 중심 x
-    const cxs = [rowCx - TW, rowCx, rowCx + TW];               // 식탁 3개를 좌우로 이어 붙임
-    const cz0 = (dFrontZ + dWallZ) / 2;                         // 데크 깊이 중앙에 행 배치(앞·뒤 의자 대칭)
+    box({ x: fX0, z: dFrontZ, w: dReserveW, d: dWallZ - dFrontZ, y: deckSurfaceY + 0.006, h: 0.012, mat: materials.leftZone, cast: false });   // 난로 영역
+    label('화목난로 영역', fX0 + dReserveW / 2, deckSurfaceY + 0.9, (dFrontZ + dWallZ) / 2, 'furniture');
+    // 식탁 nDeckTables개(윗판 85×72·높이 0.72)를 高x로 이어 붙임. 의자=반고 햄프턴 DLX, 테이블당 앞·뒤 2개 → 의자 2·nDeckTables개.
+    const TH = 0.72, top = 0.04, leg = 0.06, woodT = materials.woodFrame;
+    const tzX0 = fX0 + dReserveW;                              // 테이블 영역 시작(난로 영역 옆)
+    const rowCx = (tzX0 + dX1) / 2;                            // 확장된 데크(난로옆~高X끝) 가운데
+    const cxs = Array.from({ length: nDeckTables }, (_, i) => rowCx + (i - (nDeckTables - 1) / 2) * dTW);   // 좌우로 이어 붙인 식탁 중심들
+    const cz0 = (dFrontZ + dWallZ) / 2;                        // 데크 깊이 중앙에 행 배치(앞·뒤 의자 대칭)
     for (const cx of cxs) {
-      box({ x: cx - TW / 2, z: cz0 - TD / 2, w: TW, d: TD, y: deckSurfaceY + TH - top, h: top, mat: woodT });     // 윗판
-      for (const lx of [cx - TW / 2 + 0.02, cx + TW / 2 - 0.02 - leg])
-        for (const lz of [cz0 - TD / 2 + 0.02, cz0 + TD / 2 - 0.02 - leg])
-          box({ x: lx, z: lz, w: leg, d: leg, y: deckSurfaceY, h: TH - top, mat: woodT });                        // 다리 4
+      box({ x: cx - dTW / 2, z: cz0 - dTD / 2, w: dTW, d: dTD, y: deckSurfaceY + TH - top, h: top, mat: woodT });     // 윗판
+      for (const lx of [cx - dTW / 2 + 0.02, cx + dTW / 2 - 0.02 - leg])
+        for (const lz of [cz0 - dTD / 2 + 0.02, cz0 + dTD / 2 - 0.02 - leg])
+          box({ x: lx, z: lz, w: leg, d: leg, y: deckSurfaceY, h: TH - top, mat: woodT });                           // 다리 4
     }
     for (const cx of cxs) {
-      campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: deckSurfaceY });          // 앞쪽 — 테이블(+z) 향함
-      campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: deckSurfaceY });    // 뒤쪽 — 테이블(−z) 향함
+      campingChair({ cx, cz: cz0 - dOff, faceAngle: 0, baseY: deckSurfaceY });          // 앞쪽 — 테이블(+z) 향함
+      campingChair({ cx, cz: cz0 + dOff, faceAngle: Math.PI, baseY: deckSurfaceY });    // 뒤쪽 — 테이블(−z) 향함
     }
     // 식탁·의자 둘레 이동공간(반투명 청록) — s2 1층과 동일 기준(의자 등받이 뒤끝 + 통로 0.9, clamp 없이 원본 그대로).
-    const zx0 = cxs[0] - TW / 2 - endGap, zx1 = cxs[cxs.length - 1] + TW / 2 + endGap;
-    const zz0 = cz0 - chairBack - aisle, zz1 = cz0 + chairBack + aisle;
+    const zx0 = cxs[0] - dTW / 2 - dEndGap, zx1 = cxs[cxs.length - 1] + dTW / 2 + dEndGap;
+    const zz0 = cz0 - dChairBack - dAisle, zz1 = cz0 + dChairBack + dAisle;
     box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: deckSurfaceY + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
-    label(`식탁 ${cxs.length}(${fmtDim(TW)}×${fmtDim(TD)}) + 반고 햄프턴 DLX`, rowCx, deckSurfaceY + 1.15, cz0, 'furniture');
+    label(`식탁 ${cxs.length}(${fmtDim(dTW)}×${fmtDim(dTD)}) + 반고 햄프턴 DLX`, rowCx, deckSurfaceY + 1.15, cz0, 'furniture');
   }
   extrasLocal.push(...scene.children.slice(_furnStart));
 
@@ -1289,7 +1306,7 @@ function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckT
 
 // 주방 앞(우측) 썬룸 — 우측 외벽끝(x=0) 고정, 안방쪽으로 늘려 폴딩벽·데크 폭 deckW(fX1=deckW, 좌측 끝 파생)
 //   지붕면은 주방+안방을 덮는 단일 패널 하나로 그린다 — 좌우 돌출은 집 지붕과 동일(frSideOverhang), 폭 = 집 외벽폭 + 양쪽 frSideOverhang, 중심 x=집 중심.
-const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, withPostDims: true, withGutter: true, roofPanelW: buildingW + 2 * frSideOverhang, roofPanelCenterX: buildingW / 2, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭(고-X 끝 fX1=deckW)은 roofW:5.9에서 파생(지붕 프레임 공유) — deckW 바꾸려면 roofW도 함께
+const kitchen썬룸 = 썬룸({ roofLowX: -0.2, roofW: 5.9, withFurniture: true, nDeckTables: 4, withPostDims: true, withGutter: true, roofPanelW: buildingW + 2 * frSideOverhang, roofPanelCenterX: buildingW / 2, deckDepth: deckD });   // 데크 깊이=deckD. 데크 폭 = deckW(roofW:5.9 파생) + 식탁 nDeckTables가 필요로 하는 확장(deckExtraW). 8인석=nDeckTables:4. 줄이려면 이 숫자만 낮추면 데크도 함께 줆(지붕은 불변)
 // 안방 앞(좌측) 썬룸 — 기둥·보·홈통만(개방형, 데크·지붕면 없음). 지붕면은 주방 썬룸의 단일 패널이 이미 덮음.
 // 안방 프레임 폭 = 데크 끝(deckW)~집 외곽(buildingW). fX1 = roofLowX+roofW-frameInset(0.2) = buildingW라야 집 밖으로 안 튀어나감(기둥열 = buildingW−0.1).
 const 안방썬룸 = 썬룸({ roofLowX: deckW, roofW: buildingW - deckW + 0.2, withFurniture: false, withPostDims: false, withWalls: false, postsToGround: true, connectRightX: deckW, withFan: false, withShortPostDim: true, withGutter: true, withDownspout: true, withDeck: false, withRoofPanel: false });
