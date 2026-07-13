@@ -14,7 +14,7 @@
 //   · 건물·층고·기초·바닥재 : "주요 제원" 블록 (buildingW, foundationHeight, firstWallHeight …)
 //   · 다락·지붕 각도/두께   : secondWallHeight, roofSlopeDeg, roofThickness
 //   · 대지(부지) 형상       : lotNW/lotNE/lotSE/lotSW 코너 (도로·측백·치수 자동 추종)
-//   · 창호/문 크기·위치     : 1층 섹션의 yardSash*, familyWindow*, sideDoor*, kitchenRearWindow*, entryDoor*
+//   · 창호/문 크기·위치     : 1층 섹션의 yardSash*, familyWindow*, kitchenRearWindow*, entryDoor*
 //   · 썬룸                : 썬룸() 내부 targetFrontPostH / targetWallPostH / roofSlopeLength
 //   · 데크 계단             : deckStairs({...}) 호출부
 //   · 색·재질               : 상단 materials = { … } 객체
@@ -33,7 +33,7 @@
 // ▌헬퍼 (x·z는 최소 모서리, 단위 m) — 무클로저 빌더는 모듈에서 import, 나머지는 main.js 전역
 //   primitives.js : box({x,z,w,d,y,h,mat,name,cast}) · flatPoly({points:[[x,z]…],y,h,mat,name}) · lerpPoint · fmtDim …
 //   builders.js   : floorFrame · systemPile/pileFoundation · yzWallPrism · roofSlab · slopedWallTopCap …
-//   main.js 전역  : label(text,x,y,z,size) · room/frontSash/sideSash/sideDoor/germanSlidingDoor/entryDoor/pocketDoor* · planYDim/planXDim · setView/applyVisibility
+//   main.js 전역  : label(text,x,y,z,size) · room/frontSash/sideSash/germanSlidingDoor/entryDoor/pocketDoor* · planYDim/planXDim · setView/applyVisibility
 //
 // ▌주의 (ES모듈·strict)
 //   · 같은 이름 function/const 재정의 금지 → 앱 전체가 깨짐. 새 헬퍼는 새 이름으로.
