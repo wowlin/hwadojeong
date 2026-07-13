@@ -78,7 +78,7 @@ import {
   deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ, deckSurfaceY
 } from './layout.js';
 import {
-  firstFloorFinishObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
+  firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
   썬룸Objects, 썬룸FrameObjects, wallObjects, foldingObjects, extrasObjects,
   hedgeObjects, fenceObjects, foundationObjects, matFoundationHouseObjects, matFoundationFullObjects,
   footprintObjects, planObjects, dimObjects,
@@ -529,8 +529,8 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`);
 
 room({ x: firstKitchenX, z: insideZ0, w: firstKitchenW, d: firstKitchenD, y: firstFloorY + floorOverlayLift, mat: materials.kitchen });   // 색면만 — 주방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
-// 주방 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 앞(−Z)에서 20cm 이격. '1층 바닥' 토글(firstFloorFinishObjects). 실외기는 통풍 좋은 곳에 별도.
-captureInto(firstFloorFinishObjects, () => {
+// 주방 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 앞(−Z)에서 20cm 이격. '천장' 토글(firstCeilingObjects). 실외기는 통풍 좋은 곳에 별도.
+captureInto(firstCeilingObjects, () => {
   const acW = 0.85, acH = 0.30, acD = 0.22;
   const acZ = insideZ0 + 0.2;
   const acY = firstFloorY + firstWallHeight - 0.45;
@@ -538,8 +538,8 @@ captureInto(firstFloorFinishObjects, () => {
   box({ x: insideX0 + 0.05, z: acZ + 0.06, w: acD - 0.04, d: acW - 0.12, y: acY - 0.015, h: 0.025, mat: materials.openingEdge });   // 하부 토출 슬릿
   label('벽걸이 에어컨', insideX0 + 0.55, acY + 0.17, acZ + acW / 2, 'mep');
 });
-// 에어컨 실외기 — 후면(뒤) 주방(서)쪽 코너, 측백 향해(+Z) 토출. 배관은 서측 외벽 따라 뒤로. '1층 바닥' 토글(firstFloorFinishObjects).
-captureInto(firstFloorFinishObjects, () => {
+// 에어컨 실외기 — 후면(뒤) 주방(서)쪽 코너, 측백 향해(+Z) 토출. 배관은 서측 외벽 따라 뒤로. '천장' 토글(firstCeilingObjects).
+captureInto(firstCeilingObjects, () => {
   const esW = 0.8, esD = 0.35, esH = 0.6;
   const esX = 0.3;                          // 서(주방)측 코너
   const esZ = buildingBackZ + 0.1;          // 집 뒤 벽 바로 뒤(집~측백 사이)
@@ -652,7 +652,7 @@ captureInto(interiorObjects, () => {
 
 // (1층 전동커튼 레일 제거 — 외벽 창·문이 정면 현관문만 남아 커튼레일 대상 없음)
 
-{ const _sep = new Set([...bathObjects, ...interiorObjects, ...firstFloorFinishObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구·에어컨/실외기는 각 그룹으로 분리)
+{ const _sep = new Set([...bathObjects, ...interiorObjects, ...firstFloorFinishObjects, ...firstCeilingObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구·에어컨/실외기는 각 그룹으로 분리)
 
 // 다락 = 3개 토글로 분리: 실제 다락바닥(secondFloorObjects) · 다락 외벽(atticExtWallObjects) · 다락 내벽(atticInnerWallObjects).
 // 공유 좌표는 여기서 한 번 계산해 세 그룹이 공유(단일 출처).
@@ -2941,7 +2941,7 @@ function coveLight({ x, z, len, axis = 'z', ceilingY }) {
 const _firstFanStart = scene.children.length;
 ceilingFan({ x: firstKitchenX + firstKitchenW / 2, z: insideZ0 + firstKitchenD / 2, ceilingY: firstCeilingY });
 ceilingFan({ x: firstFamilyX + firstFamilyW / 2, z: insideZ0 + firstFamilyD / 2, ceilingY: firstCeilingY });
-firstFloorFinishObjects.push(...scene.children.slice(_firstFanStart));   // 1층 주방·안방 실링팬(각 방 천장 가운데) — '1층 바닥' 토글로 이동
+firstCeilingObjects.push(...scene.children.slice(_firstFanStart));   // 1층 주방·안방 실링팬(각 방 천장 가운데) — '천장' 토글로 이동
 
 const atticRidgeY = atticSecondWallTop + gableRise;
 // (다락 계단실 상부 실링팬 삭제)
@@ -3009,6 +3009,7 @@ const view = {
   matFoundationFull: false,  // 전체 매트기초(집+데크 50cm)
   // 집 그룹(내부구조 부품별)
   firstFloorFinish: false, // 집 1층 바닥재
+  firstCeiling: false, // 집 1층 천장 설비(실링팬·에어컨·실외기)
   stair: false,       // ㄷ자 계단 본체
   extWall: false,     // 외벽(1층+다락 합침)
   firstRoom: false,   // 1층 골조·실내
@@ -3046,6 +3047,7 @@ const PARTS = [
   { key: 'matFoundationHouse', arrays: [matFoundationHouseObjects] },
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
   { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects, interiorObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면 + 실내 가구(안방 침대·주방 싱크대) 합침
+  { key: 'firstCeiling', arrays: [firstCeilingObjects] },   // 천장 설비(실링팬·벽걸이 에어컨·실외기)
   { key: 'stair',      arrays: [stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 주방측 벽·안방 내력벽을 계단 토글에 합침
   { key: 'extWall',    arrays: [firstWallObjects, atticExtWallObjects] },   // 1층 외벽+다락 외벽을 하나의 '외벽'으로 합침
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
@@ -3083,7 +3085,7 @@ const S1_TOGGLES = [
   ['bSun', 'sun'], ['bFolding', 'folding'],
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
   ['bExtWall', 'extWall'],
-  ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'],
+  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bBath', 'bath'],
   ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
