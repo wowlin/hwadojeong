@@ -1209,6 +1209,10 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     deck.receiveShadow = true;
     scene.add(deck);
     floorLocal.push(deck, addGeometryEdges(deck, 0x9a9384));
+    // 도어프레임 바닥 사각틀 안쪽 — 같은 높이(y:postBase~railH)로 포세린 타일 채움(데크 바닥 그룹)
+    const ptX0 = px0 + tube / 2, ptX1 = px1 - tube / 2, ptZ0 = pzF + tube / 2, ptZ1 = pzB - tube / 2;   // 각관 안쪽 면
+    const frameTile = box({ x: ptX0, z: ptZ0, w: ptX1 - ptX0, d: ptZ1 - ptZ0, y: postBase, h: railH, mat: materials.porcelainDeck });
+    floorLocal.push(frameTile, addGeometryEdges(frameTile, 0x9a9384));
   }
 
   // 썬룸 지붕/바닥 사이즈 표시 — 지붕은 경사면 길이, 바닥은 물매 반영한 수평투영(증축 신고 면적 기준)
