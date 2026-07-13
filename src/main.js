@@ -1148,19 +1148,17 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     const flatX0 = (connectRightX != null) ? connectRightX : px0;  // 연결 시 이웃까지 이어 붙임. 기본은 프레임 발자국(px0~px1·pzF~pzB)에 정합
     const fw = px1 - flatX0, fd = pzB - pzF;
     const zMid = pzF + fd / 2;
-    // 가로 틀(앞·뒤·가운데) + 앞뒤 세로 장선 7개(균등 간격)
-    for (const z of [pzF, pzB, zMid]) {                    // 앞·뒤 + 가운데 가로
+    // 가로 긴 장선 5개(균등 간격) + 앞뒤 세로 장선 7개(균등 간격) — 색 통일(골조색)
+    for (const z of Array.from({ length: 5 }, (_, i) => pzF + (i * fd) / 4)) {   // 가로 긴 장선 5개 균등 배치(양 끝 포함)
       box({ x: flatX0, z: z - barW / 2, w: fw, d: barW, y: flatFrameY, h: barH, mat: 썬룸Frame });
     }
-    const joistRed = new THREE.MeshLambertMaterial({ color: 0xcc3333 });   // 2·4·6번 장선
-    const joistBlue = new THREE.MeshLambertMaterial({ color: 0x3355cc });  // 3·5번 장선
+    const fanBlade = (52 * 0.0254) / 2 - 0.1;                              // 실링팬 지름 52인치 → 날개 길이(중심 오프셋 0.1 반영)
     Array.from({ length: 7 }, (_, i) => flatX0 + (i * fw) / 6).forEach((x, i) => {   // 앞뒤 세로 장선 7개 균등 배치(양 끝 포함)
       const n = i + 1;                                                     // 1-based 번호
-      const isRed = n === 2 || n === 4 || n === 6, isBlue = n === 3 || n === 5;
-      const mat = isRed ? joistRed : isBlue ? joistBlue : 썬룸Frame;
-      box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat });
-      if (isRed) ceilingLight({ x, z: zMid, ceilingY: flatFrameY });       // 빨간 장선 중앙 전등
-      else if (isBlue) ceilingFan({ x, z: zMid, ceilingY: flatFrameY });   // 파란 장선 중앙 실링팬
+      const hasLight = n === 2 || n === 4 || n === 6, hasFan = n === 3 || n === 5;
+      box({ x: x - barW / 2, z: pzF, w: barW, d: fd, y: flatFrameY, h: barH, mat: 썬룸Frame });
+      if (hasLight) ceilingLight({ x, z: zMid, ceilingY: flatFrameY });    // 2·4·6번 장선 중앙 전등
+      else if (hasFan) ceilingFan({ x, z: zMid, ceilingY: flatFrameY, bladeLength: fanBlade });   // 3·5번 장선 중앙 실링팬(52인치)
     });
   }
 
