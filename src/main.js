@@ -48,7 +48,7 @@ import {
   yzWallPrism, gableEndWallThicknessCap, slopedWallTopCap, wallEndThicknessFace, roofSlab,
 } from './builders.js';
 import {
-  buildingW, buildingD, buildingBackZ, groundTopY, floorFinishH, deckFinishT, deckFoundationH, lotW,
+  buildingW, buildingD, buildingBackZ, groundTopY, floorFinishH, deckFinishT, lotW,
   lotD, roadW, firstWallHeight, exteriorWall, interiorWall,
   stairRunW, entryDoorLeafW, entryFrameOuterW, interiorDoorW, interiorDoorH,
   secondFloorThickness, secondWallHeight, roofSlopeDeg,
@@ -2713,7 +2713,7 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
 
 // 썬룸 화목난로(캠핑용) — 측면 폴딩 "앞에서 3번째 짝"의 하부만 불연패널(연통홀), 상부는 기존 폴딩 유리 유지.
 {
-  const deckTop = groundTopY + deckFoundationH + deckFinishT;
+  const deckTop = deckSurfaceY;                           // 데크 밟는 표면(단일 출처) — 난로·카세트를 데크 위에 얹음
   const fWallZ = buildingFrontZ;                          // buildingFrontZ (집 벽쪽 끝)
   const roofRun = Math.sqrt(4.0 * 4.0 - 0.2 * 0.2);       // 썬룸 수평투영(폴딩 내부값과 동일)
   const fFrontZ = (buildingFrontZ - roofRun) + 0.2;       // 폴딩 앞단(≈-4.50)
