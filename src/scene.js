@@ -100,8 +100,7 @@ app.innerHTML = `
         <h2 class="menu-title">기본</h2>
         <div class="seg-row" role="group" aria-label="기초">
           <button type="button" class="seg-btn" id="bF1Foundation" data-scheme="s2">기초</button>
-          <button type="button" class="seg-btn" id="bMatHouse" data-scheme="s1">부분</button>
-          <button type="button" class="seg-btn" id="bMatFull" data-scheme="s1">전체</button>
+          <button type="button" class="seg-btn" id="bMatFull" data-scheme="s1">기초</button>
         </div>
         <div class="seg-row" role="group" aria-label="담장">
           <button type="button" class="seg-btn" id="bHedge">측백담장</button>
