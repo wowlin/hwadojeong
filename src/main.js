@@ -1052,7 +1052,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   // ── 포치 프레임(각관 골조) — 기초(데크) 사각형에 맞춤. 네 꼭지점만 기둥, 중간기둥 없음. ──
   // 앞(低Z)은 2.4m 폴딩도어가 들어가는 직육면체, 뒤(집벽쪽)는 지붕 물매만큼 더 높아 옆면이 삼각. 모든 선 = 각관.
   const tube = 0.08;                                          // 각관 단면 8cm
-  const railH = 0.10;                                         // 바닥 가로막대(기둥↔바닥 연결) 높이 10cm
+  const railH = deckSurfaceY - (groundTopY + matFoundationH);   // 바닥 가로막대(각관) 윗면 = 데크 포세린 마감면에 맞춤 → 안쪽 타일과 flush(틀은 테두리로 드러남)
   const px0 = Math.max(fX0 - deckEdge, 0) + tube / 2, px1 = dX1 - tube / 2;   // 데크 사각형 안쪽 네 꼭지점 X(주방쪽~안방쪽 끝)
   const pzF = dFrontZ + tube / 2, pzB = dWallZ - tube / 2;    // 앞(低Z)·뒤(집벽) Z
   const frameTopY = glassYatZ(pzF) - beamDrop - beamH;        // 프레임 상단 = 앞단(폴딩도어 2.4m 수용) 높이로 통일 → 아래는 직육면체, 물매는 위 사다리꼴이 전담
@@ -1206,20 +1206,17 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   // 썬룸 바닥 — 포세린 타일 마감(건식). matFoundationH 온통기초 위 페데스탈(높이조절 받침)에 포세린을 얹는다.
   const deckTopY = deckSurfaceY;                  // 데크 상단 = 온통기초(0.5)+페데스탈(0.10)+포세린(0.02) — 단일 출처
   const deckThickness = 0.02;                    // 포세린 마감 두께 2cm
-  if (withDeck) {                                  // 데크 바닥 마감(없는 썬룸은 지붕·기둥만)
-    const pX0 = Math.max(dX0, 0), pX1 = Math.min(dX1, buildingW);   // 데크 발자국(0~buildingW) 안으로 clamp — 테두리 밖으로 안 튀어나오게
+  if (withDeck) {                                  // 데크 바닥 마감 — 도어프레임 바닥 사각틀 '안쪽'에만 깔아 각관 틀이 테두리로 드러나게
+    const pX0 = px0 + tube / 2, pX1 = px1 - tube / 2;   // 각관 안쪽 면(테두리 틀은 덮지 않음)
+    const pZ0 = pzF + tube / 2, pZ1 = pzB - tube / 2;
     const deck = new THREE.Mesh(
-      new THREE.BoxGeometry(pX1 - pX0, deckThickness, dWallZ - dFrontZ),
+      new THREE.BoxGeometry(pX1 - pX0, deckThickness, pZ1 - pZ0),
       materials.porcelainDeck
     );
-    deck.position.set((pX0 + pX1) / 2, deckTopY - deckThickness / 2, (dFrontZ + dWallZ) / 2);
+    deck.position.set((pX0 + pX1) / 2, deckTopY - deckThickness / 2, (pZ0 + pZ1) / 2);
     deck.receiveShadow = true;
     scene.add(deck);
     floorLocal.push(deck, addGeometryEdges(deck, 0x9a9384));
-    // 도어프레임 바닥 사각틀 안쪽 — 같은 높이(y:postBase~railH)로 포세린 타일 채움(데크 바닥 그룹)
-    const ptX0 = px0 + tube / 2, ptX1 = px1 - tube / 2, ptZ0 = pzF + tube / 2, ptZ1 = pzB - tube / 2;   // 각관 안쪽 면
-    const frameTile = box({ x: ptX0, z: ptZ0, w: ptX1 - ptX0, d: ptZ1 - ptZ0, y: postBase, h: railH, mat: materials.porcelainDeck });
-    floorLocal.push(frameTile, addGeometryEdges(frameTile, 0x9a9384));
   }
 
   // 썬룸 지붕/바닥 사이즈 표시 — 지붕은 경사면 길이, 바닥은 물매 반영한 수평투영(증축 신고 면적 기준)
