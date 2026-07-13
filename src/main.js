@@ -4102,17 +4102,17 @@ function drawStairAnno(p) {
   captureInto(loftSlabs, () => {
     // 통행·주방위·안방위 노란 슬래브 제거 — 흰색 구조 슬래브(주방측·복도·안방측)가 같은 자리를 이미 덮어, 벽 밑에서 노란 바닥이 겹쳐 반짝이던 것 해소
     if (suZ1 > suZ0) {
+      box({ x: laneA, z: suZ0, w: suX1 - laneA, d: suZ1 - suZ0, y: flr, h: loftTh, mat: materials.bed, cast: false });             // 수납장 안목 바닥(다락방 색) → '다락 바닥' 토글
+    }
+  });
+  // 수납장(붙박이장) 벽자리·라벨·실제 벽 → '다락 내벽' 토글. 계단쪽(세로, 지붕 슬로프 따라)+뒤(가로, 그 위치 지붕 높이). 앞벽은 다락 입구 가로벽이 이미 있음.
+  captureInto(loftSuWalls, () => {
+    if (suZ1 > suZ0) {
       // 벽자리 표시(다락 벽과 같은 색 띠) — 앞·계단쪽·뒤 3변. 주방쪽은 다락방1 칸막이벽이 이미 담당.
       box({ x: laneA, z: zFrontU, w: suX1 - laneA, d: interiorWall, y: flr, h: loftTh, mat: materials.wall, cast: false });        // 앞(다락 복도쪽) 벽자리
       box({ x: suX1, z: zFrontU, w: interiorWall, d: suZback - zFrontU, y: flr, h: loftTh, mat: materials.wall, cast: false });   // 계단쪽 옆 벽자리
       box({ x: laneA, z: suZ1, w: suX1 - laneA, d: interiorWall, y: flr, h: loftTh, mat: materials.wall, cast: false });           // 뒤 벽자리
-      box({ x: laneA, z: suZ0, w: suX1 - laneA, d: suZ1 - suZ0, y: flr, h: loftTh, mat: materials.bed, cast: false });             // 안목 바닥(다락방 색)
       label(`수납장 ${fmtDim(suX1 - laneA)}×${fmtDim(suZ1 - suZ0)}m`, (laneA + suX1) / 2, loftY + 0.05, (suZ0 + suZ1) / 2, 'dim');
-    }
-  });
-  // 수납장 실제 벽(지붕 밑선까지) → '다락 내벽' 토글. 계단쪽(세로, 지붕 슬로프 따라)+뒤(가로, 그 위치 지붕 높이). 앞벽은 다락 입구 가로벽이 이미 있음.
-  captureInto(loftSuWalls, () => {
-    if (suZ1 > suZ0) {
       gableLongWallX({ x: suX1, z: zFrontU, d: suZback - zFrontU, y: loftY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 계단쪽 옆벽
       box({ x: laneA, z: suZ1, w: suX1 - laneA, d: interiorWall, y: loftY, h: secondWallHeight + roofRiseAtZ(suZ1), mat: materials.wall });               // 뒤벽
     }
@@ -4191,8 +4191,8 @@ function buildStair() {
     // 계단참·다락통행·내벽높이 라벨은 '바닥'이 아니라 각자 토글로 분리 → 바닥 화면에서 제외.
     const _moved = new Set([...stairInfo.loftSlabs, ...stairInfo.stairLandingAnno, ...stairInfo.loftPassAnno, ...stairInfo.innerWallAnno, ...stairInfo.loftSuWalls]);
     stairObjects.push(...scene.children.slice(_s).filter((o) => !_moved.has(o)));  // 분리분 제외 → '바닥'엔 안 뜸
-    secondFloorObjects.push(...stairInfo.loftPassAnno);                            // '다락 통행' 라벨 → '다락' 토글
-    atticInnerWallObjects.push(...stairInfo.loftSuWalls, ...stairInfo.loftSlabs);  // 붙박이장(수납장) 전체 — 실제 벽 + 바닥 슬래브·벽자리·라벨 → '내벽' 토글
+    secondFloorObjects.push(...stairInfo.loftSlabs, ...stairInfo.loftPassAnno);    // 수납장 안목 바닥 + '다락 통행' 라벨 → '다락 바닥' 토글
+    atticInnerWallObjects.push(...stairInfo.loftSuWalls);                          // 붙박이장(수납장) 벽자리·라벨·실제 벽 → '내벽' 토글
     stairCoreObjects.push(...stairInfo.stairLandingAnno);                          // '돌음' 라벨 → '계단' 토글
     familyInnerWallObjects.push(...stairInfo.innerWallAnno); }                     // '내벽 높이' 막대+라벨 → '안방 내력벽' 토글(막대가 그 벽에 붙음)
   applyVisibility();
