@@ -1185,7 +1185,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     : [[fX0, fFrontZ], [(fX0 + fX1) / 2, fFrontZ], [fX1, fFrontZ], [fX0, sideMidZ], [fX1, sideMidZ], [fX0, fWallZ], [fX1, fWallZ]];
   // 땅에 서는 기둥(개방형 썬룸)은 각 기둥 밑에 시스템 말뚝기초(집·데크와 동일, KC금강)를 박고 그 위에 얹는다.
   // 데크 위 기둥은 데크 기초가 받치므로 별도 기초 불필요.
-  const postBaseY = deckTopY0;   // 썬룸 기초 상단(0.4m·집보다 0.1m 낮음) — 땅 기둥/데크 기둥 동일 높이로 통일
+  const postBaseY = deckSurfaceY;   // 새 데크 표면(0.62) — 땅 기둥/데크 기둥/폴딩을 데크 위에 통일(온통기초+페데스탈+포세린)
   const groundPosts = [];      // 땅 기둥 위치(원위치) — 바닥 말뚝(PILE_POS.anbang)의 X·가운데 Z 출처
   // ★단일 출처★ 땅 기둥의 말뚝(기초)·두부·라벨·기둥은 여기서 그리지 않는다.
   // 위치를 PILE_POS로 확정한 뒤 main에서 drawGroundPost()로 그려, 바닥 마커와 입체 말뚝이
@@ -1246,7 +1246,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     const fdDoorGlass = new THREE.MeshLambertMaterial({ color: 0x8aa9bb, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false }); // 800 출입문짝: 같은 유리 계열 살짝 짙게(구별용)
     const fdFrame = new THREE.MeshLambertMaterial({ color: 0x3a3f45 });   // 폴딩 알루미늄 프레임(다크그레이)
     const glaze = 0.05, sillH = 0.1, mullW = 0.05, fdPanel = 0.65;        // 폴딩 패널 1짝 폭 0.65m
-    const wallBaseY = deckTopY0;
+    const wallBaseY = deckSurfaceY;   // 폴딩도어 베이스 = 새 데크 표면(0.62) — 데크와 높이 일치
     // 전면
     const frontTopY = wallTopAtZ(fFrontZ);
     box({ x: fX0, z: fFrontZ - glaze / 2, w: fX1 - fX0, d: glaze, y: wallBaseY + sillH, h: frontTopY - wallBaseY - sillH, mat: fdGlass, cast: false });
