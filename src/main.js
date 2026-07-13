@@ -1042,7 +1042,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   const deckEdge = postW / 2;
   // 데크 식탁 배치 기준(단일 출처) — nDeckTables만 바꾸면 데크가 딱 그만큼 高X로 늘고 줆.
   const dTW = 0.85, dTD = 0.72, dReserveW = 1.2;                        // 식탁 윗판 폭·깊이 · 난로 예약 폭
-  const dOff = dTD / 2 + 0.30, dChairBack = dOff + 0.33, dAisle = 0.9, dEndGap = 0.9;   // 의자 중심·등받이 뒤끝·둘레 통로(s2 1층 동일 기준)
+  const dOff = dTD / 2 + 0.30, dChairBack = dOff + 0.33, dAisle = 0.9, dEndGap = 0.7;   // 의자 중심·등받이 뒤끝·앞뒤통로(dAisle, s2 1층 동일) · 좌우통로(dEndGap, 데크 폭 안방쪽 맞춤)
   const deckExtraW = withFurniture ? Math.max(0, (fX0 + dReserveW) + nDeckTables * dTW + 2 * dEndGap - fX1) : 0;   // 식탁행+통로가 넘치는 만큼만 데크 高X 확장
   const dX0 = (connectRightX != null) ? connectRightX : fX0 - deckEdge;
   const dX1 = fX1 + deckExtraW;                  // 데크 高X 끝(안방쪽)
@@ -1290,7 +1290,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
       campingChair({ cx, cz: cz0 - dOff, faceAngle: 0, baseY: deckSurfaceY });          // 앞쪽 — 테이블(+z) 향함
       campingChair({ cx, cz: cz0 + dOff, faceAngle: Math.PI, baseY: deckSurfaceY });    // 뒤쪽 — 테이블(−z) 향함
     }
-    // 식탁·의자 둘레 이동공간(반투명 청록) — s2 1층과 동일 기준(의자 등받이 뒤끝 + 통로 0.9, clamp 없이 원본 그대로).
+    // 식탁·의자 둘레 이동공간(반투명 청록) — 앞뒤 통로 dAisle(s2 1층 동일), 좌우 통로 dEndGap(데크 폭 6.0m 맞춤), clamp 없이 원본 그대로.
     const zx0 = cxs[0] - dTW / 2 - dEndGap, zx1 = cxs[cxs.length - 1] + dTW / 2 + dEndGap;
     const zz0 = cz0 - dChairBack - dAisle, zz1 = cz0 + dChairBack + dAisle;
     box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: deckSurfaceY + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
