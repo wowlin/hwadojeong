@@ -3995,11 +3995,14 @@ function drawStairCore(p) {
     for (let k = 1; k <= nWind; k += 1) {
       const zEdge = (k < nWind) ? Math.min(zBack, zTurn0 + W * Math.tan(perStep * k)) : zBack;
       if (zEdge > zPrev + 1e-6) {
-        const zc = (zPrev + zEdge) / 2;
         const topY = fy + (nL + k) * R + balH;
-        railCylinder([railX, fy + (nL + k) * R, zc], [railX, topY, zc], postR);   // 세로 동자
-        railCylinder(prevTop, [railX, topY, zc], handR);                          // 손잡이 이음
-        prevTop = [railX, topY, zc];
+        const nPosts = (k === 1) ? 2 : 1;   // 첫 사선단은 난간쪽이 넓어 세로 동자 2개로 간격 맞춤
+        for (let j = 0; j < nPosts; j += 1) {
+          const zc = zPrev + (zEdge - zPrev) * (j + 0.5) / nPosts;
+          railCylinder([railX, fy + (nL + k) * R, zc], [railX, topY, zc], postR);   // 세로 동자
+          railCylinder(prevTop, [railX, topY, zc], handR);                          // 손잡이 이음
+          prevTop = [railX, topY, zc];
+        }
       }
       zPrev = zEdge;
       if (zEdge >= zBack - 1e-6) break;
