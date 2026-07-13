@@ -834,49 +834,8 @@ const housePileXs = [
 
 // 집 골조(철골/목조 프레임)는 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다.
 
-// 캠핑 가구 재질 & 헬퍼 — 스노우피크 IGT 테이블, 반고 햄프턴 DLX 캠핑의자
-const igtMetalMat = new THREE.MeshLambertMaterial({ color: 0x8f969d });   // IGT 알루미늄 프레임/다리
-const igtTopMat = new THREE.MeshLambertMaterial({ color: 0xc7a06a });     // 대나무 상판
+// 캠핑 가구 재질 & 헬퍼 — 반고 햄프턴 DLX 캠핑의자
 const chairFrameMat = new THREE.MeshLambertMaterial({ color: 0x23282f }); // 의자 프레임
-
-// 스노우피크 IGT: bays칸 + 한쪽 사이드테이블(sideTableSide). 긴 방향은 X축.
-function igtTable({ cx, cz, bays, sideTableSide = 1, height = 0.66, baseY = groundTopY }) {
-  const bayW = 0.27;
-  const depth = 0.40;
-  const frame = 0.025;
-  const topT = 0.03;
-  const legT = 0.03;
-  const innerW = bays * bayW;
-  const topW = innerW + 2 * frame;
-  const topBottomY = baseY + height - topT;
-  const halfLong = topW / 2;
-  const halfShort = depth / 2;
-  const T = (lx, lz, w, d, y, h, mat) => box({ x: cx + lx - w / 2, z: cz + lz - d / 2, w, d, y, h, mat });
-  for (let i = 0; i < bays; i += 1) {  // 대나무 칸 상판
-    T(-innerW / 2 + bayW * (i + 0.5), 0, bayW - 0.03, depth - 2 * frame, topBottomY + 0.002, topT, igtTopMat);
-  }
-  T(0, -halfShort + frame / 2, topW, frame, topBottomY, topT, igtMetalMat);  // 긴 변 프레임
-  T(0, halfShort - frame / 2, topW, frame, topBottomY, topT, igtMetalMat);
-  for (let i = 0; i <= bays; i += 1) {  // 칸 구분바
-    T(-innerW / 2 + bayW * i, 0, frame, depth, topBottomY, topT, igtMetalMat);
-  }
-  for (const sx of [-halfLong + legT, halfLong - legT]) {  // 다리 4
-    for (const sz of [-halfShort + legT, halfShort - legT]) {
-      T(sx, sz, legT, legT, baseY, height - topT, igtMetalMat);
-    }
-  }
-  if (sideTableSide !== 0) {  // 사이드테이블(한쪽)
-    const stW = 0.30;
-    const sgn = Math.sign(sideTableSide);
-    const stCx = sgn * (halfLong + stW / 2);
-    T(stCx, 0, stW, depth - 0.04, topBottomY, topT, igtTopMat);
-    T(stCx, -halfShort + frame / 2, stW, frame, topBottomY, topT, igtMetalMat);
-    T(stCx, halfShort - frame / 2, stW, frame, topBottomY, topT, igtMetalMat);
-    for (const sz of [-halfShort + legT, halfShort - legT]) {
-      T(sgn * (halfLong + stW - legT), sz, legT, legT, baseY, height - topT, igtMetalMat);
-    }
-  }
-}
 
 // 반고 햄프턴 DLX: 높은 등받이 + 팔걸이 폴딩 캠핑의자. faceAngle은 의자 정면(+z) 방향.
 function campingChair({ cx, cz, faceAngle = 0, color = 0x47535f, baseY = groundTopY }) {
@@ -1199,17 +1158,37 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, withPostDims = true, wi
     scene.add(lens);
   }
 
-  // 썬룸 캠핑 가구 — 스노우피크 IGT 4칸/3칸(한쪽 사이드테이블) + 반고 햄프턴 DLX 의자
+  // 데크 가구 — 오른쪽(低x) 화목난로 영역 + 나머지에 s2식 식탁·의자(반고 햄프턴 DLX)
   const _furnStart = scene.children.length;
   if (withFurniture) {
-    const tableZ = 썬룸CenterZ - 0.05;
-    igtTable({ cx: 썬룸CenterX - 1.05, cz: tableZ, bays: 4, sideTableSide: -1, baseY: deckSurfaceY });
-    igtTable({ cx: 썬룸CenterX + 1.25, cz: tableZ, bays: 3, sideTableSide: 1, baseY: deckSurfaceY });
-    campingChair({ cx: 썬룸CenterX - 1.05, cz: tableZ - 0.72, faceAngle: 0, baseY: deckSurfaceY });
-    campingChair({ cx: 썬룸CenterX - 1.05, cz: tableZ + 0.72, faceAngle: Math.PI, baseY: deckSurfaceY });
-    campingChair({ cx: 썬룸CenterX + 1.25, cz: tableZ - 0.72, faceAngle: 0, baseY: deckSurfaceY });
-    campingChair({ cx: 썬룸CenterX + 1.25, cz: tableZ + 0.72, faceAngle: Math.PI, baseY: deckSurfaceY });
-    label('스노우피크 IGT(4·3칸) + 반고 햄프턴 DLX', 썬룸CenterX, deckSurfaceY + 1.15, tableZ + 0.05, 'furniture');
+    // 데크 우측(低x=주방쪽) = 난로 영역(붉은 예약 구획) — 기존 s1 화목난로 자리. 나머지엔 s2 1층과 동일한 식탁·의자.
+    const reserveW = 1.2;                                       // 오른쪽 난로 영역 폭
+    box({ x: fX0, z: dFrontZ, w: reserveW, d: dWallZ - dFrontZ, y: deckSurfaceY + 0.006, h: 0.012, mat: materials.leftZone, cast: false });   // 난로 영역
+    label('화목난로 영역', fX0 + reserveW / 2, deckSurfaceY + 0.9, (dFrontZ + dWallZ) / 2, 'furniture');
+    // 식탁·의자(s2 1층에서 복사) — 난로 영역 왼쪽(高x) 나머지 데크에 한 행. 윗판 85×72·높이 0.72, 의자=반고 햄프턴 DLX.
+    const TW = 0.85, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;
+    const woodT = materials.woodFrame;
+    const off = TD / 2 + 0.30;                                  // 테이블 가장자리→의자 중심
+    const chairBack = off + 0.33, aisle = 0.6;                  // 의자 등받이 뒤끝 · 둘레 통로
+    const tzX0 = fX0 + reserveW;                                // 테이블 영역 우측 끝(난로 영역 옆)
+    const rowCx = (tzX0 + fX1) / 2;                             // 테이블 행 중심 x
+    const cxs = [rowCx - TW, rowCx, rowCx + TW];               // 식탁 3개를 좌우로 이어 붙임
+    const cz0 = (dFrontZ + dWallZ) / 2;                         // 데크 깊이 중앙에 행 배치(앞·뒤 의자 대칭)
+    for (const cx of cxs) {
+      box({ x: cx - TW / 2, z: cz0 - TD / 2, w: TW, d: TD, y: deckSurfaceY + TH - top, h: top, mat: woodT });     // 윗판
+      for (const lx of [cx - TW / 2 + 0.02, cx + TW / 2 - 0.02 - leg])
+        for (const lz of [cz0 - TD / 2 + 0.02, cz0 + TD / 2 - 0.02 - leg])
+          box({ x: lx, z: lz, w: leg, d: leg, y: deckSurfaceY, h: TH - top, mat: woodT });                        // 다리 4
+    }
+    for (const cx of cxs) {
+      campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: deckSurfaceY });          // 앞쪽 — 테이블(+z) 향함
+      campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: deckSurfaceY });    // 뒤쪽 — 테이블(−z) 향함
+    }
+    // 식탁·의자 둘레 이동공간(반투명 청록) — 데크 안으로 clamp(난로 영역 침범 금지).
+    const zx0 = Math.max(tzX0, cxs[0] - TW / 2 - aisle), zx1 = Math.min(fX1, cxs[cxs.length - 1] + TW / 2 + aisle);
+    const zz0 = Math.max(dFrontZ, cz0 - chairBack - aisle), zz1 = Math.min(dWallZ, cz0 + chairBack + aisle);
+    box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: deckSurfaceY + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
+    label(`식탁 ${cxs.length}(${fmtDim(TW)}×${fmtDim(TD)}) + 반고 햄프턴 DLX`, rowCx, deckSurfaceY + 1.15, cz0, 'furniture');
   }
   extrasLocal.push(...scene.children.slice(_furnStart));
 
