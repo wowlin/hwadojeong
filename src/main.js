@@ -879,8 +879,8 @@ curtainRail({ x: familyRearWindowX, z: insideZ1, len: familyRearWindowW, headY: 
     horizontalWallWithGaps(secondRoom2X, secondAtticWallZ, secondRoom2W, secondWallY, [
       [secondRoom2DoorX, secondRoom2DoorX + interiorDoorW]
     ], secondAtticFrontWallH, interiorWall);
-    gableLongWallX({ x: kitchenInnerWallX - innerWallW / 2, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: innerWallW, mat: materials.wall });   // 1층 주방측 내벽과 정확히 겹치게(중심 kitchenInnerWallX) — 계단실로 반쯤 밀리던 것 정정
-    gableLongWallX({ x: familyInnerWallX - familyInnerWallW / 2, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: familyInnerWallW, mat: materials.wall });   // 1층 안방측 내력벽(20cm)과 정확히 겹치게(중심 familyInnerWallX)
+    gableLongWallX({ x: stairLowXRunX - interiorWall, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 다락 내벽 10cm 통일 — 계단실면을 다락방1 경계(stairLowXRunX=칸막이1 끝)에 맞춤
+    gableLongWallX({ x: secondRoom2X - interiorWall, z: secondAtticWallZ, d: insideZ1 - secondAtticWallZ, y: secondWallY, baseH: secondWallHeight, thickness: interiorWall, mat: materials.wall });   // 다락 내벽 10cm 통일 — 안방면을 다락방2 경계(secondRoom2X=칸막이2 시작)에 맞춤(1층 내력벽 20cm과 별개)
     pocketDoorHorizontal(secondRoom1DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, -1);
     pocketDoorHorizontal(secondRoom2DoorX, secondAtticWallZ, secondWallY, interiorDoorW, secondAtticDoorH, 1);
     lowWall(secondRoom1DoorX, secondAtticWallZ, interiorDoorW, interiorWall, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, materials.wall);   // 다락방1 문 위 인방
@@ -3938,18 +3938,12 @@ function drawStairCore(p) {
     const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
     box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
-  // 두 런 분리벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로, 이 벽(두께차 자투리 폭)을 상부런(laneB) 저X 모서리 '아래'에 넣는다. 각 단 발판 밑면까지 계단모양으로 채워 하부(밑 삼각공간)를 가림.
+  // 두 런 분리벽 겸 WC 저X벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로 이 벽(두께차 자투리 5cm)을 상부런(laneB) 저X 모서리에 세운다. 하부·상부 단수가 같아 계단형이 필요 없다: 바닥~사선 천장 밑선까지 사선벽 한 장으로 통합(중복·반짝임 없음). 앞끝은 WC 문벽 뒤로 물려 겹침 제거.
   const gapX = laneB, gapW = stairClearW - 2 * W;
-  const zFrontU = zTurn0 - nU * T;                        // 상부런 앞끝(사선 천장 높은 쪽)
-  for (let i = 0; i < nL; i += 1) {                       // 하부런(WC 앞) 측 — 앞끝을 WC 문벽(interiorWall) 뒤로 물려 겹침 방지
-    const sz0 = Math.max(zFrontL + i * T, zFrontL + interiorWall);
-    const sz1 = zFrontL + (i + 1) * T;
-    if (sz1 <= sz0) continue;
-    box({ x: gapX, z: sz0, w: gapW, d: sz1 - sz0, y: fy, h: (i + 1) * R - treadH, mat: materials.stairSpineWall, cast: false });
-  }
-  {                                                        // 상부런 측 — 윗변을 사선 천장 밑선까지만(계단모양으로 안 솟게) 사선벽으로 채워 천장과 겹침 제거
+  {
     const topAt = (z) => (baseU - treadH) + (R / T) * (zTurn0 - z) - 0.10;   // 천장 밑선 = 발판 뒤코너선 − (드롭0.05+패널두께0.05)
-    yzWallPrism({ x: gapX, thickness: gapW, mat: materials.stairSpineWall, points: [[zTurn0, fy], [zFrontU, fy], [zFrontU, topAt(zFrontU)], [zTurn0, topAt(zTurn0)]] });
+    const zF = zFrontL + interiorWall;                     // 앞끝을 문벽(interiorWall) 뒤로 물림
+    yzWallPrism({ x: gapX, thickness: gapW, mat: materials.stairSpineWall, points: [[zTurn0, fy], [zF, fy], [zF, topAt(zF)], [zTurn0, topAt(zTurn0)]] });
   }
   // 돌음(턴존)~뒤 외벽 — 돌음계단 첫 계단참 발판 밑면까지 채워 뚫린 데 없게(위 천장까지는 트임). 계단실을 두 공간으로 분리.
   box({ x: gapX, z: zTurn0, w: gapW, d: insideZ1 - zTurn0, y: fy, h: (nL + nWind + 1) * R - treadH, mat: materials.stairSpineWall, cast: false });
