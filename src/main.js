@@ -919,6 +919,14 @@ curtainRail({ x: kitchenYardSashX, z: insideZ0, len: yardSashW, headY: yardSashT
     lowWall(atticStairDoorX, corrWallZ, interiorDoorW, corrWallT, secondWallY + secondAtticDoorH, secondAtticFrontWallH - secondAtticDoorH, corrWallMat);   // 문 위 인방(개구부 위 막음)
     interiorDoorHorizontal(atticStairDoorX, stairOpeningStart, secondWallY, interiorDoorW, secondAtticDoorH);
     label('다락 입구 단열문', atticStairDoorX + interiorDoorW / 2, secondWallY + 1.0, stairOpeningStart - 0.5, 'opening');
+    // 다락 복도 양쪽(주방쪽 低X·안방쪽 高X) 끝 붙박이장 — 깊이 0.8m(옆 외벽에서 복도 안쪽으로), 복도 앞~뒤 전 깊이, 지붕 밑선까지 채우는 경사 상단.
+    {
+      const clD = 0.8, clZ = secondCorridorZ, clW = secondCorridorClearD;   // 깊이(X)·복도 Z앞선·폭(Z=복도 안목 깊이)
+      gableLongWallX({ x: insideX0, z: clZ, d: clW, y: secondWallY, baseH: secondWallHeight, thickness: clD, mat: materials.sinkCabinet });        // 주방쪽(低X) 끝
+      gableLongWallX({ x: insideX1 - clD, z: clZ, d: clW, y: secondWallY, baseH: secondWallHeight, thickness: clD, mat: materials.sinkCabinet });  // 안방쪽(高X) 끝
+      label(`붙박이장 깊이 ${fmtDim(clD)}m`, insideX0 + clD / 2, secondWallY + 1.0, clZ + clW / 2, 'furniture');
+      label(`붙박이장 깊이 ${fmtDim(clD)}m`, insideX1 - clD / 2, secondWallY + 1.0, clZ + clW / 2, 'furniture');
+    }
   });
 }
 
