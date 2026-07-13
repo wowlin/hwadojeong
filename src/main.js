@@ -613,14 +613,15 @@ captureInto(firstFloorFinishObjects, () => {
   const wt = exteriorWall, wh = firstWallHeight + secondFloorThickness, z0 = buildingFrontZ, z1 = buildingFrontZ + buildingD;   // 두께·높이를 단일 상수에서 읽음. 높이는 다락 바닥 슬래브 두께만큼 더 올려 1층↔다락 외벽이 끊기지 않고 하나로 이어지게(슬래브 옆면을 감쌈)
   const wy = firstWallY + 0.003;   // 바닥 윗면과 정확히 같은 평면(z-fighting 떨림)을 피해 3mm 띄움 — 바깥면은 테두리에 그대로 맞춤
   const W = materials.firstExtWall;
-  // 앞(−Z) 외벽 — 정면 중앙에 방화출입문 개구부(표준 외짝 방화문+문틀: 폭 1.0m·높이 2.1m). 좌·우 벽 + 상부 인방으로 나누고 가운데를 비움.
-  const ow = 1.0, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭/높이, 중앙 정렬
+  // 앞(−Z) 외벽 — 정면 중앙에 표준 외짝 현관문(방화문) 설치. 개구는 문틀 외곽폭(entryFrameOuterW)·높이 2.1m. 좌·우 벽 + 상부 인방으로 나누고 가운데에 현관문.
+  const ow = entryFrameOuterW, oh = 2.1, ox0 = (buildingW - ow) / 2, ox1 = ox0 + ow;   // 개구 폭=문틀외곽/높이, 중앙 정렬
   firstWallObjects.push(box({ x: 0, z: z0, w: ox0, d: wt, y: wy, h: wh, mat: W }));                     // 앞 외벽 — 개구 왼쪽(주방측)
   firstWallObjects.push(box({ x: ox1, z: z0, w: buildingW - ox1, d: wt, y: wy, h: wh, mat: W }));       // 앞 외벽 — 개구 오른쪽(안방측)
   firstWallObjects.push(box({ x: ox0, z: z0, w: ow, d: wt, y: wy + oh, h: wh - oh, mat: W }));          // 앞 외벽 — 개구 상부 인방(문 위)
   firstWallObjects.push(box({ x: 0, z: z1 - wt, w: buildingW, d: wt, y: wy, h: wh, mat: W }));          // 뒤(+Z) 외벽 — 바깥면 z=z1
   firstWallObjects.push(box({ x: 0, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W }));         // 우(주방, x=0) 외벽 — 바깥면 x=0
   firstWallObjects.push(box({ x: buildingW - wt, z: z0 + wt, w: wt, d: buildingD - 2 * wt, y: wy, h: wh, mat: W })); // 좌(안방, x=buildingW) 외벽 — 바깥면 x=buildingW
+  captureInto(firstWallObjects, () => entryDoor(ox0, z0 - 0.04, ow, entryDoorLeafW, wy));   // 정면 중앙 표준 현관문(외짝 방화문, 문짝 유효폭 entryDoorLeafW)
   // 계단실 양쪽 세로 내벽 2개(주방|계단실·계단실|안방)는 여기서 그리지 않음 — buildStairWalls()에서 동적으로 그림.
   //   윗면이 다락 바닥 밑면(loftY - 30cm)에 맞도록 계단 높이에 따라 벽 높이가 변하기 때문(계단·1층 공유).
 }
