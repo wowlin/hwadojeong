@@ -2682,14 +2682,14 @@ captureInto(s2Wall1Objects, () => {
 
 // (안방 측면 출입문 앞 데크 계단 제거 — 측면문이 사라져 포세린 디딤판 대상 없음. 앞·왼쪽 계단은 계단틀로 표시)
 
-// 데크 계단틀 — 앞쪽(−Z)·왼쪽(高X) 계단 + 부채꼴 코너를 '납작한 직사각형 테두리'로 표시. 지면~데크(deckSurfaceY)를 실사용 단높이(≈0.16m)로 등분해 단수 자동 산출. 윗면 포세린은 '데크' 토글(deckFloorObjects), 각관 틀·다리는 deckStairFrameObjects.
+// 데크 계단틀 — 앞쪽(−Z) 계단을 '납작한 직사각형 테두리'로 표시. 지면~데크(deckSurfaceY)를 실사용 단높이(≈0.16m)로 등분해 단수 자동 산출. 윗면 포세린은 '데크' 토글(deckFloorObjects), 각관 틀·다리는 deckStairFrameObjects.
 const DECK_STAIR_RISE = 0.16;   // 목표 단높이 — 데크 높이가 바뀌면 단수가 자동으로 따라옴(실사용 계단)
 const deckStairNRise = Math.max(2, Math.round((deckSurfaceY - groundTopY) / DECK_STAIR_RISE));   // 지면~데크 등분 수(=오름 수)
 const deckStairK = deckStairNRise - 1;                       // 중간 디딤단 수(맨 위 단 = 데크)
 const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각 단높이
 {
   const df = deckFootprints[0];                     // 데크 footprint(집 기초선 안으로 clamp된 폭) — 계단을 데크보다 크게 그리지 않도록 동일 좌표 사용
-  const dXa = df.x, dXb = df.x + df.w, dZa = df.z, dZb = df.z + df.d;
+  const dXa = df.x, dXb = df.x + df.w, dZa = df.z;
   const tread = 0.3, t = 0.05;                      // 디딤 폭 / 각관 굵기(5×5cm, 구조 보이게) — 단높이·디딤폭은 이 값과 무관
   const run = tread;                                // 한단 크기 — 수평 깊이 한 디딤(0.3m)
   // 밟는 표면(포세린 윗면) 균등 단차 — 지면~데크(deckSurfaceY)를 목표 단높이(≈0.16m)로 등분해 단수 자동 산출(실사용 계단).
@@ -2721,79 +2721,6 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
     flatRectFrame(dXa, dXb, z0, z1, s);
     leg(dXa, z0, s); leg(dXb - legW, z0, s);                             // 바깥 변 좌·우 끝
     if (j === K) { leg(dXa, dZa - legW, s); leg(dXb - legW, dZa - legW, s); }   // 맨 위 단: 데크쪽 변 좌·우 끝
-  }
-  // 왼쪽(+X) 직선 계단 — 대칭(데크쪽 j=K, 바깥 j=1).
-  groundFrame(dXb, dXb + K * run, dZa, dZb);
-  for (let j = 1; j <= K; j += 1) {
-    const x0 = dXb + (K - j) * run, x1 = x0 + run, s = surfAt(j);
-    flatRectFrame(x0, x1, dZa, dZb, s);
-    leg(x1 - legW, dZa, s); leg(x1 - legW, dZb - legW, s);               // 바깥 변 앞·뒤 끝
-    if (j === K) { leg(dXb, dZa, s); leg(dXb, dZb - legW, s); }          // 맨 위 단: 데크쪽 변 앞·뒤 끝
-  }
-}
-// 부채꼴 코너 계단 — 앞·왼쪽 직선 계단 사이를 부채꼴(사분원)로 연결. (1단계: 첫 계단=가장 낮은 단 발판 높이의 부채꼴 프레임만, 다리·디딤판 없음)
-{
-  const cdf = deckFootprints[0];                               // 데크 footprint 기준(직선 계단틀과 동일 좌표)
-  const cx = cdf.x + cdf.w, cz = cdf.z;                        // 코너점(앞·왼쪽 만나는 곳)
-  const baseY = groundTopY, tread = 0.3, bw = 0.05;   // 각관 5×5cm
-  const K = deckStairK, rise = deckStairStepRise;              // 중간 단수 / 단높이 — 직선 계단과 동일 자동 산출
-  const surfAt = (j) => baseY + j * rise;                       // j단(1=최하) 밟는 표면
-  const mat = materials.deckFanFrame;   // 부채꼴 연결부 색(직선 계단과 구분)
-  const P = (r, a) => [cx + r * Math.cos(a), cz - r * Math.sin(a)];   // a: 0=+X(왼쪽 바깥), π/2=−Z(앞 바깥)
-  const barXZ = (x0, z0, x1, z1, yTop) => {   // 두 XZ점을 잇는 수평 막대(윗면 yTop, 각관 bw)
-    const dx = x1 - x0, dz = z1 - z0, len = Math.hypot(dx, dz) + bw;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(len, bw, bw), mat);
-    m.position.set((x0 + x1) / 2, yTop - bw / 2, (z0 + z1) / 2);
-    m.rotation.y = Math.atan2(-dz, dx);
-    m.castShadow = false; m.receiveShadow = false; scene.add(m);
-    deckStairFrameObjects.push(m);   // 외곽선 없이 색상만
-  };
-  // 부채꼴(피자조각) 테두리 한 단 — 중심(코너)에서 뻗는 곧은 변 2개 + 바깥 호. 코너 바깥 빈 사분면에만.
-  // 치수는 '바깥선' 기준(중심선 아님): 곧은 변 바깥면 = 데크 모서리선(x=cx / z=cz), 호 바깥면 = 직선 계단 그 단의 바깥 반경. 막대는 모두 그 선 '안쪽'으로만 → 계단과 안 겹치고 밖으로도 안 튀어나옴.
-  const arcEndXr = (rc) => cx + rc * Math.cos(Math.asin((bw / 2) / rc));   // 중심선 반경 rc 호의 +X쪽 끝 x(축 안쪽으로 들인 지점)
-  const arcEndZr = (rc) => cz - rc * Math.cos(Math.asin((bw / 2) / rc));   // 중심선 반경 rc 호의 −Z쪽 끝 z
-  const drawArcR = (rc, frameTopY) => {                         // 중심선 반경 rc 호(양 끝이 축 안쪽 z=cz-bw/2 / x=cx+bw/2에 닿게)
-    const a = Math.asin((bw / 2) / rc), N = 8;
-    for (let j = 0; j < N; j += 1) {
-      const a0 = a + j * (Math.PI / 2 - 2 * a) / N, a1 = a + (j + 1) * (Math.PI / 2 - 2 * a) / N;
-      barXZ(...P(rc, a0), ...P(rc, a1), frameTopY);
-    }
-  };
-  // 부채꼴 한 단: 바깥 호는 바깥면이 Rout(중심선 Rout-bw/2). Rin=0이면 피자조각(꼭지점까지 곧은 변). Rin>0이면 띠 — 안쪽 호는 '안쪽면이 Rin'(중심선 Rin+bw/2) = 위 단 바깥선에서 프레임 두께만큼 바깥쪽 → 직선 계단 안쪽 변과 일치.
-  const fan = (Rout, frameTopY, Rin = 0, withTile = false) => {
-    const rco = Rout - bw / 2;                                  // 바깥 호 중심선(바깥면 = Rout)
-    const ox = arcEndXr(rco), oz = arcEndZr(rco);
-    let ix = cx, iz = cz, rci = 0;
-    if (Rin > 0) { rci = Rin + bw / 2; ix = arcEndXr(rci); iz = arcEndZr(rci); }   // 안쪽 호 중심선(안쪽면 = Rin)
-    deckStairFrameObjects.push(box({ x: ix, z: cz - bw, w: ox - ix, d: bw, y: frameTopY - bw, h: bw, mat, cast: false }));   // +X 곧은 변(바깥면 z=cz)
-    deckStairFrameObjects.push(box({ x: cx, z: oz, w: bw, d: iz - oz, y: frameTopY - bw, h: bw, mat, cast: false }));        // −Z 곧은 변(바깥면 x=cx)
-    drawArcR(rco, frameTopY);                                   // 바깥 호
-    if (Rin > 0) drawArcR(rci, frameTopY);                      // 안쪽 호(위 단 바깥선 + 프레임 두께)
-    if (withTile) {   // 바닥(포세린) 발판면 — 직선 계단 디딤 타일과 같은 포세린, 이 단의 부채꼴 채움. '바닥' 단계 표시.
-      const tile = new THREE.Mesh(
-        Rin > 0 ? new THREE.RingGeometry(Rin, Rout, 24, 1, 0, Math.PI / 2)   // 띠(안쪽 Rin ~ 바깥 Rout)
-                : new THREE.CircleGeometry(Rout, 24, 0, Math.PI / 2),         // 피자조각(0 ~ Rout)
-        materials.porcelainDeck);
-      tile.rotation.x = -Math.PI / 2;                            // XY원판 → XZ 바닥면(+X~−Z 사분면), 윗면 위로
-      tile.position.set(cx, frameTopY + deckFinishT, cz);        // 발판 윗면(프레임 위 + 타일 두께) = 직선 계단 디딤 표면과 동일
-      tile.castShadow = false; tile.receiveShadow = true;
-      scene.add(tile);
-      deckFloorObjects.push(tile);
-    }
-  };
-  fan(K * tread, baseY + bw);                                  // 계단 바닥(지면 베이스): 피자조각 부채꼴(바깥 반경 K·디딤), 지면 높이 — 타일 없음
-  for (let j = 1; j <= K; j += 1) {                            // 각 단: 바깥 (K−j+1)·디딤 ~ 안쪽 (K−j)·디딤 '띠'(맨위 j=K는 피자조각) + 포세린
-    const Rout = (K - j + 1) * tread, Rin = (K - j) * tread;
-    fan(Rout, surfAt(j) - deckFinishT, Rin, true);
-  }
-  // 양끝 기둥 — 직선 계단처럼, 각 단 바깥 호 양 끝(+X쪽·−Z쪽)에서 지면까지 세로 기둥(부채꼴 색).
-  const legW = bw;
-  for (let j = 1; j <= K; j += 1) {
-    const rco = (K - j + 1) * tread - bw / 2;
-    const exEnd = arcEndXr(rco), ezEnd = arcEndZr(rco);        // 바깥 호 +X쪽·−Z쪽 끝
-    const legTop = (surfAt(j) - deckFinishT) - bw;             // 그 단 프레임 막대 바닥 = 기둥 윗끝
-    deckStairFrameObjects.push(box({ x: exEnd - legW / 2, z: (cz - bw / 2) - legW / 2, w: legW, d: legW, y: baseY, h: legTop - baseY, mat, cast: false }));   // +X쪽 끝 기둥(왼쪽 계단 옆)
-    deckStairFrameObjects.push(box({ x: (cx + bw / 2) - legW / 2, z: ezEnd - legW / 2, w: legW, d: legW, y: baseY, h: legTop - baseY, mat, cast: false }));   // −Z쪽 끝 기둥(앞 계단 옆)
   }
 }
 

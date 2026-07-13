@@ -78,7 +78,6 @@ materials.porcelainDeck = new THREE.MeshLambertMaterial({ map: makePorcelainDeck
 materials.woodFrame = new THREE.MeshLambertMaterial({ color: 0xc69c6d });   // 목골조(중목·경량목) 목재 마감
 materials.deckFloorFrame = new THREE.MeshLambertMaterial({ color: 0xb5793f });   // 데크 바닥 골조(장선) — 목재 갈색(집과 구분)
 materials.deckStairFrame = new THREE.MeshLambertMaterial({ color: 0x5b5f66 });   // 데크 계단 프레임(앞·왼쪽 직선) — 짙은 회색(데크 둘레 틀과 구분)
-materials.deckFanFrame = new THREE.MeshLambertMaterial({ color: 0x4a78a8 });   // 계단 사이 부채꼴 연결부 — 파랑(직선 계단·데크와 구분)
 materials.firstExtWall = new THREE.MeshLambertMaterial({ color: 0xcdd5dc, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });   // 1층 외벽 — 반투명(내부 보이게)
 materials.gravel = new THREE.MeshLambertMaterial({ color: 0x9a948c });   // 파쇄석 바닥(전실) — 회색 자갈
 materials.conceptWall = new THREE.MeshLambertMaterial({ color: 0xcdd6df, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 신축안 둘레벽 — 반투명(내부 구역 보이게)
