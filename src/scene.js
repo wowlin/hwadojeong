@@ -91,16 +91,15 @@ app.innerHTML = `
         <div class="seg-row" role="group" aria-label="1층 골조·실내">
           <button type="button" class="seg-btn" id="bFirstRoom">1층 골조·실내</button>
         </div>
-        <div class="seg-row" role="group" aria-label="콘센트·실내">
+        <div class="seg-row" role="group" aria-label="콘센트">
           <button type="button" class="seg-btn" id="bOutlet">콘센트</button>
-          <button type="button" class="seg-btn" id="bInterior">실내</button>
         </div>
         <div class="seg-row" role="group" aria-label="계단·화장실">
           <button type="button" class="seg-btn" id="bS1Stair">계단</button>
           <button type="button" class="seg-btn" id="bBath">화장실</button>
         </div>
         <div class="seg-row" role="group" aria-label="바닥">
-          <button type="button" class="seg-btn" id="bFirstFloorFinish">바닥</button>
+          <button type="button" class="seg-btn" id="bFirstFloorFinish">바닥·실내</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="shared">

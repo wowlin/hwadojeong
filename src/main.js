@@ -3303,7 +3303,6 @@ const view = {
   extWall: false,     // 외벽(1층+다락 합침)
   firstRoom: false,   // 1층 골조·실내
   bath: false,        // 화장실
-  interior: false,    // 1층 실내 가구(안방 침대·주방 싱크대)
   loft: false,        // 실제 다락 바닥(슬래브·방)
   atticInnerWall: false, // 다락 내벽
   roof: false,        // 지붕
@@ -3337,12 +3336,11 @@ const view = {
 const PARTS = [
   { key: 'matFoundationHouse', arrays: [matFoundationHouseObjects] },
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
-  { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면(색상으로 구분해 바닥에 합침)
+  { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects, interiorObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면 + 실내 가구(안방 침대·주방 싱크대) 합침
   { key: 'stair',      arrays: [stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 주방측 벽·안방 내력벽을 계단 토글에 합침
   { key: 'extWall',    arrays: [firstWallObjects, atticExtWallObjects] },   // 1층 외벽+다락 외벽을 하나의 '외벽'으로 합침
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
   { key: 'bath',       arrays: [bathObjects] },
-  { key: 'interior',   arrays: [interiorObjects] },   // 1층 실내 가구(안방 침대·주방 싱크대)
   { key: 'loft',       arrays: [secondFloorObjects] },        // 실제 다락 바닥(슬래브·방)
   { key: 'atticInnerWall', arrays: [atticInnerWallObjects] }, // 다락 내벽(칸막이·문·입구벽)
   { key: 'roof',       arrays: [roofObjects] },
@@ -3378,7 +3376,7 @@ const S1_TOGGLES = [
   ['bSun', 'sun'], ['bFolding', 'folding'], ['bAccessory', 'accessory'],   // 포치 '외벽'(sunWall)은 자바라 외벽 제거로 버튼도 삭제
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
   ['bExtWall', 'extWall'], ['bFirstRoom', 'firstRoom'], ['bOutlet', 'outlet'],
-  ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'], ['bInterior', 'interior'],
+  ['bFirstFloorFinish', 'firstFloorFinish'], ['bS1Stair', 'stair'], ['bBath', 'bath'],
   ['bMatHouse', 'matFoundationHouse'], ['bMatFull', 'matFoundationFull'],
 ];
 // 상호배타 그룹 — 기초 3종 중 하나만 켜짐(셋 중 택1).
