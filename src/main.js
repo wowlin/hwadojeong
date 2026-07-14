@@ -2265,7 +2265,7 @@ captureInto(s2Wall1Objects, () => {
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, backDoorOpen, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측 개구부, 뒤벽 출입문·좌측 폴딩)
   captureInto(s2Wall1Objects, () => {                                     // 1층 뒤벽 슬라이드창 — 2짝(0.8) 편개, 오른쪽 짝이 왼쪽으로 미닫이
     const zc = s2BackZ - 0.13, sy = s1BackWin.sillY, hy = s1BackWin.headY, x0 = s1BackWin.p0, x1 = s1BackWin.p1;
-    const F = materials.windowFrame;   // 창틀 흰색 유지
+    const F = materials.windowFrame;   // 창틀(windowFrame 공용 = 짙은 색)
     const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
     const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
     const pw = (x1 - x0) / 2, mullW = 0.05, trk = 0.03;
@@ -2374,7 +2374,7 @@ captureInto(s2Wall1Objects, () => {
     };
     // 우측벽(x=0): 2트랙 4짝 양미서기 슬라이드 창 — 뒤벽과 동일 방식(축만 X↔Z). 바깥 2짝 고정 + 가운데 2짝 앞뒤로 갈라져 가운데 열림. sill·개구 유지.
     { const xc = s2X0 + t / 2, syR = rO.sillY, hyR = rO.headY;
-      const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 회색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
+      const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 짙은 색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
       const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝 유리
       const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이(열린) 짝 유리
       const pw = (rO.a1 - rO.a0) / 4, mullW = 0.05, trk = 0.03;                                            // 4짝·트랙 오프셋

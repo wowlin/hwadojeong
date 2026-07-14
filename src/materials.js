@@ -60,7 +60,7 @@ export const materials = {
   heatOutlet: new THREE.MeshLambertMaterial({ color: 0xff2fb0 }),   // 고전력 콘센트 기본 색상(마젠타) — 일반(녹색)과 구별
   heatOutletSocket: new THREE.MeshLambertMaterial({ color: 0x9c0060 }),   // 고전력 콘센트 소켓 면(어두운 마젠타)
   inductionOutlet: new THREE.MeshLambertMaterial({ color: 0x9b4dff }),   // 인덕션 직결 정션박스 색(보라)
-  windowFrame: new THREE.MeshLambertMaterial({ color: 0xffffff }),   // 창·문틀 흰색(폴딩도어·뒤 작은문·좌측 싱크대창 제외 전 창틀)
+  windowFrame: new THREE.MeshLambertMaterial({ color: 0x2f343a }),   // 창·문틀 짙은 색(폴딩도어·뒤 작은문·좌측 싱크대창 제외 전 창틀)
   handle: new THREE.MeshLambertMaterial({ color: 0xd4af37 }),
   glass: new THREE.MeshLambertMaterial({ color: 0x9ed0e8, transparent: true, opacity: 0.55 }),
   soundWall: new THREE.MeshLambertMaterial({ color: 0xcfc6b4 }),   // 방음벽(솔리드): 스틸스터드+암면+석고2겹
