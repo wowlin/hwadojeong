@@ -537,7 +537,9 @@ captureInto(firstFloorFinishObjects, () => {
     box({ x: 0, z: zB, w: rwKx0, d: wt, y: wy, h: wh, mat: W });                                       // 주방측 끝~주방창
     // 화장실(계단하부 WC) 뒤 외벽 — 변기 위 프로젝트(어닝)창 개구. 안목 X 중앙 정렬·창대 물탱크 위.
     const wcWinW = 0.6, wcWinH = 0.4, wcWinCx = stairBathX + interiorWall + (stairBathW - interiorWall) / 2;   // 폭0.6×높0.4·화장실 안목 X 중앙(변기 직상)
-    const wcWinX0 = wcWinCx - wcWinW / 2, wcWinSill = firstFloorY + 0.7, wcWinHead = firstFloorY + 0.7 + wcWinH;   // 창대 바닥+0.7(변기 물탱크 위)
+    // 상단을 계단 밑면(뒤벽 소핏=첫 계단참 발판 밑면)에 붙임: 발판 뒤코너선(하부+돌음+1단) − 발판두께
+    const wcWinHead = firstFloorY + (lowerStraightTreadCount + winderTreadCount + 1) * stairRiserHeight - 0.05;
+    const wcWinX0 = wcWinCx - wcWinW / 2, wcWinSill = wcWinHead - wcWinH;
     box({ x: rwKx0 + rwW, z: zB, w: wcWinX0 - (rwKx0 + rwW), d: wt, y: wy, h: wh, mat: W });            // 주방창~화장실창
     box({ x: wcWinX0 + wcWinW, z: zB, w: rwBx0 - (wcWinX0 + wcWinW), d: wt, y: wy, h: wh, mat: W });    // 화장실창~안방창
     box({ x: wcWinX0, z: zB, w: wcWinW, d: wt, y: wy, h: wcWinSill - wy, mat: W });                     // 창 아래 창대띠
