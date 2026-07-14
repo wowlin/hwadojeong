@@ -930,7 +930,7 @@ captureInto(interiorObjects, () => {
   const eaveZ = buildingFrontZ - roofEaveOverhang;
   const slopeMidZ = (eaveZ + ridgeZ) / 2;
   const slopeMidY = (outerEaveY + ridgeY) / 2;
-  roofObjects.push(label('지붕: 단열 260T + 리얼징크(티타늄아연, 갈바륨 아님) · 경사 33°', buildingW / 2, slopeMidY + 0.55, slopeMidZ, 'struct'));
+  roofObjects.push(label('지붕: 단열 260T + 오리지널징크(티타늄아연, 갈바륨 아님) · 경사 33°', buildingW / 2, slopeMidY + 0.55, slopeMidZ, 'struct'));
   // 태양광 패널은 뒤쪽(남측) 지붕 별도 블록에서 그림 — 여기선 눈막이용 헬퍼만 둠.
   materials.snowGuard = new THREE.MeshLambertMaterial({ color: 0xaeb7bf });    // 눈막이 금속
   const backEaveZ = buildingBackZ + roofEaveOverhang;
@@ -1016,7 +1016,7 @@ function campingChair({ cx, cz, faceAngle = 0, color = 0x47535f, baseY = groundT
 
 const s1DeckFurn = {};   // 데크 가구 실측값을 설계메모로 노출(단일 출처) — 썬룸(withFurniture)에서 채움
 
-// 1층 주방 앞 썬룸 — 지붕 길이(전면 돌출) 4m. 지붕 = 리얼징크(불투명).
+// 1층 주방 앞 썬룸 — 지붕 길이(전면 돌출) 4m. 지붕 = 오리지널징크(불투명).
 //  · 데크 상단(집 바닥 높이)에서 시작, 앞단(최저) 기둥, 건물쪽은 1층 높이에 부착
 //  · 프레임/기둥은 지붕 가장자리에서 20cm 안쪽(3면 세로벽이 이 선에 설치)
 //  roofLowX/roofW로 X 범위를 지정해 주방 앞·안방 앞에 같은 형식으로 각각 설치한다.
@@ -1116,11 +1116,11 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     }
   }
 
-  // ── 리얼징크 단물매 지붕 — 경사 받침 각관 윗면 위에 얹는다. 뒤=집 벽(dWallZ)에서 시작, 앞·왼쪽(안방·高x) 처마 넓게. ──
+  // ── 오리지널징크 단물매 지붕 — 경사 받침 각관 윗면 위에 얹는다. 뒤=집 벽(dWallZ)에서 시작, 앞·왼쪽(안방·高x) 처마 넓게. ──
   {
     const frontOverhang = 1.0;                             // 앞 처마
     const leftOverhang = 1.0, rightOverhang = 0.4;         // 왼쪽(안방·高x=px1)·오른쪽(주방·低x=px0) 처마
-    const zincT = 0.06;                                    // 리얼징크 마감 두께
+    const zincT = 0.06;                                    // 오리지널징크 마감 두께
     const slope = (roofBaseBackH - roofBaseFrontH) / (pzB - pzF);   // 물매(Δy/Δz, 앞→뒤 상승) — 받침 윗면과 동일
     const restY = (z) => frameTopY + roofBaseFrontH + tube / 2 + slope * (z - pzF);   // 받침 각관 윗면(지붕이 얹히는 면) 경사선
     const eaveZ = pzF - frontOverhang;                     // 앞 처마 끝(低Z)
@@ -1137,7 +1137,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     g.setAttribute('position', new THREE.BufferAttribute(v, 3));
     g.setIndex(idx); g.clearGroups(); g.addGroup(0, 12, 0); g.addGroup(12, 24, 1);
     g.computeVertexNormals();
-    const roofMesh = new THREE.Mesh(g, [materials.roof, materials.roofEdge]);   // 윗면=리얼징크, 옆·밑=드립엣지
+    const roofMesh = new THREE.Mesh(g, [materials.roof, materials.roofEdge]);   // 윗면=오리지널징크, 옆·밑=드립엣지
     roofMesh.castShadow = true; roofMesh.receiveShadow = true;
     scene.add(roofMesh);
     roofLocal.push(roofMesh);
@@ -2264,7 +2264,7 @@ captureInto(s2Wall1Objects, () => {
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, backDoorOpen, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측 개구부, 뒤벽 출입문·좌측 폴딩)
   captureInto(s2Wall1Objects, () => {                                     // 1층 뒤벽 슬라이드창 — 2짝(0.8) 편개, 오른쪽 짝이 왼쪽으로 미닫이
     const zc = s2BackZ - 0.13, sy = s1BackWin.sillY, hy = s1BackWin.headY, x0 = s1BackWin.p0, x1 = s1BackWin.p1;
-    const F = materials.windowFrame;   // 창틀 흰색 유지
+    const F = materials.windowFrame;   // 창틀(windowFrame 공용 = 짙은 색)
     const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
     const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
     const pw = (x1 - x0) / 2, mullW = 0.05, trk = 0.03;
@@ -2373,7 +2373,7 @@ captureInto(s2Wall1Objects, () => {
     };
     // 우측벽(x=0): 2트랙 4짝 양미서기 슬라이드 창 — 뒤벽과 동일 방식(축만 X↔Z). 바깥 2짝 고정 + 가운데 2짝 앞뒤로 갈라져 가운데 열림. sill·개구 유지.
     { const xc = s2X0 + t / 2, syR = rO.sillY, hyR = rO.headY;
-      const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 회색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
+      const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 짙은 색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
       const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝 유리
       const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이(열린) 짝 유리
       const pw = (rO.a1 - rO.a0) / 4, mullW = 0.05, trk = 0.03;                                            // 4짝·트랙 오프셋
@@ -2399,7 +2399,7 @@ captureInto(s2Wall1Objects, () => {
       drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
-  // 눈썹지붕(고정식 캐노피) 단일 출처 — 개구 상단 위 리얼징크 경사판 + 벽-지붕 후레싱(물끊기) + 처마끝 드립엣지 + 까치발 2개.
+  // 눈썹지붕(고정식 캐노피) 단일 출처 — 개구 상단 위 오리지널징크 경사판 + 벽-지붕 후레싱(물끊기) + 처마끝 드립엣지 + 까치발 2개.
   // axis: 돌출축('x'|'z', 외벽 법선) · dir: 바깥 방향(±1) · wallFace: 외벽 바깥면(그 축) · spanC/spanW: 스팬축 중앙·지붕 폭 · topY: 개구 상단. 돌출 0.8·물매낙차 0.1(벽쪽↑ 바깥↓).
   const eyebrowRoof = (axis, dir, wallFace, spanC, spanW, topY, tag, run = 0.8, bracketed = true) => {
     const drop = 0.1, thk = 0.06;
@@ -2413,7 +2413,7 @@ captureInto(s2Wall1Objects, () => {
     const bl = Math.hypot(p1b - p0b, y1b - y0b);
     const bmid = (p0b + p1b) / 2 - bl / 2, bY = (y0b + y1b) / 2 - 0.03;
     if (axis === 'x') {
-      const panel = box({ x: panelMinP, z: s0, w: L, d: spanW, y: topY + drop / 2 + 0.02, h: thk, mat: materials.roof });   // 리얼징크 경사판
+      const panel = box({ x: panelMinP, z: s0, w: L, d: spanW, y: topY + drop / 2 + 0.02, h: thk, mat: materials.roof });   // 오리지널징크 경사판
       panel.rotation.z = Math.atan2(-drop, dir * run);          // 바깥으로 물매
       box({ x: flashP, z: s0, w: 0.08, d: spanW, y: topY + drop - 0.02, h: 0.14, mat: materials.roofEdge });   // 벽-지붕 후레싱
       box({ x: wallFace + dir * 0.05, z: s0, w: 0.10, d: spanW, y: topY - 0.11, h: 0.20, mat: materials.roofEdge });   // 뒷변 인방 연속보 — 개구 상단 인방에 전체 길이 고정(까치발 대신 연속 지지)
@@ -2431,7 +2431,7 @@ captureInto(s2Wall1Objects, () => {
     }
     const lx = axis === 'x' ? wallFace + dir * 0.4 : spanC;
     const lz = axis === 'x' ? spanC : wallFace + dir * 0.4;
-    label(`${tag} 눈썹지붕 ${fmtDim(run)}×${fmtDim(spanW)}m (고정식·리얼징크)`, lx, topY + 0.35, lz, 'roof');
+    label(`${tag} 눈썹지붕 ${fmtDim(run)}×${fmtDim(spanW)}m (고정식·오리지널징크)`, lx, topY + 0.35, lz, 'roof');
   };
   captureInto(s2Wall1Objects, () => {                                     // 1층 개구부 위 고정식 눈썹지붕 — 단일 출처(eyebrowRoof)로 통일
     eyebrowRoof('x', +1, s2W,        lCz, lGap + 0.40, lO.headY, '1층 싱크대쪽');                                  // 좌측(싱크대쪽) 폴딩창 위(+X)
@@ -2609,7 +2609,7 @@ captureInto(s2Wall1Objects, () => {
     // 징크 마감(단열 위)
     s2RoofSlab(eFront, topEaveY, topRidgeY, zf, materials.roof);
     s2RoofSlab(eBack, topEaveY, topRidgeY, zf, materials.roof);
-    label('지붕: 단열 260T + 리얼징크 · 박공 32° · 처마 앞뒤 1.0m·좌우 0.45m', s2W / 2, topRidgeY + 0.45, s2RidgeZ - 1.4, 'struct');
+    label('지붕: 단열 260T + 오리지널징크 · 박공 32° · 처마 앞뒤 1.0m·좌우 0.45m', s2W / 2, topRidgeY + 0.45, s2RidgeZ - 1.4, 'struct');
     // 눈막이(스노우가드) 가로바 — 양 슬로프 처마 근처 2줄(쌓인 눈이 한꺼번에 미끄러지지 않게)
     const onTop = (ez, t) => ({ z: ez + t * (s2RidgeZ - ez), y: topEaveY + t * (topRidgeY - topEaveY) });
     const snowGuard = (ez, t) => {
@@ -3116,7 +3116,7 @@ const NOTES = {
   get s2Roof3() {
     const deg = Math.round(s2RoofPitch * 180 / Math.PI);
     return { title: '지붕 (징크 박공)', body: [
-      `- 마감: 리얼징크(티타늄아연). 지붕 두께 ${Math.round(roofThickness * 1000)} mm(단열 + 징크).`,
+      `- 마감: 오리지널징크(티타늄아연). 지붕 두께 ${Math.round(roofThickness * 1000)} mm(단열 + 징크).`,
       `- 경사 ${deg}° 박공, 용마루는 너비(X) 방향.`,
       `- 처마: 앞·뒤 ${fmtDim(s2RoofEaveOver)} m, 좌·우 ${fmtDim(s2RoofSideOver)} m 내밈.`,
       `- 눈막이(스노우가드): 양 슬로프 처마 근처 가로바 ${s2SnowGuardT.length}줄 — 쌓인 눈이 한꺼번에 미끄러지지 않게.`,
