@@ -62,17 +62,17 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">외벽·지붕</h2>
-        <div class="seg-row" role="group" aria-label="외벽·지붕·태양광">
-          <button type="button" class="seg-btn" id="bExtWall">외벽</button>
+        <div class="seg-row" role="group" aria-label="지붕·태양광">
           <button type="button" class="seg-btn" id="bRoof">지붕</button>
           <button type="button" class="seg-btn" id="bSolar">태양광</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">다락</h2>
-        <div class="seg-row" role="group" aria-label="다락 바닥·내벽">
+        <div class="seg-row" role="group" aria-label="다락 바닥·내벽·외벽">
           <button type="button" class="seg-btn" id="bLoft">바닥</button>
           <button type="button" class="seg-btn" id="bAtticInnerWall">내벽</button>
+          <button type="button" class="seg-btn" id="bAtticExtWall">외벽</button>
         </div>
       </section>
       <section class="menu-group" data-scheme="s1">
@@ -88,10 +88,11 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="천장·화장실·계단">
+        <div class="seg-row" role="group" aria-label="천장·화장실·계단·외벽">
           <button type="button" class="seg-btn" id="bFirstCeiling">천장</button>
           <button type="button" class="seg-btn" id="bBath">화장실</button>
           <button type="button" class="seg-btn" id="bS1Stair">계단</button>
+          <button type="button" class="seg-btn" id="bFirstWall">외벽</button>
         </div>
         <div class="seg-row" role="group" aria-label="바닥">
           <button type="button" class="seg-btn" id="bFirstFloorFinish">바닥</button>

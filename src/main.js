@@ -2928,7 +2928,8 @@ const view = {
   firstFloorFinish: false, // 집 1층 바닥재
   firstCeiling: false, // 집 1층 천장 설비(실링팬·에어컨·실외기)
   stair: false,       // ㄷ자 계단 본체
-  extWall: false,     // 외벽(1층+다락 합침)
+  firstWall: false,     // 1층 외벽('1층' 그룹 '외벽' 버튼)
+  atticExtWall: false,  // 다락 외벽('다락' 그룹 '외벽' 버튼)
   firstRoom: false,   // 1층 골조·실내
   bath: false,        // 화장실
   loft: false,        // 실제 다락 바닥(슬래브·방)
@@ -2965,7 +2966,8 @@ const PARTS = [
   { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects, interiorObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면 + 실내 가구(안방 침대·주방 싱크대) 합침
   { key: 'firstCeiling', arrays: [firstCeilingObjects] },   // 천장 설비(실링팬·벽걸이 에어컨·실외기)
   { key: 'stair',      arrays: [stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 주방측 벽·안방 내력벽을 계단 토글에 합침
-  { key: 'extWall',    arrays: [firstWallObjects, atticExtWallObjects] },   // 1층 외벽+다락 외벽을 하나의 '외벽'으로 합침
+  { key: 'firstWall',    arrays: [firstWallObjects] },        // 1층 외벽('1층' 그룹 '외벽')
+  { key: 'atticExtWall', arrays: [atticExtWallObjects] },     // 다락 외벽('다락' 그룹 '외벽')
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
   { key: 'bath',       arrays: [bathObjects] },
   { key: 'loft',       arrays: [secondFloorObjects] },        // 실제 다락 바닥(슬래브·방)
@@ -3000,9 +3002,8 @@ const PARTS = [
 const S1_TOGGLES = [
   ['bDeck', 'deck'],   // 데크(악세사리 합침)
   ['bFolding', 'folding'], ['bSunRoof', 'sunRoof'], ['bFrame', 'frame'],
-  ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
-  ['bExtWall', 'extWall'],
-  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bBath', 'bath'],
+  ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bAtticExtWall', 'atticExtWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
+  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bFirstWall', 'firstWall'], ['bBath', 'bath'],
   ['bMatFull', 'matFoundationFull'],
 ];
 
@@ -3331,7 +3332,7 @@ const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'matFoundationFull', 'firstFloorFinish', 'stair', 'extWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticInnerWall', 'roof', 'deck', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['plan', 'matFoundationFull', 'firstFloorFinish', 'stair', 'firstWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticInnerWall', 'atticExtWall', 'roof', 'deck', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
 function updateNotes() {
   const body = document.querySelector('#noteBody');
   if (!body) return;
