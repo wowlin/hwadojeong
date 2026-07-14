@@ -88,11 +88,14 @@ app.innerHTML = `
       </section>
       <section class="menu-group" data-scheme="s1">
         <h2 class="menu-title">1층</h2>
-        <div class="seg-row" role="group" aria-label="천장·화장실·계단·외벽">
+        <div class="seg-row" role="group" aria-label="외벽·콘센트">
+          <button type="button" class="seg-btn" id="bFirstWall">외벽</button>
+          <button type="button" class="seg-btn" id="bFirstOutlet">콘센트</button>
+        </div>
+        <div class="seg-row" role="group" aria-label="천장·화장실·계단">
           <button type="button" class="seg-btn" id="bFirstCeiling">천장</button>
           <button type="button" class="seg-btn" id="bBath">화장실</button>
           <button type="button" class="seg-btn" id="bS1Stair">계단</button>
-          <button type="button" class="seg-btn" id="bFirstWall">외벽</button>
         </div>
         <div class="seg-row" role="group" aria-label="바닥">
           <button type="button" class="seg-btn" id="bFirstFloorFinish">바닥</button>

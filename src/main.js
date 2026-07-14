@@ -77,7 +77,7 @@ import {
   deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ, deckSurfaceY
 } from './layout.js';
 import {
-  firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
+  firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstOutletObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
   썬룸FrameObjects, 썬룸RoofObjects, wallObjects, foldingObjects, extrasObjects,
   hedgeObjects, fenceObjects, foundationObjects, matFoundationFullObjects,
   footprintObjects, planObjects, dimObjects,
@@ -625,11 +625,14 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
 planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`);
 
 room({ x: firstKitchenX, z: insideZ0, w: firstKitchenW, d: firstKitchenD, y: firstFloorY + floorOverlayLift, mat: materials.kitchen });   // 색면만 — 주방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
+// 주방 벽걸이 에어컨·냉장고 제원 — 콘센트 자리('콘센트' 토글)도 이 값을 그대로 공유(단일 출처).
+const acW = 0.85, acD = 0.22, acZ = insideZ0 + 0.2, acY = firstFloorY + firstWallHeight - 0.45;   // 에어컨 폭(Z)·깊이(X)·앞끝 z·설치 y
+const fridgeW = 0.545;                                                      // 냉장고 폭(X)
+const fridgeCx = (kitchenSinkX + kitchenSinkW) + (stairLowXRunX - (kitchenSinkX + kitchenSinkW) - fridgeW) / 2 + fridgeW / 2;   // 냉장고 X중심(싱크대 끝~계단 사이 가운데)
+const cooktopX0 = kitchenSinkX + 1.5, cooktopW = 0.55;                      // 인덕션 시작 X·폭(콘센트 자리 공유)
 // 주방 벽걸이 에어컨(실내기) — 오른쪽(서측) 외벽 x=insideX0 안쪽, 천장 가까이. 앞(−Z)에서 20cm 이격. '천장' 토글(firstCeilingObjects). 실외기는 통풍 좋은 곳에 별도.
 captureInto(firstCeilingObjects, () => {
-  const acW = 0.85, acH = 0.30, acD = 0.22;
-  const acZ = insideZ0 + 0.2;
-  const acY = firstFloorY + firstWallHeight - 0.45;
+  const acH = 0.30;
   box({ x: insideX0, z: acZ, w: acD, d: acW, y: acY, h: acH, mat: materials.wall });                                           // 본체(흰색)
   box({ x: insideX0 + 0.05, z: acZ + 0.06, w: acD - 0.04, d: acW - 0.12, y: acY - 0.015, h: 0.025, mat: materials.openingEdge });   // 하부 토출 슬릿
   label('벽걸이 에어컨', insideX0 + 0.55, acY + 0.17, acZ + acW / 2, 'mep');
@@ -653,7 +656,7 @@ captureInto(interiorObjects, () => {   // 주방 싱크대 — '실내' 토글
 });
 // 인덕션 쿡탑 — 싱크대 우측. 가스레인지·LPG 대체(전기 일원화, 가스통 불필요). '실내' 토글.
 captureInto(interiorObjects, () => {
-  const ckX = kitchenSinkX + 1.5, ckZ = kitchenSinkZ + 0.08, ckW = 0.55, ckD = 0.45;
+  const ckX = cooktopX0, ckZ = kitchenSinkZ + 0.08, ckW = cooktopW, ckD = 0.45;
   box({ x: ckX, z: ckZ, w: ckW, d: ckD, y: kitchenCounterY, h: 0.012, mat: materials.openingEdge });                         // 인덕션 검정 유리 상판
   box({ x: ckX + 0.09, z: ckZ + 0.11, w: 0.18, d: 0.18, y: kitchenCounterY + 0.012, h: 0.004, mat: materials.guard });      // 화구1
   box({ x: ckX + 0.33, z: ckZ + 0.16, w: 0.14, d: 0.14, y: kitchenCounterY + 0.012, h: 0.004, mat: materials.guard });      // 화구2
@@ -661,11 +664,10 @@ captureInto(interiorObjects, () => {
 });
 // 한문형 냉장고(311L, 0.545×0.689×1.70) — s2 것과 동일. 싱크대 끝(高X)과 계단 사이 뒤 외벽에 등붙임. 문=주방(低Z)쪽. '실내' 토글.
 captureInto(interiorObjects, () => {
-  const rW = 0.545, rD = 0.689, rH = 1.70;                    // 폭(X)·깊이(Z, 앞으로 돌출)·높이
+  const rW = fridgeW, rD = 0.689, rH = 1.70;                  // 폭(X, 공유)·깊이(Z, 앞으로 돌출)·높이
   const rBackZ = insideZ1;                                    // 뒤 외벽 안쪽면 등붙임
   const rFrontZ = rBackZ - rD;                                // 냉장고 앞면 z(주방쪽 -Z)
-  const gapX0 = kitchenSinkX + kitchenSinkW;                  // 싱크대 끝(高X)
-  const rx0 = gapX0 + (stairLowXRunX - gapX0 - rW) / 2;       // 싱크대~계단 사이 가운데
+  const rx0 = fridgeCx - rW / 2;                              // 싱크대~계단 사이 가운데(공유 중심서 역산)
   box({ x: rx0, z: rFrontZ, w: rW, d: rD, y: firstFloorY, h: rH, mat: materials.fridge });   // 본체
   // 문(2도어 상부냉동) — 문 면=주방(低Z)쪽, 경첩=계단(高X)쪽, 손잡이=싱크대(低X)쪽 → 문은 주방으로 열림
   const rdt = 0.02, rfzH = rH * 0.30;
@@ -744,6 +746,48 @@ captureInto(interiorObjects, () => {
     box({ x: insideX1 - 0.5, z: pz, w: 0.4, d: 0.7, y: firstFloorY + frameH + mattressH, h: 0.12, mat: pillowMat });
   }
   label('침대 2.0x2.0m', bedX + bedW / 2, firstFloorY + 1.0, bedZ + bedD / 2, 'furniture');
+});
+
+// ── 1층 콘센트 — '1층' 그룹 '콘센트' 토글(firstOutletObjects). 종류별 색·높이: 일반(녹)·고전력(마젠타)·인덕션 직결 정션박스(보라). ──
+// face로 벽 방향('+X'=低X벽서 +X, '-X'=高X벽서 -X, '+Z'=앞벽서 +Z, '-Z'=뒤벽서 -Z). kind: 'n' 일반·'h' 고전력·'i' 인덕션(소켓 없는 직결).
+captureInto(firstOutletObjects, () => {
+  const outlet = (x, z, oy, face, kind = 'n') => {
+    const mC = kind === 'h' ? materials.heatOutlet : kind === 'i' ? materials.inductionOutlet : materials.outlet;   // 커버 플레이트 색
+    const mS = kind === 'h' ? materials.heatOutletSocket : materials.outletSocket;                                  // 소켓 면 색
+    const socket = kind !== 'i';   // 인덕션 = 직결(콘센트 아님) → 소켓 없는 정션박스 블랭크 커버만
+    if (face === '+X') {
+      box({ x, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
+      if (socket) box({ x: x + 0.035, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
+    } else if (face === '-X') {
+      box({ x: x - 0.035, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
+      if (socket) box({ x: x - 0.05, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
+    } else if (face === '+Z') {
+      box({ x: x - 0.065, z, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
+      if (socket) box({ x: x - 0.045, z: z + 0.035, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
+    } else {   // '-Z'
+      box({ x: x - 0.065, z: z - 0.035, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
+      if (socket) box({ x: x - 0.045, z: z - 0.05, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
+    }
+  };
+  const baseY = firstFloorY + 0.3;      // 기본(난방) 높이 — 바닥+0.3
+  const counterOutletY = firstFloorY + 1.1;   // 싱크대 상판 위(주방 가전) 높이 — 바닥+1.1(s2와 동일)
+  const underCabY = firstFloorY + 0.4;   // 하부장 안(인덕션·온수기) 높이 — 바닥+0.4(s2와 동일)
+  // 안방 — 정면 외벽(앞), 방문(내력벽 포켓도어) 쪽 코너에서 30cm. 전기 난방용(고전력)
+  outlet(firstFamilyX + 0.3, insideZ0, baseY, '+Z', 'h');
+  // 주방 — 왼쪽(서측·低X) 외벽, 앞에서 깊이 30cm. 전기 난방용(고전력)
+  outlet(insideX0, insideZ0 + 0.3, baseY, '+X', 'h');
+  // 주방 냉장고용 — 뒤 외벽(高Z), 냉장고 X중심(공유), 냉장고(1.70) 위. 일반
+  outlet(fridgeCx, insideZ1, firstFloorY + 1.8, '-Z', 'n');
+  // 주방 에어컨용 — 서측(低X) 외벽, 벽걸이 에어컨 옆(高Z 끝) 유닛 높이(공유). 고전력
+  outlet(insideX0, acZ + acW + 0.15, acY, '+X', 'h');
+  // 주방 인덕션용 — 뒤 외벽(高Z) 싱크대 하부장 안, 인덕션 X중심 아래. 직결 정션박스(보라)
+  const inductionCx = cooktopX0 + cooktopW / 2;    // 인덕션 X중심(공유)
+  outlet(inductionCx, insideZ1, underCabY, '-Z', 'i');
+  // 주방 전기온수기용 — 뒤 외벽(高Z) 싱크대 하부장 안, 싱크볼 옆. 고전력
+  outlet(kitchenSinkX + 0.5, insideZ1, underCabY, '-Z', 'h');
+  // 주방 가전용 — 싱크대 위쪽 측면(低X) 벽 backsplash 2개. 일반
+  outlet(insideX0, kitchenSinkZ + 0.15, counterOutletY, '+X', 'n');
+  outlet(insideX0, kitchenSinkZ + 0.42, counterOutletY, '+X', 'n');
 });
 
 // (1층 전동커튼 레일 제거 — 외벽 창·문이 정면 현관문만 남아 커튼레일 대상 없음)
@@ -2929,6 +2973,7 @@ const view = {
   firstCeiling: false, // 집 1층 천장 설비(실링팬·에어컨·실외기)
   stair: false,       // ㄷ자 계단 본체
   firstWall: false,     // 1층 외벽('1층' 그룹 '외벽' 버튼)
+  firstOutlet: false,   // 1층 콘센트('1층' 그룹 '콘센트' 버튼)
   atticExtWall: false,  // 다락 외벽('다락' 그룹 '외벽' 버튼)
   firstRoom: false,   // 1층 골조·실내
   bath: false,        // 화장실
@@ -2967,6 +3012,7 @@ const PARTS = [
   { key: 'firstCeiling', arrays: [firstCeilingObjects] },   // 천장 설비(실링팬·벽걸이 에어컨·실외기)
   { key: 'stair',      arrays: [stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 주방측 벽·안방 내력벽을 계단 토글에 합침
   { key: 'firstWall',    arrays: [firstWallObjects] },        // 1층 외벽('1층' 그룹 '외벽')
+  { key: 'firstOutlet',  arrays: [firstOutletObjects] },      // 1층 콘센트('1층' 그룹 '콘센트')
   { key: 'atticExtWall', arrays: [atticExtWallObjects] },     // 다락 외벽('다락' 그룹 '외벽')
   { key: 'firstRoom',  arrays: [firstFloorObjects] },
   { key: 'bath',       arrays: [bathObjects] },
@@ -3003,7 +3049,7 @@ const S1_TOGGLES = [
   ['bDeck', 'deck'],   // 데크(악세사리 합침)
   ['bFolding', 'folding'], ['bSunRoof', 'sunRoof'], ['bFrame', 'frame'],
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bAtticExtWall', 'atticExtWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
-  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bFirstWall', 'firstWall'], ['bBath', 'bath'],
+  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bFirstWall', 'firstWall'], ['bFirstOutlet', 'firstOutlet'], ['bBath', 'bath'],
   ['bMatFull', 'matFoundationFull'],
 ];
 
