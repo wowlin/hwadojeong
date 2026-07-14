@@ -1014,6 +1014,8 @@ function campingChair({ cx, cz, faceAngle = 0, color = 0x47535f, baseY = groundT
   scene.add(group);
 }
 
+const s1DeckFurn = {};   // 데크 가구 실측값을 설계메모로 노출(단일 출처) — 썬룸(withFurniture)에서 채움
+
 // 1층 주방 앞 썬룸 — 지붕 길이(전면 돌출) 4m. 지붕 = 리얼징크(불투명).
 //  · 데크 상단(집 바닥 높이)에서 시작, 앞단(최저) 기둥, 건물쪽은 1층 높이에 부착
 //  · 프레임/기둥은 지붕 가장자리에서 20cm 안쪽(3면 세로벽이 이 선에 설치)
@@ -1196,7 +1198,6 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     // 양개 — 좌우 절반이 각자 바깥기둥쪽으로 밖(−Z) 접혀 중앙이 활짝 열림(=출입구). 등폭이라 자투리 없음.
     drawFold((k) => [ax0 + sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf);   // 우측 절반(주방쪽 기둥으로 접힘)
     drawFold((k) => [ax1 - sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf);   // 좌측 절반(안방쪽 기둥으로 접힘)
-    label('전면 폴딩도어 — 중앙 양개로 접혀 열림(가운데가 출입구)', aMid, wallBaseY + 1.45, zc - 0.3, 'opening');
 
     // ── 좌우 측면 하부 프라이버시 벽(불투명) — 착석 시선 차단, 위는 개방 유지. 포치 골조 옆면선(px0/px1·pzF~pzB)에 맞춤 ──
     const privacyH = 0.8, privacyThick = 0.06;
@@ -1213,7 +1214,6 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
       box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: winSy, h: 0.08, mat: fdFrame });        // 하부 레일(프라이버시 벽 위)
       box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: hy - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일(프레임 상단보 밑)
       drawFold((k) => [sx + (k % 2 === 0 ? 0 : outSign * wFD), az1 - wStep * k], nWin, winSy, hy); // 뒤(az1)서 등폭 접힘
-      label('측면 폴딩창 — 뒤쪽으로 접혀 열림', sx + outSign * 0.3, winSy + 0.6, (az0 + az1) / 2, 'opening');
     }
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
@@ -1248,7 +1248,6 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
   if (withFurniture) {
     // 데크 우측(低x=주방쪽) = 난로 영역(붉은 예약 구획) — 기존 s1 화목난로 자리. 나머지엔 s2 1층과 동일한 식탁·의자.
     box({ x: fX0, z: dFrontZ, w: dReserveW, d: dWallZ - dFrontZ, y: deckSurfaceY + 0.006, h: 0.012, mat: materials.leftZone, cast: false });   // 난로 영역
-    label('화목난로 영역', fX0 + dReserveW / 2, deckSurfaceY + 0.9, (dFrontZ + dWallZ) / 2, 'furniture');
     // 식탁 nDeckTables개(윗판 85×72·높이 0.72)를 高x로 이어 붙임. 의자=반고 햄프턴 DLX, 테이블당 앞·뒤 2개 → 의자 2·nDeckTables개.
     const TH = 0.72, top = 0.04, leg = 0.06, woodT = materials.woodFrame;
     const tzX0 = fX0 + dReserveW;                              // 테이블 영역 시작(난로 영역 옆)
@@ -1269,7 +1268,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withPo
     const zx0 = cxs[0] - dTW / 2 - dEndGap, zx1 = cxs[cxs.length - 1] + dTW / 2 + dEndGap;
     const zz0 = cz0 - dChairBack - dAisle, zz1 = cz0 + dChairBack + dAisle;
     box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: deckSurfaceY + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
-    label(`식탁 ${cxs.length}(${fmtDim(dTW)}×${fmtDim(dTD)}) + 반고 햄프턴 DLX`, rowCx, deckSurfaceY + 1.15, cz0, 'furniture');
+    Object.assign(s1DeckFurn, { nTables: cxs.length, tW: dTW, tD: dTD });   // 식탁 실측값 → 설계메모(단일 출처)
   }
   extrasLocal.push(...scene.children.slice(_furnStart));
 
@@ -2265,7 +2264,7 @@ captureInto(s2Wall1Objects, () => {
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, backDoorOpen, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측 개구부, 뒤벽 출입문·좌측 폴딩)
   captureInto(s2Wall1Objects, () => {                                     // 1층 뒤벽 슬라이드창 — 2짝(0.8) 편개, 오른쪽 짝이 왼쪽으로 미닫이
     const zc = s2BackZ - 0.13, sy = s1BackWin.sillY, hy = s1BackWin.headY, x0 = s1BackWin.p0, x1 = s1BackWin.p1;
-    const F = materials.windowFrame;   // 창틀(windowFrame 공용 = 짙은 색)
+    const F = materials.windowFrame;   // 창틀 흰색 유지
     const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
     const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
     const pw = (x1 - x0) / 2, mullW = 0.05, trk = 0.03;
@@ -2374,7 +2373,7 @@ captureInto(s2Wall1Objects, () => {
     };
     // 우측벽(x=0): 2트랙 4짝 양미서기 슬라이드 창 — 뒤벽과 동일 방식(축만 X↔Z). 바깥 2짝 고정 + 가운데 2짝 앞뒤로 갈라져 가운데 열림. sill·개구 유지.
     { const xc = s2X0 + t / 2, syR = rO.sillY, hyR = rO.headY;
-      const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 짙은 색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
+      const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 회색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
       const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝 유리
       const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이(열린) 짝 유리
       const pw = (rO.a1 - rO.a0) / 4, mullW = 0.05, trk = 0.03;                                            // 4짝·트랙 오프셋
@@ -2742,8 +2741,6 @@ const deckStairStepRise = (deckSurfaceY - groundTopY) / deckStairNRise;   // 각
   flueV.position.set(-0.22, (flueBottom + flueTopTarget) / 2, stZ); flueV.castShadow = true; scene.add(flueV);
   const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.16, 14), materials.openingEdge);
   hole.rotation.z = Math.PI / 2; hole.position.set(-0.02, flueY, stZ); scene.add(hole);
-  label('화목난로 / 3번째 짝 하부 = 착탈 카세트 (겨울 연통홀 / 여름 솔리드 교체)', stX + 1.05, deckTop + 1.05, stZ, 'furniture');
-  label('4번째 짝 하부 = 착탈 카세트 (솔리드 · 독립 착탈)', stX + 1.05, deckTop + 0.78, z4, 'furniture');
   extrasObjects.push(...scene.children.slice(_stoveStart));   // 난로·연통·카세트를 '데크' 토글(extrasObjects)에 소속 — 데크와 함께 표시
 }
 
@@ -3077,6 +3074,19 @@ function syncSegButtons() {
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕 경사는 32도로 최대한 맞춰 설계 적용한다.\n  (태양광 설치: 28~34도가 최적 경사대)' },
+  get deck() {                                             // 데크 가구·화목난로 — 실측값은 s1DeckFurn(단일 출처)에서 파생
+    const f = s1DeckFurn;
+    return { title: '데크', body: [
+      '［데크 가구］',
+      `· 식탁        ${f.nTables}개 (윗판 ${fmtDim(f.tW)}×${fmtDim(f.tD)}m)`,
+      '· 의자        반고 햄프턴 DLX (테이블당 앞·뒤 2개)',
+      '· 화목난로 영역   데크 우측(주방쪽) 예약 구획',
+      '',
+      '［화목난로 · 착탈 카세트］',
+      '· 3번째 짝 하부   착탈 카세트 (겨울 연통홀 / 여름 솔리드 교체)',
+      '· 4번째 짝 하부   착탈 카세트 (솔리드 · 독립 착탈)',
+    ].join('\n') };
+  },
   get stair() {                                            // s1 계단 사양 — ㄷ자(돌음 회전·평참 없음) 계단. 모두 계단 상수(stairParams·stairGeom)서 자동 계산
     const g = stairGeom(stairParams);
     const { W, R, T, N, fy, nWind, nLand, nL, nU, loftY, treadH, nosing, turnD } = g;
