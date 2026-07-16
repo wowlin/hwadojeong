@@ -67,11 +67,14 @@ test('⑧ 집·데크 발자국 — 단일 출처(footprintObjects), 현재 탭(
 
 test('⑨ 치수선은 헬퍼 안에서만 — 인라인 치수선 금지(라벨·선 한 세트 강제)', () => {
   // 모든 치수선 box(mat: materials.dimension)는 3가지 표준 치수 함수(planXDim/planYDim/planZDim) 안에서만 그린다.
-  //   현재 = 3 + 3 + 3 = 9개. 헬퍼 밖에서 직접 그리면 라벨과 분리(라벨만 지워도 선이 남음)되므로 금지.
+  //   현재 = 3 + 3 + 3 = 9개(labels.js). 헬퍼 밖에서 직접 그리면 라벨과 분리(라벨만 지워도 선이 남음)되므로 금지.
   //   ※ 헬퍼 내부 box 수를 의도적으로 바꿨다면 이 숫자도 함께 갱신할 것.
+  const labelsSrc = readFileSync(resolve(root, 'src/labels.js'), 'utf8');   // 치수 헬퍼는 labels.js로 분리됨
+  const n = (labelsSrc.match(/mat: materials\.dimension/g) || []).length;
+  assert.equal(n, 9, `치수선 box는 labels.js 헬퍼 안 9개만이어야 함 — 현재 ${n}개. 헬퍼 밖 인라인 치수선이 생기면 라벨과 분리됨(라벨+선 한 세트 위반)`);
   const src = readFileSync(mainJs, 'utf8');
-  const n = (src.match(/mat: materials\.dimension/g) || []).length;
-  assert.equal(n, 9, `치수선 box는 헬퍼 안 9개만이어야 함 — 현재 ${n}개. 헬퍼 밖 인라인 치수선이 생기면 라벨과 분리됨(라벨+선 한 세트 위반)`);
+  const inline = (src.match(/mat: materials\.dimension/g) || []).length;
+  assert.equal(inline, 0, `main.js에 인라인 치수선 box ${inline}개 — planX/Y/ZDim 헬퍼(labels.js)로만 그릴 것`);
 });
 
 test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없음) + 배치도/전체모델 프리셋', () => {
