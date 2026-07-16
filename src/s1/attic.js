@@ -5,10 +5,10 @@ import { box } from '../primitives.js';
 import { label, planYDim, room, roomText } from '../labels.js';
 import {
   gableLongWallX, lowWall, horizontalWallWithGaps, pocketDoorHorizontal,
-  frontFixSash, frontAwningSash,
+  frontFixSash, frontAwningSash, sideRearSlider, gableWallSeg,
 } from '../openings.js';
-import { yzWallPrism } from '../builders.js';
 import { captureInto, fmtDim } from '../primitives.js';
+import { mattressWithLabel, pillowAt } from '../fixtures.js';
 import {
   buildingW, buildingD, buildingBackZ, exteriorWall, interiorWall, interiorDoorW,
   secondFloorThickness, secondWallHeight, secondAtticDoorH, atticCorridorWallT, stairRunW,
@@ -49,11 +49,9 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ); 
     // s2 3층 매트리스·베개를 복사해 다락방1·2 바닥에 표시 — 재질·두께·규격 s2와 동일. 베개(머리맡)=집 뒤쪽(高Z).
     {
       const mfy = secondWallY + floorSurfaceH + 0.01, mH = 0.1, mL = 2.0;
-      const mMat = materials.mattress;   // 매트리스(베이지) — s2와 동일(공유 재질)
-      const pMat = materials.pillow;   // 베개 — s2와 동일(공유 재질)
       const z0 = insideZ1 - mL, pZ = insideZ1 - 0.07 - 0.4;             // 매트: 머리=뒤(高Z)·발치=앞(低Z) / 베개 z=머리맡
-      const mat = (x0, w, txt) => { box({ x: x0, z: z0, w, d: mL, y: mfy, h: mH, mat: mMat }); label(txt, x0 + w / 2, mfy + mH + 0.15, z0 + mL / 2, 'furniture'); };
-      const pil = (cx) => box({ x: cx - 0.35, z: pZ, w: 0.7, d: 0.4, y: mfy + mH, h: 0.1, mat: pMat });
+      const mat = (x0, w, txt) => mattressWithLabel({ x: x0, z: z0, w, l: mL, y: mfy, text: txt });   // fixtures 1벌(#12)
+      const pil = (cx) => pillowAt(cx, pZ, mfy + mH);   // fixtures 1벌(#12)
       // 다락방1(주방쪽/低X): 싱글 2.0×1.1 2개(주방쪽 옆벽에 나란히·10cm 간격), 각 베개 1개 — 양방 교체
       { const w = 1.1, gap = 0.1, x0 = planRightKitchenX;
         mat(x0, w, '매트리스 2.0×1.1m'); pil(x0 + w / 2);
@@ -109,28 +107,8 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ); 
     const wallZ1 = buildingFrontZ + buildingD;                                            // 옆벽 Z 뒤끝(집 깊이 전체)
     const roofUnderY = (z) => gableBaseY + roofRiseAtZ(z);                                // 박공벽 밑선(=지붕 밑면) Y
     // za~zb 한 구간을 바닥(by)부터 박공 밑선까지 세움 — 구간 내 용마루(atticRidgeZ)는 꼭지점으로 꺾음
-    const gableSeg = (x, za, zb, by) => {
-      const pts = [[za, by], [zb, by], [zb, roofUnderY(zb)]];
-      if (za < atticRidgeZ && atticRidgeZ < zb) pts.push([atticRidgeZ, roofUnderY(atticRidgeZ)]);
-      pts.push([za, roofUnderY(za)]);
-      yzWallPrism({ x, thickness: exteriorWall, mat: materials.exteriorWall, points: pts });
-    };
-    const sideSlider = (xc) => {   // 2짝 편개 미서기 — 짝을 Z로 나눔(옆벽=X면). 앞짝 고정 + 뒤짝 미닫이(앞으로 슬라이드)
-      const F = materials.windowFrame, sy = atticSideSillY, hy = atticSideHeadY;
-      const slGlass = materials.slidingFixedGlass;   // 고정 짝
-      const slMove  = materials.slidingMoveGlass;    // 미닫이 짝
-      const pd = atticSideWinW / 2, mullD = 0.05, trk = 0.03;
-      box({ x: xc - 0.06, z: atticSideZ0, w: 0.12, d: atticSideWinW, y: sy, h: 0.08, mat: F });         // 하부 레일(2트랙 전폭)
-      box({ x: xc - 0.06, z: atticSideZ0, w: 0.12, d: atticSideWinW, y: hy - 0.08, h: 0.08, mat: F });   // 상부 레일
-      const pane = (zp, xt, mat) => {
-        box({ x: xt - 0.025, z: zp, w: 0.05, d: pd, y: sy, h: hy - sy, mat, cast: false });                     // 유리
-        box({ x: xt - 0.035, z: zp, w: 0.07, d: mullD, y: sy, h: hy - sy, mat: F, cast: false });               // 앞 세로살
-        box({ x: xt - 0.035, z: zp + pd - mullD, w: 0.07, d: mullD, y: sy, h: hy - sy, mat: F, cast: false });   // 뒤 세로살
-      };
-      pane(atticSideZ0, xc + trk, slGlass);        // 앞짝 고정 — 바깥트랙
-      pane(atticSideZ0 + pd, xc - trk, slMove);    // 뒤짝 미닫이 — 안쪽트랙
-      box({ x: xc - trk - 0.085, z: atticSideZ0 + pd + 0.06, w: 0.045, d: 0.045, y: sy + 0.26, h: 0.28, mat: materials.handle });   // 미닫이 손잡이
-    };
+    const gableSeg = (x, za, zb, by) => gableWallSeg({ x, za, zb, by, thickness: exteriorWall, mat: materials.exteriorWall, underY: roofUnderY, ridgeZ: atticRidgeZ });   // openings.gableWallSeg 1벌(#15)
+    const sideSlider = (xc) => sideRearSlider(atticSideZ0, atticSideWinW, atticSideSillY, atticSideHeadY - atticSideSillY, xc);   // 옆벽 미서기 2짝 — openings.sideRearSlider 1벌(#13)
     const gableSideWall = (x, xc) => {
       gableSeg(x, buildingFrontZ, atticSideZ0, secondWallY);                                                                        // 창 앞쪽 벽(바닥~지붕)
       gableSeg(x, atticSideZ1, wallZ1, secondWallY);                                                                                // 창 뒤쪽 벽(바닥~지붕)

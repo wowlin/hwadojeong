@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { scene } from './scene.js';
 import { materials } from './materials.js';
 import { box, addGeometryEdges } from './primitives.js';
-import { slopedWallTopCap, wallEndThicknessFace } from './builders.js';
+import { slopedWallTopCap, wallEndThicknessFace, yzWallPrism } from './builders.js';
 import { buildingFrontZ, roofRiseAtZ } from './layout.js';
 import { buildingD, interiorDoorW, interiorDoorH } from './constants.js';
 
@@ -253,4 +253,25 @@ export function awningSash(x, z, d, sillY, h) {
   pane.rotation.z = a;
   scene.add(pane);
   box({ x: x - 0.12, z: z + frame + 0.02, w: 0.05, d: 0.04, y: sillY + frame + 0.03, h: 0.14, mat: materials.handle });   // 하부 실내측 손잡이(밀어 열기)
+}
+
+// 박공(경사 밑선) 아래 벽 한 구간(#15) — za~zb를 바닥(by)부터 지붕 밑선(underY(z))까지 세움. 구간 안 용마루는 꼭지점으로 꺾음.
+export function gableWallSeg({ x, za, zb, by, thickness, mat, underY, ridgeZ }) {
+  const pts = [[za, by], [zb, by], [zb, underY(zb)]];
+  if (za < ridgeZ && ridgeZ < zb) pts.push([ridgeZ, underY(ridgeZ)]);
+  pts.push([za, underY(za)]);
+  yzWallPrism({ x, thickness, mat, points: pts });
+}
+
+// 폴딩도어/폴딩창 아코디언 1벌(#14) — 등폭 짝이 지그재그로 접힌(열린) 상태. hinge(k) = k번째 경첩점 [x, z].
+// 짝 유리 + 경첩 세로살 + 선두짝 레버 손잡이. handleDz: 손잡이 z 오프셋(기본 -0.06, 정면 폴딩도어는 -0.13).
+export function foldingAccordion(hinge, n, sy, hy, handleDz = -0.06) {
+  for (let k = 0; k < n; k += 1) {
+    const [x0p, z0p] = hinge(k), [x1p, z1p] = hinge(k + 1);
+    const cxp = (x0p + x1p) / 2, czp = (z0p + z1p) / 2, len = Math.hypot(x1p - x0p, z1p - z0p);
+    const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sy, h: hy - sy, mat: materials.slidingMoveGlass, cast: false });
+    m.rotation.y = Math.atan2(-(z1p - z0p), x1p - x0p);
+  }
+  for (let k = 0; k <= n; k += 1) { const [hx, hz] = hinge(k); box({ x: hx - 0.035, z: hz - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: materials.foldingFrame, cast: false }); }   // 경첩 세로살
+  const [lx, lz] = hinge(n); box({ x: lx - 0.06, z: lz + handleDz, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 선두짝 손잡이
 }

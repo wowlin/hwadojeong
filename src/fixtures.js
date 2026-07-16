@@ -191,3 +191,26 @@ export function solarArray({ spec, surfaceY, centerX, centerZ, pitch }) {
   out.push(label(`태양광 3kW (${spec.cols * spec.rows}장)`, centerX, surfaceY(centerZ) + 0.55, centerZ, 'mep'));   // 3kW = 시스템 공칭 용량(제품 사양)
   return out;
 }
+
+// 원목 식탁 1벌(#12) — 윗판+다리4(재질 woodFrame). s1 데크·s2 1층 공용(의자는 campingChair).
+export function woodTable({ cx, cz, baseY, w = 0.85, d = 0.72, h = 0.72, top = 0.04, leg = 0.06 }) {
+  box({ x: cx - w / 2, z: cz - d / 2, w, d, y: baseY + h - top, h: top, mat: materials.woodFrame });               // 윗판
+  for (const lx of [cx - w / 2 + 0.02, cx + w / 2 - 0.02 - leg])
+    for (const lz of [cz - d / 2 + 0.02, cz + d / 2 - 0.02 - leg])
+      box({ x: lx, z: lz, w: leg, d: leg, y: baseY, h: h - top, mat: materials.woodFrame });                       // 다리 4
+}
+
+// 매트리스(+치수 라벨)·베개 1벌(#12) — 다락·s2 게스트룸 공용(재질 mattress/pillow, 두께 0.1 고정).
+export function mattressWithLabel({ x, z, w, l, y, text }) {
+  box({ x, z, w, d: l, y, h: 0.1, mat: materials.mattress });
+  label(text, x + w / 2, y + 0.1 + 0.15, z + l / 2, 'furniture');
+}
+export function pillowAt(cx, z, y) {
+  box({ x: cx - 0.35, z, w: 0.7, d: 0.4, y, h: 0.1, mat: materials.pillow });
+}
+
+// 양변기 1벌(#12) — 물탱크(뒤벽 붙임)+본체. (x1, z1) = 안방측 외벽 안쪽면 × 뒤 외벽 안쪽면 코너. s2 2·3층 공용(수직 정렬·오수관 직하).
+export function toiletAtBack(x1, z1, fy) {
+  box({ x: x1 - 0.64, z: z1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
+  box({ x: x1 - 0.62, z: z1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+}

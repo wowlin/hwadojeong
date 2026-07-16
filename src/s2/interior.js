@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto, railCylinder } from '../primitives.js';
 import { label } from '../labels.js';
-import { campingChair, ceilingFan, ceilingLight, coveLight, outlet } from '../fixtures.js';
+import { campingChair, ceilingFan, ceilingLight, coveLight, outlet, woodTable } from '../fixtures.js';
 import { groundTopY, matFoundationH } from '../constants.js';
 import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, roofY, s2RidgeZ, s2RoofUnderY,
@@ -20,8 +20,7 @@ export function buildS2Interior() {
 {
   const _furnStart = scene.children.length;
   const fTop = s2F1Top;            // 1층 바닥 표면(층참 윗면) — 단일 출처
-  const TW = 0.85, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;   // 윗판 85×72, 다리높이 0.72
-  const woodT = materials.woodFrame;
+  const TW = 0.85, TD = 0.72;   // 윗판 85×72 — 본체는 fixtures.woodTable 1벌(#12)
   const off = TD / 2 + 0.30;                                  // 테이블 가장자리→의자 중심
   const chairBack = off + 0.33, aisle = 0.9, endGap = 0.9;    // 의자 등받이 뒤끝 · 의자 뒤 통로 0.9 · 테이블 끝 0.9
   // 식탁 세트(이동공간 포함)를 오른쪽(低x) 예약공간 옆·앞쪽(低z=−2.4 벽) 안쪽에 붙임.
@@ -30,12 +29,7 @@ export function buildS2Interior() {
   const cxC = (s2X0 + s2WallT + reserveW) + endGap + 2 * TW;   // 식탁 행 중심 x(우벽 예약공간 바깥 + 끝여유 + 행 절반 2·TW)
   const cz0 = inZF + aisle + chairBack;                       // 식탁 중심 z(앞벽에서 통로 + 의자 등받이 뒤)
   const cxs = [cxC - 1.5 * TW, cxC - 0.5 * TW, cxC + 0.5 * TW, cxC + 1.5 * TW];   // 4개를 좌우로 이어 옆으로 길게
-  for (const cx of cxs) {
-    box({ x: cx - TW / 2, z: cz0 - TD / 2, w: TW, d: TD, y: fTop + TH - top, h: top, mat: woodT });               // 윗판
-    for (const lx of [cx - TW / 2 + 0.02, cx + TW / 2 - 0.02 - leg])
-      for (const lz of [cz0 - TD / 2 + 0.02, cz0 + TD / 2 - 0.02 - leg])
-        box({ x: lx, z: lz, w: leg, d: leg, y: fTop, h: TH - top, mat: woodT });                                  // 다리 4
-  }
+  for (const cx of cxs) woodTable({ cx, cz: cz0, baseY: fTop, w: TW, d: TD });
   for (const cx of cxs) {
     campingChair({ cx, cz: cz0 - off, faceAngle: 0, baseY: fTop });          // 앞쪽 — 테이블(+z) 향함
     campingChair({ cx, cz: cz0 + off, faceAngle: Math.PI, baseY: fTop });    // 뒤쪽 — 테이블(−z) 향함

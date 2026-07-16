@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
 import { label } from '../labels.js';
-import { chairFrameMat } from '../fixtures.js';
+import { chairFrameMat, toiletAtBack } from '../fixtures.js';
 import { interiorDoorW, interiorDoorH } from '../constants.js';
 import { s2Geo, s2F2, s2WallInner, s2Floor2SlabT, s2Floor3SlabT, s2F2AcZ0 } from './constants.js';
 import { s2Floor2Objects } from '../groups.js';
@@ -57,8 +57,7 @@ captureInto(s2Floor2Objects, () => {
   {
     const fy = levels[1], px1 = inX1, pz1 = inZ1, bz0 = zB0;
     // 변기 — 안방쪽-뒤(高X·高Z) 코너. 3층 변기와 X·Z 동일 오프셋 → 오수 입상관 직하(위치 고정). 중심 옆벽서 0.42m.
-    box({ x: px1 - 0.64, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
-    box({ x: px1 - 0.62, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+    toiletAtBack(px1, pz1, fy);   // fixtures 1벌(#12) — 3층 변기와 수직 정렬(오수관 직하)
     label('변기', px1 - 0.63, fy + 0.95, pz1 - 0.45, 'furniture');
     // 샤워부스 — 안방쪽-앞(高X·低Z) 코너. 변기와 함께 왼쪽(안방쪽) 습식존. 0.9×0.85 방수트레이(유리벽 없이 개방 — 변기앞 공간 확보).
     const shW = s2F2.showerW, shD = s2F2.showerD, shx = px1 - shW, shz = bz0;

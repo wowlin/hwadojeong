@@ -1,9 +1,9 @@
 // s2/roof.js — s2 지붕(단열 260T+징크 박공·처마·눈막이)·태양광 3kW (main.js S2 구역에서 줄 이동).
-import * as THREE from 'three';
-import { scene } from '../scene.js';
+import { } from '../scene.js';
 import { materials } from '../materials.js';
 import { captureInto } from '../primitives.js';
 import { snowGuardRow, solarArray } from '../fixtures.js';
+import { roofSlab } from '../builders.js';
 import { label } from '../labels.js';
 import { roofThickness } from '../constants.js';
 import {
@@ -22,21 +22,8 @@ export function buildS2Roof() {
   const eFront = s2FrontZ - eaveOver, eBack = s2BackZ + eaveOver;   // 앞·뒤 처마 끝 Z
   const topEaveY = undEaveY + thk + zf, topRidgeY = undRidgeY + thk + zf;   // 징크 윗면(처마·용마루)
   // s2 폭(0~s2W) 박공 슬래브 한 면 — roofSlab과 같은 8면체지만 X범위를 s2에 맞춤. 윗면 eaveY..ridgeY, 두께 아래로.
-  const s2RoofSlab = (eaveZ, eaveY, ridgeY, thickness, mat) => {
-    const x0 = s2X0 - sideOver, x1 = s2W + sideOver, rz = s2RidgeZ;
-    const v = new Float32Array([
-      x0, eaveY, eaveZ, x1, eaveY, eaveZ, x1, ridgeY, rz, x0, ridgeY, rz,
-      x0, eaveY - thickness, eaveZ, x1, eaveY - thickness, eaveZ, x1, ridgeY - thickness, rz, x0, ridgeY - thickness, rz,
-    ]);
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(v, 3));
-    g.setIndex([0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1, 3, 2, 6, 3, 6, 7, 0, 3, 7, 0, 7, 4, 1, 5, 6, 1, 6, 2]);
-    g.clearGroups(); g.addGroup(0, 12, 0); g.addGroup(12, 24, 1); g.computeVertexNormals();
-    const mesh = new THREE.Mesh(g, [mat, materials.roofEdge]);
-    mesh.castShadow = true; mesh.receiveShadow = true;
-    scene.add(mesh);   // captureInto가 s2Roof3Objects로 자동 수집
-    return mesh;
-  };
+  const s2RoofSlab = (eaveZ, eaveY, ridgeY, thickness, mat) =>
+    roofSlab({ eaveZ, ridgeZ: s2RidgeZ, eaveY, ridgeY, thickness, mat, x0: s2X0 - sideOver, x1: s2W + sideOver });   // builders.roofSlab X범위 인자로 통합(#16)
   captureInto(s2Roof3Objects, () => {
     // 단열 260T(밑선=천장) — 앞·뒤 슬로프
     s2RoofSlab(eFront, undEaveY + thk, undRidgeY + thk, thk, materials.roofInsul);

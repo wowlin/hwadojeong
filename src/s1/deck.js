@@ -5,7 +5,9 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, addGeometryEdges, fmtDim } from '../primitives.js';
 import { label } from '../labels.js';
-import { campingChair, ceilingFan, ceilingLight } from '../fixtures.js';
+import { foldingAccordion } from '../openings.js';
+import { roofSlab } from '../builders.js';
+import { campingChair, ceilingFan, ceilingLight, woodTable } from '../fixtures.js';
 import { buildingW, deckW, deckD, groundTopY, matFoundationH, deckFinishT } from '../constants.js';
 import { buildingFrontZ, firstFloorY, deckSurfaceY, deckFootprints } from '../layout.js';
 import {
@@ -126,19 +128,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withWa
     const ridgeZ = dWallZ;                                 // 뒤 끝 = 집 벽에서 시작
     const rx0 = px0 - rightOverhang, rx1 = px1 + leftOverhang;   // 좌우 처마
     const eaveY = restY(eaveZ) + zincT, ridgeY = restY(ridgeZ) + zincT;   // 윗면 = 받침 윗면 + 마감 두께(밑면이 받침 위에 얹힘)
-    // roofSlab과 동일한 8꼭지점 프리즘(윗면 eaveY..ridgeY, 두께 아래로) — X범위만 포치 폭에 맞춤
-    const v = new Float32Array([
-      rx0, eaveY, eaveZ, rx1, eaveY, eaveZ, rx1, ridgeY, ridgeZ, rx0, ridgeY, ridgeZ,
-      rx0, eaveY - zincT, eaveZ, rx1, eaveY - zincT, eaveZ, rx1, ridgeY - zincT, ridgeZ, rx0, ridgeY - zincT, ridgeZ,
-    ]);
-    const idx = [0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1, 3, 2, 6, 3, 6, 7, 0, 3, 7, 0, 7, 4, 1, 5, 6, 1, 6, 2];
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(v, 3));
-    g.setIndex(idx); g.clearGroups(); g.addGroup(0, 12, 0); g.addGroup(12, 24, 1);
-    g.computeVertexNormals();
-    const roofMesh = new THREE.Mesh(g, [materials.roof, materials.roofEdge]);   // 윗면=오리지널징크, 옆·밑=드립엣지
-    roofMesh.castShadow = true; roofMesh.receiveShadow = true;
-    scene.add(roofMesh);
+    const roofMesh = roofSlab({ eaveZ, ridgeZ, eaveY, ridgeY, thickness: zincT, mat: materials.roof, x0: rx0, x1: rx1 });   // builders.roofSlab X범위 인자로 통합(#16)
     roofLocal.push(roofMesh);
   }
 
@@ -170,7 +160,6 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withWa
   // 전면 폴딩도어 — 포치 도어프레임 앞단 개구부(두 앞기둥 사이·2.4m)에 딱 맞춤. 중앙 양개로 접혀 열리며, 열린 가운데가 출입구.
   const _foldingStart = scene.children.length;
   if (withWalls) {
-    const fdMove = materials.slidingMoveGlass;     // 접힌(움직인) 짝 유리
     const fdFrame = materials.foldingFrame;   // 폴딩 알루미늄 프레임(다크그레이)
     const sillH = 0.1;
     const wallBaseY = deckSurfaceY;                                       // 폴딩도어 베이스 = 데크 표면(deckSurfaceY)
@@ -184,19 +173,10 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withWa
     box({ x: ax0, z: zc - 0.05, w: ax1 - ax0, d: 0.1, y: wallBaseY, h: sillH, mat: fdFrame });                 // 하부 문턱
     box({ x: ax0, z: zc - 0.05, w: ax1 - ax0, d: 0.1, y: hy - 0.08, h: 0.08, mat: fdFrame });                  // 상부 레일(=프레임 상단보 밑)
     // 아코디언 한 세트(경첩점 hinge[k]=[x,z]) — 등폭 짝, 열린(접힌) 상태. 선두짝(중앙쪽 끝)에 레버 손잡이.
-    const drawFold = (hinge, nF, sillY = sy, headY = hy) => {
-      for (let k = 0; k < nF; k += 1) {
-        const [x0p, z0p] = hinge(k), [x1p, z1p] = hinge(k + 1);
-        const cxp = (x0p + x1p) / 2, czp = (z0p + z1p) / 2, len = Math.hypot(x1p - x0p, z1p - z0p);
-        const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sillY, h: headY - sillY, mat: fdMove, cast: false });
-        m.rotation.y = Math.atan2(-(z1p - z0p), x1p - x0p);
-      }
-      for (let k = 0; k <= nF; k += 1) { const [hx, hz] = hinge(k); box({ x: hx - 0.035, z: hz - 0.035, w: 0.07, d: 0.07, y: sillY, h: headY - sillY, mat: fdFrame, cast: false }); }   // 경첩 세로살
-      const [lx, lz] = hinge(nF); box({ x: lx - 0.06, z: lz - 0.06, w: 0.045, d: 0.045, y: sillY + 0.95, h: 0.28, mat: materials.handle });   // 선두짝 손잡이
-    };
+    // 아코디언 접힘은 openings.foldingAccordion 1벌(#14)
     // 양개 — 좌우 절반이 각자 바깥기둥쪽으로 밖(−Z) 접혀 중앙이 활짝 열림(=출입구). 등폭이라 자투리 없음.
-    drawFold((k) => [ax0 + sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf);   // 우측 절반(주방쪽 기둥으로 접힘)
-    drawFold((k) => [ax1 - sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf);   // 좌측 절반(안방쪽 기둥으로 접힘)
+    foldingAccordion((k) => [ax0 + sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf, sy, hy);   // 우측 절반(주방쪽 기둥으로 접힘)
+    foldingAccordion((k) => [ax1 - sStep * k, k % 2 === 0 ? zc : zc - fD], nHalf, sy, hy);   // 좌측 절반(안방쪽 기둥으로 접힘)
 
     // ── 좌우 측면 하부 프라이버시 벽(불투명) — 착석 시선 차단, 위는 개방 유지. 포치 골조 옆면선(px0/px1·pzF~pzB)에 맞춤 ──
     const privacyH = 0.8, privacyThick = 0.06;
@@ -212,7 +192,7 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withWa
     for (const [sx, outSign] of [[px0, -1], [px1, 1]]) {      // 우측(주방쪽·밖=−X)·좌측(안방쪽·밖=+X)
       box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: winSy, h: 0.08, mat: fdFrame });        // 하부 레일(프라이버시 벽 위)
       box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: hy - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일(프레임 상단보 밑)
-      drawFold((k) => [sx + (k % 2 === 0 ? 0 : outSign * wFD), az1 - wStep * k], nWin, winSy, hy); // 뒤(az1)서 등폭 접힘
+      foldingAccordion((k) => [sx + (k % 2 === 0 ? 0 : outSign * wFD), az1 - wStep * k], nWin, winSy, hy); // 뒤(az1)서 등폭 접힘
     }
   }
   foldingLocal.push(...scene.children.slice(_foldingStart));   // 폴딩도어 객체 별도 토글 그룹
@@ -248,17 +228,12 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withWa
     // 데크 우측(低x=주방쪽) = 난로 영역(붉은 예약 구획) — 기존 s1 화목난로 자리. 나머지엔 s2 1층과 동일한 식탁·의자.
     box({ x: fX0, z: dFrontZ, w: dReserveW, d: dWallZ - dFrontZ, y: deckSurfaceY + 0.006, h: 0.012, mat: materials.leftZone, cast: false });   // 난로 영역
     // 식탁 nDeckTables개(윗판 85×72·높이 0.72)를 高x로 이어 붙임. 의자=반고 햄프턴 DLX, 테이블당 앞·뒤 2개 → 의자 2·nDeckTables개.
-    const TH = 0.72, top = 0.04, leg = 0.06, woodT = materials.woodFrame;
+    // 식탁 본체는 fixtures.woodTable 1벌(#12)
     const tzX0 = fX0 + dReserveW;                              // 테이블 영역 시작(난로 영역 옆)
     const rowCx = (tzX0 + dX1) / 2;                            // 확장된 데크(난로옆~高X끝) 가운데
     const cxs = Array.from({ length: nDeckTables }, (_, i) => rowCx + (i - (nDeckTables - 1) / 2) * dTW);   // 좌우로 이어 붙인 식탁 중심들
     const cz0 = (dFrontZ + dWallZ) / 2;                        // 데크 깊이 중앙에 행 배치(앞·뒤 의자 대칭)
-    for (const cx of cxs) {
-      box({ x: cx - dTW / 2, z: cz0 - dTD / 2, w: dTW, d: dTD, y: deckSurfaceY + TH - top, h: top, mat: woodT });     // 윗판
-      for (const lx of [cx - dTW / 2 + 0.02, cx + dTW / 2 - 0.02 - leg])
-        for (const lz of [cz0 - dTD / 2 + 0.02, cz0 + dTD / 2 - 0.02 - leg])
-          box({ x: lx, z: lz, w: leg, d: leg, y: deckSurfaceY, h: TH - top, mat: woodT });                           // 다리 4
-    }
+    for (const cx of cxs) woodTable({ cx, cz: cz0, baseY: deckSurfaceY, w: dTW, d: dTD });
     for (const cx of cxs) {
       campingChair({ cx, cz: cz0 - dOff, faceAngle: 0, baseY: deckSurfaceY });          // 앞쪽 — 테이블(+z) 향함
       campingChair({ cx, cz: cz0 + dOff, faceAngle: Math.PI, baseY: deckSurfaceY });    // 뒤쪽 — 테이블(−z) 향함

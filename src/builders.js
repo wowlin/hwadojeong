@@ -110,9 +110,7 @@ export function wallEndThicknessFace({ x, z, y, topY, thickness, mat, offset = 0
   return mesh;
 }
 
-export function roofSlab({ eaveZ, ridgeZ, eaveY, ridgeY, sideOverhang, thickness, mat }) {
-  const x0 = -sideOverhang;
-  const x1 = buildingW + sideOverhang;
+export function roofSlab({ eaveZ, ridgeZ, eaveY, ridgeY, sideOverhang = 0, thickness, mat, x0 = -sideOverhang, x1 = buildingW + sideOverhang }) {   // x0/x1 지정 시 임의 X범위(#16 — s2·데크 지붕 공용)
   const vertices = new Float32Array([
     x0, eaveY, eaveZ,
     x1, eaveY, eaveZ,

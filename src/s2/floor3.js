@@ -5,8 +5,9 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, captureInto } from '../primitives.js';
 import { label } from '../labels.js';
+import { toiletAtBack, mattressWithLabel, pillowAt } from '../fixtures.js';
 import { yzWallPrism } from '../builders.js';
-import { pocketDoorVertical, horizontalWallWithGaps } from '../openings.js';
+import { pocketDoorVertical, horizontalWallWithGaps, gableWallSeg } from '../openings.js';
 import { interiorWall, interiorDoorW, interiorDoorH } from '../constants.js';
 import {
   S2_STAIR, s2Geo, s2F3VanityW, s2F3VanityD, s2F3VanityH, s2F3HeaterL,
@@ -34,8 +35,7 @@ captureInto(s2Floor3Objects, () => {
   {
     const fy = levels[2], px1 = inX1, pz1 = inZ1, px0 = inX1 - wcW3, pz0 = liftZ0 + wcSetback3;   // pz0 = 문 있는 앞벽 — 뒤로 0.2m 들임(복도 확보)
     // 변기 — 뒤벽(高Z)에 물탱크 붙이고 앞(低Z) 착석. 옆벽(좌측 高X)에서 0.2m 띄움(문 스윙 안 닿게, 안 붙게).
-    box({ x: px1 - 0.64, z: pz1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
-    box({ x: px1 - 0.62, z: pz1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+    toiletAtBack(px1, pz1, fy);   // fixtures 1벌(#12) — 2층 변기와 수직 정렬(오수관 직하)
     label('권장 화장실', px1 - 0.63, fy + 0.95, pz1 - 0.45, 'furniture');
     // 홈리프트 뒤(高X면) 벽 — 低X 경계(px0)에 안쪽면 맞추고 몸통은 홈리프트쪽(-X)으로. 바닥~박공 밑선, 앞끝(pz0)~뒤벽(pz1) 전체. 문 없음.
     const wx = px0 - 0.10;
@@ -79,12 +79,7 @@ captureInto(s2Floor3Objects, () => {
   const pktWallT = 0.15;      // 포켓도어 벽 두께 15cm — 게스트룸1 옆벽도 같은 선상·같은 두께(단일 출처)
   const fy3 = levels[2];
   // x벽(far3·gxL) 한 구간(za~zb)을 바닥(또는 인방 by)부터 박공 밑선까지 세움 — 구간 안 용마루(s2RidgeZ)는 꼭지점으로 꺾음
-  const xWallSeg = (x, za, zb, by) => {
-    const pts = [[za, by], [zb, by], [zb, s2RoofUnderY(zb)]];
-    if (za < s2RidgeZ && s2RidgeZ < zb) pts.push([s2RidgeZ, s2RoofUnderY(s2RidgeZ)]);
-    pts.push([za, s2RoofUnderY(za)]);
-    yzWallPrism({ x, thickness: pktWallT, mat: materials.wall, points: pts });
-  };
+  const xWallSeg = (x, za, zb, by) => gableWallSeg({ x, za, zb, by, thickness: pktWallT, mat: materials.wall, underY: s2RoofUnderY, ridgeZ: s2RidgeZ });   // openings.gableWallSeg 1벌(#15)
   // 마주보는 두 방문(게스트룸1 옆벽 far3 ↔ 게스트룸2 옆벽 gxL) — 전체폭 1.8(표준 개구 0.9 + 문짝 주차 0.9)로 같은 위치(마주봄).
   //   둘 다 각 방에서 '오른→왼' 슬라이드 → 두 방이 서로 반대편을 보므로 열린 구멍이 한쪽은 앞·한쪽은 뒤로 어긋나 서로 안 보임.
   const dUnitW = 2 * interiorDoorW, dTopY = fy3 + interiorDoorH;
@@ -134,10 +129,8 @@ captureInto(s2Floor3Objects, () => {
   // 게스트룸 매트리스(베이지·두께 10cm, 앞쪽 외벽에 머리·옆벽에 붙임) — 게스트룸1: 2.0×1.8 1개 / 게스트룸2: 2.0×1.1 2개(좌우 옆벽)
   {
     const fy = levels[2], mH = 0.1;
-    const mMat = materials.mattress;
-    const pMat = materials.pillow;
-    const mattress = (x0, z0, w, d, txt) => { box({ x: x0, z: z0, w, d, y: fy, h: mH, mat: mMat }); label(txt, x0 + w / 2, fy + mH + 0.15, z0 + d / 2, 'furniture'); };
-    const pillow = (cx) => box({ x: cx - 0.35, z: inZ0 + 0.07, w: 0.7, d: 0.4, y: fy + mH, h: 0.1, mat: pMat });   // 매트 위·앞벽(低Z)쪽 머리맡
+    const mattress = (x0, z0, w, d, txt) => mattressWithLabel({ x: x0, z: z0, w, l: d, y: fy, text: txt });   // fixtures 1벌(#12)
+    const pillow = (cx) => pillowAt(cx, inZ0 + 0.07, fy + mH);   // 매트 위·앞벽(低Z)쪽 머리맡 — fixtures 1벌(#12)
     // 게스트룸1(低X·주방쪽) 더블 — 앞 외벽(低Z)에 머리, 주방쪽 옆벽(低X)에 붙임. 폭1.8(X)×길이2.0(Z). 베개 2개
     const m1W = 1.8, m1L = 2.0;
     mattress(inX0, inZ0, m1W, m1L, '매트리스 2.0×1.8m');

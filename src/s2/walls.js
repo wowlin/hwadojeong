@@ -7,7 +7,7 @@ import { box, fmtDim, captureInto } from '../primitives.js';
 import { label, planYDim } from '../labels.js';
 import { deckStairs, outlet } from '../fixtures.js';
 import { yzWallPrism } from '../builders.js';
-import { frontFixSash, frontAwningSash, sideSash, awningSash } from '../openings.js';
+import { frontFixSash, frontAwningSash, sideSash, awningSash, rearSlider, foldingAccordion } from '../openings.js';
 import { groundTopY } from '../constants.js';
 import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2FrontZ, s2WallT, _wBase, roofY,
@@ -111,22 +111,10 @@ export function buildS2Walls() {
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, backDoorOpen, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측 개구부, 뒤벽 출입문·좌측 폴딩)
   captureInto(s2Wall1Objects, () => {                                     // 1층 뒤벽 슬라이드창 — 2짝(0.8) 편개, 오른쪽 짝이 왼쪽으로 미닫이
     const zc = s2BackZ - 0.13, sy = s1BackWin.sillY, hy = s1BackWin.headY, x0 = s1BackWin.p0, x1 = s1BackWin.p1;
-    const F = materials.windowFrame;   // 창틀(windowFrame 공용 = 짙은 색)
-    const slGlass = materials.slidingFixedGlass;   // 고정 짝
-    const slMove  = materials.slidingMoveGlass;    // 미닫이 짝
-    const pw = (x1 - x0) / 2, mullW = 0.05, trk = 0.03;
-    box({ x: x0, z: zc - 0.06, w: x1 - x0, d: 0.12, y: sy, h: 0.08, mat: F });          // 하부 레일(2트랙 전폭)
-    box({ x: x0, z: zc - 0.06, w: x1 - x0, d: 0.12, y: hy - 0.08, h: 0.08, mat: F });    // 상부 레일(2트랙 전폭)
-    const pane = (xp, zt, mat) => {
-      box({ x: xp, z: zt - 0.025, w: pw, d: 0.05, y: sy, h: hy - sy, mat, cast: false });                     // 유리
-      box({ x: xp, z: zt - 0.035, w: mullW, d: 0.07, y: sy, h: hy - sy, mat: F, cast: false });               // 좌 세로살
-      box({ x: xp + pw - mullW, z: zt - 0.035, w: mullW, d: 0.07, y: sy, h: hy - sy, mat: F, cast: false });   // 우 세로살
-    };
-    pane(x0, zc + trk, slGlass);        // 왼쪽(高X) 고정 짝 — 바깥트랙
-    pane(x0 + pw, zc - trk, slMove);    // 오른쪽 미닫이 짝 — 안쪽트랙, 왼쪽으로 슬라이드
-    box({ x: x0 + pw + 0.06, z: zc - trk - 0.085, w: 0.045, d: 0.045, y: sy + 0.26, h: 0.28, mat: materials.handle });   // 미닫이 손잡이(만남대측)
+    rearSlider(x0, x1 - x0, sy, hy - sy, zc);                             // openings.rearSlider 1벌(#13 — 좌 고정·우 미닫이)
     label(`1층 뒤벽 슬라이드창 ${fmtDim(x1 - x0)}×${fmtDim(hy - sy)}m (2짝 편개)`, s1CorrX, sy + 0.4, s2BackZ + 0.1, 'opening');
   });
+
   captureInto(s2Wall1Objects, () => {                                     // 뒤 복도 슬라이드창 아래(뒤 외벽 高Z) 콘센트 — 2·3층 복도창 아래와 동일 X
     outlet(s1CorrX, s2BackZ - s2WallT, f1Top + 0.3, '-Z');   // fixtures.outlet 1벌(#7)
   });
@@ -174,7 +162,6 @@ export function buildS2Walls() {
   captureInto(s2Wall1Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, f1Top, y1, `1층 천장고 ${fmtDim(y1 - f1Top)}m`));   // 1층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   captureInto(s2Wall1Objects, () => {                                     // 정면 폴딩도어 — 중앙 양개, 주방쪽(우) 절반 접어 열림
     const fdGlass = materials.slidingFixedGlass;   // 닫힌 짝 유리
-    const fdMove = materials.slidingMoveGlass;    // 접힌(움직인) 짝 유리 — 약간 짙게
     const fdFrame = materials.foldingFrame;   // 폴딩 알루미늄 프레임(다크그레이)
     const mullW = 0.05;
     const ox0 = fdOpen.x0, ox1 = fdOpen.x1, sy = fdOpen.sillY, hy = fdOpen.headY, zc = s2FrontZ + t / 2;
@@ -187,32 +174,13 @@ export function buildS2Walls() {
     box({ x: cx + 0.085, z: zc - 0.13, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 닫힌 짝 중앙 손잡이
     // 주방쪽(우, 低x) 절반 — 주방쪽 기둥(ox0)에 아코디언으로 접혀 밖(−z)으로 열림. 짝끼리 ±60° 지그재그.
     const ang = 60 * Math.PI / 180, sX = pw * Math.cos(ang), fD = pw * Math.sin(ang);   // 짝당 x 전진·접힘 깊이
-    const hinge = (k) => [ox0 + sX * k, k % 2 === 0 ? zc : zc - fD];                     // 접이 경첩점(짝수=트랙선, 홀수=밖으로 꺾임)
-    for (let k = 0; k < half; k += 1) {                                  // 5짝 — 각 짝을 경첩~경첩 잇는 기울어진 유리판으로
-      const [x0p, z0p] = hinge(k), [x1p, z1p] = hinge(k + 1);
-      const cxp = (x0p + x1p) / 2, czp = (z0p + z1p) / 2, len = Math.hypot(x1p - x0p, z1p - z0p);
-      const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sy, h: hy - sy, mat: fdMove, cast: false });
-      m.rotation.y = Math.atan2(-(z1p - z0p), x1p - x0p);
-    }
-    for (let k = 0; k <= half; k += 1) { const [hx, hz] = hinge(k); box({ x: hx - 0.035, z: hz - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: fdFrame, cast: false }); }   // 경첩 세로살
-    { const [lx, lz] = hinge(half); box({ x: lx - 0.06, z: lz - 0.13, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle }); }   // 접힌 선두짝 손잡이
+    foldingAccordion((k) => [ox0 + sX * k, k % 2 === 0 ? zc : zc - fD], half, sy, hy, -0.13);   // openings.foldingAccordion 1벌(#14) — 주방쪽 기둥에 접힘, 손잡이 정면 오프셋
     label(`1층 정면 폴딩도어 ${fmtDim(ox1 - ox0)}×${fmtDim(hy - sy)}m (중앙 양개·주방쪽 접어 열림)`, cx, sy + 1.45, s2FrontZ - 0.25, 'opening');
   });
   captureInto(s2Wall1Objects, () => {                                     // 우측벽 슬라이드창·좌측벽 폴딩창 (뒤벽은 막힘)
-    const fdMove = materials.slidingMoveGlass;   // 접힌 짝 유리
     const fdFrame = materials.foldingFrame;   // 폴딩 알루미늄 프레임(다크그레이)
-    const pw = 0.68, ang = 60 * Math.PI / 180, sU = pw * Math.cos(ang), fV = pw * Math.sin(ang), n = 4;   // 짝당 전진·접힘깊이·짝수
-    const drawFold = (toWorld, syArg = f1Top, hyArg = f1Top + fdH, nArg = n) => {   // toWorld(k)→{x,z} 경첩점 / 짝끼리 지그재그. syArg·hyArg=하부·상부 높이(폴딩창은 올림). nArg=짝수(기본 4)
-      const sy = syArg, hy = hyArg;
-      for (let k = 0; k < nArg; k += 1) {
-        const p0 = toWorld(k), p1 = toWorld(k + 1);
-        const cxp = (p0.x + p1.x) / 2, czp = (p0.z + p1.z) / 2, len = Math.hypot(p1.x - p0.x, p1.z - p0.z);
-        const m = box({ x: cxp - len / 2, z: czp - 0.025, w: len, d: 0.05, y: sy, h: hy - sy, mat: fdMove, cast: false });
-        m.rotation.y = Math.atan2(-(p1.z - p0.z), p1.x - p0.x);
-      }
-      for (let k = 0; k <= nArg; k += 1) { const p = toWorld(k); box({ x: p.x - 0.035, z: p.z - 0.035, w: 0.07, d: 0.07, y: sy, h: hy - sy, mat: fdFrame, cast: false }); }   // 경첩 세로살
-      const lead = toWorld(nArg); box({ x: lead.x - 0.06, z: lead.z - 0.06, w: 0.045, d: 0.045, y: sy + 0.95, h: 0.28, mat: materials.handle });   // 선두짝 손잡이
-    };
+    const pw = 0.68, ang = 60 * Math.PI / 180, sU = pw * Math.cos(ang), fV = pw * Math.sin(ang);   // 짝당 전진·접힘깊이
+    // 아코디언 접힘은 openings.foldingAccordion 1벌(#14)
     // 우측벽(x=0): 2트랙 4짝 양미서기 슬라이드 창 — 뒤벽과 동일 방식(축만 X↔Z). 바깥 2짝 고정 + 가운데 2짝 앞뒤로 갈라져 가운데 열림. sill·개구 유지.
     { const xc = s2X0 + t / 2, syR = rO.sillY, hyR = rO.headY;
       const slFrame = materials.windowFrame;   // 우측 슬라이드창 프레임 — 짙은 색(폴딩도어·좌측 폴딩창과 달리 예외 아님)
@@ -237,8 +205,8 @@ export function buildS2Walls() {
     { const xc = s2W - t / 2, syL = lO.sillY;
       box({ x: xc - 0.05, z: lO.a0, w: 0.1, d: lO.a1 - lO.a0, y: syL, h: 0.08, mat: fdFrame });          // 하부 레일(폴딩창 sill)
       box({ x: xc - 0.05, z: lO.a0, w: 0.1, d: lO.a1 - lO.a0, y: lO.headY - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일
-      drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a0 + sU * k }), syL, lO.headY, 2);        // 앞(低z) 2짝 — a0서 중앙으로 접힘
-      drawFold((k) => ({ x: xc + (k % 2 === 0 ? 0 : fV), z: lO.a1 - sU * k }), syL, lO.headY, 2);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
+      foldingAccordion((k) => [xc + (k % 2 === 0 ? 0 : fV), lO.a0 + sU * k], 2, syL, lO.headY);        // 앞(低z) 2짝 — a0서 중앙으로 접힘
+      foldingAccordion((k) => [xc + (k % 2 === 0 ? 0 : fV), lO.a1 - sU * k], 2, syL, lO.headY);        // 뒤(高z) 2짝 — a1서 중앙으로 접힘
       label(`1층 좌측 폴딩창 ${fmtDim(lGap)}×${fmtDim(lO.headY - syL)}m (2+2 양개·양쪽 접힘)`, s2W + 0.3, syL + 1.0, (lO.a0 + lO.a1) / 2, 'opening'); }
   });
   // 눈썹지붕(고정식 캐노피) 단일 출처 — 개구 상단 위 오리지널징크 경사판 + 벽-지붕 후레싱(물끊기) + 처마끝 드립엣지 + 까치발 2개.
