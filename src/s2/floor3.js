@@ -10,7 +10,7 @@ import { pocketDoorVertical, horizontalWallWithGaps } from '../openings.js';
 import { interiorWall, interiorDoorW, interiorDoorH } from '../constants.js';
 import {
   S2_STAIR, s2Geo, s2F3VanityW, s2F3VanityD, s2F3VanityH, s2F3HeaterL,
-  s2Floor3SlabT, s2RoofUnderY, s2RidgeZ,
+  s2Floor3SlabT, s2RoofUnderY, s2RidgeZ, s2WcSetback3,
 } from './constants.js';
 import { s2Floor3Objects } from '../groups.js';
 
@@ -22,7 +22,7 @@ export function buildS2Floor3() {
 captureInto(s2Floor3Objects, () => {
   box({ x: inX0, z: inZ0, w: inW, d: zB0 - inZ0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 앞쪽(저Z) 전체 폭
   box({ x: far3, z: zB0, w: inX1 - far3, d: inZ1 - zB0, y: levels[2] - floor3T, h: floor3T, mat: materials.floorSlab });   // 런 밴드: 계단실 끝부터 직사각으로 채움
-  const wcSetback3 = 0.4;                     // 3층 화장실 문 있는 앞벽(복도쪽 低Z)을 뒤로 들여 앞 복도·실외기실 확보 — 깊이 축소(단일 출처). 깊이 = liftD−0.4
+  const wcSetback3 = s2WcSetback3;            // 3층 화장실 앞벽 들임 — s2/constants 단일 출처(실외기실·콘센트 공유). 깊이 = liftD−들임
   placeMark(levels[2], true, wcW3, liftD - wcSetback3);   // 3층 화장실 = 뒤쪽벽 따라 wcW3(X) × 왼쪽벽 따라 liftD−0.4(Z, 앞벽 0.4m 들임)
   const g1ClosetD = 0.8;                                                                                             // 붙박이장 깊이(단일 출처) — 게스트룸1 치수·장이 함께 참조
   const g1W = far3 - inX0, g1D = (zB0 - interiorWall - g1ClosetD) - inZ0;                                             // 게스트룸1 실사용 바닥 — 폭=옆벽(far3)~외벽, 깊이=앞 외벽~붙박이장 앞면(계단실 분리벽서 0.8m)

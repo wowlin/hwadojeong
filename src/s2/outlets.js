@@ -4,11 +4,11 @@ import { materials } from '../materials.js';
 import { box, captureInto } from '../primitives.js';
 import { label } from '../labels.js';
 import { interiorWall, interiorDoorW } from '../constants.js';
-import { s2Geo, s2F3VanityD, s2FrontZ } from './constants.js';
+import { s2Geo, s2F3VanityD, s2F2AcZ0, s2WcSetback3 } from './constants.js';
 import { s2Wall2Objects, s2Wall3Objects } from '../groups.js';
 
 export function buildS2Outlets() {
-  const { inX0, inX1, inZ0, inZ1, zB0, far2, far3, levels, liftX0, liftZ0, liftW, wcFaceX, g2RoomW, RM_L, wcW3 } = s2Geo;
+  const { inX0, inX1, inZ0, inZ1, zB0, far2, far3, levels, liftZ0, wcFaceX, g2RoomW, RM_L, wcW3, corrX: s2CorrX } = s2Geo;
 // ── s2 2·3층 기본 콘센트 — 각 층 '외벽'(s2Wall2/s2Wall3) 토글에 귀속. 방·화장실·복도 일반 높이(바닥+0.3m). ──
 // 벽면에 붙는 커버 플레이트 + 소켓. face로 벽 방향 지정('+X'=低X벽서 실내 +X 돌출, '-X'=高X벽서 -X, '-Z'=高Z벽서 -Z).
 const wallOutlet = (x, z, oy, face, heat = false) => {
@@ -57,12 +57,12 @@ captureInto(s2Wall2Objects, () => {
   const oyF = levels[1] + 1.8;                              // 냉장고 높이 1.70 위
   wallOutlet(abFridgeX, abWz, oyF, '-Z');
   // 에어컨(냉난방기) 콘센트 — 실내기 옆(화장실 벽쪽 高Z 끝), 유닛 높이. 안방 외벽 高X
-  const acLen = 1.003, acZ0 = s2FrontZ + 2.5;              // 실내기 위치(설치 코드와 동일 출처)
+  const acLen = 1.003, acZ0 = s2F2AcZ0;                    // 실내기 위치 — 설치 코드(floor2)와 단일 출처(#10)
   const acOutletZ = acZ0 + acLen + 0.12;                   // 유닛 高Z 끝서 12cm 옆
   const oyAc = levels[1] + 2.1;                            // 실내기 높이(천장 근처)
   wallOutlet(inX1, acOutletZ, oyAc, '-X', true);           // 에어컨용 고전력(마젠타)
   // 뒤 복도 프로젝트창 아래(뒤 외벽 高Z) — 3층과 동일
-  const corrX2o = liftX0 + liftW - 2.025;                  // 뒤 복도 프로젝트창 X중앙(3층 복도 콘센트와 동일 출처)
+  const corrX2o = s2CorrX;                                 // 뒤 복도 프로젝트창 X중앙 — s2Geo.corrX 단일 출처(#2)
   wallOutlet(corrX2o, inZ1, oy, '-Z');
 });
 // 3층 콘센트 — 게스트룸1(주방측 외벽), 게스트룸2(안방측 외벽), 화장실(홈리프트쪽 내벽), 복도(안방측 외벽).
@@ -92,11 +92,11 @@ captureInto(s2Wall3Objects, () => {
   const wcZ = inZ1 - s2F3VanityD / 2;                            // 3층 화장실 低X 내벽 — 세면대 중앙선에 맞춤
   wallOutlet(inX1 - wcW3, wcZ, oyC, '+X');
   wallOutlet(inX1 - 0.42, inZ1, oyC, '-Z');                      // 좌변기 뒤(뒤 외벽 高Z) 중앙 — 변기 X중심 inX1-0.42
-  const corrX = liftX0 + liftW - 2.025;                           // 앞·뒤 복도 프로젝트창 X중앙(창과 동일 출처)
+  const corrX = s2CorrX;                                          // 앞·뒤 복도 프로젝트창 X중앙 — s2Geo.corrX 단일 출처(#2)
   wallOutlet(corrX, inZ0, oy, '+Z');                              // 앞 복도 프로젝트창 아래(앞 외벽)
   wallOutlet(corrX, inZ1, oy, '-Z');                              // 뒤 복도 프로젝트창 아래(뒤 외벽)
   // 실외기실 콘센트 — 高Z 벽(화장실 앞벽) 실외기 옆. 방수형(옥외 IP54)·1구(바닥 물기 피해 높이 올림)
-  const ecuRoomZ = liftZ0 + 0.4;                                 // 실외기실 高Z 벽 = 화장실 앞벽(단일 출처, 앞벽 0.4m 들임)
+  const ecuRoomZ = liftZ0 + s2WcSetback3;                        // 실외기실 高Z 벽 = 화장실 앞벽(들임 폭 s2WcSetback3 공유)
   const ecuRoomX = inX1 - 0.4;                                   // 실외기실 깊이 중앙
   wallOutlet(ecuRoomX, ecuRoomZ, levels[2] + 1.1, '-Z');        // 실외기 전원·점검용 — 화장실 콘센트와 동일 높이(바닥+1.1m)
 });

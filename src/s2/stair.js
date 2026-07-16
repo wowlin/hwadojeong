@@ -190,7 +190,7 @@ export function buildS2Stair() {
     box({ x: far3, z: zB0, w: cgcW, d: inZ1 - zB0, y: levels[2] + 0.006, h: 0.012, mat: materials.stairUpZone3, cast: false });   // 3층 도착칸
   });
   // 2·3층 실내(floor2/floor3)·콘센트(outlets)는 분리 모듈이 그린다 — 아래 s2Geo 공유값을 읽음(호출은 main 파이프라인 순서).
-  Object.assign(s2Geo, { zB0, far3, levels, liftX0, liftZ0, liftW, liftD, wcFaceX, g2RoomW, RM_L, wcW3, wcSinkOff, placeMark });
+  Object.assign(s2Geo, { zB0, far3, levels, liftX0, liftZ0, liftW, liftD, wcFaceX, g2RoomW, RM_L, wcW3, wcSinkOff, placeMark, corrX: liftX0 + liftW - 2.025 });   // corrX = 앞·뒤 복도창 X중앙(1·2·3층 공유 — 옛 5곳 재계산 제거 #2)
 
 
   // 층고·천장고 치수는 여기 표기하지 않음 — 천장고는 윗층 바닥 슬래브(외벽 토글)와 함께 표시.

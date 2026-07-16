@@ -7,7 +7,7 @@ import { box, fmtDim, captureInto } from '../primitives.js';
 import { label } from '../labels.js';
 import { chairFrameMat } from '../fixtures.js';
 import { interiorDoorW, interiorDoorH } from '../constants.js';
-import { s2Geo, s2F2, s2WallInner, s2Floor2SlabT, s2Floor3SlabT, s2FrontZ } from './constants.js';
+import { s2Geo, s2F2, s2WallInner, s2Floor2SlabT, s2Floor3SlabT, s2F2AcZ0 } from './constants.js';
 import { s2Floor2Objects } from '../groups.js';
 
 export function buildS2Floor2() {
@@ -118,7 +118,7 @@ captureInto(s2Floor2Objects, () => {
   // 벽걸이 냉난방기(위니아 11평형 MRW11HSF, 실내기 1003×310×222) — 냉장고 위 왼쪽 벽(안방 외벽 高X)에 천장 가까이. 뒤(분리벽쪽)에 맞춰 앞(-Z)으로 뻗음. 토출 -X(실내).
   {
     const acLen = 1.003, acH = 0.310, acD = 0.222;
-    const acZ0 = (s2FrontZ + 2.2) + 0.30;              // 안방 좌측창 뒤(高Z) 끝(s2FrontZ+2.2)에서 30cm 이격
+    const acZ0 = s2F2AcZ0;                             // 안방 좌측창 뒤(高Z) 끝에서 30cm 이격 — 콘센트(outlets)와 단일 출처(#10)
     const acY = levels[1] + 2.7 - 0.15 - acH;          // 천장고 2.7 밑 0.15 여유
     box({ x: inX1 - acD, z: acZ0, w: acD, d: acLen, y: acY, h: acH, mat: materials.wall });                                    // 본체(흰색)
     box({ x: inX1 - acD + 0.02, z: acZ0 + 0.06, w: acD - 0.04, d: acLen - 0.12, y: acY - 0.015, h: 0.025, mat: materials.openingEdge });   // 하부 토출 슬릿

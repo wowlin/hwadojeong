@@ -10,8 +10,9 @@ import { yzWallPrism } from '../builders.js';
 import { frontFixSash, frontAwningSash, sideSash, awningSash } from '../openings.js';
 import { groundTopY } from '../constants.js';
 import {
-  S2_STAIR, s2W, s2X0, s2BackZ, s2FrontZ, s2WallT, _wBase, F2, F3, roofY,
-  s2Floor2SlabT, s2Floor3SlabT, s2RoofUnderY, s2RidgeZ, s2RearStair,
+  S2_STAIR, s2W, s2X0, s2BackZ, s2FrontZ, s2WallT, _wBase, roofY,
+  s2RoofUnderY, s2RidgeZ, s2RearStair,
+  s2Geo, s2F1Top, s2Lvl2, s2Lvl3, s2Ceil1Y, s2Ceil2Y, s2WcSetback3,
 } from './constants.js';
 import { s2FrontFixSpans, s2Landing12Y, s2Landing23Y } from './stair.js';
 import { s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Ecu3Objects, s2Floor1Objects } from '../groups.js';
@@ -88,17 +89,17 @@ export function buildS2Walls() {
     seg(cur, b, y0, y1);               // 마지막 기둥
   };
   // 층 경계 = 실제 윗층 바닥 슬래브 아랫면(계단·바닥과 단일 출처). 바닥 표면 = F_n + 1층 마감두께.
-  const lvl2 = F2 + S2_STAIR.slabT, lvl3 = F3 + S2_STAIR.slabT;           // 2·3층 바닥 표면(계단 levels[1]·[2]와 동일)
-  const y1 = lvl2 - s2Floor2SlabT, y2 = lvl3 - s2Floor3SlabT;            // 1층 천장(2층 슬래브 밑면) · 2층 천장(3층 슬래브 밑면)
+  const lvl2 = s2Lvl2, lvl3 = s2Lvl3;                                     // 2·3층 바닥 표면 — s2/constants 단일 출처(계단 levels[1]·[2]와 동일)
+  const y1 = s2Ceil1Y, y2 = s2Ceil2Y;                                    // 1층 천장(2층 슬래브 밑면) · 2층 천장(3층 슬래브 밑면) — 단일 출처
   // 1층 정면 폴딩도어 개구부 — 바닥 윗면에서 높이 2.4m, 정면 중심 기준 양개. 양 끝 기둥(3층 내하중 가정, 300mm) 남김.
-  const f1Top = _wBase + S2_STAIR.slabT;                                  // 1층 바닥 윗면(층참 윗면)
+  const f1Top = s2F1Top;                                                  // 1층 바닥 윗면(층참 윗면) — s2/constants 단일 출처
   // 뒤벽(집 뒤·+Z)에 홈리프트↔냉장고 사이 작은 표준 출입문(폭 0.8·높이 2.1) — 집 뒤로 나가는 문
   const bdLeafW = 0.8, bdOuterW = 0.9, bdFrameH = 2.1;
-  const bkLiftHiX = (s2X0 + t + S2_STAIR.W) + 9 * S2_STAIR.T + 1.2 + 1.5;   // 홈리프트 高X면(계단 상부런 9단→계단실 끝 + 층계참 1.2 + 리프트 폭 1.5)
+  const bkLiftHiX = s2Geo.liftX0 + s2Geo.liftW;   // 홈리프트 高X면 — 계단 모듈 실좌표(s2Geo) 단일 출처(옛 재계산 사본 제거 #1)
   const bkFridgeLoX = (s2W - t) - 0.689;                                    // 냉장고 低X면(좌벽 안쪽 − 냉장고 깊이 0.689)
   const bdCx = (bkLiftHiX + bkFridgeLoX) / 2;                               // 두 부재 사이 중앙
   const backDoorOpen = { a0: bdCx - bdOuterW / 2, a1: bdCx + bdOuterW / 2, sillY: f1Top, headY: f1Top + bdFrameH };
-  const s1CorrX = bkLiftHiX - 2.025;                                       // 1층 층계참 프로젝트창 X중앙(2·3층 뒤벽창과 동일 X)
+  const s1CorrX = s2Geo.corrX;                                             // 1층 층계참 프로젝트창 X중앙(2·3층 뒤벽창과 동일 X — s2Geo.corrX 단일 출처)
   const s1BackWin = { p0: (s1CorrX + 0.3) - 1.6, p1: s1CorrX + 0.3, sillY: groundTopY + 1.7, headY: groundTopY + 1.7 + 1.1 };   // 1.6×1.1 슬라이드창 — 창대 좌·우창과 동일(지표+1.7)·높이 1.1·2짝(0.8) 편개
   const fdColT = 0.3, fdH = 2.4;                                          // 기둥 굵기 300mm · 폴딩도어 높이 2.4m(표준 최대)
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
@@ -297,7 +298,7 @@ export function buildS2Walls() {
     const abFront = s2FrontFixSpans().map(s => ow(s.p0, s.p1));   // 정면 픽스창 좌우 2개 — 3층 게스트룸1·2 정면창과 동일 X스팬(같은 폭·수직 정렬), 가운데 전단벽
     const abSide  = [ow(sideCz - 0.8, sideCz + 0.8)];                            // 측면 2짝×0.8=1.6m (좌·우 동일)
     captureInto(s2Wall2Objects, () => {
-      const corrX2 = bkLiftHiX - 2.025;                                 // 앞·뒤 복도창 X중앙(3층 복도창과 동일 X)
+      const corrX2 = s2Geo.corrX;                                       // 앞·뒤 복도창 X중앙(3층 복도창과 동일 X — 단일 출처)
       const fCorr2 = { p0: corrX2 - 0.3, p1: corrX2 + 0.3, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 };   // 앞 프로젝트창 0.6×0.6·창대 바닥+1.2(양옆 정면 픽스창과 동일)
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, [...abFront, fCorr2], EW);        // 앞벽 — 정면 픽스창 + 앞 프로젝트창
       const bCorr2 = { p0: corrX2 - 0.3, p1: corrX2 + 0.3, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 };   // 0.6×0.6·창대 바닥+1.2
@@ -325,7 +326,8 @@ export function buildS2Walls() {
   }
   captureInto(s2Wall2Objects, () => planYDim(s2W + 0.4, s2BackZ - 0.2, lvl2, y2, `2층 천장고 ${fmtDim(y2 - lvl2)}m`));   // 2층 바닥 윗면~천장 (3층 외벽최저와 같은 위치)
   // 실외기 방열/배기 루버 개구·그릴 공통 좌표(단일 출처) — 외벽 개구는 '외벽', 그릴·실외기실은 '실외기' 버튼이 공유
-  const ecuNicheCz = 1.10;                                // 실외기실 앞뒤(Z) 중앙 = (게스트룸2 뒤끝 0.40 + 화장실 앞벽 1.80)/2 — 실외기·루버 공통 정렬
+  const ecuZ0 = s2Geo.inZ0 + s2Geo.RM_L, ecuZ1 = s2Geo.liftZ0 + s2WcSetback3;   // 실외기실 Z: 게스트룸2 뒤끝 ~ 화장실 앞벽(파생 — 옛 0.40/1.80 고정 제거 #3)
+  const ecuNicheCz = (ecuZ0 + ecuZ1) / 2;                 // 실외기실 앞뒤(Z) 중앙 — 실외기·루버 공통 정렬
   const ecuLouP0 = ecuNicheCz - 0.50, ecuLouP1 = ecuNicheCz + 0.50, ecuLouSill = lvl3 + 0.15, ecuLouHead = lvl3 + 1.10;
   const ecuLou2Sill = lvl3 + 1.30, ecuLou2Head = lvl3 + 2.25;   // 상단 방열 루버 — 멀리언 0.20·위 인방 0.15(2.4m 밑), 하·상 높이 0.95 동일(2단)
   const ecuLou3Sill = eaveY + 0.15, ecuLou3Head = eaveY + 0.65;   // 처마선 위 인방 0.15 두고 시작, 높이 0.5m
@@ -337,7 +339,7 @@ export function buildS2Walls() {
     const fWin2 = { ...fSpan2, sillY: fWinSill, headY: fWinHead };   // 게스트룸2(高X): 복도벽 ~ 안방측 외벽
     const fx1 = (fWin1.p0 + fWin1.p1) / 2, fx2 = (fWin2.p0 + fWin2.p1) / 2;   // 각 방 정면창 X중앙(라벨용)
     // 앞뒤(가운데 세로) 복도 — 게스트룸1·2 사이 중앙 스파인(홈리프트 低X면 −2.1). 앞·뒤 외벽에 프로젝트창 각 1개(정면 픽스창과 같은 창대0.9·높이0.8, 폭 0.8).
-    const corrX = bkLiftHiX - 2.025;                        // 앞뒤 복도 실통로 X중앙 — 게스트룸1(주방)쪽 방문벽 15cm가 복도를 먹어 트인 폭[far3+0.15, liftX0] 기준 중앙(벽 중심선 중앙서 +7.5cm)
+    const corrX = s2Geo.corrX;                              // 앞뒤 복도 실통로 X중앙 — s2Geo.corrX 단일 출처(벽 중심선 중앙서 +7.5cm)
     const fCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: pWinHead };
     wallStrip('x', s2FrontZ, s2X0 + t, s2W - t, y2, eaveY, [fWin1, fWin2, fCorr], EW);
     frontFixSash(fWin1.p0, s2FrontZ + 0.13, fWin1.p1 - fWin1.p0, fWinSill, fWinHead - fWinSill);   // 게스트룸1 정면 픽스창
@@ -394,7 +396,7 @@ export function buildS2Walls() {
     // ── 2층 냉난방기 실외기 서비스 함 — 3층 화장실 앞 복도 왼쪽(高X 외벽). 2층 실내기 바로 위(복도 구간). 실외기 앞(토출)=외벽(+X)·흡입=복도(-X) ──
     {
       const xW = s2W - t;                                  // 외벽 안쪽면(=inX1)
-      const nZ0 = 0.40, nZ1 = 1.80;                        // 니치 Z: 0.40=게스트룸2 뒤끝(inZ0+RM_L)·1.80=화장실 앞벽(liftZ0+0.4) — 두 벽 사이(스코프 밖이라 값 고정)
+      const nZ0 = ecuZ0, nZ1 = ecuZ1;                      // 니치 Z = 게스트룸2 뒤끝 ~ 화장실 앞벽(파생 단일 출처)
       const nX0 = xW - 1.00;                               // 복도쪽 칸막이 위치 — 외벽서 1.00m(실외기 깊이 0.396+흡입여유 확대)
       const ecuCz = ecuNicheCz;                            // 실외기 Z중앙 = 실외기실 앞뒤 중앙(루버와 동일 정렬)
       const nCz = (nZ0 + nZ1) / 2;                         // 니치 Z중앙 — 양개문 중심

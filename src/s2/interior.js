@@ -8,8 +8,8 @@ import { label } from '../labels.js';
 import { campingChair, ceilingFan, ceilingLight, coveLight } from '../fixtures.js';
 import { groundTopY, matFoundationH } from '../constants.js';
 import {
-  S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, s2Floor2SlabT, s2Floor3SlabT,
-  F2, F3, roofY, s2RidgeZ, s2RoofUnderY,
+  S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, roofY, s2RidgeZ, s2RoofUnderY,
+  s2F1Top, s2Ceil1Y, s2Ceil2Y,
 } from './constants.js';
 import { s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Wall1Objects, s2Fan1Objects, s2Fan2Objects } from '../groups.js';
 
@@ -19,7 +19,7 @@ export function buildS2Interior() {
 //  폭~0.6·깊이~0.55·좌고 0.42 — 실제 햄프턴 DLX 폭 60·좌고 45와 부합). 앞·뒤 긴 변에 테이블당 1개씩 여유있게.
 {
   const _furnStart = scene.children.length;
-  const fTop = groundTopY + matFoundationH + S2_STAIR.slabT;            // 1층 바닥 표면(층참 윗면)
+  const fTop = s2F1Top;            // 1층 바닥 표면(층참 윗면) — 단일 출처
   const TW = 0.85, TD = 0.72, TH = 0.72, top = 0.04, leg = 0.06;   // 윗판 85×72, 다리높이 0.72
   const woodT = materials.woodFrame;
   const off = TD / 2 + 0.30;                                  // 테이블 가장자리→의자 중심
@@ -75,7 +75,7 @@ export function buildS2Interior() {
 // ── s2 1층 싱크대(주방) — '싱크대' 토글(구조 섹션) ─────────────────────────────────
 // 싱크 하부장 1.2m(백조 대형 사각볼 950×454 수용) + 양옆 표준 0.6m. 총 2.4m, 왼쪽(高x) 벽 따라 세로(Z)로, 뒤(高z) 코너 밀착.
 captureInto(s2SinkObjects, () => {
-  const fTop = groundTopY + matFoundationH + S2_STAIR.slabT;          // 1층 바닥 표면(층참 윗면)
+  const fTop = s2F1Top;          // 1층 바닥 표면(층참 윗면) — 단일 출처
   const inXL = s2X0 + s2W - s2WallT;                          // 좌(高x) 외벽 안쪽 면
   const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
   const SINKW = 1.2, SIDEW = 0.6, CD = 0.6, CH = 0.85, ctop = 0.04;   // 싱크 하부장·옆 하부장·깊이·높이·상판
@@ -198,9 +198,8 @@ captureInto(s2Wall1Objects, () => {
   const inX0 = s2X0 + s2WallT, inX1 = s2W - s2WallT;          // 외벽 안쪽 폭(X)
   const inZ0 = s2FrontZ + s2WallT, inZ1 = s2BackZ - s2WallT;
   const zB0 = inZ1 - (2 * S2_STAIR.W + S2_STAIR.g);           // 계단실 앞 경계(트인 공간 뒤끝)
-  const lvl2 = F2 + S2_STAIR.slabT, lvl3 = F3 + S2_STAIR.slabT;
-  const ceil1Y = lvl2 - s2Floor2SlabT;                       // 1층 천장(2층 슬래브 밑면)
-  const ceil2Y = lvl3 - s2Floor3SlabT;                       // 2층 천장(3층 슬래브 밑면)
+  const ceil1Y = s2Ceil1Y;                                   // 1층 천장(2층 슬래브 밑면) — 단일 출처
+  const ceil2Y = s2Ceil2Y;                                   // 2층 천장(3층 슬래브 밑면) — 단일 출처
   const fixX = Array.from({ length: 5 }, (_, i) => inX0 + (inX1 - inX0) * (i + 0.5) / 5);   // 폭 5등분 중심
   const placeRow = (cz, ceilingY) => fixX.forEach((x, i) => (i % 2 === 1 ? ceilingFan : ceilingLight)({ x, z: cz, ceilingY }));   // 홀수번째=팬, 짝수번째=전등 → 전등-팬-전등-팬-전등
   const cz1 = (inZ0 + zB0) / 2;                              // 1층 트인 주방 깊이 중심(앞벽~계단실)
