@@ -58,6 +58,9 @@ for (const clicks of VIEWS) {
   await page.goto(url, { waitUntil: 'networkidle' });
   for (const id of clicks) await page.$eval('#' + id, (el) => el.click());   // JS 직접 클릭 — 탭 전환 애니메이션·가시성 대기 없이 결정적
   await page.waitForTimeout(2800);                       // WebGL 렌더 안정화(shot.mjs와 동일)
+  // 카메라 감쇠(damping)가 몇 프레임 더 미세 이동시켜 md5가 실행마다 흔들림 → 캡처 직전 감쇠를 끄고 시점을 고정(결정성 확보)
+  await page.evaluate(() => { const c = window.__cc.controls; c.enableDamping = false; c.update(); });
+  await page.waitForTimeout(400);
   const buf = await page.screenshot({ timeout: 90000 });
   hashes[viewName(clicks)] = createHash('md5').update(buf).digest('hex');
   await page.close();
