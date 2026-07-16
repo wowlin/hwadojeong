@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto, railCylinder } from '../primitives.js';
 import { label } from '../labels.js';
-import { campingChair, ceilingFan, ceilingLight, coveLight, outlet, woodTable } from '../fixtures.js';
+import { campingChair, ceilingFan, ceilingLight, coveLight, outlet, woodTable, fridge311 } from '../fixtures.js';
 import { groundTopY, matFoundationH } from '../constants.js';
 import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, roofY, s2RidgeZ, s2RoofUnderY,
@@ -89,7 +89,7 @@ captureInto(s2SinkObjects, () => {
   };
   // 왼쪽벽 일렬 배치(앞→뒤): 양문형(예정) — 싱크대 — 공간 — 기존 냉장고.
   // 뒤(高z) 코너 기존 냉장고(LG B312DS31, 311L, 545×689×1700) — 좌벽(高x) 밀착, 문은 주방(低x)쪽. 그대로 유지.
-  const FW = 0.545, FD = 0.689, FH = 1.70, bGap = 0.05;   // 기존 냉장고 폭(Z)·깊이(X)·높이 · 뒷벽과 간격
+  const FW = fridge311.w, FD = fridge311.d, FH = fridge311.h, bGap = 0.05;   // 기존 냉장고 제원(fixtures.fridge311 단일 출처) · 뒷벽과 간격
   const frBack = inZB - bGap;                               // 냉장고 뒷면 z(뒤벽에서 bGap 띄움)
   const frCz = frBack - FW / 2;                             // 냉장고 중심 z
   box({ x: inXL - FD, z: frBack - FW, w: FD, d: FW, y: fTop, h: FH, mat: materials.fridge });   // 냉장고 본체
@@ -142,7 +142,7 @@ captureInto(s2Wall1Objects, () => {
   const fTop = groundTopY + matFoundationH + S2_STAIR.slabT;
   const inXL = s2X0 + s2W - s2WallT;                          // 좌(高x) 외벽 안쪽 면
   const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
-  const F2W = 1.1, FW = 0.545, bGap = 0.05;
+  const F2W = 1.1, FW = fridge311.w, bGap = 0.05;
   const cSink = ((s2FrontZ + s2WallT) + inZB) / 2;          // 좌측벽 앞뒤 중심(=폴딩창 중심)
   const foldHalf = (4 * 0.68) / 2, jambGap = 0.12;          // 좌측 폴딩창 반폭 1.36 + 창틀 밖 여유(개구부 밖 배치)
   const cInner = cSink - foldHalf - jambGap;                // 창 앞쪽(低z) 옆 — 개구부 밖 벽면(상판 위 콘센트)

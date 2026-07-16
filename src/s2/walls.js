@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
 import { label, planYDim } from '../labels.js';
-import { deckStairs, outlet } from '../fixtures.js';
+import { deckStairs, outlet, fridge311 } from '../fixtures.js';
 import { yzWallPrism } from '../builders.js';
 import { frontFixSash, frontAwningSash, sideSash, awningSash, rearSlider, foldingAccordion } from '../openings.js';
 import { groundTopY } from '../constants.js';
@@ -97,7 +97,7 @@ export function buildS2Walls() {
   // 뒤벽(집 뒤·+Z)에 홈리프트↔냉장고 사이 작은 표준 출입문(폭 0.8·높이 2.1) — 집 뒤로 나가는 문
   const bdLeafW = 0.8, bdOuterW = 0.9, bdFrameH = 2.1;
   const bkLiftHiX = s2Geo.liftX0 + s2Geo.liftW;   // 홈리프트 高X면 — 계단 모듈 실좌표(s2Geo) 단일 출처(옛 재계산 사본 제거 #1)
-  const bkFridgeLoX = (s2W - t) - 0.689;                                    // 냉장고 低X면(좌벽 안쪽 − 냉장고 깊이 0.689)
+  const bkFridgeLoX = (s2W - t) - fridge311.d;                              // 냉장고 低X면(좌벽 안쪽 − 냉장고 깊이 — 제원 단일 출처)
   const bdCx = (bkLiftHiX + bkFridgeLoX) / 2;                               // 두 부재 사이 중앙
   const backDoorOpen = { a0: bdCx - bdOuterW / 2, a1: bdCx + bdOuterW / 2, sillY: f1Top, headY: f1Top + bdFrameH };
   const s1CorrX = s2Geo.corrX;                                             // 1층 층계참 프로젝트창 X중앙(2·3층 뒤벽창과 동일 X — s2Geo.corrX 단일 출처)

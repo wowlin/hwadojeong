@@ -217,8 +217,9 @@ export function toiletAtBack(x1, z1, fy) {
 
 // 한문형 냉장고 311L 1벌(#12·#18) — 뒤벽(+Z)에 등 붙이고 문이 앞(-Z)으로 열리는 배치(s1 1층 주방·s2 2층 안방 공용).
 // (s2 1층 주방 것은 좌벽(X축) 등붙임 배치라 별도 — 축이 달라 통일하지 않음.)
+export const fridge311 = { w: 0.545, d: 0.689, h: 1.70 };   // LG 311L 실제 제원 — 본체 그리기·배치 좌표(interior·walls·outlets)가 공유
 export function fridge311AtBack({ x0, backZ, y }) {
-  const rW = 0.545, rD = 0.689, rH = 1.70;                    // 폭(X)·깊이(Z, 앞으로 돌출)·높이 — LG 311L 실제 제원
+  const rW = fridge311.w, rD = fridge311.d, rH = fridge311.h;   // 폭(X)·깊이(Z, 앞으로 돌출)·높이
   const rFrontZ = backZ - rD;                                 // 냉장고 앞면 z(-Z쪽)
   box({ x: x0, z: rFrontZ, w: rW, d: rD, y, h: rH, mat: materials.fridge });   // 본체
   const rdt = 0.02, rfzH = rH * 0.30;                         // 문짝 두께·상부 냉동실 비율(2도어 상부냉동)

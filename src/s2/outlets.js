@@ -4,7 +4,8 @@ import { captureInto } from '../primitives.js';
 import { outlet } from '../fixtures.js';
 import { label } from '../labels.js';
 import { interiorWall, interiorDoorW } from '../constants.js';
-import { s2Geo, s2F3VanityD, s2F2AcZ0, s2WcSetback3 } from './constants.js';
+import { s2Geo, s2F3VanityD, s2F2AcZ0, s2WcSetback3, s2F2SepWallT, s2F2Furn } from './constants.js';
+import { fridge311 } from '../fixtures.js';
 import { s2Wall2Objects, s2Wall3Objects } from '../groups.js';
 
 export function buildS2Outlets() {
@@ -15,10 +16,10 @@ const wallOutlet = (x, z, oy, face, heat = false) => outlet(x, z, oy, face, heat
 // 2층 콘센트 — 안방(주방측 외벽), 화장실(홈리프트쪽 내벽).
 captureInto(s2Wall2Objects, () => {
   const oy = levels[1] + 0.3;
-  const abZ = ((inZ0 + 2.0) + ((zB0 - 0.20) - 0.70)) / 2;   // 안방 주방측 벽 — 침대(앞)와 이불장(뒤) 사이 빈 벽면
+  const abZ = ((inZ0 + s2F2Furn.bedD) + ((zB0 - s2F2SepWallT) - s2F2Furn.bdgD)) / 2;   // 안방 주방측 벽 — 침대(앞)와 이불장(뒤) 사이 빈 벽면(가구 규격 단일 출처)
   wallOutlet(inX0, abZ, oy, '+X');
   // 앞 외벽(低Z) — 침대옆 낮은 장(서랍장) 옆, 책상 자리 각 1개
-  const abDrwX = (inX0 + 2.0 + 0.40) + 0.2;                 // 침대옆 서랍장(폭 2.0+깊이 0.4) 방문쪽 끝 옆
+  const abDrwX = (inX0 + s2F2Furn.bedW + s2F2Furn.drwD) + 0.2;                 // 침대옆 서랍장 방문쪽 끝 옆(가구 규격 단일 출처)
   wallOutlet(abDrwX, inZ0, oy, '+Z');
   const abDeskX = inX1 - 0.5;                                // 책상 위 — 왼쪽 벽(안방 외벽)쪽으로 이동
   wallOutlet(abDeskX, inZ0, oy, '+Z');
@@ -27,17 +28,17 @@ captureInto(s2Wall2Objects, () => {
   wallOutlet(wcFaceX, wcZ, oyC, '+X');
   wallOutlet(inX1 - 0.42, inZ1, oyC, '-Z', true);           // 좌변기 뒤(뒤 외벽 高Z) 중앙 — 변기 X중심 inX1-0.42. 전기온수기용 고전력(마젠타)
   // 뒤 분리벽(방쪽 면 zB0-0.20) — 주 출입문(방문)~붙박이장, 주 출입문~화장실 문 사이 각 1개
-  const abWz = zB0 - 0.20;                                   // 분리벽 안방쪽 면
+  const abWz = zB0 - s2F2SepWallT;                           // 분리벽 안방쪽 면(두께 단일 출처)
   const abOX0 = far2 + (1.2 - interiorDoorW) / 2, abOX1 = abOX0 + interiorDoorW;   // 방문 개구(옆벽 코드와 동일 출처)
   const abBdX0 = wcFaceX + 0.10;                            // 화장실 문 저X 끝
-  const abClosetX1 = inX0 + 2.0;                            // 이불장(붙박이장) 방문쪽 끝
+  const abClosetX1 = inX0 + s2F2Furn.bdgW;                  // 이불장(붙박이장) 방문쪽 끝(폭 단일 출처)
   const abX1 = (abClosetX1 + abOX0) / 2;                    // 방문~붙박이장 사이 중앙
   wallOutlet(abX1, abWz, oy, '-Z', true);                   // 전기 난방용(주황)
   label('난방용 콘센트', abX1, oy + 0.25, abWz - 0.2, 'mep');
   const abX2 = (abOX1 + abBdX0) / 2;                        // 방문~화장실 문 사이 중앙
   wallOutlet(abX2, abWz, oy, '-Z', true);                   // 전기 난방용(주황)
   // 냉장고 콘센트 — 냉장고(폭 0.545, 안방 외벽 高X 밀착) 뒤 분리벽, 냉장고 위 높이
-  const abFridgeX = inX1 - 0.545 / 2;                       // 냉장고 중앙 x
+  const abFridgeX = inX1 - fridge311.w / 2;                 // 냉장고 중앙 x(제원 단일 출처)
   const oyF = levels[1] + 1.8;                              // 냉장고 높이 1.70 위
   wallOutlet(abFridgeX, abWz, oyF, '-Z');
   // 에어컨(냉난방기) 콘센트 — 실내기 옆(화장실 벽쪽 高Z 끝), 유닛 높이. 안방 외벽 高X

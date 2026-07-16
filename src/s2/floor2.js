@@ -5,9 +5,10 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, captureInto } from '../primitives.js';
 import { label } from '../labels.js';
-import { chairFrameMat, toiletAtBack, fridge311AtBack } from '../fixtures.js';
+import { chairFrameMat, toiletAtBack, fridge311AtBack, fridge311 } from '../fixtures.js';
 import { interiorDoorW, interiorDoorH } from '../constants.js';
-import { s2Geo, s2F2, s2WallInner, s2Floor2SlabT, s2Floor3SlabT, s2F2AcZ0 } from './constants.js';
+import { s2Geo, s2F2, s2WallInner, s2Floor2SlabT, s2Floor3SlabT, s2F2AcZ0, s2F2SepWallT, s2F2Furn } from './constants.js';
+import { fmtDim } from '../primitives.js';
 import { s2Floor2Objects } from '../groups.js';
 
 export function buildS2Floor2() {
@@ -20,7 +21,7 @@ captureInto(s2Floor2Objects, () => {
   // 계단실 옆벽 — 1→2 상부런 오를 때 왼쪽(앞쪽·저Z) 열린 변. 2층 바닥~천장(3층 바닥 밑면)까지 15cm 두께. 끝(계단 도착·高X)에서 1.2m 더 연장.
   //   도착칸 1.2m 가운데에 표준 슬라이딩 포켓도어(0.9×2.1) — 왼쪽(低X)으로 슬라이드. 그쪽으로만 벽이 길게 이어져 포켓 공간이 있고, 高X쪽은 모서리라 포켓 불가.
   {
-    const wz = zB0 - 0.20, wt = 0.20, wTop = (levels[2] - floor3T) - levels[1];   // 내력벽 20cm — 뒤(계단 개구부·+Z zB0)면 고정, 안방쪽(-Z)으로 키움
+    const wz = zB0 - s2F2SepWallT, wt = s2F2SepWallT, wTop = (levels[2] - floor3T) - levels[1];   // 내력벽 — 뒤(계단 개구부·+Z zB0)면 고정, 안방쪽(-Z)으로 키움(두께 s2F2SepWallT 단일 출처)
     const oX0 = far2 + (1.2 - interiorDoorW) / 2, oX1 = oX0 + interiorDoorW;            // 도착칸 방문 개구(1.2m 가운데, 폭 0.9)
     const bdW = s2F2.doorW, bdX0 = wcFaceX + s2WallInner, bdX1 = bdX0 + bdW;            // 화장실 문 — 안방에서 밀어 들어옴(안여닫이 +Z). 화장실 低X 벽(wcFaceX)서 내벽두께
     box({ x: inX0, z: wz, w: oX0 - inX0, d: wt, y: levels[1], h: wTop, mat: materials.wall });                       // 왼쪽 벽(低X·포켓 수납)
@@ -80,26 +81,26 @@ captureInto(s2Floor2Objects, () => {
     label(`전기온수기 ${s2F2.heaterL}L`, px1 - 0.5, fy + 2.3, pz1 - 0.3, 'mep');
   }
   // 안방(앞 트인 방) 크기 라벨 — 게스트룸처럼 실사용 바닥(앞 외벽 안쪽 ~ 분리벽 안쪽 zB0-0.20, 내력벽 20cm). 방 이름 색(연노랑)으로 흰색 치수와 구별.
-  const abW = inW, abD = (zB0 - 0.20) - inZ0;
+  const abW = inW, abD = (zB0 - s2F2SepWallT) - inZ0;
   label(`안방 ${abW.toFixed(2)}×${abD.toFixed(2)}m`, inX0 + abW / 2, levels[1] + 0.4, inZ0 + abD / 2, 'room');
   // 안방 침대 2.0×2.0 (높이 0.4m) — 주방쪽(低X) 외벽 + 앞 외벽(inZ0) 코너에 붙임(머리를 앞쪽으로, 3층 게스트룸1과 동일 방향).
   const bedZ0 = inZ0;
-  box({ x: inX0, z: bedZ0, w: 2.0, d: 2.0, y: levels[1], h: 0.4, mat: materials.bed });
-  label('침대 2.0×2.0m', inX0 + 1.0, levels[1] + 0.7, bedZ0 + 1.0, 'furniture');
+  box({ x: inX0, z: bedZ0, w: s2F2Furn.bedW, d: s2F2Furn.bedD, y: levels[1], h: s2F2Furn.bedH, mat: materials.bed });
+  label(`침대 ${fmtDim(s2F2Furn.bedW)}×${fmtDim(s2F2Furn.bedD)}m`, inX0 + s2F2Furn.bedW / 2, levels[1] + 0.7, bedZ0 + s2F2Furn.bedD / 2, 'furniture');
   // 안방 베개 2개 — 머리맡=앞 외벽(低Z)쪽, 게스트룸1과 동일 위치.
   const abPillowMat = materials.pillowWhite;
-  for (const cx of [inX0 + 0.5, inX0 + 1.3]) box({ x: cx - 0.35, z: bedZ0 + 0.07, w: 0.7, d: 0.4, y: levels[1] + 0.4, h: 0.1, mat: abPillowMat });
+  for (const cx of [inX0 + 0.5, inX0 + 1.3]) box({ x: cx - 0.35, z: bedZ0 + 0.07, w: 0.7, d: 0.4, y: levels[1] + s2F2Furn.bedH, h: 0.1, mat: abPillowMat });
   // 안방 서랍장(낮은 장) — 높이 0.8m·깊이 0.4m. 침대 옆면(방문쪽·高X)에 붙여 침대 길이(2.0m)만큼 나란히.
-  const drwD = 0.40;
-  box({ x: inX0 + 2.0, z: bedZ0, w: drwD, d: 2.0, y: levels[1], h: 0.80, mat: materials.sinkCabinet });
-  label('서랍장 h0.8·d0.4', inX0 + 2.0 + drwD / 2, levels[1] + 1.0, bedZ0 + 1.0, 'furniture');
+  const drwD = s2F2Furn.drwD;
+  box({ x: inX0 + s2F2Furn.bedW, z: bedZ0, w: drwD, d: s2F2Furn.bedD, y: levels[1], h: s2F2Furn.drwH, mat: materials.sinkCabinet });
+  label(`서랍장 h${fmtDim(s2F2Furn.drwH)}·d${fmtDim(drwD)}`, inX0 + s2F2Furn.bedW + drwD / 2, levels[1] + 1.0, bedZ0 + s2F2Furn.bedD / 2, 'furniture');
   // 안방 이불장(붙박이장) — 뒤 계단실 분리벽(zB0-0.20)에 등 붙이고 방 앞(-Z)으로 깊이 0.7m. 침대와 같은 주방쪽 정렬·폭 2.0m. 게스트룸1 붙박이장과 동일 방향.
-  const bdgD = 0.70, bdgW = 2.0, bdgH = 2.0;
-  const bdgZ1 = zB0 - 0.20, bdgZ0 = bdgZ1 - bdgD;
+  const { bdgD, bdgW, bdgH } = s2F2Furn;
+  const bdgZ1 = zB0 - s2F2SepWallT, bdgZ0 = bdgZ1 - bdgD;
   box({ x: inX0, z: bdgZ0, w: bdgW, d: bdgD, y: levels[1], h: bdgH, mat: materials.sinkCabinet });
   label(`이불장 ${bdgW.toFixed(1)}×${bdgD.toFixed(1)}m`, inX0 + bdgW / 2, levels[1] + bdgH + 0.3, bdgZ0 + bdgD / 2, 'furniture');
     // 안방 한문형 냉장고 — 1층 기존 냉장고와 동일(311L). 화장실 앞벽 왼쪽 끝(안방 외벽 高X 코너)에 등 붙임. 문=방(低Z)쪽.
-    fridge311AtBack({ x0: inX1 - 0.545, backZ: zB0 - 0.20, y: levels[1] });   // fixtures 1벌(#12) — 문은 방 안으로 열림(경첩 안방 외벽쪽·손잡이 주방쪽)
+    fridge311AtBack({ x0: inX1 - fridge311.w, backZ: zB0 - s2F2SepWallT, y: levels[1] });   // fixtures 1벌(#12) — 문은 방 안으로 열림(경첩 안방 외벽쪽·손잡이 주방쪽)
   // 벽걸이 냉난방기(위니아 11평형 MRW11HSF, 실내기 1003×310×222) — 냉장고 위 왼쪽 벽(안방 외벽 高X)에 천장 가까이. 뒤(분리벽쪽)에 맞춰 앞(-Z)으로 뻗음. 토출 -X(실내).
   {
     const acLen = 1.003, acH = 0.310, acD = 0.222;
