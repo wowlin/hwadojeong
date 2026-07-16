@@ -26,6 +26,7 @@ import {
 } from '../groups.js';
 
 export let firstStairRoomLabel, firstBathDimLabel, firstBathClearFill;   // 계단실 라벨 ↔ 화장실 안목(applyVisibility에서 전환)
+export const firstCeilingGroundObjects = [];   // '천장' 토글 중 지면 기준 부재(에어컨 실외기·배관) — houseGroup 재부모 제외용(J-②)
 
 export function buildFloor1() {
 // 입체 집 기초(시스템말뚝 + 두부)는 1층 벽·실 좌표가 정의된 뒤(아래)에서 만든다 — 하중 경로에 말뚝 정렬.
@@ -166,7 +167,8 @@ captureInto(firstCeilingObjects, () => {
   label('벽걸이 에어컨', insideX0 + 0.55, acY + 0.17, acZ + acW / 2, 'mep');
 });
 // 에어컨 실외기 — 후면(뒤) 주방(서)쪽 코너, 측백 향해(+Z) 토출. 배관은 서측 외벽 따라 뒤로. '천장' 토글(firstCeilingObjects).
-captureInto(firstCeilingObjects, () => {
+// 지면 기준 부재라 houseGroup 재부모에서 제외해야 함 → firstCeilingGroundObjects에도 함께 수집(J-②).
+captureInto(firstCeilingObjects, () => captureInto(firstCeilingGroundObjects, () => {
   const esW = 0.8, esD = 0.35, esH = 0.6;
   const esX = 0.3;                          // 서(주방)측 코너
   const esZ = buildingBackZ + 0.1;          // 집 뒤 벽 바로 뒤(집~측백 사이)
@@ -174,7 +176,7 @@ captureInto(firstCeilingObjects, () => {
   box({ x: esX, z: esZ, w: esW, d: esD, y: groundTopY, h: esH, mat: materials.guard });                                 // 실외기 본체
   box({ x: esX + 0.15, z: esZ + esD - 0.02, w: esW - 0.3, d: 0.025, y: groundTopY + 0.13, h: 0.42, mat: materials.openingEdge });   // 토출 팬그릴(측백쪽 +Z)
   label('에어컨 실외기', esX + esW / 2, groundTopY + esH + 0.28, esZ + 0.2, 'mep');
-});
+}));
 captureInto(interiorObjects, () => {   // 주방 싱크대 — '실내' 토글
   box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY, h: kitchenSinkH, mat: materials.sinkCabinet });
   box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY + kitchenSinkH, h: 0.05, mat: materials.counter });
@@ -292,7 +294,7 @@ captureInto(firstOutletObjects, () => {
 
 // (1층 전동커튼 레일 제거 — 외벽 창·문이 정면 현관문만 남아 커튼레일 대상 없음)
 
-{ const _sep = new Set([...bathObjects, ...interiorObjects, ...firstFloorFinishObjects, ...firstCeilingObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구·에어컨/실외기는 각 그룹으로 분리)
+{ const _sep = new Set([...bathObjects, ...interiorObjects, ...firstFloorFinishObjects, ...firstCeilingObjects, ...firstOutletObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구·천장기기·콘센트는 각 그룹으로 분리 — 콘센트 이중 소속이 [콘센트] 버튼을 무효화하던 J-① 수리)
 }
 
 // 외부 부동수전·1층 실링팬 — 1층 골조/천장 그룹에 뒤늦게 합류(원본 scene 순서 보존을 위해 별도 호출).

@@ -20,7 +20,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 import { stage, scene, houseGroup, camera, renderer, controls } from './scene.js';
 import { buildSite } from './site.js';
-import { buildFloor1, buildFloor1Fixtures } from './s1/floor1.js';
+import { buildFloor1, buildFloor1Fixtures, firstCeilingGroundObjects } from './s1/floor1.js';
 import { buildAttic } from './s1/attic.js';
 import { buildRoof, buildRoofSolar } from './s1/roof.js';
 import { buildDeck, buildDeckStairFrame, buildDeckStoveCassette } from './s1/deck.js';
@@ -35,7 +35,7 @@ import { buildS2Walls } from './s2/walls.js';
 import { buildS2Roof } from './s2/roof.js';
 import { applyVisibility, setScheme } from './ui.js';
 import {
-  firstFloorFinishObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
+  firstFloorFinishObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, firstCeilingObjects, interiorObjects, firstOutletObjects, solarObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
 
@@ -74,11 +74,13 @@ applyVisibility();         // 계단 빌드 직후 화면 갱신(옛 buildStair 
 {
   const HOUSE_ARRAYS = [
     firstFloorFinishObjects, firstDimObjects, firstWallObjects, firstFloorObjects, bathObjects,
+    firstCeilingObjects, interiorObjects, firstOutletObjects, solarObjects,   // J-② 수리: 천장기기·실내가구·콘센트·태양광도 집과 함께 이동(빠져서 공중부양/파묻힘)
     secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects,
     stairCoreObjects, stairObjects, kitchenInnerWallObjects, familyInnerWallObjects,
   ];
+  const ground = new Set(firstCeilingGroundObjects);   // 에어컨 실외기·배관 = 지면 기준 — 집과 함께 올리지 않음(J-②)
   const seen = new Set();
-  for (const arr of HOUSE_ARRAYS) for (const o of arr) { if (!seen.has(o)) { seen.add(o); houseGroup.add(o); } }   // add = scene→houseGroup 재부모(로컬좌표 보존)
+  for (const arr of HOUSE_ARRAYS) for (const o of arr) { if (!seen.has(o) && !ground.has(o)) { seen.add(o); houseGroup.add(o); } }   // add = scene→houseGroup 재부모(로컬좌표 보존)
 }
 
 // ── 부팅 ────────────────────────────────────────────────────────────────────
