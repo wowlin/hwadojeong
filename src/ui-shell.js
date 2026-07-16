@@ -85,9 +85,8 @@ export function installShell() {
             <button type="button" class="seg-btn" id="bFirstWall">외벽</button>
             <button type="button" class="seg-btn" id="bFirstOutlet">콘센트</button>
           </div>
-          <div class="seg-row" role="group" aria-label="천장·화장실·계단·내벽">
+          <div class="seg-row" role="group" aria-label="천장·계단·내벽">
             <button type="button" class="seg-btn" id="bFirstCeiling">천장</button>
-            <button type="button" class="seg-btn" id="bBath">화장실</button>
             <button type="button" class="seg-btn" id="bS1Stair">계단</button>
             <button type="button" class="seg-btn" id="bS1StairWall">내벽</button>
           </div>

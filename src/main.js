@@ -35,7 +35,7 @@ import { buildS2Walls } from './s2/walls.js';
 import { buildS2Roof } from './s2/roof.js';
 import { applyVisibility, setScheme } from './ui.js';
 import {
-  firstFloorFinishObjects, bathObjects, firstWallObjects, firstDimObjects, firstCeilingObjects, interiorObjects, firstOutletObjects, solarObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
+  firstFloorFinishObjects, firstWallObjects, firstDimObjects, firstCeilingObjects, interiorObjects, firstOutletObjects, solarObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 import './styles.css';
 
@@ -73,7 +73,7 @@ applyVisibility();         // 계단 빌드 직후 화면 갱신(옛 buildStair 
 //   매트기초 오프셋을 못 받는다. 새 부재·재빌드는 반드시 이 블록 앞에서 끝낼 것(§2-3 잠복 결합 명시).
 {
   const HOUSE_ARRAYS = [
-    firstFloorFinishObjects, firstDimObjects, firstWallObjects, bathObjects,
+    firstFloorFinishObjects, firstDimObjects, firstWallObjects,
     firstCeilingObjects, interiorObjects, firstOutletObjects, solarObjects,   // J-② 수리: 천장기기·실내가구·콘센트·태양광도 집과 함께 이동(빠져서 공중부양/파묻힘)
     secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects,
     stairCoreObjects, stairObjects, kitchenInnerWallObjects, familyInnerWallObjects,

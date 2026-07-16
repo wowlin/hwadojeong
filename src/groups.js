@@ -2,7 +2,6 @@
 export const firstFloorFinishObjects = []; // 집 1층 바닥재(바닥틀 위) — 1층 '바닥' 토글
 export const firstCeilingObjects = [];     // 집 1층 천장 설비(실링팬·벽걸이 에어컨·실외기) — 1층 '천장' 토글
 export const deckFloorObjects = [];   // 데크 포세린 바닥 + 데크 계단 디딤판 — 썬룸 '데크 바닥' 토글
-export const bathObjects = [];         // 화장실(변기·세면대·온수기·배기) — '화장실' 토글
 export const interiorObjects = [];     // 1층 실내 가구(안방 침대·주방 싱크대) — '실내' 토글
 export const firstWallObjects = [];    // 1층 외벽(반투명, 두께 0.2·높이 2.4) — 1층·다락·지붕 단계에서 표시
 export const firstOutletObjects = [];  // 1층 콘센트(일반·고전력·인덕션 정션박스) — 1층 '콘센트' 토글

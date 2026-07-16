@@ -22,7 +22,7 @@ import {
 } from '../layout.js';
 import {
   firstFloorFinishObjects, firstWallObjects, firstDimObjects,
-  bathObjects, interiorObjects, firstCeilingObjects, firstOutletObjects,
+  interiorObjects, firstCeilingObjects, firstOutletObjects,
 } from '../groups.js';
 
 export let firstStairRoomLabel, firstBathDimLabel, firstBathClearFill;   // 계단실 라벨 ↔ 화장실 안목(applyVisibility에서 전환)
@@ -209,8 +209,8 @@ captureInto(interiorObjects, () => {
   fridge311AtBack({ x0: fridgeCx - fridgeW / 2, backZ: insideZ1, y: firstFloorY });   // fixtures 1벌(#12) — 문은 주방으로 열림(경첩 계단쪽·손잡이 싱크대쪽)
 });
 // (계단앞 색면·띠 삭제 — '바닥' 토글의 계단앞 색면이 담당, 유령 그룹 소속 영구 비표시 잔재. J-③)
-// '화장실' 토글 = 기구 3개(세면대·변기·온수기) + 185cm 사람. 바닥칠·안목치수는 '바닥+계단'(계단실) 화면에서 표시(중복 제거).
-captureInto(bathObjects, () => {
+// 화장실 기구(세면대·변기·온수기) — '바닥' 토글에 통합. 바닥칠·안목치수는 '바닥+계단'(계단실) 화면에서 표시(중복 제거).
+captureInto(firstFloorFinishObjects, () => {
   const wcCenterX = stairBathX + interiorWall + (stairBathW - interiorWall) / 2;   // 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
   // 세면대 — 안방측(高X) 벽 등붙임. 문 안여닫이 스윙(앞 0.7m)을 피해 그 뒤(高Z)에 설치
   {

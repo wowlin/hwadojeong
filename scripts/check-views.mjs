@@ -25,7 +25,7 @@ const VIEWS = [
   ['tabS1', 'bFirstWall', 'bFirstOutlet', 'bFirstCeiling'],
   ['tabS1', 'bRoof', 'bSolar', 'bLoft', 'bAtticExtWall', 'bAtticInnerWall'],
   ['tabS1', 'bDeck', 'bFolding', 'bSunRoof', 'bFrame'],
-  ['tabS1', 'bMatFull', 'bS1Stair', 'bBath', 'bFirstFloorFinish', 'bHedge', 'bFence'],
+  ['tabS1', 'bMatFull', 'bS1Stair', 'bFirstFloorFinish', 'bHedge', 'bFence'],
 ];
 const viewName = (clicks) => clicks.length ? clicks.join('+') : 'default';
 

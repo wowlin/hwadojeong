@@ -8,7 +8,7 @@ import { firstStairRoomLabel, firstBathDimLabel, firstBathClearFill } from './s1
 import { groundTopY, matFoundationH } from './constants.js';
 import { foundationTopY, lotX0, lotX1, lotZ0, lotZ1 } from './layout.js';
 import {
-  firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, bathObjects, interiorObjects,
+  firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, interiorObjects,
   firstWallObjects, firstOutletObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects,
   roofObjects, solarObjects, deckObjects, 썬룸FrameObjects, 썬룸RoofObjects, foldingObjects, extrasObjects,
   hedgeObjects, fenceObjects, matFoundationFullObjects, footprintObjects, dimObjects,
@@ -26,14 +26,13 @@ import {
 const _fitBox = new THREE.Box3();
 const PARTS = [
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
-  { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects, interiorObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면 + 실내 가구(안방 침대·주방 싱크대) 합침
+  { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects, interiorObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면 + 실내 가구(안방 침대·주방 싱크대) + 화장실 기구 합침
   { key: 'firstCeiling', arrays: [firstCeilingObjects] },   // 천장 설비(실링팬·벽걸이 에어컨·실외기)
   { key: 'stair',      arrays: [stairCoreObjects] },   // 계단 발판·난간(+사람·돌음 라벨)
   { key: 'stairInnerWall', arrays: [stairInnerWallObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 계단실 내벽 — 안방 내력벽·두 런 분리벽·주방측 하부벽·WC(앞벽·천장·문스윙)
   { key: 'firstWall',    arrays: [firstWallObjects] },        // 1층 외벽('1층' 그룹 '외벽')
   { key: 'firstOutlet',  arrays: [firstOutletObjects] },      // 1층 콘센트('1층' 그룹 '콘센트')
   { key: 'atticExtWall', arrays: [atticExtWallObjects] },     // 다락 외벽('다락' 그룹 '외벽')
-  { key: 'bath',       arrays: [bathObjects] },
   { key: 'loft',       arrays: [secondFloorObjects] },        // 실제 다락 바닥(슬래브·방)
   { key: 'atticInnerWall', arrays: [atticInnerWallObjects] }, // 다락 내벽(칸막이·문·입구벽)
   { key: 'roof',       arrays: [roofObjects] },
@@ -66,7 +65,7 @@ const S1_TOGGLES = [
   ['bDeck', 'deck'],   // 데크(악세사리 합침)
   ['bFolding', 'folding'], ['bSunRoof', 'sunRoof'], ['bFrame', 'frame'],
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bAtticExtWall', 'atticExtWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
-  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bS1StairWall', 'stairInnerWall'], ['bFirstWall', 'firstWall'], ['bFirstOutlet', 'firstOutlet'], ['bBath', 'bath'],
+  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bS1StairWall', 'stairInnerWall'], ['bFirstWall', 'firstWall'], ['bFirstOutlet', 'firstOutlet'],
   ['bMatFull', 'matFoundationFull'],
 ];
 
