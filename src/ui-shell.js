@@ -9,7 +9,7 @@ export function installShell() {
       <aside class="sidebar">
         <nav class="scheme-tabs">
           <button id="tabS2" type="button" class="scheme-tab active" data-scheme="s2">3층</button>
-          <button id="tabS1" type="button" class="scheme-tab" data-scheme="s1">1층·다락·포치</button>
+          <button id="tabS1" type="button" class="scheme-tab" data-scheme="s1">단층</button>
         </nav>
         <section class="menu-group" data-scheme="s2">
           <h2 class="menu-title">지붕·태양광</h2>
@@ -62,7 +62,7 @@ export function installShell() {
           </div>
         </section>
         <section class="menu-group" data-scheme="s1">
-          <h2 class="menu-title">외벽·지붕</h2>
+          <h2 class="menu-title">지붕</h2>
           <div class="seg-row" role="group" aria-label="지붕·태양광">
             <button type="button" class="seg-btn" id="bRoof">지붕</button>
             <button type="button" class="seg-btn" id="bSolar">태양광</button>

@@ -6,7 +6,7 @@ import { stairGeom, stairParams } from './s1/stair.js';
 import { hedgeH, fenceH } from './site.js';
 import {
   buildingW, buildingD, buildingBackZ, groundTopY, matFoundationH, roofThickness,
-  hedgeThickness,
+  hedgeThickness, zincFinishT,
 } from './constants.js';
 import { lotX0, lotZ1, stairLowXRunX, stairHighXRunX } from './layout.js';
 import {
@@ -63,7 +63,7 @@ export const NOTES = {
   get s2Roof3() {
     const deg = Math.round(s2RoofPitch * 180 / Math.PI);
     return { title: '지붕 (징크 박공)', body: [
-      `- 마감: 오리지널징크(티타늄아연). 지붕 두께 ${Math.round(roofThickness * 1000)} mm(단열 + 징크).`,
+      `- 마감: 오리지널징크(티타늄아연). 단열 ${mm(roofThickness)} mm + 그 위 징크 ${mm(zincFinishT)} mm = 총 ${mm(roofThickness + zincFinishT)} mm.`,   // J-⑤ 수리 — 옛 문구가 총두께를 단열값(260)으로 오서술
       `- 경사 ${deg}° 박공, 용마루는 너비(X) 방향.`,
       `- 처마: 앞·뒤 ${fmtDim(s2RoofEaveOver)} m, 좌·우 ${fmtDim(s2RoofSideOver)} m 내밈.`,
       `- 눈막이(스노우가드): 양 슬로프 처마 근처 가로바 ${s2SnowGuardT.length}줄 — 쌓인 눈이 한꺼번에 미끄러지지 않게.`,
