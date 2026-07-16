@@ -25,14 +25,6 @@ export function addGeometryEdges(mesh, color = 0x6f6254) {
   return edges;
 }
 
-export function lerpPoint(a, b, t) {
-  return [
-    a[0] + (b[0] - a[0]) * t,
-    a[1] + (b[1] - a[1]) * t,
-    a[2] + (b[2] - a[2]) * t
-  ];
-}
-
 // 프리즘 삼각분할 1벌(#21) — 링 정점 n개를 두 층으로 복제한 프리즘의 인덱스(윗면 팬 + 밑면 팬 + 옆면 quad).
 export function prismIndices(n) {
   const indices = [];
