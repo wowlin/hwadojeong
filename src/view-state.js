@@ -18,7 +18,8 @@ export const view = {
   // 집 그룹(내부구조 부품별)
   firstFloorFinish: false, // 집 1층 바닥재
   firstCeiling: false, // 집 1층 천장 설비(실링팬·에어컨·실외기)
-  stair: false,       // ㄷ자 계단 본체
+  stair: false,       // ㄷ자 계단 본체(발판·난간)
+  stairInnerWall: false,   // 계단실 내벽(안방 내력벽·두 런 분리벽·주방측 하부벽·WC 앞벽)
   firstWall: false,     // 1층 외벽('1층' 그룹 '외벽' 버튼)
   firstOutlet: false,   // 1층 콘센트('1층' 그룹 '콘센트' 버튼)
   atticExtWall: false,  // 다락 외벽('다락' 그룹 '외벽' 버튼)

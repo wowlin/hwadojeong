@@ -108,8 +108,9 @@ test('⑪ 레이어 패널 — 부품별 독립 토글(완전 독립, 누적 없
   // (2) PARTS 테이블이 부품→객체배열을 매핑하고, 가시성은 그 테이블로 일괄(독립)
   assert.match(src, /const PARTS = \[/, '부품→객체배열 매핑 PARTS 테이블');
   assert.match(src, /for \(const p of PARTS\)[\s\S]*?const on = !isPlan && !!view\[p\.key\];/, '각 부품은 view[key]로 독립 표시(배치도일 땐 숨김)');
-  // (3) 안방 내력벽·주방측 벽은 '계단' 토글에 합쳐짐(별도 토글 삭제) — stair 배열에 두 벽 그룹 포함
-  assert.match(src, /key: 'stair',\s*arrays: \[stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects\]/, '주방측 벽·안방 내력벽은 계단(stair) 토글에 합쳐짐');
+  // (3) '계단'(발판·난간)과 '내벽'(분리벽·WC + 주방측 벽·안방 내력벽) 두 토글로 분리 — 각 배열 구성 고정
+  assert.match(src, /key: 'stair',\s*arrays: \[stairCoreObjects\]/, "계단(stair) 토글 = 발판·난간(stairCoreObjects)만");
+  assert.match(src, /key: 'stairInnerWall',\s*arrays: \[stairInnerWallObjects, kitchenInnerWallObjects, familyInnerWallObjects\]/, "내벽(stairInnerWall) 토글 = 분리벽·WC + 주방측 벽·안방 내력벽");
   assert.doesNotMatch(src, /key: 'kitchenWall'|key: 'familyWall'/, '별도 kitchenWall·familyWall 토글은 제거됨');
   // (4) 프리셋 뷰 — 배치도(전부 끄고 plan만). '전체 모델' 버튼·showAll은 제거됨.
   assert.match(src, /function showPlan\(\)/, '배치도 프리셋 showPlan');

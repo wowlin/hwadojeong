@@ -17,7 +17,7 @@ import {
   s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB,
   s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects,
   s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects,
-  deckStairFrameObjects, stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
+  deckStairFrameObjects, stairObjects, stairCoreObjects, stairInnerWallObjects, kitchenInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 
 // 보이는 구조물을 화면(버튼 영역 제외 캔버스) 중앙에 꽉 차게 프레이밍한다.
@@ -28,7 +28,8 @@ const PARTS = [
   { key: 'matFoundationFull', arrays: [matFoundationFullObjects] },
   { key: 'firstFloorFinish', arrays: [firstFloorFinishObjects, firstDimObjects, stairObjects, interiorObjects] },   // 바닥 + 방 안목치수 + 방·치수 도면 + 실내 가구(안방 침대·주방 싱크대) 합침
   { key: 'firstCeiling', arrays: [firstCeilingObjects] },   // 천장 설비(실링팬·벽걸이 에어컨·실외기)
-  { key: 'stair',      arrays: [stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 주방측 벽·안방 내력벽을 계단 토글에 합침
+  { key: 'stair',      arrays: [stairCoreObjects] },   // 계단 발판·난간(+사람·돌음 라벨)
+  { key: 'stairInnerWall', arrays: [stairInnerWallObjects, kitchenInnerWallObjects, familyInnerWallObjects] },   // 계단실 내벽 — 안방 내력벽·두 런 분리벽·주방측 하부벽·WC(앞벽·천장·문스윙)
   { key: 'firstWall',    arrays: [firstWallObjects] },        // 1층 외벽('1층' 그룹 '외벽')
   { key: 'firstOutlet',  arrays: [firstOutletObjects] },      // 1층 콘센트('1층' 그룹 '콘센트')
   { key: 'atticExtWall', arrays: [atticExtWallObjects] },     // 다락 외벽('다락' 그룹 '외벽')
@@ -65,7 +66,7 @@ const S1_TOGGLES = [
   ['bDeck', 'deck'],   // 데크(악세사리 합침)
   ['bFolding', 'folding'], ['bSunRoof', 'sunRoof'], ['bFrame', 'frame'],
   ['bLoft', 'loft'], ['bAtticInnerWall', 'atticInnerWall'], ['bAtticExtWall', 'atticExtWall'], ['bRoof', 'roof'], ['bSolar', 'solar'],
-  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bFirstWall', 'firstWall'], ['bFirstOutlet', 'firstOutlet'], ['bBath', 'bath'],
+  ['bFirstFloorFinish', 'firstFloorFinish'], ['bFirstCeiling', 'firstCeiling'], ['bS1Stair', 'stair'], ['bS1StairWall', 'stairInnerWall'], ['bFirstWall', 'firstWall'], ['bFirstOutlet', 'firstOutlet'], ['bBath', 'bath'],
   ['bMatFull', 'matFoundationFull'],
 ];
 

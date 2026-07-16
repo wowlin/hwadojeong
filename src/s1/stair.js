@@ -23,7 +23,7 @@ import {
   roofRiseAtZ,
 } from '../layout.js';
 import {
-  stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
+  stairObjects, stairCoreObjects, stairInnerWallObjects, kitchenInnerWallObjects, familyInnerWallObjects,
   secondFloorObjects, atticInnerWallObjects,
 } from '../groups.js';
 
@@ -62,7 +62,7 @@ export function stairGeom(p) {
 // 계단 본체(발판·세로막이·사선·계단참) — 계단 화면 + 1층 공유(stairCoreObjects).
 function drawStairCore(p) {
   const g = stairGeom(p);
-  const { W, R, T, fy, nWind, nLand, nL, nU, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY, loftY } = g;
+  const { W, R, T, fy, nWind, nLand, nL, nU, treadH, riserD, nosing, zBack, turnD, zTurn0, laneA, laneB, zFrontL, landingY } = g;
   // 하부 곧은계단(laneA, +Z) — 세로막이는 발판 두께만큼 아래로, 첫 단은 위쪽 발판 두께만큼 없앰. 앞코(-Z)로 nosing 돌출.
   for (let i = 0; i < nL; i += 1) {
     const topY = fy + (i + 1) * R;
@@ -139,51 +139,7 @@ function drawStairCore(p) {
     const rY = baseU + j * R - treadH;   // 첫 단도 일반 계단벽과 같은 높이(R) — 윗면=발판 밑면, 밑면=계단참 발판 밑면
     box({ x: laneB, z: zTurn0 - j * T - riserD, w: W, d: riserD, y: rY, h: R, mat: materials.stairWall, cast: false });
   }
-  // 두 런 분리벽 겸 WC 저X벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로 이 벽(내벽 두께 interiorWall=10cm)을 상부런(laneB) 저X 모서리에 세운다.
-  // 앞끝(WC 문벽 뒤)~뒤 외벽까지 한 덩어리 벽 하나: 윗변은 앞쪽 WC 사선 천장 밑선을 따르고, 돌음(턴존)에선 첫 계단참 발판 밑면 높이로 이어진다. 계단실을 두 공간으로 분리.
-  const gapX = laneB, gapW = interiorWall;
-  {
-    const topAt = (z) => (baseU - treadH) + (R / T) * (zTurn0 - z) - 0.10;   // WC 천장 밑선 = 발판 뒤코너선 − (드롭0.05+패널두께0.05)
-    const zF = zFrontL + interiorWall;                                       // 앞끝을 WC 문벽 뒤로 물림
-    const backTop = fy + (nL + nWind + 1) * R - treadH;                      // 돌음(턴존) 윗변 = 첫 계단참 발판 밑면
-    yzWallPrism({ x: gapX, thickness: gapW, mat: materials.stairSpineWall, points: [
-      [zF, fy], [insideZ1, fy], [insideZ1, backTop], [zTurn0, backTop], [zTurn0, topAt(zTurn0)], [zF, topAt(zF)],
-    ] });
-  }
-  // 계단하부 WC(상부런 laneB 아래·안방측 공간) 앞벽 — 트인 전면을 막아 화장실로 사용. 가운데 출입문 1개. 윗면=다락 바닥 밑면.
-  {
-    const wcWallH = (loftY - secondFloorThickness) - fy;
-    const dW = 0.7, dH = 2.0, t = interiorWall;            // 욕실문 표준(폭 0.7·높이 2.0) — 일반 방문(0.9·2.1)보다 작게
-    const dx0 = laneB + interiorWall + (W - interiorWall - dW) / 2, dx1 = dx0 + dW;   // 문 = 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
-    box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairInnerWall, cast: false });          // 문 왼쪽 벽(반투명)
-    box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairInnerWall, cast: false });      // 문 오른쪽 벽(반투명)
-    box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairInnerWall, cast: false });          // 문 위 인방(반투명)
-    interiorDoorHorizontal(dx0, zFrontL + t / 2, fy, dW, dH, materials.wcDoor);                                             // WC 출입문(욕실문 색) — 문짝을 벽 두께 중앙에 넣어 앞면 삐져나옴 제거
-  }
-  // WC 천장 — 상부런 발판 밑면(들쭉날쭉)을 가리는 사선 천장 패널. 단의 안쪽 뒤코너 선(z=zTurn0-jT, y=baseU+jR-treadH)을 따라 기울인 평판.
-  {
-    const baseU = landingY, zFrontU = zTurn0 - nU * T;
-    const zF = zFrontU + interiorWall;                                       // 앞끝을 WC 문벽(interiorWall) 뒤로 물려 문벽과 겹침 제거
-    const dz = zTurn0 - zF;
-    const yBack = baseU - treadH, yFront = baseU + (R / T) * dz - treadH;     // 뒤(낮음)·앞(높음, 물린 앞끝 기준)
-    const panelLen = Math.hypot(dz, (R / T) * dz), tilt = Math.atan2(R, T), th = 0.05, drop = 0.05;   // 코너선 아래(z-파이팅 회피·발판 밑면 가림)
-    const ceil = new THREE.Mesh(new THREE.BoxGeometry(W, th, panelLen), materials.stairWallDouble);   // 벽과 같은 톤·양면(내부=밑에서 봄)
-    ceil.position.set(laneB + W / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zF) / 2);
-    ceil.rotation.x = tilt;
-    ceil.receiveShadow = true;
-    scene.add(ceil);
-  }
-  // WC 문 안여닫이 스윙 공간 — 밖에서 밀어 안(+Z)으로 90° 열릴 때 문이 쓸고 지나가는 1/4 기둥(반경=문폭, 높이=문높이). 사선 천장에 닿는지 눈으로 확인용. 반투명.
-  {
-    const dW = 0.7, dH = 2.0;                            // 욕실문(앞벽 문과 동일 치수)
-    const hingeX = laneB + interiorWall + (W - interiorWall - dW) / 2;   // 경첩 = 문(안목 중앙) 주방측(낮은 X) 모서리
-    const swept = new THREE.Mesh(
-      new THREE.CylinderGeometry(dW, dW, dH, 24, 1, false, 0, Math.PI / 2),   // Y축 수직 1/4기둥
-      materials.swingSweepFaint,
-    );
-    swept.position.set(hingeX, fy + dH / 2, zFrontL);    // 1/4 부채꼴(theta 0~90°)=+Z(닫힘,벽)~+X… 회전 없이 +X(닫힘)·+Z(화장실 안쪽 열림) 사분면
-    scene.add(swept);
-  }
+  // (두 런 분리벽·계단하부 WC 앞벽·사선 천장·문 스윙 → drawStairInnerWalls로 분리 — 1층 '내벽' 토글)
   // 난간 — 칸막이(벽)가 막는 두 런 사이가 아니라, 트여서 추락 위험이 있는 '하부 직선계단의 주방측(laneA)' 가장자리에 둔다. 계단 경사를 따라 손잡이(발판+0.9m) + 양 끝·중간 수직 동자.
   const railX = laneA + 0.06, postR = 0.022, handR = 0.028;   // 주방측 발판 위(측면 세로막이·벽면 안쪽으로 살짝 들여 발판에 서게)
   // 세로 동자 — 하부 직선계단 각 발판의 깊이 중심 주방측(laneA)에 발판 위 1.0m로 하나씩
@@ -216,6 +172,58 @@ function drawStairCore(p) {
       if (zEdge >= zBack - 1e-6) break;
     }
     railCylinder(prevTop, [railX, prevTop[1], zBack], handR);   // 손잡이 뒷벽까지 마무리
+  }
+}
+
+// 계단실 내벽(두 런 분리벽·계단하부 WC 앞벽·사선 천장·문 스윙) — 1층 '내벽' 토글(stairInnerWallObjects). 발판·난간(drawStairCore)과 분리.
+function drawStairInnerWalls(p) {
+  const g = stairGeom(p);
+  const { W, R, T, fy, nWind, nL, nU, treadH, zTurn0, laneB, zFrontL, landingY, loftY } = g;
+  const baseU = landingY;
+  // 두 런 분리벽 겸 WC 저X벽 — 하부런을 상부런에 붙여 런 사이 틈을 없앴으므로 이 벽(내벽 두께 interiorWall=10cm)을 상부런(laneB) 저X 모서리에 세운다.
+  // 앞끝(WC 문벽 뒤)~뒤 외벽까지 한 덩어리 벽 하나: 윗변은 앞쪽 WC 사선 천장 밑선을 따르고, 돌음(턴존)에선 첫 계단참 발판 밑면 높이로 이어진다. 계단실을 두 공간으로 분리.
+  const gapX = laneB, gapW = interiorWall;
+  {
+    const topAt = (z) => (baseU - treadH) + (R / T) * (zTurn0 - z) - 0.10;   // WC 천장 밑선 = 발판 뒤코너선 − (드롭0.05+패널두께0.05)
+    const zF = zFrontL + interiorWall;                                       // 앞끝을 WC 문벽 뒤로 물림
+    const backTop = fy + (nL + nWind + 1) * R - treadH;                      // 돌음(턴존) 윗변 = 첫 계단참 발판 밑면
+    yzWallPrism({ x: gapX, thickness: gapW, mat: materials.stairSpineWall, points: [
+      [zF, fy], [insideZ1, fy], [insideZ1, backTop], [zTurn0, backTop], [zTurn0, topAt(zTurn0)], [zF, topAt(zF)],
+    ] });
+  }
+  // 계단하부 WC(상부런 laneB 아래·안방측 공간) 앞벽 — 트인 전면을 막아 화장실로 사용. 가운데 출입문 1개. 윗면=다락 바닥 밑면.
+  {
+    const wcWallH = (loftY - secondFloorThickness) - fy;
+    const dW = 0.7, dH = 2.0, t = interiorWall;            // 욕실문 표준(폭 0.7·높이 2.0) — 일반 방문(0.9·2.1)보다 작게
+    const dx0 = laneB + interiorWall + (W - interiorWall - dW) / 2, dx1 = dx0 + dW;   // 문 = 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
+    box({ x: laneB, z: zFrontL, w: dx0 - laneB, d: t, y: fy, h: wcWallH, mat: materials.stairInnerWall, cast: false });          // 문 왼쪽 벽(반투명)
+    box({ x: dx1, z: zFrontL, w: (laneB + W) - dx1, d: t, y: fy, h: wcWallH, mat: materials.stairInnerWall, cast: false });      // 문 오른쪽 벽(반투명)
+    box({ x: dx0, z: zFrontL, w: dW, d: t, y: fy + dH, h: wcWallH - dH, mat: materials.stairInnerWall, cast: false });          // 문 위 인방(반투명)
+    interiorDoorHorizontal(dx0, zFrontL + t / 2, fy, dW, dH, materials.wcDoor);                                             // WC 출입문(욕실문 색) — 문짝을 벽 두께 중앙에 넣어 앞면 삐져나옴 제거
+  }
+  // WC 천장 — 상부런 발판 밑면(들쭉날쭉)을 가리는 사선 천장 패널. 단의 안쪽 뒤코너 선(z=zTurn0-jT, y=baseU+jR-treadH)을 따라 기울인 평판.
+  {
+    const zFrontU = zTurn0 - nU * T;
+    const zF = zFrontU + interiorWall;                                       // 앞끝을 WC 문벽(interiorWall) 뒤로 물려 문벽과 겹침 제거
+    const dz = zTurn0 - zF;
+    const yBack = baseU - treadH, yFront = baseU + (R / T) * dz - treadH;     // 뒤(낮음)·앞(높음, 물린 앞끝 기준)
+    const panelLen = Math.hypot(dz, (R / T) * dz), tilt = Math.atan2(R, T), th = 0.05, drop = 0.05;   // 코너선 아래(z-파이팅 회피·발판 밑면 가림)
+    const ceil = new THREE.Mesh(new THREE.BoxGeometry(W, th, panelLen), materials.stairWallDouble);   // 벽과 같은 톤·양면(내부=밑에서 봄)
+    ceil.position.set(laneB + W / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zF) / 2);
+    ceil.rotation.x = tilt;
+    ceil.receiveShadow = true;
+    scene.add(ceil);
+  }
+  // WC 문 안여닫이 스윙 공간 — 밖에서 밀어 안(+Z)으로 90° 열릴 때 문이 쓸고 지나가는 1/4 기둥(반경=문폭, 높이=문높이). 사선 천장에 닿는지 눈으로 확인용. 반투명.
+  {
+    const dW = 0.7, dH = 2.0;                            // 욕실문(앞벽 문과 동일 치수)
+    const hingeX = laneB + interiorWall + (W - interiorWall - dW) / 2;   // 경첩 = 문(안목 중앙) 주방측(낮은 X) 모서리
+    const swept = new THREE.Mesh(
+      new THREE.CylinderGeometry(dW, dW, dH, 24, 1, false, 0, Math.PI / 2),   // Y축 수직 1/4기둥
+      materials.swingSweepFaint,
+    );
+    swept.position.set(hingeX, fy + dH / 2, zFrontL);    // 1/4 부채꼴(theta 0~90°)=+Z(닫힘,벽)~+X… 회전 없이 +X(닫힘)·+Z(화장실 안쪽 열림) 사분면
+    scene.add(swept);
   }
 }
 
@@ -331,9 +339,11 @@ function clearStairGroup(arr) {
 }
 export function buildStair() {
   clearStairGroup(stairCoreObjects);                                       // 계단 본체(계단+1층 공유)
+  clearStairGroup(stairInnerWallObjects);                                  // 계단실 내벽(분리벽·WC)
   clearStairGroup(stairObjects);                                           // 계단 화면 전용 주석
   buildStairWalls();                                                       // 양쪽 내벽 — 다락 바닥 밑면(30cm)에 맞춰 높이 갱신
   captureInto(stairCoreObjects, () => { drawStairCore(stairParams); });
+  captureInto(stairInnerWallObjects, () => { drawStairInnerWalls(stairParams); });
   { const _s = scene.children.length; const stairInfo = drawStairAnno(stairParams);
     // 계단참·다락통행·내벽높이 라벨은 '바닥'이 아니라 각자 토글로 분리 → 바닥 화면에서 제외.
     const _moved = new Set([...stairInfo.loftSlabs, ...stairInfo.stairLandingAnno, ...stairInfo.innerWallAnno, ...stairInfo.loftSuWalls]);
