@@ -17,4 +17,18 @@ export default [
       'no-undef': 'error',
     },
   },
+  {
+    // 게이트·검사 스크립트와 테스트도 같은 버그성 규칙으로 — 형해화(죽은 참조·미사용) 조기 검출
+    files: ['scripts/**/*.mjs', 'test/**/*.js', 'tests/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser },   // 스크립트는 Node + page.evaluate 안 브라우저 코드 혼재
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      'no-unused-vars': ['error', { args: 'none', ignoreRestSiblings: true }],
+      'no-undef': 'error',
+    },
+  },
 ];

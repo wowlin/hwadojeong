@@ -9,22 +9,20 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "check": "node --check src/main.js",
     "shot": "node scripts/shot.mjs",
-    "shot:side": "node scripts/shot-side.mjs",
-    "check:buttons": "node scripts/check-buttons.mjs",
     "check:views": "node scripts/check-views.mjs",
     "check:render": "node scripts/check-render.mjs",
     "check:scene": "node scripts/snapshot-scene.mjs",
-    "lint": "eslint src"
+    "lint": "eslint src scripts test"
   },
   "dependencies": {
-    "three": "^0.179.1",
-    "vite": "^7.2.7"
+    "three": "^0.179.1"
   },
   "devDependencies": {
     "eslint": "^9.39.4",
     "globals": "^17.7.0",
-    "playwright": "^1.61.1"
+    "playwright": "^1.61.1",
+    "vite": "^7.2.7",
+    "@eslint/js": "^9.39.4"
   }
 }

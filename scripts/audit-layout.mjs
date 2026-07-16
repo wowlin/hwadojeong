@@ -126,8 +126,6 @@ const secondRoom1 = { x: planRightLivingX, z: secondAtticZ, w: firstLivingW, d: 
 const secondRoom2 = { x: stairHighXClearX, z: secondAtticZ, w: insideX1 - stairHighXClearX, d: secondAtticD };
 const secondRoomDoor1 = { x: secondRoom1.x + (secondRoom1.w - interiorDoorW) / 2, z: secondAtticWallZ, w: interiorDoorW };
 const secondRoomDoor2 = { x: secondRoom2.x + (secondRoom2.w - interiorDoorW) / 2, z: secondAtticWallZ, w: interiorDoorW };
-const secondRoom1FrontWall = { x: secondRoom1.x, z: secondAtticWallZ, w: secondRoom1.w };
-const secondRoom2FrontWall = { x: secondRoom2.x, z: secondAtticWallZ, w: secondRoom2.w };
 const secondCorridorWindowW = 1.8;
 const secondCorridorWindowH = 0.45;
 const secondCorridorWindowSillOffset = 0.42;
@@ -149,7 +147,6 @@ const familyRearWindow = { x: firstFamily.x + (firstFamily.w - 1.8) / 2, z: insi
 const kitchenSink = { x: firstLiving.x + (firstLiving.w - 2.2) / 2, z: insideZ1 - 0.6, w: 2.2, d: 0.6, h: 0.85 };
 const familyRoadWindow = { x: insideX1, z: firstFamily.z + (firstFamily.d - 1.8) / 2, d: 1.8, h: 1.2, sillY: firstWallY + 0.9 };
 const yardDeck = { x: insideX0, z: buildingFrontZ - 0.48, w: insideX1 - insideX0, d: 0.42, y: firstWallY, h: yardDeckH };
-const secondWallY = secondY + floorThickness;
 const secondWallTop = secondY + floorThickness + secondWallHeight;
 const sideGableWindowBottomY = secondWallTop + sideGableWindow.sillOffset;
 const sideGableWindowTopY = sideGableWindowBottomY + sideGableWindow.h;
@@ -181,13 +178,11 @@ const deckStairRise = (deckStairTopY - groundTopY) / deckStairSteps;
 // main.js와 동일하게 재도출(감사 방식 그대로 — 단일출처 리팩터는 후속 과제).
 // 벽부착 부재를 개구부에 그려도 아무 경고 없이 통과하던 구멍을 막는다.
 const s2WallT = 0.3;
-const s2W = 8.5;
 const s2BackZ = 3.3;
 const s2D = 6.0;                              // main.js s2D 단일출처값
 const s2FrontZ = s2BackZ - s2D;               // -2.7
 const s2MatH = 0.5, s2SlabT = 0.2;
 const s2F1Top = groundTopY + s2MatH + s2SlabT;   // 1층 바닥 윗면 0.78
-const s2LeftInnerX = s2W - s2WallT;           // 좌측(高x) 외벽 안쪽 면 8.2
 // 좌측 폴딩창(2+2 양개) — 벽 중앙 배치
 const s2FoldH = 2.4;
 const s2FoldCz = (s2FrontZ + s2BackZ) / 2;    // 0.3

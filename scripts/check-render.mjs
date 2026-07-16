@@ -13,12 +13,12 @@ const port = 5199;
 const url = `http://127.0.0.1:${port}/`;
 
 const dev = spawn('npx', ['vite', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd: root, stdio: 'ignore' });
-const cleanup = () => { try { dev.kill(); } catch {} };
+const cleanup = () => { try { dev.kill(); } catch { /* 기동 대기·정리 실패 무시 */ } };
 process.on('exit', cleanup);
 
 let up = false;
 for (let i = 0; i < 100; i++) {
-  try { if ((await fetch(url)).ok) { up = true; break; } } catch {}
+  try { if ((await fetch(url)).ok) { up = true; break; } } catch { /* 기동 대기·정리 실패 무시 */ }
   await new Promise((r) => setTimeout(r, 200));
 }
 if (!up) { console.error('✗ dev 서버 기동 실패'); process.exit(1); }

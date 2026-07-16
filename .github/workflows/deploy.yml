@@ -24,6 +24,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run lint          # 게이트: eslint 0 (빌드만 통과하면 공개 배포되던 구멍 차단)
+      - run: npm test              # 게이트: 문법·빌드·회귀 하네스 통과 없이는 배포 금지
       - run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

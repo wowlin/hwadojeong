@@ -22,11 +22,11 @@ execSync('npm run build', { cwd: root, stdio: 'inherit' });
 const port = 4178;
 const url = `http://127.0.0.1:${port}/`;
 const srv = spawn('npx', ['vite', 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd: root, stdio: 'ignore' });
-const cleanup = () => { try { srv.kill(); } catch {} };
+const cleanup = () => { try { srv.kill(); } catch { /* 기동 대기·정리 실패 무시 */ } };
 process.on('exit', cleanup);
 
 for (let i = 0; i < 60; i += 1) {                       // 미리보기 서버 대기
-  try { if ((await fetch(url)).ok) break; } catch {}
+  try { if ((await fetch(url)).ok) break; } catch { /* 기동 대기·정리 실패 무시 */ }
   await new Promise((r) => setTimeout(r, 200));
 }
 

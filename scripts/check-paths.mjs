@@ -22,7 +22,6 @@ const stairLowXWallX = stairClearX - INTERIOR;
 const stairHighXWallX = stairClearX + stairClearW;
 const stairHighXClearX = stairHighXWallX + INTERIOR;
 const planLeftFamilyX = stairHighXClearX;
-const firstFamilyD = insideD;
 const yardSashW = 2.35;
 const livingYardSashX = insideX0 + (firstLivingW - yardSashW) / 2;
 const entryFrameOuterW = 1.0;
@@ -51,7 +50,6 @@ const secondCorridorZ = insideZ0;
 const secondCorridorD = stairBottomLandingD;
 const secondAtticWallZ = secondCorridorZ + secondCorridorD;
 const secondAtticZ = secondAtticWallZ + INTERIOR;
-const secondAtticD = insideZ1 - secondAtticZ;
 const secondRoom1DoorX = insideX0 + (firstLivingW - interiorDoorW) / 2;
 const secondRoom2DoorX = secondRoom2X + (secondRoom2W - interiorDoorW) / 2;
 
