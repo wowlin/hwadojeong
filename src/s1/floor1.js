@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
-import { label, planYDim, room, roomText } from '../labels.js';
+import { label, planYDim, roomText } from '../labels.js';
 import { ceilingFan, outlet, fridge311AtBack } from '../fixtures.js';
 import { rearSlider, frontAwningSash, sideRearSlider, sideEntryDoor } from '../openings.js';
 import {
@@ -16,7 +16,7 @@ import {
 import {
   buildingFrontZ, foundationTopY, firstFloorY, firstWallY, rearWindowSideOffset,
   insideX0, insideZ0, insideX1, insideZ1, stairBathX, stairBathZ, stairBathW, stairBathD,
-  stairLowXRunX, stairHighXWallX, stairBottomLandingD, stairOpeningStart,
+  stairLowXRunX, stairHighXWallX, stairBottomLandingD,
   firstKitchenX, firstKitchenW, firstKitchenD, firstFamilyX, firstFamilyW, firstFamilyD,
   kitchenSinkX, kitchenSinkZ, kitchenCounterY, frontCornerDimX, frontCornerDimZ, firstCeilingY,
 } from '../layout.js';
