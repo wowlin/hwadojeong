@@ -5,6 +5,7 @@ import { scene } from './scene.js';
 import { materials } from './materials.js';
 import { groundTopY, deckFinishT } from './constants.js';
 import { box, addGeometryEdges } from './primitives.js';
+import { label } from './labels.js';
 
 // 캠핑 가구 재질 — 반고 햄프턴 DLX 캠핑의자 프레임(책상 의자도 공유)
 export const chairFrameMat = new THREE.MeshLambertMaterial({ color: 0x23282f }); // 의자 프레임
@@ -130,4 +131,63 @@ export function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY,
     }
     addGeometryEdges(step, 0x4a3724);
   }
+}
+
+// 콘센트 1벌(#7) — 벽면 커버 플레이트(+소켓). s1·s2·실내·외부 전 콘센트가 이 한 벌을 쓴다.
+// face: 벽에서 실내(또는 바깥)로 돌출하는 방향('+X'|'-X'|'+Z'|'-Z'). kind: 'n' 일반(녹)·'h' 고전력(마젠타)·'i' 인덕션 직결 정션박스(보라·소켓 없음).
+export function outlet(x, z, oy, face, kind = 'n') {
+  const mC = kind === 'h' ? materials.heatOutlet : kind === 'i' ? materials.inductionOutlet : materials.outlet;   // 커버 플레이트 색
+  const mS = kind === 'h' ? materials.heatOutletSocket : materials.outletSocket;                                  // 소켓 면 색
+  const socket = kind !== 'i';   // 인덕션 = 직결(콘센트 아님) → 소켓 없는 정션박스 블랭크 커버만
+  if (face === '+X') {
+    box({ x, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
+    if (socket) box({ x: x + 0.035, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
+  } else if (face === '-X') {
+    box({ x: x - 0.035, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
+    if (socket) box({ x: x - 0.05, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
+  } else if (face === '+Z') {
+    box({ x: x - 0.065, z, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
+    if (socket) box({ x: x - 0.045, z: z + 0.035, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
+  } else {   // '-Z'
+    box({ x: x - 0.065, z: z - 0.035, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
+    if (socket) box({ x: x - 0.045, z: z - 0.05, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
+  }
+}
+
+// 눈막이(스노우가드) 가로바 1줄(#17) — 가로 파이프바 + 브래킷 8개. 생성한 box 목록을 반환(호출부가 그룹에 push).
+export function snowGuardRow(x0, width, z, y) {
+  const out = [];
+  out.push(box({ x: x0, z: z - 0.025, w: width, d: 0.05, y: y + 0.11, h: 0.05, mat: materials.snowGuard, cast: false }));   // 가로 파이프바
+  const n = 7;
+  for (let i = 0; i <= n; i += 1) {
+    const bx = x0 + width * (i / n);
+    out.push(box({ x: bx - 0.02, z: z - 0.02, w: 0.04, d: 0.04, y: y + 0.02, h: 0.11, mat: materials.snowGuard, cast: false }));   // 브래킷
+  }
+  return out;
+}
+
+// 태양광 어레이 1벌(#17) — 모듈 spec(solarSpec)대로 슬로프 위에 격자 배치 + 라벨. 생성 객체 목록 반환.
+// surfaceY(z) = 그 z의 지붕 마감 윗면. pitch = 슬로프 경사(라디안). centerX/centerZ = 어레이 중심.
+export function solarArray({ spec, surfaceY, centerX, centerZ, pitch }) {
+  const out = [];
+  const cosS = Math.cos(pitch), sinS = Math.sin(pitch);
+  const { panelW, panelL, panelThk, gapX, gapZ, cols, rows } = spec;
+  const arrayW = cols * panelW + (cols - 1) * gapX;
+  const startX = centerX - arrayW / 2 + panelW / 2;
+  const rowStepZ = (panelL + gapZ) * cosS;
+  const startZ = centerZ - ((rows - 1) / 2) * rowStepZ;
+  const liftN = panelThk / 2 + 0.03;
+  const panelGeo = new THREE.BoxGeometry(panelW, panelThk, panelL);
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols; c += 1) {
+      const px = startX + c * (panelW + gapX), pz = startZ + r * rowStepZ, sy = surfaceY(pz);
+      const panel = new THREE.Mesh(panelGeo, materials.solarPanel);
+      panel.position.set(px, sy + liftN * cosS, pz + liftN * sinS);
+      panel.rotation.x = pitch; panel.castShadow = true; panel.receiveShadow = false;
+      scene.add(panel);
+      out.push(panel, addGeometryEdges(panel, 0x9aa0a8));
+    }
+  }
+  out.push(label(`태양광 3kW (${spec.cols * spec.rows}장)`, centerX, surfaceY(centerZ) + 0.55, centerZ, 'mep'));   // 3kW = 시스템 공칭 용량(제품 사양)
+  return out;
 }

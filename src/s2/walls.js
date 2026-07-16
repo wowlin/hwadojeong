@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
 import { label, planYDim } from '../labels.js';
-import { deckStairs } from '../fixtures.js';
+import { deckStairs, outlet } from '../fixtures.js';
 import { yzWallPrism } from '../builders.js';
 import { frontFixSash, frontAwningSash, sideSash, awningSash } from '../openings.js';
 import { groundTopY } from '../constants.js';
@@ -128,9 +128,7 @@ export function buildS2Walls() {
     label(`1층 뒤벽 슬라이드창 ${fmtDim(x1 - x0)}×${fmtDim(hy - sy)}m (2짝 편개)`, s1CorrX, sy + 0.4, s2BackZ + 0.1, 'opening');
   });
   captureInto(s2Wall1Objects, () => {                                     // 뒤 복도 슬라이드창 아래(뒤 외벽 高Z) 콘센트 — 2·3층 복도창 아래와 동일 X
-    const x = s1CorrX, z = s2BackZ - s2WallT, oy = f1Top + 0.3;
-    box({ x: x - 0.065, z: z - 0.035, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: materials.outlet });
-    box({ x: x - 0.045, z: z - 0.05, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: materials.outletSocket });
+    outlet(s1CorrX, s2BackZ - s2WallT, f1Top + 0.3, '-Z');   // fixtures.outlet 1벌(#7)
   });
   captureInto(s2Wall1Objects, () => {                                     // 뒤벽 작은 표준 출입문(홈리프트~냉장고 사이) — 유리 leaf + 문틀 + 손잡이
     const bz = s2BackZ - t, fr = 0.06, dep = 0.10, zc = bz + 0.10;        // 뒤벽 안쪽면·프레임 두께·깊이·문 몸통 Z(벽 두께 안)
@@ -169,10 +167,7 @@ export function buildS2Walls() {
   captureInto(s2Wall1Objects, () => {                                     // 정면 좌우 코너(폴딩도어 양끝 300mm 기둥)에 외부(방수) 콘센트 2개
     const wallFaceZ = s2FrontZ;                                          // 정면 외벽 바깥면(−Z가 외부)
     const outletY = f1Top + 0.32;
-    const extOutlet = (ox) => {
-      box({ x: ox - 0.065, z: wallFaceZ - 0.035, w: 0.13, d: 0.035, y: outletY, h: 0.15, mat: materials.outlet });        // 커버 플레이트
-      box({ x: ox - 0.045, z: wallFaceZ - 0.05, w: 0.09, d: 0.02, y: outletY + 0.03, h: 0.09, mat: materials.outletSocket }); // 소켓 면
-    };
+    const extOutlet = (ox) => outlet(ox, wallFaceZ, outletY, '-Z');   // 외부(방수) 콘센트 — fixtures.outlet 1벌(#7)
     extOutlet(s2X0 + t + fdColT / 2);        // 정면 우측 코너(낮은 X, 폴딩도어 우측 기둥)
     extOutlet((s2W - t) - fdColT / 2);       // 정면 좌측 코너(높은 X, 폴딩도어 좌측 기둥)
   });

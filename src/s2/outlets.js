@@ -1,7 +1,7 @@
 // s2/outlets.js — 2·3층 기본 콘센트(각 층 '외벽' 토글 귀속) (s2 계단 모듈에서 분리).
 // 실좌표는 s2Geo(계단 모듈이 채움) 공유 — 좌표 재계산 금지(단일 출처).
-import { materials } from '../materials.js';
-import { box, captureInto } from '../primitives.js';
+import { captureInto } from '../primitives.js';
+import { outlet } from '../fixtures.js';
 import { label } from '../labels.js';
 import { interiorWall, interiorDoorW } from '../constants.js';
 import { s2Geo, s2F3VanityD, s2F2AcZ0, s2WcSetback3 } from './constants.js';
@@ -11,23 +11,7 @@ export function buildS2Outlets() {
   const { inX0, inX1, inZ0, inZ1, zB0, far2, far3, levels, liftZ0, wcFaceX, g2RoomW, RM_L, wcW3, corrX: s2CorrX } = s2Geo;
 // ── s2 2·3층 기본 콘센트 — 각 층 '외벽'(s2Wall2/s2Wall3) 토글에 귀속. 방·화장실·복도 일반 높이(바닥+0.3m). ──
 // 벽면에 붙는 커버 플레이트 + 소켓. face로 벽 방향 지정('+X'=低X벽서 실내 +X 돌출, '-X'=高X벽서 -X, '-Z'=高Z벽서 -Z).
-const wallOutlet = (x, z, oy, face, heat = false) => {
-  const mC = heat ? materials.heatOutlet : materials.outlet;         // 커버 플레이트 색(난방용=주황)
-  const mS = heat ? materials.heatOutletSocket : materials.outletSocket;   // 소켓 면 색
-  if (face === '+X') {
-    box({ x, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
-    box({ x: x + 0.035, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
-  } else if (face === '-X') {
-    box({ x: x - 0.035, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
-    box({ x: x - 0.05, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
-  } else if (face === '+Z') {   // 低Z 벽서 실내(+Z)로 돌출
-    box({ x: x - 0.065, z, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
-    box({ x: x - 0.045, z: z + 0.035, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
-  } else {   // '-Z' — 高Z 벽서 실내(-Z)로 돌출
-    box({ x: x - 0.065, z: z - 0.035, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
-    box({ x: x - 0.045, z: z - 0.05, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
-  }
-};
+const wallOutlet = (x, z, oy, face, heat = false) => outlet(x, z, oy, face, heat ? 'h' : 'n');   // fixtures.outlet 1벌(#7) 어댑터
 // 2층 콘센트 — 안방(주방측 외벽), 화장실(홈리프트쪽 내벽).
 captureInto(s2Wall2Objects, () => {
   const oy = levels[1] + 0.3;

@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
 import { label, planYDim, room, roomText } from '../labels.js';
-import { ceilingFan } from '../fixtures.js';
+import { ceilingFan, outlet } from '../fixtures.js';
 import { rearSlider, frontAwningSash, sideRearSlider, sideEntryDoor } from '../openings.js';
 import {
   buildingW, buildingD, buildingBackZ, exteriorWall, interiorWall, firstWallHeight,
@@ -279,24 +279,8 @@ captureInto(interiorObjects, () => {
 // ── 1층 콘센트 — '1층' 그룹 '콘센트' 토글(firstOutletObjects). 종류별 색·높이: 일반(녹)·고전력(마젠타)·인덕션 직결 정션박스(보라). ──
 // face로 벽 방향('+X'=低X벽서 +X, '-X'=高X벽서 -X, '+Z'=앞벽서 +Z, '-Z'=뒤벽서 -Z). kind: 'n' 일반·'h' 고전력·'i' 인덕션(소켓 없는 직결).
 captureInto(firstOutletObjects, () => {
-  const outlet = (x, z, oy, face, kind = 'n') => {
-    const mC = kind === 'h' ? materials.heatOutlet : kind === 'i' ? materials.inductionOutlet : materials.outlet;   // 커버 플레이트 색
-    const mS = kind === 'h' ? materials.heatOutletSocket : materials.outletSocket;                                  // 소켓 면 색
-    const socket = kind !== 'i';   // 인덕션 = 직결(콘센트 아님) → 소켓 없는 정션박스 블랭크 커버만
-    if (face === '+X') {
-      box({ x, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
-      if (socket) box({ x: x + 0.035, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
-    } else if (face === '-X') {
-      box({ x: x - 0.035, z: z - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: mC });
-      if (socket) box({ x: x - 0.05, z: z - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: mS });
-    } else if (face === '+Z') {
-      box({ x: x - 0.065, z, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
-      if (socket) box({ x: x - 0.045, z: z + 0.035, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
-    } else {   // '-Z'
-      box({ x: x - 0.065, z: z - 0.035, w: 0.13, d: 0.035, y: oy, h: 0.15, mat: mC });
-      if (socket) box({ x: x - 0.045, z: z - 0.05, w: 0.09, d: 0.02, y: oy + 0.03, h: 0.09, mat: mS });
-    }
-  };
+  // 콘센트 그리기는 fixtures.outlet 1벌(#7) — 종류(kind)·방향(face)만 지정.
+
   const baseY = firstFloorY + 0.3;      // 기본(난방) 높이 — 바닥+0.3
   const counterOutletY = firstFloorY + 1.1;   // 싱크대 상판 위(주방 가전) 높이 — 바닥+1.1(s2와 동일)
   const underCabY = firstFloorY + 0.4;   // 하부장 안(인덕션·온수기) 높이 — 바닥+0.4(s2와 동일)

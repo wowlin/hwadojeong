@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto, railCylinder } from '../primitives.js';
 import { label } from '../labels.js';
-import { campingChair, ceilingFan, ceilingLight, coveLight } from '../fixtures.js';
+import { campingChair, ceilingFan, ceilingLight, coveLight, outlet } from '../fixtures.js';
 import { groundTopY, matFoundationH } from '../constants.js';
 import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, roofY, s2RidgeZ, s2RoofUnderY,
@@ -155,19 +155,15 @@ captureInto(s2Wall1Objects, () => {
   const cWall = cSink + foldHalf + jambGap;                 // 창 뒤쪽(高z) 옆 — 개구부 밖 벽면
   const f2Cz = (s2FrontZ + s2WallT) + F2W / 2;             // 양문형 냉장고 자리(앞)
   const frCz = (inZB - bGap) - FW / 2;                     // 기존 냉장고 자리(뒤)
-  const inOutlet = (cz, oy) => {                            // 좌벽 안쪽 면서 실내(-X)로 돌출
-    box({ x: inXL - 0.035, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.outlet });         // 커버 플레이트
-    box({ x: inXL - 0.05, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.outletSocket });  // 소켓 면
-  };
+  const inOutlet = (cz, oy) => outlet(inXL, cz, oy, '-X');   // 좌벽 안쪽 면서 실내(-X)로 돌출 — fixtures.outlet 1벌(#7)
+
   inOutlet(cInner, fTop + 1.1);
   inOutlet(cWall, fTop + 1.1);
   inOutlet(f2Cz, fTop + 1.85);
   inOutlet(frCz, fTop + 1.85);
   // 싱크볼 아래 30L 전기온수기 전용 콘센트 — 고전력(주황). 하부장 안 측벽, 온수기 본체 옆·낮은 높이(바닥+0.4m)
-  const inHeatOutlet = (cz, oy) => {
-    box({ x: inXL - 0.035, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.heatOutlet });         // 커버 플레이트
-    box({ x: inXL - 0.05, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.heatOutletSocket });  // 소켓 면
-  };
+  const inHeatOutlet = (cz, oy) => outlet(inXL, cz, oy, '-X', 'h');   // 고전력(주황) — fixtures.outlet 1벌
+
   inHeatOutlet(cSink + 0.5, fTop + 0.4);
   // 인덕션 전원 — 직결(하드와이어). 콘센트 아님 → 소켓 없는 정션박스(전선 인출구)로만 표시. 고전력(주황).
   // 싱크 앞쪽(低z) 옆 하부장 안, 낮은 높이(바닥+0.4m). cSink-0.9 = 싱크 반폭(0.6)+옆장 반폭(0.3)
@@ -183,10 +179,8 @@ captureInto(s2Wall1Objects, () => {
   const roA1 = roA0 + rGap;                                  // 슬라이드창 뒤(高z) 끝
   const cFront = roA0 - jambGap;                             // 창 앞쪽 옆(개구부 밖)
   const cBack = roA1 + jambGap;                              // 창 뒤쪽 옆(개구부 밖)
-  const inOutlet = (cz, oy) => {                             // 우벽 안쪽 면서 실내(+X)로 돌출
-    box({ x: inXR, z: cz - 0.065, w: 0.035, d: 0.13, y: oy, h: 0.15, mat: materials.outlet });              // 커버 플레이트
-    box({ x: inXR + 0.035, z: cz - 0.045, w: 0.02, d: 0.09, y: oy + 0.03, h: 0.09, mat: materials.outletSocket }); // 소켓 면
-  };
+  const inOutlet = (cz, oy) => outlet(inXR, cz, oy, '+X');   // 우벽 안쪽 면서 실내(+X)로 돌출 — fixtures.outlet 1벌(#7)
+
   inOutlet(cFront, fTop + 0.3);        // 주방 일반 콘센트 높이 = 바닥+0.3m(주방 상판 높이 아님)
   inOutlet(cBack, fTop + 0.3);
 });

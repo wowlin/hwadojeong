@@ -1,13 +1,14 @@
 // s1/roof.js — 지붕(단열 260T+징크)·경사 라벨·눈막이·홈통·우수관 + 태양광 3kW (main.js에서 줄 이동).
 import * as THREE from 'three';
-import { scene } from '../scene.js';
 import { materials } from '../materials.js';
-import { box, addGeometryEdges } from '../primitives.js';
+import { box } from '../primitives.js';
+import { snowGuardRow, solarArray } from '../fixtures.js';
 import { label } from '../labels.js';
 import { roofSlab } from '../builders.js';
 import {
   buildingW, buildingD, buildingBackZ, groundTopY, roofThickness, roofSlopeDeg,
   secondFloorThickness, secondWallHeight,
+  solarSpec,
 } from '../constants.js';
 import { buildingFrontZ, secondY, roofSlopeTan, gableRise, atticSecondWallTop, atticRidgeZ } from '../layout.js';
 import { roofObjects, solarObjects } from '../groups.js';
@@ -45,12 +46,7 @@ export function buildRoof() {
   // ── 눈막이(스노우가드) 가로바 — 처마 근처, 양 슬로프 각 2줄(쌓인 눈이 한꺼번에 미끄러지지 않게) ──
   const snowGuard = (ez, t) => {
     const p = onSlope(ez, t);
-    roofObjects.push(box({ x: -roofSideOverhang, z: p.z - 0.025, w: buildingW + roofSideOverhang * 2, d: 0.05, y: p.y + 0.11, h: 0.05, mat: materials.snowGuard, cast: false }));   // 가로 파이프바
-    const n = 7;
-    for (let i = 0; i <= n; i += 1) {
-      const bx = -roofSideOverhang + (buildingW + roofSideOverhang * 2) * (i / n);
-      roofObjects.push(box({ x: bx - 0.02, z: p.z - 0.02, w: 0.04, d: 0.04, y: p.y + 0.02, h: 0.11, mat: materials.snowGuard, cast: false }));   // 브래킷
-    }
+    roofObjects.push(...snowGuardRow(-roofSideOverhang, buildingW + roofSideOverhang * 2, p.z, p.y));   // fixtures.snowGuardRow 1벌(#17)
   };
   snowGuard(backEaveZ, 0.12); snowGuard(backEaveZ, 0.22);   // 남측(집 뒤) — 태양광 아래(z≈3.1) ~ 처마쪽
   snowGuard(eaveZ, 0.12); snowGuard(eaveZ, 0.22);           // 북측(정면) — 처마쪽 2줄
@@ -74,45 +70,12 @@ export function buildRoof() {
 // 뒤쪽(남측) 지붕 태양광 — 다락 지붕 마감 위 실물 모듈 배열. scene 순서 보존을 위해 s2 구획 뒤에서 호출.
 export function buildRoofSolar() {
 const atticRidgeY = atticSecondWallTop + gableRise;
-// (다락 계단실 상부 실링팬 삭제)
 
-// 뒤쪽(남측) 지붕에 태양광 3kW — 실물 모듈 8장(2열×4, 1.66×1.0m 가로형 ≈400W), 지붕 폭 중앙 정렬
+// 뒤쪽(남측) 지붕에 태양광 3kW — 실물 모듈 8장(2열×4, 가로형), fixtures.solarArray 1벌(#17)·spec은 constants.solarSpec 공유
 {
-  const solarMat = materials.solarPanel;
   const roofSlopeRad = THREE.MathUtils.degToRad(roofSlopeDeg);
-  const cosS = Math.cos(roofSlopeRad);
-  const sinS = Math.sin(roofSlopeRad);
   const surfaceY = (z) => (atticRidgeY + roofThickness) - roofSlopeTan * (z - atticRidgeZ);   // 지붕 마감 윗면 = 구조 밑면(atticRidgeY) + 지붕두께 — 패널이 지붕 위에 얹히게
-  const panelW = 1.66;   // X 폭(실물 모듈 가로)
-  const panelL = 1.0;    // 경사 방향 길이
-  const panelThk = 0.05;
-  const gapX = 0.04;
-  const gapZ = 0.04;
-  const cols = 4;
-  const rows = 2;        // 4 x 2 = 8장 × 약 400W ≈ 3.2kW
-  const arrayW = cols * panelW + (cols - 1) * gapX;
-  const arrayCenterX = buildingW / 2;   // 지붕 폭 중앙
-  const startX = arrayCenterX - arrayW / 2 + panelW / 2;
-  const rowStepZ = (panelL + gapZ) * cosS;
   const arrayCenterZ = 2.25;            // 용마루 아래~뒤 벽선 사이
-  const startZ = arrayCenterZ - ((rows - 1) / 2) * rowStepZ;
-  const liftN = panelThk / 2 + 0.03;
-  const panelGeo = new THREE.BoxGeometry(panelW, panelThk, panelL);
-  for (let r = 0; r < rows; r += 1) {
-    for (let c = 0; c < cols; c += 1) {
-      const px = startX + c * (panelW + gapX);
-      const pz = startZ + r * rowStepZ;
-      const sy = surfaceY(pz);
-      const panel = new THREE.Mesh(panelGeo, solarMat);
-      panel.position.set(px, sy + liftN * cosS, pz + liftN * sinS);
-      panel.rotation.x = roofSlopeRad;
-      panel.castShadow = true;
-      panel.receiveShadow = false;
-      scene.add(panel);
-      solarObjects.push(panel);
-      solarObjects.push(addGeometryEdges(panel, 0x9aa0a8));
-    }
-  }
-  solarObjects.push(label('태양광 3kW (8장)', arrayCenterX, surfaceY(arrayCenterZ) + 0.55, arrayCenterZ, 'mep'));
+  solarObjects.push(...solarArray({ spec: solarSpec, surfaceY, centerX: buildingW / 2, centerZ: arrayCenterZ, pitch: roofSlopeRad }));
 }
 }

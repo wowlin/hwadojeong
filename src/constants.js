@@ -51,3 +51,4 @@ export const FLOOR_JOIST_H = 0.2;          // 바닥 장선 춤(200mm)
 export const FLOOR_JOIST_W = 0.045;        // 바닥 장선 폭
 export const FLOOR_RIM_W = 0.05;           // 둘레 림장선 폭(집 기본)
 export const FLOOR_JOIST_SPACING = 0.45;   // 바닥 장선 간격(o.c.)
+export const solarSpec = { panelW: 1.66, panelL: 1.0, panelThk: 0.05, gapX: 0.04, gapZ: 0.04, cols: 4, rows: 2, wattEach: 400 };  // 태양광 모듈 규격·배열 — s1·s2 지붕·메모 단일 출처(#17)

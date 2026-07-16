@@ -2,7 +2,8 @@
 import * as THREE from 'three';
 import { scene } from '../scene.js';
 import { materials } from '../materials.js';
-import { box, addGeometryEdges, captureInto } from '../primitives.js';
+import { captureInto } from '../primitives.js';
+import { snowGuardRow, solarArray } from '../fixtures.js';
 import { label } from '../labels.js';
 import { roofThickness } from '../constants.js';
 import {
@@ -48,40 +49,16 @@ export function buildS2Roof() {
     const onTop = (ez, t) => ({ z: ez + t * (s2RidgeZ - ez), y: topEaveY + t * (topRidgeY - topEaveY) });
     const snowGuard = (ez, t) => {
       const p = onTop(ez, t);
-      box({ x: s2X0 - sideOver, z: p.z - 0.025, w: s2W + sideOver * 2, d: 0.05, y: p.y + 0.11, h: 0.05, mat: materials.snowGuard, cast: false });   // 가로 파이프바
-      const n = 7;
-      for (let i = 0; i <= n; i += 1) {
-        const bx = s2X0 - sideOver + (s2W + sideOver * 2) * (i / n);
-        box({ x: bx - 0.02, z: p.z - 0.02, w: 0.04, d: 0.04, y: p.y + 0.02, h: 0.11, mat: materials.snowGuard, cast: false });   // 브래킷
-      }
+      snowGuardRow(s2X0 - sideOver, s2W + sideOver * 2, p.z, p.y);   // fixtures.snowGuardRow 1벌(#17) — captureInto가 s2Roof3Objects로 수집
     };
     for (const t of s2SnowGuardT) { snowGuard(eBack, t); snowGuard(eFront, t); }   // 뒤(남측)·앞(정면) 각 슬로프 s2SnowGuardT.length줄
   });
   // 태양광 3kW — 뒤쪽(남측) 슬로프, 모듈 8장(가로 4 × 세로 2, ≈400W). 지붕 폭 중앙 정렬
   captureInto(s2Solar3Objects, () => {
-    const solarMat = materials.solarPanel;
-    const cosS = Math.cos(s2RoofPitch), sinS = Math.sin(s2RoofPitch);
     const surfaceY = (z) => topRidgeY - tan * (z - s2RidgeZ);   // 뒤 슬로프(z>용마루) 징크 윗면
-    const { panelW, panelL, panelThk, gapX, gapZ, cols, rows } = s2Solar;
-    const arrayW = cols * panelW + (cols - 1) * gapX;
-    const arrayCenterX = s2W / 2;
-    const startX = arrayCenterX - arrayW / 2 + panelW / 2;
-    const rowStepZ = (panelL + gapZ) * cosS;
     const arrayCenterZ = 1.9;                  // 용마루~뒤 벽 사이
-    const startZ = arrayCenterZ - ((rows - 1) / 2) * rowStepZ;
-    const liftN = panelThk / 2 + 0.03;
-    const panelGeo = new THREE.BoxGeometry(panelW, panelThk, panelL);
-    for (let r = 0; r < rows; r += 1) {
-      for (let c = 0; c < cols; c += 1) {
-        const px = startX + c * (panelW + gapX), pz = startZ + r * rowStepZ, sy = surfaceY(pz);
-        const panel = new THREE.Mesh(panelGeo, solarMat);
-        panel.position.set(px, sy + liftN * cosS, pz + liftN * sinS);
-        panel.rotation.x = s2RoofPitch; panel.castShadow = true; panel.receiveShadow = false;
-        scene.add(panel);   // captureInto가 s2Solar3Objects로 자동 수집
-        addGeometryEdges(panel, 0x9aa0a8);
-      }
-    }
-    label('태양광 3kW (8장)', arrayCenterX, surfaceY(arrayCenterZ) + 0.55, arrayCenterZ, 'mep');
+    solarArray({ spec: s2Solar, surfaceY, centerX: s2W / 2, centerZ: arrayCenterZ, pitch: s2RoofPitch });   // fixtures.solarArray 1벌(#17)
   });
+
 }
 }

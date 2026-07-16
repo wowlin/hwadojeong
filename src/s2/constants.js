@@ -1,6 +1,6 @@
 // s2/constants.js — s2(3층 구조) 제원(계단사양·층고·지붕각·설비 규격)과 순수 파생값 + s2Geo(실좌표 공유 객체).
 // (main.js S2 구역에서 줄 이동. s2Geo는 계단 모듈이 채우고 다른 s2 모듈·설계 메모가 읽는다.)
-import { buildingBackZ, groundTopY, matFoundationH, floorFinishH, interiorWall } from '../constants.js';
+import { buildingBackZ, groundTopY, matFoundationH, floorFinishH, interiorWall, solarSpec } from '../constants.js';
 
 // ── 2층·다락 탭(s2) 배치도/기초 — 집 발자국 너비(X) s2W × 깊이(Z)는 3층 방 짧은변에서 파생 ─────────────
 // 주방측 외벽(x=0)·뒤벽(buildingBackZ)을 s1과 동일 모서리로 맞추고, 너비→x=s2W / 깊이→앞(z) 방향.
@@ -36,7 +36,7 @@ export const s2RoofPitch = 32 * Math.PI / 180;                                  
 export const s2RoofSideOver = 0.45;                  // 좌우(박공면) 처마 내밈 — 그리기·메모 단일 출처
 export const s2RoofEaveOver = 1.0;                   // 앞뒤(경사면) 처마 내밈 — 그리기·메모 단일 출처
 export const s2SnowGuardT = [0.16, 0.30];            // 눈막이 줄 위치(처마→용마루 비율) — 슬로프당 줄 수 = 배열 길이
-export const s2Solar = { panelW: 1.66, panelL: 1.0, panelThk: 0.05, gapX: 0.04, gapZ: 0.04, cols: 4, rows: 2, wattEach: 400 };  // 태양광 모듈 규격·배열 — 그리기·메모 단일 출처
+export const s2Solar = solarSpec;   // 태양광 모듈 규격 — s1과 공유(constants.solarSpec 단일 출처 #17)
 export const s2RidgeZ = (s2FrontZ + s2BackZ) / 2;                                  // 용마루 — 깊이 중앙(용마루는 너비 X를 따라감)
 export const s2RoofUnderY = (z) => roofY + (s2D / 2 - Math.abs(z - s2RidgeZ)) * Math.tan(s2RoofPitch);   // 그 z의 박공지붕 밑선(처마 roofY ~ 용마루)
 
