@@ -33,11 +33,8 @@ export function lerpPoint(a, b, t) {
   ];
 }
 
-export function flatPoly({ points, y, h = 0.08, mat, name, cast = true, receive = true }) {
-  const vertices = [];
-  for (const [x, z] of points) vertices.push(x, y, z);
-  for (const [x, z] of points) vertices.push(x, y + h, z);
-  const n = points.length;
+// 프리즘 삼각분할 1벌(#21) — 링 정점 n개를 두 층으로 복제한 프리즘의 인덱스(윗면 팬 + 밑면 팬 + 옆면 quad).
+export function prismIndices(n) {
   const indices = [];
   for (let i = 1; i < n - 1; i += 1) indices.push(0, i, i + 1);
   for (let i = 1; i < n - 1; i += 1) indices.push(n, n + i + 1, n + i);
@@ -45,9 +42,17 @@ export function flatPoly({ points, y, h = 0.08, mat, name, cast = true, receive 
     const next = (i + 1) % n;
     indices.push(i, next, n + next, i, n + next, n + i);
   }
+  return indices;
+}
+
+export function flatPoly({ points, y, h = 0.08, mat, name, cast = true, receive = true }) {
+  const vertices = [];
+  for (const [x, z] of points) vertices.push(x, y, z);
+  for (const [x, z] of points) vertices.push(x, y + h, z);
+  const n = points.length;
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setIndex(indices);
+  geometry.setIndex(prismIndices(n));
   geometry.computeVertexNormals();
   // 폴리곤마다 점 순서(시계/반시계)가 섞여 윗면·옆면이 뒷면 컬링으로 사라지는 것 방지 → 양면 렌더
   const dmat = mat.clone();

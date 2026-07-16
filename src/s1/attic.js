@@ -20,7 +20,7 @@ import {
   secondCorridorX, secondCorridorZ, secondCorridorW, secondCorridorD, secondCorridorClearD,
   secondAtticWallZ, secondAtticZ, secondAtticD, secondRoom1DoorX, secondRoom2DoorX, secondRoom2X, secondRoom2W,
   atticCorridorWallShift, frontCornerDimX, frontCornerDimZ, rearWindowSideOffset,
-  roofRiseAtZ, gableRise, firstKitchenW, firstFloorY, firstWallY,
+  roofRiseAtZ, gableRise, firstKitchenW, firstFloorY, firstWallY, atticRidgeZ,
 } from '../layout.js';
 import { secondFloorObjects, atticExtWallObjects, atticInnerWallObjects } from '../groups.js';
 
@@ -33,7 +33,6 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ); 
   const slabMat = new THREE.MeshLambertMaterial({ color: 0xf6f6f6, transparent: true, opacity: 0.94 });
   const secondWallY = secondY + secondFloorThickness;
   const gableBaseY = secondWallY + secondWallHeight;
-  const atticRidgeZ = buildingFrontZ + buildingD / 2;
   const atticPeakH = secondWallHeight + gableRise;
   const atticStairDoorX = stairHighXRunX + (stairRunW - interiorDoorW) / 2;
 

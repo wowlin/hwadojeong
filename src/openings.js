@@ -3,17 +3,17 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
 import { materials } from './materials.js';
-import { box, addGeometryEdges } from './primitives.js';
+import { box, addGeometryEdges, prismIndices } from './primitives.js';
 import { slopedWallTopCap, wallEndThicknessFace, yzWallPrism } from './builders.js';
-import { buildingFrontZ, roofRiseAtZ } from './layout.js';
-import { buildingD, interiorDoorW, interiorDoorH } from './constants.js';
+import { roofRiseAtZ, atticRidgeZ } from './layout.js';
+import { interiorDoorW, interiorDoorH } from './constants.js';
 
 export function gableLongWallX({ x, z, d, y, baseH, thickness = 0.08, mat }) {
   const x0 = x;
   const x1 = x + thickness;
   const z0 = z;
   const z1 = z + d;
-  const ridgeZ = buildingFrontZ + buildingD / 2;
+  const ridgeZ = atticRidgeZ;   // 용마루 z — layout 단일 출처(#20)
   const topStops = [z0];
   if (ridgeZ > z0 && ridgeZ < z1) topStops.push(ridgeZ);
   topStops.push(z1);
@@ -28,17 +28,9 @@ export function gableLongWallX({ x, z, d, y, baseH, thickness = 0.08, mat }) {
   for (const [itemZ, itemY] of profile) vertices.push(x1, itemY, itemZ);
 
   const n = profile.length;
-  const indices = [];
-  for (let i = 1; i < n - 1; i += 1) indices.push(0, i, i + 1);
-  for (let i = 1; i < n - 1; i += 1) indices.push(n, n + i + 1, n + i);
-  for (let i = 0; i < n; i += 1) {
-    const next = (i + 1) % n;
-    indices.push(i, next, n + next, i, n + next, n + i);
-  }
-
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setIndex(indices);
+  geometry.setIndex(prismIndices(n));   // 삼각분할 1벌(#21)
   const faceIndexCount = (n - 2) * 3;
   geometry.clearGroups();
   geometry.addGroup(0, faceIndexCount * 2, 0);

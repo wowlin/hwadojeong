@@ -3,7 +3,7 @@ import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
 import { planXDim, planYDim, planZDim } from '../labels.js';
 import { fenceMat } from '../site.js';
-import { buildingW, buildingD, buildingBackZ, groundTopY, matFoundationH, hedgeThickness, lotW, lotD } from '../constants.js';
+import { buildingW, buildingD, buildingBackZ, groundTopY, matFoundationH, hedgeThickness, lotW, lotD, hedgeBoundaryGap, neighborSetback } from '../constants.js';
 import { buildingFrontZ, deckFootprints, lotX0, lotX1, lotZ0, lotZ1, planY, planH } from '../layout.js';
 import {
   footprintObjects, matFoundationFullObjects, siteBaseObjects,
@@ -21,7 +21,7 @@ for (const f of deckFootprints) {
 captureInto(matFoundationFullObjects, () => {
   box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: groundTopY, h: matFoundationH, mat: materials.matFoundation });   // 집 매트
   for (const f of deckFootprints) box({ x: f.x, z: f.z, w: f.w, d: f.d, y: groundTopY, h: matFoundationH, mat: materials.matFoundation });   // 데크 매트
-  planYDim(-0.1, buildingBackZ + 0.1, groundTopY, groundTopY + matFoundationH, '기초 0.5m');   // 남쪽 모서리(옆집벽·측백벽 만나는 곳 = 낮은 X·뒤 Z) 높이 치수
+  planYDim(-0.1, buildingBackZ + 0.1, groundTopY, groundTopY + matFoundationH, `기초 ${fmtDim(matFoundationH)}m`);   // 남쪽 모서리(옆집벽·측백벽 만나는 곳 = 낮은 X·뒤 Z) 높이 치수
 });
 // 독립기초(시스템말뚝) 위치 — 발자국 위에 어두운 점으로 표시(입체 기초 말뚝 격자와 동일 정렬)
 // (평면 말뚝 마커·PILE_POS 좌표표 제거 — 말뚝기초 삭제 + 안방 개방 포치 삭제로 남은 참조가 없어짐.)
@@ -36,14 +36,14 @@ captureInto(dimObjects, () => {
   planXDim(lotZ1 + 0.4, 0, buildingW, `${fmtDim(buildingW)}m`);
   captureInto(hedgeDimObjects, () => planXDim(lotZ1 + 0.4, lotX1 - hedgeThickness, lotX1, `측백 ${fmtDim(hedgeThickness)}m`));   // 안방 측백(좌상단) — 측백담장 토글+배치도
   // 세로 — 안방(왼쪽) 건물 깊이 buildingD / 주방(오른쪽) 뒤 이격 합 1m + 건물 깊이 buildingD + 데크 깊이
-  planZDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, '4.0m');          // 안방 건물 깊이
+  planZDim(lotX1 + 0.35, buildingFrontZ, buildingBackZ, `${fmtDim(buildingD)}m`);          // 안방 건물 깊이
   captureInto(hedgeDimObjects, () => planZDim(lotX1 + 0.35, lotZ1 - hedgeThickness, lotZ1, `측백 ${fmtDim(hedgeThickness)}m`));   // 뒤(가로) 측백 — 측백담장 토글+배치도
-  captureInto(gapDimObjects, () => planZDim(lotX0 - 0.4, buildingBackZ, lotZ1, '1.0m'));   // 뒤 이격 합 1m — 공통(집-담장 이격)
-  planZDim(lotX0 - 0.4, buildingFrontZ, buildingBackZ, '4.0m');          // 주방 건물 깊이
+  captureInto(gapDimObjects, () => planZDim(lotX0 - 0.4, buildingBackZ, lotZ1, `${fmtDim(hedgeBoundaryGap)}m`));   // 뒤 이격 합 — 공통(집-담장 이격)
+  planZDim(lotX0 - 0.4, buildingFrontZ, buildingBackZ, `${fmtDim(buildingD)}m`);          // 주방 건물 깊이
   planZDim(lotX0 - 0.4, dL.z, buildingFrontZ, `${fmtDim(dL.d)}m`);   // 주방 데크 깊이(오른쪽 가장자리)
   // 아래쪽 가장자리: 주방 데크 폭 / 주방 이격 분할
   planXDim(dL.z - 0.45, 0, dL.x + dL.w, `${fmtDim(dL.w)}m`);        // 주방 데크 폭
-  captureInto(gapDimObjects, () => planXDim(dL.z - 0.45, lotX0, 0, '0.5m'));   // 주방 이격 0.5 — 공통(집-담장 이격)
+  captureInto(gapDimObjects, () => planXDim(dL.z - 0.45, lotX0, 0, `${fmtDim(neighborSetback)}m`));   // 주방 이격 — 공통(집-담장 이격)
   // 모눈 가이드라인 — 각 치수 끝점(X/Z)을 지나 전체로 얇게(드래프팅 보조선처럼)
   const gridMat = materials.gridGuide;   // 회청색 보조선(무광 — 조명 영향 없이 또렷)
   const gw = 0.02, gy = 0.009, gh = 0.002;   // 기준선 — 바닥에 붙임(색면 위 1mm), 두께 2mm

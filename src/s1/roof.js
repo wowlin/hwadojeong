@@ -6,24 +6,22 @@ import { snowGuardRow, solarArray } from '../fixtures.js';
 import { label } from '../labels.js';
 import { roofSlab } from '../builders.js';
 import {
-  buildingW, buildingD, buildingBackZ, groundTopY, roofThickness, roofSlopeDeg,
+  buildingW, buildingBackZ, groundTopY, roofThickness, roofSlopeDeg,
   secondFloorThickness, secondWallHeight,
-  solarSpec,
+  solarSpec, roofEaveOverhang, roofSideOverhang, zincFinishT,
 } from '../constants.js';
 import { buildingFrontZ, secondY, roofSlopeTan, gableRise, atticSecondWallTop, atticRidgeZ } from '../layout.js';
 import { roofObjects, solarObjects } from '../groups.js';
 
 export function buildRoof() {
 {
-  const roofSideOverhang = 0.4;
-  const roofEaveOverhang = 0.6;
   const secondWallTop = secondY + secondFloorThickness + secondWallHeight;
   // 지붕 밑면(roofSlab는 eaveY/ridgeY가 윗면)이 다락 벽 윗면(secondWallTop)에 얹히도록 두께(roofThickness)만큼 올림
   const ridgeY = secondWallTop + gableRise + roofThickness;
   const outerEaveY = secondWallTop - roofSlopeTan * roofEaveOverhang + roofThickness;
-  const ridgeZ = buildingFrontZ + buildingD / 2;
+  const ridgeZ = atticRidgeZ;   // 용마루 z — layout 단일 출처(#20)
   // 다락 위 지붕 구성: 단열 260T(다락 천장 단열층) + 그 위 징크 마감 — 재질(roofInsul)은 materials.js 정의부.
-  const zincFin = 0.05;   // 징크 마감 두께
+  const zincFin = zincFinishT;   // 징크 마감 두께 — constants 단일 출처(#20)
   const eaveZF = buildingFrontZ - roofEaveOverhang;
   const eaveZB = buildingBackZ + roofEaveOverhang;
   roofObjects.push(
@@ -38,7 +36,7 @@ export function buildRoof() {
   const eaveZ = buildingFrontZ - roofEaveOverhang;
   const slopeMidZ = (eaveZ + ridgeZ) / 2;
   const slopeMidY = (outerEaveY + ridgeY) / 2;
-  roofObjects.push(label('지붕: 단열 260T + 오리지널징크(티타늄아연, 갈바륨 아님) · 경사 33°', buildingW / 2, slopeMidY + 0.55, slopeMidZ, 'struct'));
+  roofObjects.push(label(`지붕: 단열 ${Math.round(roofThickness * 1000)}T + 오리지널징크(티타늄아연, 갈바륨 아님) · 경사 ${roofSlopeDeg}°`, buildingW / 2, slopeMidY + 0.55, slopeMidZ, 'struct'));
   // 태양광 패널은 뒤쪽(남측) 지붕 별도 블록에서 그림 — 여기선 눈막이용 헬퍼만 둠(재질 snowGuard는 materials.js).
   const backEaveZ = buildingBackZ + roofEaveOverhang;
   const onSlope = (ez, t) => ({ z: ez + t * (ridgeZ - ez), y: outerEaveY + t * (ridgeY - outerEaveY) });   // t=0 처마 → 1 용마루

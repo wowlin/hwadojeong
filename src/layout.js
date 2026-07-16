@@ -14,9 +14,8 @@ export const roofSlopeTan = Math.tan(roofSlopeDeg * Math.PI / 180);
 export const gableRise = roofSlopeTan * (buildingD / 2);
 // 그 z의 박공지붕 상승(무릎벽 상단 기준) — 용마루(깊이 중앙)에서 최고, 앞·뒤 벽에서 0.
 export function roofRiseAtZ(z) {
-  const ridgeZ = buildingBackZ - buildingD / 2;
   const halfDepth = buildingD / 2;
-  return roofSlopeTan * Math.max(0, halfDepth - Math.abs(z - ridgeZ));
+  return roofSlopeTan * Math.max(0, halfDepth - Math.abs(z - atticRidgeZ));   // 용마루 z 단일 출처(#20)
 }
 // 평면(높이 0 취급) 표시 두께 — 대지 위 살짝 띄워 깜빡임만 막음(발자국·기준선 공유).
 export const planY = 0.003;
@@ -36,8 +35,6 @@ export const insideZ0 = buildingFrontZ + exteriorWall;
 export const insideX1 = buildingW - exteriorWall;
 export const insideZ1 = buildingBackZ - exteriorWall;
 export const insideD = insideZ1 - insideZ0;
-export const layoutD = insideD;
-export const sideRoomD = layoutD;
 export const planRightKitchenX = insideX0;
 // 계단실 양쪽 내벽(주방|계단실 · 계단실|안방) — 중심 위치·두께를 1층/계단/다락 화면이 공유하는 단일 기준.
 // 방 바닥은 이 내벽의 안쪽 면까지만 채워 겹침이 없고, 두께·위치가 바뀌면 방 너비가 따라 갱신된다.
@@ -49,8 +46,8 @@ export const stairHighXWallX = familyInnerWallX - familyInnerWallW / 2;       //
 // 계단 두 런 — 양쪽 내벽 안쪽 면에 직접 붙임(단일 출처=벽). 벽 두께·위치가 바뀌면 런이 자동으로 벽에 붙어 따라온다.
 export const stairLowXRunX = stairHighXWallX - 2 * stairRunW;                          // 하부런 = 상부런에 딱 붙임(런 사이 틈 0) — 두께차 자투리는 주방측 계단벽 옆 5cm 띠로
 export const stairHighXRunX = familyInnerWallX - familyInnerWallW / 2 - stairRunW;    // 상부런 = 안방측 내력벽 안쪽 면(런폭만큼 안쪽)
-export const firstKitchenD = sideRoomD;
-export const firstFamilyD = sideRoomD;
+export const firstKitchenD = insideD;   // 방 깊이 = 안목 깊이(별칭 사슬 layoutD·sideRoomD 제거 #23)
+export const firstFamilyD = insideD;
 export const firstKitchenX = planRightKitchenX;                                 // 주방 바닥 시작 = 우 외벽 안쪽 면
 export const firstKitchenW = stairLowXRunX - firstKitchenX; // 주방 바닥 끝 = 계단 저X면(계단실 경계) — 주방측 막이를 계단실 안쪽에 넣어 벽이 없으므로 주방이 그 자리까지 확장
 export const firstFamilyX = familyInnerWallX + familyInnerWallW / 2;          // 안방 바닥 시작 = 내력벽(20cm) 안쪽 면(겹침 없음)

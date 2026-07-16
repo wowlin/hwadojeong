@@ -17,6 +17,8 @@ import {
   s2WcSinkGap, s2WcSinkClear, s2WcToiletOff, s2RoofUnderY, s2FrontStair, s2RearStair,
 } from './s2/constants.js';
 
+const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용) — 전 메모 공용 헬퍼 1벌(#20)
+
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 export const NOTES = {
   roof: { title: '지붕', body: '- 박공 지붕 경사는 32도로 최대한 맞춰 설계 적용한다.\n  (태양광 설치: 28~34도가 최적 경사대)' },
@@ -37,7 +39,6 @@ export const NOTES = {
     const g = stairGeom(stairParams);
     const { W, R, T, N, fy, nWind, nLand, nL, nU, loftY, treadH, nosing, turnD } = g;
     const floorH = loftY - fy;                             // 1층 층고(= 다락 바닥 높이)
-    const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용)
     return { title: '계단', body: [
       '［계단］ ㄷ자 · 돌음 회전(평참 없음) · 뒤벽 턴',
       `· 단높이      ${mm(R)} mm`,
@@ -129,7 +130,6 @@ export const NOTES = {
     const width = W - rTh;                                 // 옷장 너비: 우측 외벽 안쪽~계단참 챌판(챌판 두께 제외)
     const depth = W + usTh;                                // 옷장 깊이: 문 앞면~뒤벽 안쪽(계단아래 문 두께 포함)
     const height = (nL + 1) * R - tTh;                     // 옷장 높이: 1층 바닥~계단참 하부
-    const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용)
     return { title: '계단', body: [
       '［계단］ 좌우런 · 우측벽 스위치백',
       `· 단높이      ${mm(R)} mm`,

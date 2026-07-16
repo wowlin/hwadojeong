@@ -29,6 +29,9 @@ export const secondFloorThickness = 0.30;     // 다락 바닥 슬래브 두께 
 export const secondWallHeight = 1.10;         // 다락 무릎벽 높이(가중평균 ~1.75m로 다락 1.8m 한도 안전마진)
 export const roofSlopeDeg = 33;               // 지붕 물매(도)
 export const roofThickness = 0.26;            // 지붕(단열 260T+징크) 두께
+export const roofEaveOverhang = 0.6;          // s1 지붕 앞뒤(경사면) 처마 내밈 — 지붕·홈통·경사라벨 단일 출처(#20)
+export const roofSideOverhang = 0.4;          // s1 지붕 좌우(박공면) 처마 내밈 — 단일 출처(#20)
+export const zincFinishT = 0.05;              // 오리지널징크 마감 두께 — s1·s2 지붕 공유(#20)
 export const stairRiserHeight = 0.17;          // 계단 단높이(R) — 1층 층고 단일 출처. 여기만 바꾸면 벽·다락·지붕이 함께 따라감
 export const lowerStraightTreadCount = 6;      // 하부 곧은계단 단수
 export const winderTreadCount = 3;             // 사선(돌음) 단수 — 90° 회전
@@ -45,7 +48,6 @@ export const kitchenSinkD = 0.6;
 export const kitchenSinkH = 0.85;
 export const secondAtticDoorH = 1.8;
 export const soundWall = 0.16;
-export const frSideOverhang = 0.4;
 export const FRAME_ROOM_W = 2.85;                       // 방 기초 폭(외벽 중심선~계단벽 중심선) — 안방 안목 = FRAME_ROOM_W−0.25
 export const FLOOR_JOIST_H = 0.2;          // 바닥 장선 춤(200mm)
 export const FLOOR_JOIST_W = 0.045;        // 바닥 장선 폭

@@ -26,7 +26,7 @@ s2FootprintObjects.push(box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: planY, h:
 // 기초(온통 0.5m 슬래브) — 's2 기초' 토글
 captureInto(s2FoundationObjects, () => {
   box({ x: s2X0, z: s2FrontZ, w: s2W, d: s2D, y: groundTopY, h: matFoundationH, mat: materials.matFoundation });   // 집 매트 0.5m
-  planYDim(-0.1, s2BackZ + 0.1, groundTopY, groundTopY + matFoundationH, '기초 0.5m');   // 남쪽 모서리 높이 치수(s1과 동일 위치)
+  planYDim(-0.1, s2BackZ + 0.1, groundTopY, groundTopY + matFoundationH, `기초 ${fmtDim(matFoundationH)}m`);   // 남쪽 모서리 높이 치수(s1과 동일 위치)
 });
 // 옥외 계단 사양(s2FrontStair·s2RearStair)은 ./s2/constants.js
 // 정면(앞·현관 쪽) 전체폭 옥외 계단 — 지면부터 1층 바닥(기초 0.5+바닥 마감)까지, 집 너비 전체, 앞(−Z)으로 디딤. 's2 1층' 토글.

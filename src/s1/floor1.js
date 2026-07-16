@@ -273,7 +273,7 @@ captureInto(interiorObjects, () => {
   for (const pz of [bedZ + 0.18, bedZ + bedD - 0.18 - 0.7]) {              // 베개 2개(머리맡=동쪽/높은 X)
     box({ x: insideX1 - 0.5, z: pz, w: 0.4, d: 0.7, y: firstFloorY + frameH + mattressH, h: 0.12, mat: pillowMat });
   }
-  label('침대 2.0x2.0m', bedX + bedW / 2, firstFloorY + 1.0, bedZ + bedD / 2, 'furniture');
+  label(`침대 ${fmtDim(bedW)}x${fmtDim(bedD)}m`, bedX + bedW / 2, firstFloorY + 1.0, bedZ + bedD / 2, 'furniture');
 });
 
 // ── 1층 콘센트 — '1층' 그룹 '콘센트' 토글(firstOutletObjects). 종류별 색·높이: 일반(녹)·고전력(마젠타)·인덕션 직결 정션박스(보라). ──

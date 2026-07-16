@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
 import { materials } from './materials.js';
-import { box, addGeometryEdges } from './primitives.js';
+import { box, addGeometryEdges, prismIndices } from './primitives.js';
 import {
   buildingW,
   FLOOR_RIM_W, FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_JOIST_SPACING,
@@ -46,17 +46,9 @@ export function yzWallPrism({ x, points, thickness = 0.08, mat }) {
   for (const [z, y] of points) vertices.push(x + thickness, y, z);
 
   const n = points.length;
-  const indices = [];
-  for (let i = 1; i < n - 1; i += 1) indices.push(0, i, i + 1);
-  for (let i = 1; i < n - 1; i += 1) indices.push(n, n + i + 1, n + i);
-  for (let i = 0; i < n; i += 1) {
-    const next = (i + 1) % n;
-    indices.push(i, next, n + next, i, n + next, n + i);
-  }
-
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setIndex(indices);
+  geometry.setIndex(prismIndices(n));   // 삼각분할 1벌(#21)
   const faceIndexCount = (n - 2) * 3;
   geometry.clearGroups();
   geometry.addGroup(0, faceIndexCount * 2, 0);

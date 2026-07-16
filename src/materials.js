@@ -20,7 +20,7 @@ export const materials = {
   bathClear: new THREE.MeshLambertMaterial({ color: 0xff4fa3 }),   // 화장실 안목(벽 뺀 실바닥) 확인용 구분색(자홍) — 화장실색·계단실색과 뚜렷이 구별
   toilet: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
   vanity: new THREE.MeshLambertMaterial({ color: 0x99a13a }),
-  shower: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),
+  shower: new THREE.MeshLambertMaterial({ color: 0xcbd34a }),   // 변기(toilet)와 같은 위생도기 톤 — 의도적 동일값(독립 조정 가능하게 별도 키 유지 #23)
   stair: new THREE.MeshLambertMaterial({ color: 0xd9cffb }),
   stairFront: new THREE.MeshLambertMaterial({ color: 0xbfe3a0 }),
   stairRoom: new THREE.MeshLambertMaterial({ color: 0xf3c19b }),   // 계단실 바닥 구분색(연주황) — 주방·안방·계단앞과 구별
@@ -57,7 +57,7 @@ export const materials = {
   heatOutlet: new THREE.MeshLambertMaterial({ color: 0xff2fb0 }),   // 고전력 콘센트 기본 색상(마젠타) — 일반(녹색)과 구별
   heatOutletSocket: new THREE.MeshLambertMaterial({ color: 0x9c0060 }),   // 고전력 콘센트 소켓 면(어두운 마젠타)
   inductionOutlet: new THREE.MeshLambertMaterial({ color: 0x9b4dff }),   // 인덕션 직결 정션박스 색(보라)
-  windowFrame: new THREE.MeshLambertMaterial({ color: 0x2f343a }),   // 창·문틀 짙은 색(폴딩도어·뒤 작은문·좌측 싱크대창 제외 전 창틀)
+  windowFrame: new THREE.MeshLambertMaterial({ color: 0x2f343a }),   // 창·문틀 짙은 색 — 현관틀(entryFrame)과 의도적 동일값(독립 조정 가능하게 별도 키 유지 #23)
   handle: new THREE.MeshLambertMaterial({ color: 0xd4af37 }),
   glass: new THREE.MeshLambertMaterial({ color: 0x9ed0e8, transparent: true, opacity: 0.55 }),
   soundWall: new THREE.MeshLambertMaterial({ color: 0xcfc6b4 }),   // 방음벽(솔리드): 스틸스터드+암면+석고2겹
