@@ -60,6 +60,13 @@ export function flatPoly({ points, y, h = 0.08, mat, name, cast = true, receive 
   return mesh;
 }
 
+// 캡처 그룹 수집 — fn()이 scene에 추가한 객체 전부를 arr로 수집(토글 그룹 귀속의 표준 경로).
+export function captureInto(arr, fn) {
+  const s = scene.children.length;
+  fn();
+  arr.push(...scene.children.slice(s));
+}
+
 // 치수 숫자 포맷 — 기본 소수점 1자리(4→4.0), 필요시 2~3자리(불필요한 끝 0은 제거). 'm'은 호출부에서.
 export function fmtDim(v) {
   const s = Number(v).toFixed(3).replace(/0+$/, '').replace(/\.$/, '');

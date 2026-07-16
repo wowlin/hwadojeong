@@ -82,3 +82,8 @@ materials.firstExtWall = new THREE.MeshLambertMaterial({ color: 0xcdd5dc, transp
 materials.gravel = new THREE.MeshLambertMaterial({ color: 0x9a948c });   // 파쇄석 바닥(전실) — 회색 자갈
 materials.conceptWall = new THREE.MeshLambertMaterial({ color: 0xcdd6df, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 신축안 둘레벽 — 반투명(내부 구역 보이게)
 materials.stairInnerWall = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });   // 계단실 양쪽 내벽 — 반투명(계단·1층 공유)
+
+// 지붕 부속 재질 — s1·s2 지붕이 공유(옛 main.js s1 지붕 블록 런타임 주입 → 정의부로 이동, 숨은 결합 제거)
+materials.roofInsul = new THREE.MeshLambertMaterial({ color: 0xe6d9b8, side: THREE.DoubleSide });   // 단열재 260T
+materials.snowGuard = new THREE.MeshLambertMaterial({ color: 0xaeb7bf });    // 눈막이 금속
+materials.gutter = new THREE.MeshLambertMaterial({ color: 0x9aa1a8 });       // 처마홈통·우수관 금속

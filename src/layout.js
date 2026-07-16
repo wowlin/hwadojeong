@@ -9,8 +9,22 @@ import {
   stairTreadDepth, interiorDoorW, interiorDoorH, firstWallHeight, yardSashW, yardSashH,
   familyWindowW, kitchenSinkD, kitchenSinkH, kitchenSinkW, kitchenRearWindowW, familyRearWindowW,
   secondCorridorWindowSillOffset, secondCorridorWindowH, atticVentWindowW, atticSkyWindowW, atticRearWindowSillOffset,
-  atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang, FRAME_ROOM_W, atticCorridorWallT
+  atticRearWindowH, atticRearWindowW, secondFloorThickness, secondWallHeight, frEaveOverhang, FRAME_ROOM_W, atticCorridorWallT,
+  roofSlopeDeg
 } from './constants.js';
+
+// s1 지붕 경사 파생값 — 지붕·박공벽·다락 내벽·태양광이 공유(main.js에서 이동).
+export const roofSlopeTan = Math.tan(roofSlopeDeg * Math.PI / 180);
+export const gableRise = roofSlopeTan * (buildingD / 2);
+// 그 z의 박공지붕 상승(무릎벽 상단 기준) — 용마루(깊이 중앙)에서 최고, 앞·뒤 벽에서 0.
+export function roofRiseAtZ(z) {
+  const ridgeZ = buildingBackZ - buildingD / 2;
+  const halfDepth = buildingD / 2;
+  return roofSlopeTan * Math.max(0, halfDepth - Math.abs(z - ridgeZ));
+}
+// 평면(높이 0 취급) 표시 두께 — 대지 위 살짝 띄워 깜빡임만 막음(발자국·기준선 공유).
+export const planY = 0.003;
+export const planH = 0.002;
 
 export const buildingFrontZ = buildingBackZ - buildingD;   // 정면(북) 외벽 Z — 깊이 상수로 파생(=-0.7)
 export const foundationTopY = groundTopY + foundationHeight;   // 말뚝 두부 상단 = 바닥재 하단(groundTopY+foundationHeight)

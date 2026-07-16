@@ -132,6 +132,22 @@ scene.background = new THREE.Color(0xf7f4ee);
 export const houseGroup = new THREE.Group();
 scene.add(houseGroup);
 
+// 조명 — 반구광 + 태양광(그림자). scene 셋업과 함께 1회(main.js에서 이동).
+scene.add(new THREE.HemisphereLight(0xffffff, 0xc4b49a, 2.1));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(5, 9, -6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.bias = -0.0001;
+sun.shadow.normalBias = 0.035;
+sun.shadow.camera.left = -10;
+sun.shadow.camera.right = 10;
+sun.shadow.camera.top = 10;
+sun.shadow.camera.bottom = -10;
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 24;
+scene.add(sun);
+
 export const camera = new THREE.PerspectiveCamera(42, stage.clientWidth / stage.clientHeight, 0.1, 100);
 camera.position.set(10.8, 6.8, -8.8);
 

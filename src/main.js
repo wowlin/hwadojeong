@@ -43,7 +43,7 @@
 import * as THREE from 'three';
 import { materials } from './materials.js';
 import { stage, scene, houseGroup, camera, renderer, controls } from './scene.js';
-import { box, addGeometryEdges, flatPoly, fmtDim, railCylinder } from './primitives.js';
+import { box, addGeometryEdges, flatPoly, fmtDim, railCylinder, captureInto } from './primitives.js';
 import {
   yzWallPrism, slopedWallTopCap, wallEndThicknessFace, roofSlab,
 } from './builders.js';
@@ -74,7 +74,8 @@ import {
   frontCornerDimX,
   frontCornerDimZ, secondY,
   rearWindowSideOffset,
-  deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ, deckSurfaceY
+  deckFootprints, firstCeilingY, atticSecondWallTop, atticRidgeZ, deckSurfaceY,
+  roofSlopeTan, gableRise, roofRiseAtZ, planY, planH
 } from './layout.js';
 import {
   firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects, firstWallObjects, firstOutletObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, solarObjects, deckObjects,
@@ -91,27 +92,7 @@ import './styles.css';
 
 // 재질(materials)은 ./materials.js 단일 출처에서 import — 색·골조재·텍스처재 전부 그쪽에서 정의.
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0xc4b49a, 2.1));
-const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-sun.position.set(5, 9, -6);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.bias = -0.0001;
-sun.shadow.normalBias = 0.035;
-sun.shadow.camera.left = -10;
-sun.shadow.camera.right = 10;
-sun.shadow.camera.top = 10;
-sun.shadow.camera.bottom = -10;
-sun.shadow.camera.near = 1;
-sun.shadow.camera.far = 24;
-scene.add(sun);
-
-
-function roofRiseAtZ(z) {
-  const ridgeZ = buildingFrontZ + buildingD / 2;
-  const halfDepth = buildingD / 2;
-  return roofSlopeTan * Math.max(0, halfDepth - Math.abs(z - ridgeZ));
-}
+// 조명(반구광·태양광)은 ./scene.js에서 scene 셋업과 함께 추가(이동).
 
 function gableLongWallX({ x, z, d, y, baseH, thickness = 0.08, mat }) {
   const x0 = x;
@@ -610,9 +591,7 @@ const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 
 //   1층 층고·벽 두께 (제원)
 // World x is mirrored in the front camera. With the entrance at the bottom,
 // plan-left/family is the larger x side and plan-right/kitchen is the smaller x side.
-//   다락·지붕 (제원)
-const roofSlopeTan = Math.tan(THREE.MathUtils.degToRad(roofSlopeDeg));
-const gableRise = roofSlopeTan * (buildingD / 2);
+//   다락·지붕 (제원) — 경사 파생값(roofSlopeTan·gableRise·roofRiseAtZ)은 ./layout.js에서 import.
 // 안방 전면은 출입창이 아니라 일반 창문 — 통상 규격: 폭 familyWindowW·창대 familyWindowSillY·상단 yardSashTopY(현관·주방 도어와 동일선)
 // 싱크대 창: 상판+백스플래시 위에서 시작, 윗선은 전면 도어와 동일선(yardSashTopY), 싱크대 위로 센터링
 const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ);
@@ -957,8 +936,7 @@ captureInto(firstOutletObjects, () => {
   const ridgeY = secondWallTop + gableRise + roofThickness;
   const outerEaveY = secondWallTop - roofSlopeTan * roofEaveOverhang + roofThickness;
   const ridgeZ = buildingFrontZ + buildingD / 2;
-  // 다락 위 지붕 구성: 단열 260T(다락 천장 단열층) + 그 위 징크 마감
-  materials.roofInsul = new THREE.MeshLambertMaterial({ color: 0xe6d9b8, side: THREE.DoubleSide });   // 단열재 260T
+  // 다락 위 지붕 구성: 단열 260T(다락 천장 단열층) + 그 위 징크 마감 — 재질(roofInsul)은 materials.js 정의부.
   const zincFin = 0.05;   // 징크 마감 두께
   const eaveZF = buildingFrontZ - roofEaveOverhang;
   const eaveZB = buildingBackZ + roofEaveOverhang;
@@ -975,8 +953,7 @@ captureInto(firstOutletObjects, () => {
   const slopeMidZ = (eaveZ + ridgeZ) / 2;
   const slopeMidY = (outerEaveY + ridgeY) / 2;
   roofObjects.push(label('지붕: 단열 260T + 오리지널징크(티타늄아연, 갈바륨 아님) · 경사 33°', buildingW / 2, slopeMidY + 0.55, slopeMidZ, 'struct'));
-  // 태양광 패널은 뒤쪽(남측) 지붕 별도 블록에서 그림 — 여기선 눈막이용 헬퍼만 둠.
-  materials.snowGuard = new THREE.MeshLambertMaterial({ color: 0xaeb7bf });    // 눈막이 금속
+  // 태양광 패널은 뒤쪽(남측) 지붕 별도 블록에서 그림 — 여기선 눈막이용 헬퍼만 둠(재질 snowGuard는 materials.js).
   const backEaveZ = buildingBackZ + roofEaveOverhang;
   const onSlope = (ez, t) => ({ z: ez + t * (ridgeZ - ez), y: outerEaveY + t * (ridgeY - outerEaveY) });   // t=0 처마 → 1 용마루
 
@@ -993,8 +970,7 @@ captureInto(firstOutletObjects, () => {
   snowGuard(backEaveZ, 0.12); snowGuard(backEaveZ, 0.22);   // 남측(집 뒤) — 태양광 아래(z≈3.1) ~ 처마쪽
   snowGuard(eaveZ, 0.12); snowGuard(eaveZ, 0.22);           // 북측(정면) — 처마쪽 2줄
 
-  // ── 처마 물받이(홈통) + 도로측(고-X) 우수관 ──
-  materials.gutter = new THREE.MeshLambertMaterial({ color: 0x9aa1a8 });
+  // ── 처마 물받이(홈통) + 도로측(고-X) 우수관 ── (재질 gutter는 materials.js)
   const eaveTopY = outerEaveY + zincFin;
   [eaveZ, backEaveZ].forEach((ez) => {
     const out = ez < ridgeZ ? -1 : 1;            // 처마 바깥 방향(Z)
@@ -1015,12 +991,7 @@ captureInto(firstOutletObjects, () => {
 // 부재는 아연도금 경량형강 느낌의 얇은 회색 박스로 표현(스터드·트랙·장선·서까래·용마루).
 // ───────────────────────────────────────────────────────────────────────────
 // 골조 재질(woodFrame·deckFloorFrame)은 ./materials.js에 정의됨.
-
-function captureInto(arr, fn) {
-  const s = scene.children.length;
-  fn();
-  arr.push(...scene.children.slice(s));
-}
+// captureInto는 ./primitives.js로 이동(캡처 그룹 수집 표준 경로).
 
 // (집 말뚝 X열·계단실 벽 좌표 제거 — 말뚝기초 삭제로 남은 참조 없음. 매트기초만 기초로 남김.)
 
@@ -1384,8 +1355,7 @@ const deckRoofBcrArea = (deckRoofColX1 - deckRoofColX0) * deckFootprints[0].d;  
 
 // 바닥틀(바닥 골조 장선틀)은 설계도 기반으로 시공사가 시공 — 모델에선 그리지 않는다(메뉴 삭제).
 
-// ── 바닥(평면도): 납작한 발자국 + 평면 치수 ─────────────────────────────────
-const planY = 0.003, planH = 0.002;   // 평면(높이 0 취급) — 대지 위 1mm 띄워 깜빡임만 막는 2mm 두께
+// ── 바닥(평면도): 납작한 발자국 + 평면 치수 ───────────────────────────────── (planY·planH는 ./layout.js)
 // 기초 발자국(집 + 데크) — 단일 출처(footprintObjects). 모든 화면에 동일 표시.
 footprintObjects.push(box({ x: 0, z: buildingFrontZ, w: buildingW, d: buildingD, y: planY, h: planH, mat: materials.foundation, cast: false, name: 'ground' }));
 for (const f of deckFootprints) {
