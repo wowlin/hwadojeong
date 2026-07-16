@@ -170,8 +170,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withWa
   // 전면 폴딩도어 — 포치 도어프레임 앞단 개구부(두 앞기둥 사이·2.4m)에 딱 맞춤. 중앙 양개로 접혀 열리며, 열린 가운데가 출입구.
   const _foldingStart = scene.children.length;
   if (withWalls) {
-    const fdMove = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });     // 접힌(움직인) 짝 유리
-    const fdFrame = new THREE.MeshLambertMaterial({ color: 0x3a3f45 });   // 폴딩 알루미늄 프레임(다크그레이)
+    const fdMove = materials.slidingMoveGlass;     // 접힌(움직인) 짝 유리
+    const fdFrame = materials.foldingFrame;   // 폴딩 알루미늄 프레임(다크그레이)
     const sillH = 0.1;
     const wallBaseY = deckSurfaceY;                                       // 폴딩도어 베이스 = 데크 표면(deckSurfaceY)
     const sy = wallBaseY + sillH, hy = wallBaseY + fdDoorH;               // 유리 하단(문턱 위)·상단(=프레임 상단, 딱 맞음)

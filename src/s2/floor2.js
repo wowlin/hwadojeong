@@ -33,7 +33,7 @@ captureInto(s2Floor2Objects, () => {
     box({ x: oX0 + 0.18, z: wz - 0.03, w: 0.05, d: 0.05, y: levels[1] + 1.02, h: 0.05, mat: materials.handle });           // 손잡이(低X 자유단, 계단쪽)
     const rswing = new THREE.Mesh(
       new THREE.CylinderGeometry(interiorDoorW, interiorDoorW, 0.02, 24, 1, false, Math.PI, Math.PI / 2),
-      new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }),
+      materials.swingSweepFaint,
     );
     rswing.position.set(oX1, levels[1] + 0.02, wz);   // PI~3PI/2 = -Z(앞방 열림)~-X(닫힘,벽). 경첩 高X
     scene.add(rswing);   // captureInto가 s2Floor2Objects로 자동 수집
@@ -43,7 +43,7 @@ captureInto(s2Floor2Objects, () => {
     box({ x: bdX1 - 0.18, z: zB0 - 0.07, w: 0.05, d: 0.05, y: levels[1] + 1.02, h: 0.05, mat: materials.handle });   // 손잡이(高X 자유단, 앞방쪽)
     const bswing = new THREE.Mesh(
       new THREE.CylinderGeometry(bdW, bdW, 0.02, 24, 1, false, 0, Math.PI / 2),
-      new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }),
+      materials.swingSweep,
     );
     bswing.position.set(bdX0, levels[1] + 0.02, zB0);   // 0~PI/2 = +Z(안쪽 열림)~+X(닫힘,벽). 경첩 低X
     scene.add(bswing);   // captureInto가 s2Floor2Objects로 자동 수집
@@ -74,7 +74,7 @@ captureInto(s2Floor2Objects, () => {
     // 50L 전기온수기 — 외벽(高Z 뒤) 상부, 변기 위 코너에 벽거치. 50L는 하부장에 숨기기엔 커 외벽 상부에 건다.
     const heater = new THREE.Mesh(
       new THREE.BoxGeometry(0.5, 0.5, 0.55),
-      new THREE.MeshLambertMaterial({ color: 0x9fd0e0, transparent: true, opacity: 0.4, depthWrite: false }),
+      materials.heaterGhost,
     );
     heater.position.set(px1 - 0.30, fy + 1.95, pz1 - 0.28);
     scene.add(heater);   // captureInto가 s2Floor2Objects로 자동 수집
@@ -88,7 +88,7 @@ captureInto(s2Floor2Objects, () => {
   box({ x: inX0, z: bedZ0, w: 2.0, d: 2.0, y: levels[1], h: 0.4, mat: materials.bed });
   label('침대 2.0×2.0m', inX0 + 1.0, levels[1] + 0.7, bedZ0 + 1.0, 'furniture');
   // 안방 베개 2개 — 머리맡=앞 외벽(低Z)쪽, 게스트룸1과 동일 위치.
-  const abPillowMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+  const abPillowMat = materials.pillowWhite;
   for (const cx of [inX0 + 0.5, inX0 + 1.3]) box({ x: cx - 0.35, z: bedZ0 + 0.07, w: 0.7, d: 0.4, y: levels[1] + 0.4, h: 0.1, mat: abPillowMat });
   // 안방 서랍장(낮은 장) — 높이 0.8m·깊이 0.4m. 침대 옆면(방문쪽·高X)에 붙여 침대 길이(2.0m)만큼 나란히.
   const drwD = 0.40;

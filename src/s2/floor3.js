@@ -50,7 +50,7 @@ captureInto(s2Floor3Objects, () => {
     box({ x: dx1 - 0.18, z: pz0 - 0.05, w: 0.05, d: 0.05, y: fy + 1.02, h: 0.05, mat: materials.handle });     // 손잡이(高X 자유단, 복도쪽)
     const swing = new THREE.Mesh(
       new THREE.CylinderGeometry(dW, dW, 0.02, 24, 1, false, 0, Math.PI / 2),
-      new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }),
+      materials.swingSweep,
     );
     swing.position.set(dx0, fy + 0.02, pz0);   // 0~PI/2 = +Z(안쪽 열림)~+X(닫힘,벽). 경첩=低X(dx0)
     scene.add(swing);   // captureInto가 s2Floor3Objects로 자동 수집
@@ -68,7 +68,7 @@ captureInto(s2Floor3Objects, () => {
     // 하부장 안 경동 나비엔 전기온수기 15L — 반투명 표시(가구 안에 들어감)
     const heater = new THREE.Mesh(
       new THREE.BoxGeometry(0.30, 0.42, 0.30),
-      new THREE.MeshLambertMaterial({ color: 0x9fd0e0, transparent: true, opacity: 0.4, depthWrite: false }),
+      materials.heaterGhost,
     );
     heater.position.set(vx + vW - 0.20, fy + 0.23, vz + vD - 0.20);
     scene.add(heater);   // captureInto가 s2Floor3Objects로 자동 수집
@@ -134,8 +134,8 @@ captureInto(s2Floor3Objects, () => {
   // 게스트룸 매트리스(베이지·두께 10cm, 앞쪽 외벽에 머리·옆벽에 붙임) — 게스트룸1: 2.0×1.8 1개 / 게스트룸2: 2.0×1.1 2개(좌우 옆벽)
   {
     const fy = levels[2], mH = 0.1;
-    const mMat = new THREE.MeshLambertMaterial({ color: 0xe8dcc0 });
-    const pMat = new THREE.MeshLambertMaterial({ color: 0xfaf6ef });
+    const mMat = materials.mattress;
+    const pMat = materials.pillow;
     const mattress = (x0, z0, w, d, txt) => { box({ x: x0, z: z0, w, d, y: fy, h: mH, mat: mMat }); label(txt, x0 + w / 2, fy + mH + 0.15, z0 + d / 2, 'furniture'); };
     const pillow = (cx) => box({ x: cx - 0.35, z: inZ0 + 0.07, w: 0.7, d: 0.4, y: fy + mH, h: 0.1, mat: pMat });   // 매트 위·앞벽(低Z)쪽 머리맡
     // 게스트룸1(低X·주방쪽) 더블 — 앞 외벽(低Z)에 머리, 주방쪽 옆벽(低X)에 붙임. 폭1.8(X)×길이2.0(Z). 베개 2개

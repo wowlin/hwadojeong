@@ -167,7 +167,7 @@ function drawStairCore(p) {
     const dz = zTurn0 - zF;
     const yBack = baseU - treadH, yFront = baseU + (R / T) * dz - treadH;     // 뒤(낮음)·앞(높음, 물린 앞끝 기준)
     const panelLen = Math.hypot(dz, (R / T) * dz), tilt = Math.atan2(R, T), th = 0.05, drop = 0.05;   // 코너선 아래(z-파이팅 회피·발판 밑면 가림)
-    const ceil = new THREE.Mesh(new THREE.BoxGeometry(W, th, panelLen), new THREE.MeshLambertMaterial({ color: 0xf2f0e8, side: THREE.DoubleSide }));   // 벽과 같은 톤·양면(내부=밑에서 봄)
+    const ceil = new THREE.Mesh(new THREE.BoxGeometry(W, th, panelLen), materials.stairWallDouble);   // 벽과 같은 톤·양면(내부=밑에서 봄)
     ceil.position.set(laneB + W / 2, (yBack + yFront) / 2 - th / 2 - drop, (zTurn0 + zF) / 2);
     ceil.rotation.x = tilt;
     ceil.receiveShadow = true;
@@ -179,7 +179,7 @@ function drawStairCore(p) {
     const hingeX = laneB + interiorWall + (W - interiorWall - dW) / 2;   // 경첩 = 문(안목 중앙) 주방측(낮은 X) 모서리
     const swept = new THREE.Mesh(
       new THREE.CylinderGeometry(dW, dW, dH, 24, 1, false, 0, Math.PI / 2),   // Y축 수직 1/4기둥
-      new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }),
+      materials.swingSweepFaint,
     );
     swept.position.set(hingeX, fy + dH / 2, zFrontL);    // 1/4 부채꼴(theta 0~90°)=+Z(닫힘,벽)~+X… 회전 없이 +X(닫힘)·+Z(화장실 안쪽 열림) 사분면
     scene.add(swept);

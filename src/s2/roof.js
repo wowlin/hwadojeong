@@ -59,7 +59,7 @@ export function buildS2Roof() {
   });
   // 태양광 3kW — 뒤쪽(남측) 슬로프, 모듈 8장(가로 4 × 세로 2, ≈400W). 지붕 폭 중앙 정렬
   captureInto(s2Solar3Objects, () => {
-    const solarMat = new THREE.MeshLambertMaterial({ color: 0x16264a });
+    const solarMat = materials.solarPanel;
     const cosS = Math.cos(s2RoofPitch), sinS = Math.sin(s2RoofPitch);
     const surfaceY = (z) => topRidgeY - tan * (z - s2RidgeZ);   // 뒤 슬로프(z>용마루) 징크 윗면
     const { panelW, panelL, panelThk, gapX, gapZ, cols, rows } = s2Solar;

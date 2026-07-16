@@ -39,7 +39,7 @@ captureInto(s2DimObjects, () => {
   planZDim(lotX1 + 0.35, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);        // 깊이(파생) — 안방측(s1 buildingD 자리)
   planZDim(lotX0 - 0.4, s2FrontZ, s2BackZ, `${fmtDim(s2D)}m`);         // 깊이(파생) — 주방측(s1 buildingD 자리)
   // 기준선(회청색) — 새 끝점만: 너비 끝 x=s2W, 깊이 앞 z=s2FrontZ (x=0·뒤 z=buildingBackZ은 공통 기준선 사용)
-  const gridMat2 = new THREE.MeshBasicMaterial({ color: 0x5b7185 });
+  const gridMat2 = materials.gridGuide;
   const gw = 0.02, gy = 0.009, gh = 0.002;
   const gz0 = lotZ0 - 0.6, gz1 = lotZ1 + 0.6, gx0 = lotX0 - 0.6, gx1 = lotX1 + 0.6;
   box({ x: (s2X0 + s2W) - gw / 2, z: gz0, w: gw, d: gz1 - gz0, y: gy, h: gh, mat: gridMat2, cast: false, name: 'ground' });   // 너비 끝(x=s2W) 세로 기준선

@@ -78,7 +78,7 @@ const atticRidgeY = atticSecondWallTop + gableRise;
 
 // 뒤쪽(남측) 지붕에 태양광 3kW — 실물 모듈 8장(2열×4, 1.66×1.0m 가로형 ≈400W), 지붕 폭 중앙 정렬
 {
-  const solarMat = new THREE.MeshLambertMaterial({ color: 0x16264a });
+  const solarMat = materials.solarPanel;
   const roofSlopeRad = THREE.MathUtils.degToRad(roofSlopeDeg);
   const cosS = Math.cos(roofSlopeRad);
   const sinS = Math.sin(roofSlopeRad);

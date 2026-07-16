@@ -80,3 +80,17 @@ materials.stairInnerWall = new THREE.MeshLambertMaterial({ color: 0xffffff, tran
 materials.roofInsul = new THREE.MeshLambertMaterial({ color: 0xe6d9b8, side: THREE.DoubleSide });   // 단열재 260T
 materials.snowGuard = new THREE.MeshLambertMaterial({ color: 0xaeb7bf });    // 눈막이 금속
 materials.gutter = new THREE.MeshLambertMaterial({ color: 0x9aa1a8 });       // 처마홈통·우수관 금속
+
+// 공유 창호·부품 재질(#6·#24) — 사용처마다 new Material로 재생성하던 동값 반복을 1벌로 통일.
+materials.slidingFixedGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 미서기 고정 짝 유리
+materials.slidingMoveGlass = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });     // 미서기·폴딩 미닫이(열린) 짝 유리
+materials.foldingFrame = new THREE.MeshLambertMaterial({ color: 0x3a3f45 });   // 폴딩 알루미늄 프레임(다크그레이)
+materials.solarPanel = new THREE.MeshLambertMaterial({ color: 0x16264a });     // 태양광 모듈 — s1·s2 공용
+materials.gridGuide = new THREE.MeshBasicMaterial({ color: 0x5b7185 });        // 평면 모눈 기준선(회청·무광 — 조명 무관하게 또렷)
+materials.heaterGhost = new THREE.MeshLambertMaterial({ color: 0x9fd0e0, transparent: true, opacity: 0.4, depthWrite: false });   // 전기온수기 예정 표시(반투명) — 2·3층 공용
+materials.mattress = new THREE.MeshLambertMaterial({ color: 0xe8dcc0 });       // 매트리스(베이지) — 다락·s2 게스트룸 공용
+materials.pillow = new THREE.MeshLambertMaterial({ color: 0xfaf6ef });         // 베개 — 다락·s2 게스트룸 공용
+materials.pillowWhite = new THREE.MeshLambertMaterial({ color: 0xffffff });    // 흰 베개 — s1 안방·s2 안방 공용
+materials.swingSweep = new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });     // 문 열림 스윙 표시(1/4 부채꼴)
+materials.swingSweepFaint = new THREE.MeshLambertMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }); // 스윙 표시(더 연함 — WC·2층 방문)
+materials.stairWallDouble = new THREE.MeshLambertMaterial({ color: 0xf2f0e8, side: THREE.DoubleSide });   // stairWall 동값 + 양면(계단 밑 사선 천장 — 밑에서 봄)

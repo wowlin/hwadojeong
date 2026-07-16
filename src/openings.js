@@ -171,8 +171,8 @@ export function frontFixSash(x, z, w, sillY, h) {
 // 배면(뒤 외벽·+Z면) 미서기 창 — n짝(기본 2짝: 좌고정+우미닫이 / 4짝: 양끝 고정+가운데 2짝 미닫이, 중앙서 열림). 짝을 X로 나눔·유리는 Z면. zc = 유리 중심 Z면
 export function rearSlider(x, w, sillY, h, zc, n = 2) {
   const F = materials.windowFrame, trk = 0.03, pw = w / n, mullW = 0.05;
-  const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
-  const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
+  const slGlass = materials.slidingFixedGlass;   // 고정 짝
+  const slMove  = materials.slidingMoveGlass;    // 미닫이 짝
   box({ x, z: zc - 0.06, w, d: 0.12, y: sillY, h: 0.08, mat: F });                     // 하부 레일(전폭)
   box({ x, z: zc - 0.06, w, d: 0.12, y: sillY + h - 0.08, h: 0.08, mat: F });          // 상부 레일
   const pane = (xp, zt, mat) => {
@@ -197,8 +197,8 @@ export function rearSlider(x, w, sillY, h, zc, n = 2) {
 // 옆(좌·우 외벽·±X면) 미서기 창 — 2짝(앞짝 고정 + 뒤짝 미닫이). 짝을 Z로 나눔·유리는 X면. xc = 유리 중심 X면
 export function sideRearSlider(z, w, sillY, h, xc) {
   const F = materials.windowFrame, trk = 0.03, pd = w / 2, mullD = 0.05;
-  const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
-  const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
+  const slGlass = materials.slidingFixedGlass;   // 고정 짝
+  const slMove  = materials.slidingMoveGlass;    // 미닫이 짝
   box({ x: xc - 0.06, z, w: 0.12, d: w, y: sillY, h: 0.08, mat: F });                     // 하부 레일(2트랙 전폭)
   box({ x: xc - 0.06, z, w: 0.12, d: w, y: sillY + h - 0.08, h: 0.08, mat: F });          // 상부 레일
   const pane = (zp, xt, mat) => {

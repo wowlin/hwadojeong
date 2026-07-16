@@ -263,7 +263,7 @@ captureInto(interiorObjects, () => {
   const frameMat = new THREE.MeshLambertMaterial({ color: 0x8a6b4a });    // 원목 프레임
   const mattressMat = new THREE.MeshLambertMaterial({ color: 0xf3eee3 }); // 매트리스
   const duvetMat = new THREE.MeshLambertMaterial({ color: 0xb9cbe0 });    // 이불
-  const pillowMat = new THREE.MeshLambertMaterial({ color: 0xffffff });   // 베개
+  const pillowMat = materials.pillowWhite;   // 베개(공유 재질)
   const frameH = 0.3;
   const mattressH = 0.2;
   box({ x: bedX, z: bedZ, w: bedW, d: bedD, y: firstFloorY, h: frameH, mat: frameMat });                            // 프레임

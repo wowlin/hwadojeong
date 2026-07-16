@@ -49,8 +49,8 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ); 
     // s2 3층 매트리스·베개를 복사해 다락방1·2 바닥에 표시 — 재질·두께·규격 s2와 동일. 베개(머리맡)=집 뒤쪽(高Z).
     {
       const mfy = secondWallY + floorSurfaceH + 0.01, mH = 0.1, mL = 2.0;
-      const mMat = new THREE.MeshLambertMaterial({ color: 0xe8dcc0 });   // 매트리스(베이지) — s2와 동일
-      const pMat = new THREE.MeshLambertMaterial({ color: 0xfaf6ef });   // 베개 — s2와 동일
+      const mMat = materials.mattress;   // 매트리스(베이지) — s2와 동일(공유 재질)
+      const pMat = materials.pillow;   // 베개 — s2와 동일(공유 재질)
       const z0 = insideZ1 - mL, pZ = insideZ1 - 0.07 - 0.4;             // 매트: 머리=뒤(高Z)·발치=앞(低Z) / 베개 z=머리맡
       const mat = (x0, w, txt) => { box({ x: x0, z: z0, w, d: mL, y: mfy, h: mH, mat: mMat }); label(txt, x0 + w / 2, mfy + mH + 0.15, z0 + mL / 2, 'furniture'); };
       const pil = (cx) => box({ x: cx - 0.35, z: pZ, w: 0.7, d: 0.4, y: mfy + mH, h: 0.1, mat: pMat });
@@ -117,8 +117,8 @@ const secondAtticFrontWallH = secondWallHeight + roofRiseAtZ(secondAtticWallZ); 
     };
     const sideSlider = (xc) => {   // 2짝 편개 미서기 — 짝을 Z로 나눔(옆벽=X면). 앞짝 고정 + 뒤짝 미닫이(앞으로 슬라이드)
       const F = materials.windowFrame, sy = atticSideSillY, hy = atticSideHeadY;
-      const slGlass = new THREE.MeshLambertMaterial({ color: 0xcfe6f0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 고정 짝
-      const slMove  = new THREE.MeshLambertMaterial({ color: 0x9fc0d4, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });    // 미닫이 짝
+      const slGlass = materials.slidingFixedGlass;   // 고정 짝
+      const slMove  = materials.slidingMoveGlass;    // 미닫이 짝
       const pd = atticSideWinW / 2, mullD = 0.05, trk = 0.03;
       box({ x: xc - 0.06, z: atticSideZ0, w: 0.12, d: atticSideWinW, y: sy, h: 0.08, mat: F });         // 하부 레일(2트랙 전폭)
       box({ x: xc - 0.06, z: atticSideZ0, w: 0.12, d: atticSideWinW, y: hy - 0.08, h: 0.08, mat: F });   // 상부 레일
