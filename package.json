@@ -15,6 +15,7 @@
     "check:buttons": "node scripts/check-buttons.mjs",
     "check:views": "node scripts/check-views.mjs",
     "check:render": "node scripts/check-render.mjs",
+    "check:scene": "node scripts/snapshot-scene.mjs",
     "lint": "eslint src"
   },
   "dependencies": {

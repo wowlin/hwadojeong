@@ -13,8 +13,21 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = resolve(root, 'tests/baseline-views.json');
 const update = process.argv.includes('--update');
 
-// 캡처할 화면 = scene을 바꾸는 뷰 버튼·부품 토글(각자 깨끗한 새 로드에서 1개만 클릭).
-const VIEWS = ['vPlan', 'cFoundation', 'cFrame', 'cFloor', 'cStair', 'cExtWall', 'cRoof'];
+// 캡처할 화면 = 클릭 시퀀스(깨끗한 새 로드에서 순서대로 클릭). 이름은 id를 +로 연결.
+// 현행 UI(세그 토글) 기준 — s2 기본·주요 토글 + s1 탭·주요 토글.
+const VIEWS = [
+  [],                                                      // 부팅 기본(s2 탭)
+  ['bStair', 'bLift'],
+  ['bF1Wall', 'bF2Wall', 'bF3Wall'],
+  ['bF3Roof', 'bF3Solar'],
+  ['bF1Foundation', 'bF1Floor', 'bF1Sink', 'bF1Stove'],
+  ['tabS1'],
+  ['tabS1', 'bFirstWall', 'bFirstOutlet', 'bFirstCeiling'],
+  ['tabS1', 'bRoof', 'bSolar', 'bLoft', 'bAtticExtWall', 'bAtticInnerWall'],
+  ['tabS1', 'bDeck', 'bFolding', 'bSunRoof', 'bFrame'],
+  ['tabS1', 'bMatFull', 'bS1Stair', 'bBath', 'bFirstFloorFinish', 'bHedge', 'bFence'],
+];
+const viewName = (clicks) => clicks.length ? clicks.join('+') : 'default';
 
 let chromium;
 try { ({ chromium } = await import('playwright')); }
@@ -40,27 +53,28 @@ for (let i = 0; i < 60; i += 1) {
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 
 const hashes = {};
-for (const view of VIEWS) {
-  const page = await browser.newPage({ viewport: { width: 1600, height: 1100 }, deviceScaleFactor: 2 });
+for (const clicks of VIEWS) {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1100 } });   // dsf 1 — 10개 화면 연속 캡처라 swiftshader 부하 절감(해시 비교엔 배율 무관)
   await page.goto(url, { waitUntil: 'networkidle' });
-  await page.click('#' + view);
+  for (const id of clicks) await page.$eval('#' + id, (el) => el.click());   // JS 직접 클릭 — 탭 전환 애니메이션·가시성 대기 없이 결정적
   await page.waitForTimeout(2800);                       // WebGL 렌더 안정화(shot.mjs와 동일)
-  const buf = await page.screenshot();
-  hashes[view] = createHash('md5').update(buf).digest('hex');
+  const buf = await page.screenshot({ timeout: 90000 });
+  hashes[viewName(clicks)] = createHash('md5').update(buf).digest('hex');
   await page.close();
 }
 await browser.close();
 cleanup();
 
+const names = VIEWS.map(viewName);
 if (update || !existsSync(manifestPath)) {
   writeFileSync(manifestPath, JSON.stringify(hashes, null, 2) + '\n');
   console.log((existsSync(manifestPath) ? '갱신' : '생성') + ':', manifestPath);
-  for (const v of VIEWS) console.log(`  ${v}: ${hashes[v]}`);
+  for (const v of names) console.log(`  ${v}: ${hashes[v]}`);
   process.exit(0);
 }
 
 const base = JSON.parse(readFileSync(manifestPath, 'utf8'));
-const diffs = VIEWS.filter((v) => base[v] !== hashes[v]);
+const diffs = names.filter((v) => base[v] !== hashes[v]);
 if (diffs.length) {
   console.error('\n✗ 시각 회귀 감지 — baseline과 다른 화면:');
   for (const v of diffs) console.error(`  - ${v}: baseline ${base[v]} ≠ 현재 ${hashes[v]}`);
