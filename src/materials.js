@@ -1,16 +1,13 @@
 // 재질(머티리얼) 단일 출처 — THREE + 텍스처 생성기만 의존. 색 변경은 여기 한 곳에서.
 import * as THREE from 'three';
-import { makeGravelTexture, makeEarthTexture, makePorcelainDeckTexture } from './textures.js';
+import { makeEarthTexture, makePorcelainDeckTexture } from './textures.js';
 
 export const materials = {
-  site: new THREE.MeshLambertMaterial({ color: 0xa3814f }),   // 흙색(부지 지면)
   road: new THREE.MeshLambertMaterial({ color: 0xcfd8e3 }),
   hedge: new THREE.MeshLambertMaterial({ color: 0x2f7d45 }),
   foundation: new THREE.MeshLambertMaterial({ color: 0xb8b8ad }),         // 집 기초(0.5m) — 따뜻한 회색
   matFoundation: new THREE.MeshLambertMaterial({ color: 0x9a988e }),      // 온통기초(매트 슬래브) — 콘크리트 회색(말뚝기초 배경보다 진하게)
   deckFoundation: new THREE.MeshLambertMaterial({ color: 0xb3d3ef }),     // 데크 기초(0.4m) 배경 — 연한 하늘색(말뚝 두부 청색과 또렷이 구별되게 연하게)
-  pile: new THREE.MeshLambertMaterial({ color: 0x7d8186 }),          // 강관 말뚝(아연도금)
-  pileHead: new THREE.MeshLambertMaterial({ color: 0x2c3036 }),      // 두부 헤드 브래킷(검정) — 스틸 골조가 볼트 체결되는 부분
   floorFinish: new THREE.MeshLambertMaterial({ color: 0xa0785a }),   // 바닥(바닥 시공 10cm) — 골조 위, 1층 마감 아래
   dimension: new THREE.MeshLambertMaterial({ color: 0x111827 }),
   wall: new THREE.MeshLambertMaterial({ color: 0xffffff }),
@@ -70,17 +67,13 @@ export const materials = {
 };
 
 // 텍스처 기반 재질
-materials.gravel = new THREE.MeshLambertMaterial({ map: makeGravelTexture() });          // 파쇄석(앞마당)
 materials.site = new THREE.MeshLambertMaterial({ map: makeEarthTexture() });             // 흙(부지)
 materials.porcelainDeck = new THREE.MeshLambertMaterial({ map: makePorcelainDeckTexture() });  // 포세린 타일 데크
 
 // 골조 재질(목재 톤)
 materials.woodFrame = new THREE.MeshLambertMaterial({ color: 0xc69c6d });   // 목골조(중목·경량목) 목재 마감
-materials.deckFloorFrame = new THREE.MeshLambertMaterial({ color: 0xb5793f });   // 데크 바닥 골조(장선) — 목재 갈색(집과 구분)
 materials.deckStairFrame = new THREE.MeshLambertMaterial({ color: 0x5b5f66 });   // 데크 계단 프레임(앞·왼쪽 직선) — 짙은 회색(데크 둘레 틀과 구분)
 materials.firstExtWall = new THREE.MeshLambertMaterial({ color: 0xcdd5dc, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });   // 1층 외벽 — 반투명(내부 보이게)
-materials.gravel = new THREE.MeshLambertMaterial({ color: 0x9a948c });   // 파쇄석 바닥(전실) — 회색 자갈
-materials.conceptWall = new THREE.MeshLambertMaterial({ color: 0xcdd6df, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });   // 신축안 둘레벽 — 반투명(내부 구역 보이게)
 materials.stairInnerWall = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });   // 계단실 양쪽 내벽 — 반투명(계단·1층 공유)
 
 // 지붕 부속 재질 — s1·s2 지붕이 공유(옛 main.js s1 지붕 블록 런타임 주입 → 정의부로 이동, 숨은 결합 제거)

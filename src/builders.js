@@ -5,39 +5,12 @@ import { scene } from './scene.js';
 import { materials } from './materials.js';
 import { box, addGeometryEdges, lerpPoint, railCylinder } from './primitives.js';
 import {
-  buildingW, pileR, pileCapW, pileCapH, groundTopY,
+  buildingW,
   FLOOR_RIM_W, FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_JOIST_SPACING,
 } from './constants.js';
 
-export function pileGridCoords(x0, z0, w, d, spacingX, spacingZ) {
-  const nx = Math.max(1, Math.round(w / spacingX));
-  const nz = Math.max(1, Math.round(d / spacingZ));
-  const xs = [];
-  const zs = [];
-  for (let i = 0; i <= nx; i += 1) xs.push(x0 + (w * i) / nx);
-  for (let j = 0; j <= nz; j += 1) zs.push(z0 + (d * j) / nz);
-  return { xs, zs };
-}
 
-// 말뚝 1본(중심 cx,cz) — 강관(지면~두부) + 검정 두부 헤드 브래킷. 두부 상단 = headTopY(여기에 골조 볼트 체결).
-export function systemPile(cx, cz, headTopY, cast = false, headMat = materials.pileHead) {
-  const capBotY = headTopY - pileCapH;
-  const shaftH = capBotY - groundTopY;
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(pileR, pileR, shaftH, 16), materials.pile);
-  shaft.position.set(cx, groundTopY + shaftH / 2, cz);
-  shaft.castShadow = cast;
-  shaft.receiveShadow = false;
-  scene.add(shaft);
-  box({ x: cx - pileCapW / 2, z: cz - pileCapW / 2, w: pileCapW, d: pileCapW, y: capBotY, h: pileCapH, mat: headMat, cast, receive: false });   // 두부 헤드 브래킷(골조 볼트 체결)
-}
 
-// 말뚝 격자(시스템말뚝기초). headTopY = 두부 상단(= 그 위에 스틸 골조/바닥이 직접 얹혀 볼트 체결).
-//   xs 지정 시: 등간격 대신 그 X열들(하중 경로=벽·실 중앙)에 말뚝을 박는다.
-export function pileFoundation(x0, z0, w, d, headTopY, { spacingX = 1.7, spacingZ = 1.9, cast = false, headMat = materials.pileHead, xs = null } = {}) {
-  const grid = pileGridCoords(x0, z0, w, d, spacingX, spacingZ);
-  const cols = xs || grid.xs;
-  for (const x of cols) for (const z of grid.zs) systemPile(x, z, headTopY, cast, headMat);
-}
 
 export function floorFrame(x0, z0, w, d, yBottom, mat, joistXs = null, rim = FLOOR_RIM_W) {
   const x1 = x0 + w, z1 = z0 + d, jh = FLOOR_JOIST_H, jw = FLOOR_JOIST_W;

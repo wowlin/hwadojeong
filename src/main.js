@@ -33,7 +33,7 @@ import { buildS2Outlets } from './s2/outlets.js';
 import { buildS2Interior } from './s2/interior.js';
 import { buildS2Walls } from './s2/walls.js';
 import { buildS2Roof } from './s2/roof.js';
-import { applyVisibility, setScheme, equalizeButtonHeights } from './ui.js';
+import { applyVisibility, setScheme } from './ui.js';
 import {
   firstFloorFinishObjects, firstFloorObjects, bathObjects, firstWallObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects, roofObjects, stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
@@ -90,7 +90,6 @@ function resize() {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
-  equalizeButtonHeights();   // 줄바꿈 수가 바뀌어도 높이 통일 유지
 }
 window.addEventListener('resize', resize);
 resize();   // 시작 시 1회 — dev에서 초기 stage 높이가 늦게 잡혀 캔버스가 0높이(백지)로 뜨는 것 방지.

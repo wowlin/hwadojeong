@@ -10,14 +10,14 @@ import { foundationTopY, lotX0, lotX1, lotZ0, lotZ1 } from './layout.js';
 import {
   firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects,
   firstWallObjects, firstOutletObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects,
-  roofObjects, solarObjects, deckObjects, 썬룸FrameObjects, 썬룸RoofObjects, wallObjects, foldingObjects, extrasObjects,
-  hedgeObjects, fenceObjects, matFoundationFullObjects, footprintObjects, planObjects, dimObjects,
-  planOnlyDimObjects, hedgeDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects,
+  roofObjects, solarObjects, deckObjects, 썬룸FrameObjects, 썬룸RoofObjects, foldingObjects, extrasObjects,
+  hedgeObjects, fenceObjects, matFoundationFullObjects, footprintObjects, dimObjects,
+  hedgeDimObjects, gapDimObjects, s2FootprintObjects, s2FoundationObjects, s2DimObjects,
   s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Ecu3Objects, s2Stair2Objects,
   s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB,
   s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects,
   s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects,
-  deckStairFrameObjects, stairObjects, stairCoreObjects, stairWallObjects, kitchenInnerWallObjects, familyInnerWallObjects,
+  deckStairFrameObjects, stairObjects, stairCoreObjects, kitchenInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 
 // 보이는 구조물을 화면(버튼 영역 제외 캔버스) 중앙에 꽉 차게 프레이밍한다.
@@ -41,7 +41,6 @@ const PARTS = [
   { key: 'deck',       arrays: [deckObjects, deckFloorObjects, deckStairFrameObjects, extrasObjects] },   // 데크바닥·데크계단틀+악세사리(화분·의자·테이블·그릴)를 '데크' 하나로 합침
   { key: 'frame',      arrays: [썬룸FrameObjects] },   // 포치 골조(기둥·보·평프레임) — 폴딩도어·지붕 지지. 데크 기초 위(deckSurfaceY)에 앉음
   { key: 'sunRoof',  arrays: [썬룸RoofObjects] },    // 포치 징크 단물매 지붕(경사 받침 위)
-  { key: 'sunWall',    arrays: [wallObjects] },
   { key: 'folding',    arrays: [foldingObjects] },
   { key: 'hedge',      arrays: [hedgeObjects] },
   { key: 'fence',      arrays: [fenceObjects] },
@@ -81,14 +80,11 @@ export function applyVisibility() {
   for (const item of siteBaseObjects) item.visible = true;
   // 집·데크 발자국 = 현재 탭(설계안) 것만 — 2층 탭에선 숨겨 집 배치도 분리
   for (const item of footprintObjects) item.visible = (currentScheme === 's1');
-  // 배치도(부감) 전용: 말뚝 마커·평면 치수
-  for (const item of planObjects) item.visible = false;   // 말뚝 위치 마커 — 배치도에서 숨김(집·썬룸 배치만 표시)
   const planDimOn = isPlan || view.matFoundationFull || view.s2Foundation;   // 배치도 + 매트기초(s1) + s2 기초 — 공통 치수·기준선 노출 조건
   // s2 탭 바닥 기준층 — 시작 배치도의 발자국·치수는 어떤 토글(기초·측백담장·옆집담장 포함)에도 사라지지 않고 항상 그대로 유지.
   const s2Ground = (currentScheme === 's2');
   // 집·데크 크기 치수 = 현재 탭 것만(2층 탭에선 숨김)
   for (const item of dimObjects) item.visible = (currentScheme === 's1') && planDimOn;
-  for (const item of planOnlyDimObjects) item.visible = isPlan;   // 평면 전용 치수 — 배치도 전용(dimObjects 게이팅을 덮음)
   for (const item of hedgeDimObjects) item.visible = isPlan || s2Ground;   // 측백 0.5m 치수 — s2 바닥 기준층(항상)·배치도(dimObjects 게이팅을 덮음)
   for (const item of gapDimObjects) item.visible = planDimOn || s2Ground;  // 집-담장 이격(0.5·1.0) — s2 바닥 기준층(항상)+공통 배치도/기초
   // s2 집 발자국·치수 = 바닥 기준층으로 항상 표시(기초 토글과 무관). 기초 0.5m 슬래브(입체)는 PARTS(s2Foundation)에서 별도 처리.
@@ -105,8 +101,6 @@ export function applyVisibility() {
     if (firstBathDimLabel)   firstBathDimLabel.visible   = bothOn;
     if (firstBathClearFill)  firstBathClearFill.visible  = bothOn;   // 화장실 안목 자홍 바닥칠 — 바닥+계단 동시일 때만
   }
-  // 미사용 배열(삭제된 골조 토글 · 구 통합 계단벽[분리됨])
-  for (const item of stairWallObjects) item.visible = false;
   // s2 계단 — 1·2·3층 런·계단참·공유 라벨 전체를 하나의 '계단' 토글로 함께 표시.
   { const on = !isPlan && view.s2Stair;
     for (const arr of [s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB, s2Stair2Objects])
@@ -132,7 +126,7 @@ function syncSegButtons() {
   setActive('bF2Floor', view.s2Floor2); setActive('bF2Wall', view.s2Wall2); setActive('bF2Fan', view.s2Fan2);
   setActive('bF3Floor', view.s2Floor3); setActive('bF3Wall', view.s2Wall3); setActive('bF3Ecu', view.s2Ecu3);
   setActive('bF3Roof', view.s2Roof3); setActive('bF3Solar', view.s2Solar3);
-  setActive('bStair', view.s2Stair); setActive('bAllWall', view.s2Wall1 && view.s2Wall2 && view.s2Wall3); setActive('bLift', view.s2Lift);
+  setActive('bStair', view.s2Stair); setActive('bLift', view.s2Lift);
   for (const [id, key] of S1_TOGGLES) setActive(id, view[key]);   // s1 부품 버튼 active 동기화
 }
 
@@ -251,7 +245,6 @@ bindSegButton('bF3Ecu', () => { view.s2Ecu3 = !view.s2Ecu3; });          // 3층
 bindSegButton('bF3Roof', () => { view.s2Roof3 = !view.s2Roof3; });       // 3층 지붕 = 징크 박공 슬래브 + 처마 + 눈막이
 bindSegButton('bF3Solar', () => { view.s2Solar3 = !view.s2Solar3; });    // 3층 태양광 = 뒤 지붕 3kW 패널
 bindSegButton('bStair', () => { view.s2Stair = !view.s2Stair; });        // 계단 = 1·2·3층 계단 전체 한 토글
-bindSegButton('bAllWall', () => { const all = view.s2Wall1 && view.s2Wall2 && view.s2Wall3; view.s2Wall1 = view.s2Wall2 = view.s2Wall3 = !all; });   // 외벽 켜기 = 1·2·3층 외벽 한꺼번에
 bindSegButton('bF1Wall', () => { view.s2Wall1 = !view.s2Wall1; });       // 외벽 1층
 bindSegButton('bF2Wall', () => { view.s2Wall2 = !view.s2Wall2; });       // 외벽 2층
 bindSegButton('bF3Wall', () => { view.s2Wall3 = !view.s2Wall3; });       // 외벽 3층
@@ -284,13 +277,3 @@ for (const t of document.querySelectorAll('.scheme-tab')) {
 
 
 
-// 모든 컨트롤 버튼 높이를 '가장 큰 버튼'에 맞춰 통일 — 라벨 줄이 늘어도, 몇 줄로 줄바꿈돼도 항상 동일.
-export function equalizeButtonHeights() {
-  const btns = [...document.querySelectorAll('.controls button')];
-  if (!btns.length) return;
-  for (const b of btns) b.style.height = 'auto';                 // 내용 높이로 리셋 후 측정
-  const max = Math.max(...btns.map((b) => b.offsetHeight));
-  for (const b of btns) b.style.height = `${max}px`;             // 전체를 최댓값으로 통일
-}
-equalizeButtonHeights();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(equalizeButtonHeights);  // 폰트 로드 후 재측정

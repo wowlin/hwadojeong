@@ -4,7 +4,6 @@ import * as THREE from 'three';
 import { scene } from './scene.js';
 import { materials } from './materials.js';
 import { groundTopY, deckFinishT } from './constants.js';
-import { deckTopY0 } from './layout.js';
 import { box, addGeometryEdges } from './primitives.js';
 
 // 캠핑 가구 재질 — 반고 햄프턴 DLX 캠핑의자 프레임(책상 의자도 공유)
@@ -112,7 +111,7 @@ export function coveLight({ x, z, len, axis = 'z', ceilingY }) {
 // 데크 계단 — 데크 상단에서 지면까지 3계단(합성목). 가장자리 한 변을 따라 바깥으로 내려간다.
 //  axis: 계단이 늘어선 축('x' 또는 'z'). span0~span1: 그 축 범위. edge: 수직축의 데크 가장자리.
 //  outward: 가장자리에서 계단이 뻗는 방향(±1). steps: 계단 수.
-export function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY = deckTopY0 + deckFinishT, baseY = groundTopY, tread = 0.3, frameTopY = null, mat = materials.porcelainDeck }) {
+export function deckStairs({ axis, span0, span1, edge, outward, steps = 3, topY, baseY = groundTopY, tread = 0.3, frameTopY = null, mat = materials.porcelainDeck }) {
   const rise = (topY - baseY) / steps;              // 3계단 = 3개의 단높이(데크가 맨 위 단)
   const tileT = deckFinishT;                        // 포세린 타일 두께(데크 바닥과 동일)
   for (let i = 0; i < steps - 1; i += 1) {          // 중간 디딤판 steps-1개(맨 위는 데크). i=0: 데크에 가장 가까운 단

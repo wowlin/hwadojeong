@@ -12,28 +12,6 @@ function mulberry32(seed) {
   };
 }
 
-export function makeGravelTexture() {
-  const rand = mulberry32(0x1a2b3c4d);
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 256;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#857f72';
-  ctx.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 2600; i += 1) {
-    const x = rand() * 256;
-    const y = rand() * 256;
-    const r = rand() * 2.4 + 0.5;
-    const base = 92 + rand() * 88;
-    ctx.fillStyle = `rgb(${base}, ${Math.max(0, base - 6)}, ${Math.max(0, base - 18)})`;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(11, 5);
-  return texture;
-}
 
 // 흙(부지) 질감: 흙색 베이스 + 넓은 색얼룩(흙 톤 변화) + 잔 알갱이/작은 돌.
 export function makeEarthTexture() {

@@ -73,7 +73,7 @@ const LABEL_GROUPS = {
 };
 
 // 세로(높이) 치수 — 한 모서리에 수직선 + 상·하 틱(X방향) + 라벨. name:'ground'로 프레이밍 제외.
-export function planYDim(x, z, y0, y1, text, labelDx = -0.55) {
+export function planYDim(x, z, y0, y1, text) {
   const lw = 0.025;   // 치수선 굵기 — 가로·세로와 동일
   box({ x: x - lw / 2, z: z - lw / 2, w: lw, d: lw, y: y0, h: y1 - y0, mat: materials.dimension, cast: false, name: 'ground' });
   box({ x: x - 0.13, z: z - lw / 2, w: 0.26, d: lw, y: y0, h: lw, mat: materials.dimension, cast: false, name: 'ground' });

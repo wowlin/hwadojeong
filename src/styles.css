@@ -118,12 +118,6 @@ body {
   border-color: #111827;
   color: #ffffff;
 }
-.scheme-empty {
-  margin: 4px 0;
-  font-size: 13px;
-  color: #9ca3af;
-  line-height: 1.5;
-}
 
 .menu-group {
   display: flex;
@@ -170,30 +164,6 @@ body {
 }
 
 /* 부품 토글(체크박스) */
-.chk {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  user-select: none;
-}
-.chk:hover {
-  background: #eef2f7;
-}
-.chk input {
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-  accent-color: #15803d;
-}
-.chk:has(input:checked) {
-  background: #e7f3ea;
-  color: #14532d;
-}
 
 /* 계단·바닥 토글 버튼 행(체크박스 대신 한 줄 버튼들) */
 .seg-row {
@@ -224,36 +194,5 @@ body {
 }
 
 /* 뷰 전환 버튼(배치도·전체모델) */
-.view-btn {
-  margin-bottom: 4px;
-  padding: 7px 10px;
-  border: 1px solid #9aa3af;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #111827;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: left;
-}
-.view-btn:hover {
-  background: #eef2f7;
-}
-.view-btn.active {
-  background: #111827;
-  border-color: #111827;
-  color: #ffffff;
-}
 
 /* 참고(임시) 그룹 — 흐린 베이지 + 점선으로 "나중 제거 예정" 표시 */
-.menu-group.reference {
-  margin-top: auto;
-  background: #f7f1e1;
-  border: 1px dashed #c9b582;
-  border-radius: 8px;
-  padding: 10px;
-}
-.menu-group.reference .menu-title {
-  color: #6b5d36;
-  border-bottom-color: #d8c79a;
-}

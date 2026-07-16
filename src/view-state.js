@@ -29,7 +29,7 @@ export const view = {
   roof: false,        // 지붕
   solar: false,       // 태양광(지붕에서 분리)
   // 썬룸 그룹 (악세사리는 '데크'에 합침)
-  deck: false, sunWall: false, folding: false, frame: false, sunRoof: false,   // frame=포치 골조(폴딩도어 지지), sunRoof=포치 징크 지붕
+  deck: false, folding: false, frame: false, sunRoof: false,   // frame=포치 골조(폴딩도어 지지), sunRoof=포치 징크 지붕
   // 참고(임시)
   hedge: false, fence: false,
   // 2층·다락 탭(s2)

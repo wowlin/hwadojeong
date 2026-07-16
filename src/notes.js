@@ -277,7 +277,7 @@ export const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['plan', 'matFoundationFull', 'firstFloorFinish', 'stair', 'firstWall', 'firstRoom', 'outlet', 'bath', 'loft', 'atticInnerWall', 'atticExtWall', 'roof', 'deck', 'sunWall', 'folding', 'accessory', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];
+const NOTE_ORDER = ['stair', 'roof', 'deck', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];   // NOTES에 실제 있는 키만(죽은 키 13개 제거 — 새 메모 추가 시 여기와 NOTES 둘 다)
 export function updateNotes(currentScheme) {
   const body = document.querySelector('#noteBody');
   if (!body) return;
