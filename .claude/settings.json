@@ -12,6 +12,11 @@
             "type": "command",
             "command": "/Users/aine/work/three-house/scripts/lint-gate.sh",
             "statusMessage": "코드 품질(eslint) 게이트"
+          },
+          {
+            "type": "command",
+            "command": "/Users/aine/work/three-house/scripts/applied-gate.sh",
+            "statusMessage": "LIVE 반영(사용자 화면) 게이트"
           }
         ]
       }

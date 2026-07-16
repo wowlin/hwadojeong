@@ -31,6 +31,14 @@
 - 임시 캡처 스크립트(`_tmp-*.mjs` 등) **절대 만들지 마라.**
 - 화면 결과를 내가 "맞다/됐다"고 단정하지 마라 — 시각 판단은 사용자에게 넘긴다.
 
+## 1-1. 확인 요청 전에 '사용자가 보는 곳'에 반영 (예외 없음)
+- **사용자는 dev 서버(`http://127.0.0.1:5173/`)로 본다. 그 서버는 항상 LIVE 체크아웃(`/Users/aine/work/three-house`)의 현재 브랜치·작업 트리를 서빙한다.** 워크트리·다른 브랜치에만 있는 편집은 **사용자에겐 없는 것**이다.
+- **"확인해 주세요"라고 끝내기 전에 반드시 LIVE에 반영한다.** 워크트리에서 작업했으면: 커밋 → `git -C <워크트리> rebase <LIVE 브랜치>` → `git -C /Users/aine/work/three-house merge --ff-only <브랜치>`. 반영은 **묻지 말고 즉시**(§3 자동 커밋과 같은 취지) — "머지할까요?"·"PR 올릴까요?" 금지.
+- **반영했으면 서빙까지 확인하고 보고한다**: `curl -s http://127.0.0.1:5173/src/<파일> | grep <새 식별자>`. 이건 렌더/시각 확인이 아니라 **배달 확인**이라 §1의 'shot 금지'와 무관하다 — 화면 판단은 여전히 사용자 몫.
+- LIVE가 앞서갔으면 rebase로 따라붙는다. LIVE의 미커밋 작업 파일과 내 파일이 겹치면 **덮지 말고** 그 사실을 알리고 멈춘다.
+- **`git reset --hard`·`checkout --`로 남의(그리고 내) 미커밋 편집을 날리지 마라.** 게이트 시험 등으로 되돌릴 일이 있으면 **먼저 커밋해 안전지대를 만든 뒤** 시험한다(실제로 이 규칙 문서가 그렇게 한 번 날아갔다).
+- 강제: Stop 게이트 `scripts/applied-gate.sh` — 워크트리의 src/ 변경이 LIVE 브랜치에 없거나 미커밋으로 남아 있으면 종료를 차단한다.
+
 ## 2. 보고
 - **모든 응답은 한글.** 코드·식별자·명령어 제외.
 - 질문엔 **한 줄로 단정해서 먼저 답**하라. 요청 복창 금지. 번호별 요청은 번호별로 보고.
@@ -58,12 +66,13 @@
   → 하나라도 No면 멈추고 묻는다.
 - "화면: 요청" 형식 → 콜론 앞 = 대상 화면, 뒤 = 작업. 해당 화면에서 결과가 반드시 보여야 함.
 - 구성물: 에이전트 `.claude/agents/verifier.md`(model: opus) · 오케스트레이터 스킬 `.claude/skills/model-edit/SKILL.md`.
-- 게이트(실제 연결, `.claude/settings.json`): **Stop** 훅 = `no-geosil.sh`(금지어 '거실') + `lint-gate.sh`(eslint 0). **UserPromptSubmit** = 활성 도면 고지. **PostToolUse(Write|Edit)** = main.js diff·색 변경 고지.
+- 게이트(실제 연결, `.claude/settings.json`): **Stop** 훅 = `no-geosil.sh`(금지어 '거실') + `lint-gate.sh`(eslint 0) + `applied-gate.sh`(§1-1 LIVE 반영). **UserPromptSubmit** = 활성 도면 고지. **PostToolUse(Write|Edit)** = main.js diff·색 변경 고지.
 - 재구성·점검: `harness` 플러그인 메타 스킬로 "하네스 구성해줘"/"하네스 점검해줘" 호출.
 
 **변경 이력:**
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|----------|------|------|
+| 2026-07-17 | §1-1 신설 + Stop 게이트 `applied-gate.sh` 연결 — 워크트리·타 브랜치에만 있는 src/ 변경으로 "확인해 주세요" 종료 차단 | CLAUDE.md §1-1·§4 · `scripts/applied-gate.sh` | 백그라운드 세션이 격리 워크트리에만 커밋해 사용자 dev 서버엔 반영 0 → 사용자가 옛 화면 보고 "안 됐는데?" 재호출(실제 발생) |
 | 2026-07-16 | 리팩토링: main.js(3,909줄)를 s1/·s2/·공유 모듈로 분할, 격리 게이트 ⑭⑮ 파일 경계 전환, lint 범위 scripts·test 확장, CI에 lint+test 게이트 | CLAUDE.md §0·§1·§4·§5 · 게이트 전반 | REFACTOR-PLAN.md §5-6 연동 |
 | 2026-07-14 | harness 플러그인 등록 + 정합화: 팬텀 참조(`korean-check.mjs`·미연결 `stop-gate.sh`·미설정 `AGENT_TEAMS`) 제거, verifier 선택 호출 명문화, 실제 Stop 게이트로 정정 | CLAUDE.md §4 · `model-edit` | 플러그인 설치, 문서-실물 드리프트 수정 |
 
