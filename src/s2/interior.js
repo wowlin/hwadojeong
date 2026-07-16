@@ -9,7 +9,7 @@ import { campingChair, ceilingFan, ceilingLight, coveLight, outlet, woodTable, f
 import { groundTopY, matFoundationH } from '../constants.js';
 import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, roofY, s2RidgeZ, s2RoofUnderY,
-  s2F1Top, s2Ceil1Y, s2Ceil2Y,
+  s2F1Top, s2Ceil1Y, s2Ceil2Y, s2FdColT, s2RGap, s2LGap,
 } from './constants.js';
 import { s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Wall1Objects, s2Fan1Objects, s2Fan2Objects } from '../groups.js';
 
@@ -144,7 +144,7 @@ captureInto(s2Wall1Objects, () => {
   const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
   const F2W = 1.1, FW = fridge311.w, bGap = 0.05;
   const cSink = ((s2FrontZ + s2WallT) + inZB) / 2;          // 좌측벽 앞뒤 중심(=폴딩창 중심)
-  const foldHalf = (4 * 0.68) / 2, jambGap = 0.12;          // 좌측 폴딩창 반폭 1.36 + 창틀 밖 여유(개구부 밖 배치)
+  const foldHalf = s2LGap / 2, jambGap = 0.12;              // 좌측 폴딩창 반폭(개구 스팬 단일 출처) + 창틀 밖 여유(개구부 밖 배치)
   const cInner = cSink - foldHalf - jambGap;                // 창 앞쪽(低z) 옆 — 개구부 밖 벽면(상판 위 콘센트)
   const cWall = cSink + foldHalf + jambGap;                 // 창 뒤쪽(高z) 옆 — 개구부 밖 벽면
   const f2Cz = (s2FrontZ + s2WallT) + F2W / 2;             // 양문형 냉장고 자리(앞)
@@ -168,7 +168,7 @@ captureInto(s2Wall1Objects, () => {
 captureInto(s2Wall1Objects, () => {
   const fTop = groundTopY + matFoundationH + S2_STAIR.slabT;
   const inXR = s2X0 + s2WallT;                                // 우(低x·주방측) 외벽 안쪽 면
-  const fdColT = 0.3, rGap = 4 * 0.8, jambGap = 0.12;        // 우측 슬라이드창 개구부 = 3.2m, 창틀 밖 여유
+  const fdColT = s2FdColT, rGap = s2RGap, jambGap = 0.12;    // 우측 슬라이드창 개구부(단일 출처), 창틀 밖 여유
   const roA0 = s2FrontZ + s2WallT + fdColT;                  // 슬라이드창 앞(低z) 끝
   const roA1 = roA0 + rGap;                                  // 슬라이드창 뒤(高z) 끝
   const cFront = roA0 - jambGap;                             // 창 앞쪽 옆(개구부 밖)

@@ -13,7 +13,7 @@ import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2FrontZ, s2WallT, _wBase, roofY,
   s2RoofUnderY, s2RidgeZ, s2RearStair,
   s2Geo, s2F1Top, s2Lvl2, s2Lvl3, s2Ceil1Y, s2Ceil2Y, s2WcSetback3,
-  s2ProjWinW, s2ProjWinH, s2SillSafe,
+  s2ProjWinW, s2ProjWinH, s2SillSafe, s2FdColT, s2RGap, s2LGap,
 } from './constants.js';
 import { s2FrontFixSpans, s2Landing12Y, s2Landing23Y } from './stair.js';
 import { s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Ecu3Objects, s2Floor1Objects } from '../groups.js';
@@ -102,11 +102,11 @@ export function buildS2Walls() {
   const backDoorOpen = { a0: bdCx - bdOuterW / 2, a1: bdCx + bdOuterW / 2, sillY: f1Top, headY: f1Top + bdFrameH };
   const s1CorrX = s2Geo.corrX;                                             // 1층 층계참 프로젝트창 X중앙(2·3층 뒤벽창과 동일 X — s2Geo.corrX 단일 출처)
   const s1BackWin = { p0: (s1CorrX + 0.3) - 1.6, p1: s1CorrX + 0.3, sillY: groundTopY + 1.7, headY: groundTopY + 1.7 + 1.1 };   // 1.6×1.1 슬라이드창 — 창대 좌·우창과 동일(지표+1.7)·높이 1.1·2짝(0.8) 편개
-  const fdColT = 0.3, fdH = 2.4;                                          // 기둥 굵기 300mm · 폴딩도어 높이 2.4m(표준 최대)
+  const fdColT = s2FdColT, fdH = 2.4;                                     // 기둥 굵기(단일 출처) · 폴딩도어 높이 2.4m(표준 최대)
   const fdOpen = { x0: s2X0 + t + fdColT, x1: (s2W - t) - fdColT, sillY: f1Top, headY: f1Top + fdH };
-  const rGap = 4 * 0.8;                                                   // 우측 4짝 양미서기 × 짝폭 0.8 = 3.2m 개구부
+  const rGap = s2RGap;                                                    // 우측 4짝 양미서기 개구부(단일 출처)
   const rO = { a0: s2FrontZ + t + fdColT, a1: s2FrontZ + t + fdColT + rGap, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 우측 슬라이드창 — sill 지표 위 1.7m·상단 f1Top+2.4 유지(높이 1.4m)
-  const lGap = 4 * 0.68;                                                  // 좌측 폴딩창 2+2 양개 = 4짝 × 짝폭 0.68 = 2.72m 개구부
+  const lGap = s2LGap;                                                    // 좌측 폴딩창 2+2 양개 개구부(단일 출처)
   const lCz = (s2FrontZ + s2BackZ) / 2;                                  // 좌측벽 앞뒤 중앙(싱크대와 동일 기준)
   const lO = { a0: lCz - lGap / 2, a1: lCz + lGap / 2, sillY: groundTopY + 1.7, headY: f1Top + fdH };  // 좌측 폴딩창 — 벽 중앙 배치·2+2 양개, sill 지표 1.7m·상단 rO와 동일(높이 1.4m)
   captureInto(s2Wall1Objects, () => rectWalls(_wBase, y1, fdOpen, rO, backDoorOpen, lO));   // 1층 외벽 — 기초 상단~1층 천장(정면·우측 개구부, 뒤벽 출입문·좌측 폴딩)
