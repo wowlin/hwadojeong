@@ -215,6 +215,22 @@ export function toiletAtBack(x1, z1, fy) {
   box({ x: x1 - 0.62, z: z1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
 }
 
+// 전기온수기 1벌(#12) — 경동나비엔 ESW560-15U(15L 상향식 언더싱크·바닥 거치). s1·s2 싱크대 하부장 공용 = 두 도면 동일 기종.
+export const esw560_15u = { model: 'ESW560-15U', capL: 15, w: 0.368, d: 0.34, h: 0.368 };   // 실제 제원 — 가로×깊이×높이. 용량·모델명도 여기서만(라벨·메모 공유)
+// (x, z) = 본체 최소 모서리, y = 놓이는 면. axis = 가로면이 따라가는 축: 'x'(s1 — 하부장이 X로 뻗고 뒤벽 등붙임) · 'z'(s2 — 하부장이 Z로 뻗고 좌벽 등붙임)
+export function waterHeater15U({ x, z, y, axis = 'x' }) {
+  const { w: hw, d: hd, h: hh, capL, model } = esw560_15u;
+  const bw = axis === 'x' ? hw : hd, bd = axis === 'x' ? hd : hw;   // 가로·깊이를 하부장 축에 맞춤
+  box({ x, z, w: bw, d: bd, y, h: hh, mat: materials.waterHeater });   // 본체(주황)
+  const cx = x + bw / 2, cz = z + bd / 2;
+  for (const off of [-0.075, 0.075]) {                              // 상향식 급수·출수 니플 2개(윗면·가로 방향 좌우)
+    const nip = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.07, 10), materials.guard);
+    nip.position.set(axis === 'x' ? cx + off : cx, y + hh + 0.035, axis === 'x' ? cz : cz + off);
+    scene.add(nip);   // captureInto가 호출한 쪽 그룹으로 자동 수집
+  }
+  label(`전기온수기 ${capL}L (${model})`, axis === 'x' ? cx : x - 0.4, y + 0.53, axis === 'x' ? z - 0.4 : cz, 'mep');   // 본체 앞면에서 하부장 문 밖으로 띄움
+}
+
 // 한문형 냉장고 311L 1벌(#12·#18) — 뒤벽(+Z)에 등 붙이고 문이 앞(-Z)으로 열리는 배치(s1 1층 주방·s2 2층 안방 공용).
 // (s2 1층 주방 것은 좌벽(X축) 등붙임 배치라 별도 — 축이 달라 통일하지 않음.)
 export const fridge311 = { w: 0.545, d: 0.689, h: 1.70 };   // LG 311L 실제 제원 — 본체 그리기·배치 좌표(interior·walls·outlets)가 공유
