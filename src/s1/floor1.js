@@ -224,17 +224,7 @@ captureInto(bathObjects, () => {
   }
   // (화장실 185cm 사람 모형 제거)
 });
-// 계단하부 WC 배기구 — '화장실' 토글 소속(J-③ 재배치 — 유령 그룹에 묶여 영구 비표시였음). 무창 WC 기계환기: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기.
-captureInto(bathObjects, () => {
-  const ventX = stairBathX + stairBathW / 2;
-  // WC 천장은 계단 밑 경사면 → 뒤쪽 실사용 천장선은 바닥+약 1.3m(벽 절반). 배기팬은 그 천장선 바로 아래(WC 실내 공기 안)여야 실제로 배기됨.
-  const capY = firstFloorY + 1.08;
-  box({ x: ventX - 0.12, z: insideZ1 - 0.06, w: 0.24, d: 0.06, y: capY, h: 0.22, mat: materials.guard });           // 실내 벽붙이 배기팬 그릴(천장선 바로 아래)
-  box({ x: ventX - 0.05, z: insideZ1 - 0.11, w: 0.1, d: 0.06, y: capY + 0.06, h: 0.1, mat: materials.guard });      // 팬 흡입구
-  box({ x: ventX - 0.13, z: buildingBackZ, w: 0.26, d: 0.05, y: capY, h: 0.22, mat: materials.entryFrame });          // 뒤 외벽 외부 환기캡(방수 후드)
-  box({ x: ventX - 0.14, z: buildingBackZ + 0.03, w: 0.28, d: 0.06, y: capY - 0.03, h: 0.05, mat: materials.entryFrame });  // 하단 빗물막이 립
-  label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 'mep');
-})
+// (계단하부 WC 배기구 삭제 — 사용자 요청)
 // (계단실 색면 삭제 — '바닥' 토글의 계단실 색면이 담당. J-③)
 // (안방 색면 삭제 — 주방 색면과 같은 이유. J-③·#22)
 
