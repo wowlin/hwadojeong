@@ -13,6 +13,7 @@ import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2FrontZ, s2WallT, _wBase, roofY,
   s2RoofUnderY, s2RidgeZ, s2RearStair,
   s2Geo, s2F1Top, s2Lvl2, s2Lvl3, s2Ceil1Y, s2Ceil2Y, s2WcSetback3,
+  s2ProjWinW, s2ProjWinH, s2SillSafe,
 } from './constants.js';
 import { s2FrontFixSpans, s2Landing12Y, s2Landing23Y } from './stair.js';
 import { s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Ecu3Objects, s2Floor1Objects } from '../groups.js';
@@ -250,35 +251,35 @@ export function buildS2Walls() {
     eyebrowRoof('z', +1, s2BackZ,    bdCx, (backDoorOpen.a1 - backDoorOpen.a0) + 0.40, backDoorOpen.headY + 0.25, '뒤 출입문', 0.8, false);   // 뒤 출입문 위(+Z) — 밖열림 대비: 문 상단서 0.25m 올리고 까치발 제거(캔틸레버)
   });
   // 2·3층 화장실 왼쪽(안방쪽·高X) 외벽 프로젝트(어닝) 시스템창(단일 출처) — 창대 바닥+1.5m·폭0.8(Z)×높0.8·상부경첩 바깥밀이. 비올 때도 환기, 기계배기와 병행.
-  const wcWinCz = (s2BackZ - t) - 0.3 - 0.3;   // 화장실 창 Z중앙 — 뒤 외벽 안쪽서 0.3m 이격(창 뒤끝) + 반폭 0.3
-  const wcWinP0 = wcWinCz - 0.3, wcWinP1 = wcWinCz + 0.3;              // 폭 0.6m(Z 스팬)
+  const wcWinCz = (s2BackZ - t) - 0.3 - s2ProjWinW / 2;   // 화장실 창 Z중앙 — 뒤 외벽 안쪽서 0.3m 이격(창 뒤끝) + 반폭
+  const wcWinP0 = wcWinCz - s2ProjWinW / 2, wcWinP1 = wcWinCz + s2ProjWinW / 2;              // 프로젝트창 폭(Z 스팬) — 공통 규격
   // 2층 안방(앞 트인 방) 창 — 접한 3면(앞·좌·우) 미서기. 창대 바닥+1.2m(추락안전)·창높이 1.0m(상단 2.2m). 정면 픽스창 위 인방(헤더) 자리 0.5m 확보. 뒤벽은 화장실·계단이라 막힘.
   {
     const inX0w = s2X0 + t, inX1w = s2W - t;
-    const abSill = lvl2 + 1.2, abHead = lvl2 + 2.2;             // 창대 1.2(추락안전) · 상단 2.2(천장 밑 0.5m — 픽스창 인방 확보) · 높이 1.0
+    const abSill = lvl2 + s2SillSafe, abHead = lvl2 + 2.2;             // 창대 1.2(추락안전) · 상단 2.2(천장 밑 0.5m — 픽스창 인방 확보) · 높이 1.0
     const ow = (p0, p1) => ({ p0, p1, sillY: abSill, headY: abHead });
     const sideCz = s2FrontZ + 0.6 + 0.8;                        // 좌·우 측창 앞뒤 중앙 — 앞 외벽 바깥서 0.6m 시작·짝폭 0.8m×2짝=1.6m(1층 전면창 기준)
     const abFront = s2FrontFixSpans().map(s => ow(s.p0, s.p1));   // 정면 픽스창 좌우 2개 — 3층 게스트룸1·2 정면창과 동일 X스팬(같은 폭·수직 정렬), 가운데 전단벽
     const abSide  = [ow(sideCz - 0.8, sideCz + 0.8)];                            // 측면 2짝×0.8=1.6m (좌·우 동일)
     captureInto(s2Wall2Objects, () => {
       const corrX2 = s2Geo.corrX;                                       // 앞·뒤 복도창 X중앙(3층 복도창과 동일 X — 단일 출처)
-      const fCorr2 = { p0: corrX2 - 0.3, p1: corrX2 + 0.3, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 };   // 앞 프로젝트창 0.6×0.6·창대 바닥+1.2(양옆 정면 픽스창과 동일)
+      const fCorr2 = { p0: corrX2 - s2ProjWinW / 2, p1: corrX2 + s2ProjWinW / 2, sillY: lvl2 + s2SillSafe, headY: lvl2 + s2SillSafe + s2ProjWinH };   // 앞 프로젝트창(공통 규격)·창대 추락안전(양옆 정면 픽스창과 동일)
       wallStrip('x', s2FrontZ, inX0w, inX1w, y1, y2, [...abFront, fCorr2], EW);        // 앞벽 — 정면 픽스창 + 앞 프로젝트창
-      const bCorr2 = { p0: corrX2 - 0.3, p1: corrX2 + 0.3, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 };   // 0.6×0.6·창대 바닥+1.2
+      const bCorr2 = { p0: corrX2 - s2ProjWinW / 2, p1: corrX2 + s2ProjWinW / 2, sillY: lvl2 + s2SillSafe, headY: lvl2 + s2SillSafe + s2ProjWinH };   // 공통 규격·추락안전 창대
       const [sSpan2] = s2FrontFixSpans();   // 2층 계단실 뒤벽 픽스창 — 오른쪽(주방쪽·低X) 가장자리(sSpan2.p0) 고정
       const stairBackWin2W = 0.4;           // 너비 40cm(채광용 세로 슬롯 — 디자인·구조 유리)
-      const stairBackWin2 = { p0: sSpan2.p0, p1: sSpan2.p0 + stairBackWin2W, sillY: s2Landing12Y + 1.2, headY: s2Landing23Y - S2_STAIR.tTh - 0.6 };   // 하단=1-2 계단참 윗면+1.2m · 상단=2-3 계단참 아랫면−0.6m(3층 창-처마 관계와 동일)
+      const stairBackWin2 = { p0: sSpan2.p0, p1: sSpan2.p0 + stairBackWin2W, sillY: s2Landing12Y + s2SillSafe, headY: s2Landing23Y - S2_STAIR.tTh - 0.6 };   // 하단=1-2 계단참 윗면+1.2m · 상단=2-3 계단참 아랫면−0.6m(3층 창-처마 관계와 동일)
       wallStrip('x', s2BackZ - t, inX0w, inX1w, y1, y2, [bCorr2, stairBackWin2], EW);   // 뒤벽 — 층계참 프로젝트창 + 계단실 픽스창
       wallStrip('z', s2X0, s2FrontZ, s2BackZ, y1, y2, abSide, EW);       // 우측벽(주방쪽)
-      wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + 1.2, headY: lvl2 + 1.8 }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 프로젝트창
+      wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y1, y2, [...abSide, { p0: wcWinP0, p1: wcWinP1, sillY: lvl2 + s2SillSafe, headY: lvl2 + s2SillSafe + s2ProjWinH }], EW);   // 좌측벽(안방쪽) — 안방창 + 화장실 프로젝트창
       for (const o of abFront) frontFixSash(o.p0, s2FrontZ + 0.13, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 안방 정면 픽스창
-      frontAwningSash(fCorr2.p0, s2FrontZ + 0.13, 0.6, lvl2 + 1.2, 0.6, -1);   // 2층 앞 프로젝트창(低Z 바깥) — 창대 바닥+1.2(양옆 픽스창과 동일)
+      frontAwningSash(fCorr2.p0, s2FrontZ + 0.13, s2ProjWinW, fCorr2.sillY, s2ProjWinH, -1);   // 2층 앞 프로젝트창(低Z 바깥) — 창대 바닥+1.2(양옆 픽스창과 동일)
       label(`앞 프로젝트창 ${fmtDim(fCorr2.p1 - fCorr2.p0)}×${fmtDim(fCorr2.headY - fCorr2.sillY)}m`, corrX2, lvl2 + 1.2 + 0.4, s2FrontZ - 0.1, 'opening');
       for (const o of abSide) sideSash(s2X0 + 0.17, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);   // 우(주방쪽)
       for (const o of abSide) sideSash(s2W - 0.13, o.p0, o.p1 - o.p0, o.sillY, o.headY - o.sillY);    // 좌(안방쪽)
-      awningSash(s2W - 0.13, wcWinP0, 0.6, lvl2 + 1.2, 0.6);             // 2층 화장실 왼쪽벽 프로젝트창
-      label(`화장실 프로젝트창 ${fmtDim(wcWinP1 - wcWinP0)}×${fmtDim(0.6)}m`, s2W + 0.1, lvl2 + 1.2 + 0.4, wcWinCz, 'opening');
-      frontAwningSash(bCorr2.p0, s2BackZ - 0.13, 0.6, lvl2 + 1.2, 0.6, 1);   // 2층 층계참 뒤벽 프로젝트창(高Z 바깥)
+      awningSash(s2W - 0.13, wcWinP0, s2ProjWinW, lvl2 + s2SillSafe, s2ProjWinH);             // 2층 화장실 왼쪽벽 프로젝트창
+      label(`화장실 프로젝트창 ${fmtDim(wcWinP1 - wcWinP0)}×${fmtDim(s2ProjWinH)}m`, s2W + 0.1, lvl2 + 1.2 + 0.4, wcWinCz, 'opening');
+      frontAwningSash(bCorr2.p0, s2BackZ - 0.13, s2ProjWinW, bCorr2.sillY, s2ProjWinH, 1);   // 2층 층계참 뒤벽 프로젝트창(高Z 바깥)
       label(`층계참 프로젝트창 ${fmtDim(bCorr2.p1 - bCorr2.p0)}×${fmtDim(bCorr2.headY - bCorr2.sillY)}m`, corrX2, lvl2 + 1.2 + 0.4, s2BackZ + 0.1, 'opening');
       frontFixSash(stairBackWin2.p0, s2BackZ - 0.13, stairBackWin2.p1 - stairBackWin2.p0, stairBackWin2.sillY, stairBackWin2.headY - stairBackWin2.sillY);   // 2층 계단실 뒤벽 픽스창
       label(`계단실 뒤벽 픽스창 ${fmtDim(stairBackWin2.p1 - stairBackWin2.p0)}×${fmtDim(stairBackWin2.headY - stairBackWin2.sillY)}m`, (stairBackWin2.p0 + stairBackWin2.p1) / 2, (stairBackWin2.sillY + stairBackWin2.headY) / 2, s2BackZ + 0.1, 'opening');
@@ -296,36 +297,36 @@ export function buildS2Walls() {
   const ecuLou3Sill = eaveY + 0.15, ecuLou3Head = eaveY + 0.65;   // 처마선 위 인방 0.15 두고 시작, 높이 0.5m
   captureInto(s2Wall3Objects, () => {                                     // 3층 외벽 — 3층 슬래브 밑면~처마/용마루(박공)
     // 앞(처마까지) — 게스트룸 정면 픽스창 2개(창대 바닥+1.2m 추락안전·높이 0.5·상단 1.7, 처마 선단 밑 — 처마에 안 가림). 폭 2.0m, 각 방 앞부분 중앙 가로창.
-    const fWinSill = lvl3 + 1.2, fWinHead = lvl3 + 1.7, pWinHead = lvl3 + 1.7;   // 픽스창 상단 1.7(처마 선단 밑) / 복도·계단 창 상단 1.7
+    const fWinSill = lvl3 + s2SillSafe, fWinHead = lvl3 + 1.7, pWinHead = lvl3 + 1.7;   // 픽스창 상단 1.7(처마 선단 밑) / 복도·계단 창 상단 1.7
     const [fSpan1, fSpan2] = s2FrontFixSpans();              // 방 안서 양옆 벽면 30cm 대칭(2층과 공유하는 단일 출처)
     const fWin1 = { ...fSpan1, sillY: fWinSill, headY: fWinHead };   // 게스트룸1(低X): 주방측 외벽 ~ 옆벽(far3)
     const fWin2 = { ...fSpan2, sillY: fWinSill, headY: fWinHead };   // 게스트룸2(高X): 복도벽 ~ 안방측 외벽
     const fx1 = (fWin1.p0 + fWin1.p1) / 2, fx2 = (fWin2.p0 + fWin2.p1) / 2;   // 각 방 정면창 X중앙(라벨용)
     // 앞뒤(가운데 세로) 복도 — 게스트룸1·2 사이 중앙 스파인(홈리프트 低X면 −2.1). 앞·뒤 외벽에 프로젝트창 각 1개(정면 픽스창과 같은 창대0.9·높이0.8, 폭 0.8).
     const corrX = s2Geo.corrX;                              // 앞뒤 복도 실통로 X중앙 — s2Geo.corrX 단일 출처(벽 중심선 중앙서 +7.5cm)
-    const fCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: pWinHead };
+    const fCorr = { p0: corrX - s2ProjWinW / 2, p1: corrX + s2ProjWinW / 2, sillY: lvl3 + 1.1, headY: pWinHead };
     wallStrip('x', s2FrontZ, s2X0 + t, s2W - t, y2, eaveY, [fWin1, fWin2, fCorr], EW);
     frontFixSash(fWin1.p0, s2FrontZ + 0.13, fWin1.p1 - fWin1.p0, fWinSill, fWinHead - fWinSill);   // 게스트룸1 정면 픽스창
     frontFixSash(fWin2.p0, s2FrontZ + 0.13, fWin2.p1 - fWin2.p0, fWinSill, fWinHead - fWinSill);   // 게스트룸2 정면 픽스창
-    frontAwningSash(fCorr.p0, s2FrontZ + 0.13, 0.6, lvl3 + 1.1, 0.6, -1);   // 앞 복도 프로젝트창(低Z 바깥)
+    frontAwningSash(fCorr.p0, s2FrontZ + 0.13, s2ProjWinW, fCorr.sillY, s2ProjWinH, -1);   // 앞 복도 프로젝트창(低Z 바깥)
     label(`게스트룸1 정면 픽스창 ${fmtDim(fWin1.p1 - fWin1.p0)}×${fmtDim(fWinHead - fWinSill)}m`, fx1, fWinSill + 0.25, s2FrontZ - 0.1, 'opening');
     label(`게스트룸2 정면 픽스창 ${fmtDim(fWin2.p1 - fWin2.p0)}×${fmtDim(fWinHead - fWinSill)}m`, fx2, fWinSill + 0.25, s2FrontZ - 0.1, 'opening');
-    label(`앞 복도 프로젝트창 ${fmtDim(fCorr.p1 - fCorr.p0)}×${fmtDim(0.6)}m`, corrX, lvl3 + 1.1 + 0.4, s2FrontZ - 0.1, 'opening');
+    label(`앞 복도 프로젝트창 ${fmtDim(fCorr.p1 - fCorr.p0)}×${fmtDim(s2ProjWinH)}m`, corrX, lvl3 + 1.1 + 0.4, s2FrontZ - 0.1, 'opening');
     // 뒤(처마까지) — 앞뒤 복도 뒤쪽 프로젝트창 1개 + 계단실 오른쪽(주방측·低X) 세로 픽스창 1개
-    const bCorr = { p0: corrX - 0.3, p1: corrX + 0.3, sillY: lvl3 + 1.1, headY: pWinHead };
+    const bCorr = { p0: corrX - s2ProjWinW / 2, p1: corrX + s2ProjWinW / 2, sillY: lvl3 + 1.1, headY: pWinHead };
     const [sSpan] = s2FrontFixSpans();   // 계단실 뒤벽 픽스창 — 오른쪽(주방쪽·低X) 가장자리(sSpan.p0)를 고정
     const stairBackWinW = 0.4;           // 너비 40cm(채광용 세로 슬롯 — 디자인·구조 유리)
-    const stairBackWin = { p0: sSpan.p0, p1: sSpan.p0 + stairBackWinW, sillY: s2Landing23Y + 1.2, headY: pWinHead };   // 하단=2-3 계단참 윗면+1.2m · 상단=뒤 복도창 상단(1.7m, 유지)
+    const stairBackWin = { p0: sSpan.p0, p1: sSpan.p0 + stairBackWinW, sillY: s2Landing23Y + s2SillSafe, headY: pWinHead };   // 하단=2-3 계단참 윗면+1.2m · 상단=뒤 복도창 상단(1.7m, 유지)
     const stairBackWinX = (stairBackWin.p0 + stairBackWin.p1) / 2;
     wallStrip('x', s2BackZ - t, s2X0 + t, s2W - t, y2, eaveY, [bCorr, stairBackWin], EW);
-    frontAwningSash(bCorr.p0, s2BackZ - 0.13, 0.6, lvl3 + 1.1, 0.6, 1);   // 뒤 복도 프로젝트창(高Z 바깥)
-    label(`뒤 복도 프로젝트창 ${fmtDim(bCorr.p1 - bCorr.p0)}×${fmtDim(0.6)}m`, corrX, lvl3 + 1.1 + 0.4, s2BackZ + 0.1, 'opening');
+    frontAwningSash(bCorr.p0, s2BackZ - 0.13, s2ProjWinW, bCorr.sillY, s2ProjWinH, 1);   // 뒤 복도 프로젝트창(高Z 바깥)
+    label(`뒤 복도 프로젝트창 ${fmtDim(bCorr.p1 - bCorr.p0)}×${fmtDim(s2ProjWinH)}m`, corrX, lvl3 + 1.1 + 0.4, s2BackZ + 0.1, 'opening');
     frontFixSash(stairBackWin.p0, s2BackZ - 0.13, stairBackWinW, stairBackWin.sillY, pWinHead - stairBackWin.sillY);   // 계단실 뒤벽 세로 픽스창
     label(`계단실 뒤벽 픽스창 ${fmtDim(stairBackWinW)}×${fmtDim(pWinHead - stairBackWin.sillY)}m`, stairBackWinX, stairBackWin.sillY + (pWinHead - stairBackWin.sillY) / 2, s2BackZ + 0.1, 'opening');
     const gableTop = [[s2FrontZ, eaveY], [s2BackZ, eaveY], [zMid, peakY]];   // 처마 위 박공 삼각(창은 처마 밑 직사각 구간에만)
     // 3층 게스트룸 창(단일 출처) — 좌우 측벽에 각각. 2층 안방 좌우창과 동일: 앞 외벽 바깥서 0.6m 시작·미서기 2짝×0.8=1.6m·창대 바닥+1.2m(추락안전). 상단은 외벽 최저(2.4) 밑 0.3m=2.1m라 높이 0.9m(층고 낮아 축소).
     const gWinCz = s2FrontZ + 0.6 + 0.8;                     // 게스트룸 창 Z중앙 — 앞 외벽 바깥서 0.6m 시작·짝폭 0.8m×2짝(2층 측창과 동일)
-    const gWinP0 = gWinCz - 0.8, gWinP1 = gWinCz + 0.8, gSill = lvl3 + 1.2, gHead = lvl3 + 2.1;
+    const gWinP0 = gWinCz - 0.8, gWinP1 = gWinCz + 0.8, gSill = lvl3 + s2SillSafe, gHead = lvl3 + 2.1;
     // 우(주방, 低X) — 게스트룸1 측창: 처마 밑 직사각(창 개구)+처마 위 삼각으로 분리
     wallStrip('z', s2X0, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }], EW);
     yzWallPrism({ x: s2X0, points: gableTop, thickness: t, mat: EW });
@@ -333,7 +334,7 @@ export function buildS2Walls() {
     label(`게스트룸1 측창 ${fmtDim(gWinP1 - gWinP0)}×${fmtDim(gHead - gSill)}m`, s2X0 - 0.1, gSill + 0.45, gWinCz, 'opening');
     // 좌(안방, 高X) — 화장실 프로젝트창 + 게스트룸2 측창 + 실외기 방열 루버: 처마 밑 직사각(세 개구)+처마 위 삼각으로 분리
     // 왼쪽 복도창 자리 → 2층 냉난방기 실외기 방열 루버 개구(실외기 앞면 토출·바깥). 폭 1.1(Z)×높0.8, 창대 바닥+0.05 (개구 좌표는 위 블록 단일 출처)
-    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + 1.2, headY: lvl3 + 1.8 }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLouSill, headY: ecuLouHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLou2Sill, headY: ecuLou2Head }], EW);
+    wallStrip('z', s2W - t, s2FrontZ, s2BackZ, y2, eaveY, [{ p0: wcWinP0, p1: wcWinP1, sillY: lvl3 + s2SillSafe, headY: lvl3 + s2SillSafe + s2ProjWinH }, { p0: gWinP0, p1: gWinP1, sillY: gSill, headY: gHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLouSill, headY: ecuLouHead }, { p0: ecuLouP0, p1: ecuLouP1, sillY: ecuLou2Sill, headY: ecuLou2Head }], EW);
     // 상단 배기 루버 — 처마 위 박공 삼각벽에 하나 더(굴뚝효과로 더운 공기 위로 배기). 폭=하단 루버와 동일(ecuLouP0~P1), 높이 0.5m로 축소(삼각 안에 맞춤)
     const rU = (z) => s2RoofUnderY(z);                              // 그 z의 박공 밑선(삼각 윗변)
     // 박공 삼각벽(안방쪽)을 상단 배기 루버 개구 둘레로 4조각 분할(x=s2W-t) — 앞쪽(용마루 포함)·뒤쪽·개구 아래·개구 위
@@ -341,8 +342,8 @@ export function buildS2Walls() {
     yzWallPrism({ x: s2W - t, thickness: t, mat: EW, points: [[ecuLouP1, eaveY], [s2BackZ, eaveY], [ecuLouP1, rU(ecuLouP1)]] });
     yzWallPrism({ x: s2W - t, thickness: t, mat: EW, points: [[ecuLouP0, eaveY], [ecuLouP1, eaveY], [ecuLouP1, ecuLou3Sill], [ecuLouP0, ecuLou3Sill]] });
     yzWallPrism({ x: s2W - t, thickness: t, mat: EW, points: [[ecuLouP0, ecuLou3Head], [ecuLouP1, ecuLou3Head], [ecuLouP1, rU(ecuLouP1)], [ecuLouP0, rU(ecuLouP0)]] });
-    awningSash(s2W - 0.13, wcWinP0, 0.6, lvl3 + 1.2, 0.6);                // 3층 화장실 왼쪽벽 프로젝트창
-    label(`화장실 프로젝트창 ${fmtDim(wcWinP1 - wcWinP0)}×${fmtDim(0.6)}m`, s2W + 0.1, lvl3 + 1.2 + 0.4, wcWinCz, 'opening');
+    awningSash(s2W - 0.13, wcWinP0, s2ProjWinW, lvl3 + s2SillSafe, s2ProjWinH);                // 3층 화장실 왼쪽벽 프로젝트창
+    label(`화장실 프로젝트창 ${fmtDim(wcWinP1 - wcWinP0)}×${fmtDim(s2ProjWinH)}m`, s2W + 0.1, lvl3 + 1.2 + 0.4, wcWinCz, 'opening');
     sideSash(s2W - 0.13, gWinP0, 1.6, gSill, 0.9);           // 게스트룸2 측창(高X·안방쪽)
     label(`게스트룸2 측창 ${fmtDim(gWinP1 - gWinP0)}×${fmtDim(gHead - gSill)}m`, s2W + 0.1, gSill + 0.45, gWinCz, 'opening');
     // 벽 높이(처마·용마루)를 3층 바닥 윗면(lvl3)부터 각각 표기.

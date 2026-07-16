@@ -52,3 +52,5 @@ export const s2Ceil1Y = s2Lvl2 - s2Floor2SlabT;    // 1층 천장(2층 슬래브
 export const s2Ceil2Y = s2Lvl3 - s2Floor3SlabT;    // 2층 천장(3층 슬래브 밑면)
 export const s2WcSetback3 = 0.4;                   // 3층 화장실 앞벽 들임(복도·실외기실 확보) — 화장실·실외기실·콘센트 공유
 export const s2F2AcZ0 = s2FrontZ + 2.2 + 0.30;     // 2층 냉난방기 실내기 앞끝 Z — 설치(floor2)·콘센트(outlets) 공유(#10)
+export const s2ProjWinW = 0.6, s2ProjWinH = 0.6;   // 프로젝트(어닝)창 공통 규격(폭×높이) — 복도·층계참·화장실 창이 공유(§4-2)
+export const s2SillSafe = 1.2;                      // 추락안전 창대 높이(바닥+1.2m) — 2·3층 창이 공유(§4-2)
