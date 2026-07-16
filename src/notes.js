@@ -18,6 +18,7 @@ import {
 } from './s2/constants.js';
 
 const mm = (v) => Math.round(v * 1000);                // m → mm 정수(메모 표기용) — 전 메모 공용 헬퍼 1벌(#20)
+const lotArea = 161;                                   // 대지면적(㎡, 잡종지 등기 실측 — 장암리 639-25) — 두 도면 개요가 공유(#19). 모델 부재 아님(등기값)
 
 // 우측 설계 메모 — 모듈별 추가 설명. 현재 보이는 모듈에 해당하는 메모만 메뉴 순서로 표시.
 export const NOTES = {
@@ -216,7 +217,6 @@ export const NOTES = {
     ].join('\n') };
   },
   get siteOverview() {                                     // 대지·지역 개요 + 건폐/용적 검토 — 항상 기본 표시. 숫자는 코드(s2W·s2D·이격 상수)서 파생.
-    const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
     const floors = 3;                                      // 지상 층수
     const bldgArea = s2W * s2D;                            // 건축면적(1층 발자국)
     const totalArea = bldgArea * floors;                  // 연면적(전 층 합)
@@ -241,7 +241,6 @@ export const NOTES = {
     ].join('\n') };
   },
   get siteOverviewS1() {                                   // 대지·지역 개요(1층+다락 안) — s1 도면 상단 상시 표시. 숫자는 코드(building*·deckRoof·이격 상수)서 파생.
-    const lotArea = 161;                                   // 대지면적(잡종지, 등기) — 장암리 639-25
     const houseArea = buildingW * buildingD;               // 집 건축면적(외벽 중심선 수평투영)
     const deckRoofArea = deckRoofBcrArea;                  // 포치(데크 지붕) 건축면적 — 외곽 기둥 중심선 안쪽(§119① 2호)
     const bldgArea = houseArea + deckRoofArea;            // 건축면적 = 집 + 포치(지붕 덮인 기둥 안쪽 전부)
