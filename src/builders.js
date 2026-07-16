@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { scene } from './scene.js';
 import { materials } from './materials.js';
-import { box, addGeometryEdges, lerpPoint, railCylinder } from './primitives.js';
+import { box, addGeometryEdges } from './primitives.js';
 import {
   buildingW,
   FLOOR_RIM_W, FLOOR_JOIST_H, FLOOR_JOIST_W, FLOOR_JOIST_SPACING,
@@ -39,39 +39,6 @@ export function floorFrame(x0, z0, w, d, yBottom, mat, joistXs = null, rim = FLO
   }
 }
 
-// ── 레이아웃 무클로저 기하 빌더(난간·박공 벽/캡·지붕 슬래브) — 인자 + import 상수만 의존 ──
-export function addStairRailingSegment(startBase, endBase, {
-  height = 0.95,
-  postSpacing = 0.55,
-  balusterSpacing = 0.18,
-  sideOffset = 0
-} = {}) {
-  const start = [startBase[0] + sideOffset, startBase[1], startBase[2]];
-  const end = [endBase[0] + sideOffset, endBase[1], endBase[2]];
-  const horizontalLength = Math.hypot(end[0] - start[0], end[2] - start[2]);
-  const postCount = Math.max(2, Math.ceil(horizontalLength / postSpacing) + 1);
-  const balusterCount = Math.max(2, Math.ceil(horizontalLength / balusterSpacing) + 1);
-
-  const handStart = [start[0], start[1] + height, start[2]];
-  const handEnd = [end[0], end[1] + height, end[2]];
-  const midStart = [start[0], start[1] + height * 0.55, start[2]];
-  const midEnd = [end[0], end[1] + height * 0.55, end[2]];
-
-  railCylinder(handStart, handEnd, 0.035);
-  railCylinder(midStart, midEnd, 0.018);
-
-  for (let i = 0; i < postCount; i += 1) {
-    const t = postCount === 1 ? 0 : i / (postCount - 1);
-    const base = lerpPoint(start, end, t);
-    railCylinder([base[0], base[1], base[2]], [base[0], base[1] + height, base[2]], 0.028);
-  }
-
-  for (let i = 1; i < balusterCount - 1; i += 1) {
-    const t = i / (balusterCount - 1);
-    const base = lerpPoint(start, end, t);
-    railCylinder([base[0], base[1] + 0.08, base[2]], [base[0], base[1] + height - 0.08, base[2]], 0.012);
-  }
-}
 
 export function yzWallPrism({ x, points, thickness = 0.08, mat }) {
   const vertices = [];
@@ -104,34 +71,6 @@ export function yzWallPrism({ x, points, thickness = 0.08, mat }) {
   return mesh;
 }
 
-export function gableEndWallThicknessCap({ x0, x1, z0, zMid, z1, y0, y1, mat }) {
-  const lift = 0.008;
-  const strips = [
-    [
-      x0, y0 + lift, z0,
-      x1, y0 + lift, z0,
-      x1, y1 + lift, zMid,
-      x0, y1 + lift, zMid
-    ],
-    [
-      x0, y0 + lift, z1,
-      x0, y1 + lift, zMid,
-      x1, y1 + lift, zMid,
-      x1, y0 + lift, z1
-    ]
-  ];
-
-  for (const strip of strips) {
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(strip), 3));
-    geometry.setIndex([0, 1, 2, 0, 2, 3]);
-    geometry.computeVertexNormals();
-    const mesh = new THREE.Mesh(geometry, mat);
-    mesh.castShadow = false;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-  }
-}
 
 export function slopedWallTopCap({ x, z0, z1, y0, y1, thickness, mat }) {
   const lift = 0.006;

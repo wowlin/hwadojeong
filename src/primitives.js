@@ -73,19 +73,6 @@ export function fmtDim(v) {
   return s.includes('.') ? s : `${s}.0`;
 }
 
-export function stairWallTopCap({ x, z, w, d, topY }) {
-  return box({
-    x,
-    z,
-    w,
-    d,
-    y: topY,
-    h: 0.018,
-    mat: materials.wallTop,
-    cast: false,
-    receive: true
-  });
-}
 
 export function railCylinder(start, end, radius = 0.035, cast = false) {
   const a = new THREE.Vector3(...start);
