@@ -19,14 +19,6 @@ export function installShell() {
           </div>
         </section>
         <section class="menu-group" data-scheme="s2">
-          <h2 class="menu-title">외벽</h2>
-          <div class="seg-row" role="group" aria-label="외벽 1층·2층·3층">
-            <button type="button" class="seg-btn" id="bF1Wall">1층</button>
-            <button type="button" class="seg-btn" id="bF2Wall">2층</button>
-            <button type="button" class="seg-btn" id="bF3Wall">3층</button>
-          </div>
-        </section>
-        <section class="menu-group" data-scheme="s2">
           <h2 class="menu-title">공통</h2>
           <div class="seg-row" role="group" aria-label="공통 계단·홈리프트">
             <button type="button" class="seg-btn" id="bStair">계단</button>
@@ -35,21 +27,24 @@ export function installShell() {
         </section>
         <section class="menu-group" data-scheme="s2">
           <h2 class="menu-title">3층</h2>
-          <div class="seg-row" role="group" aria-label="3층 바닥·실외기">
+          <div class="seg-row" role="group" aria-label="3층 외벽·바닥·실외기">
+            <button type="button" class="seg-btn" id="bF3Wall">외벽</button>
             <button type="button" class="seg-btn" id="bF3Floor">바닥</button>
             <button type="button" class="seg-btn" id="bF3Ecu">실외기</button>
           </div>
         </section>
         <section class="menu-group" data-scheme="s2">
           <h2 class="menu-title">2층</h2>
-          <div class="seg-row" role="group" aria-label="2층 바닥·실링팬">
+          <div class="seg-row" role="group" aria-label="2층 외벽·바닥·실링팬">
+            <button type="button" class="seg-btn" id="bF2Wall">외벽</button>
             <button type="button" class="seg-btn" id="bF2Floor">바닥</button>
             <button type="button" class="seg-btn" id="bF2Fan">실링팬</button>
           </div>
         </section>
         <section class="menu-group" data-scheme="s2">
           <h2 class="menu-title">1층</h2>
-          <div class="seg-row" role="group" aria-label="1층 실링팬">
+          <div class="seg-row" role="group" aria-label="1층 외벽·실링팬">
+            <button type="button" class="seg-btn" id="bF1Wall">외벽</button>
             <button type="button" class="seg-btn" id="bF1Fan">실링팬</button>
           </div>
           <div class="seg-row" role="group" aria-label="1층 식탁·주방·난로">
