@@ -9,7 +9,7 @@ import {
   matFoundationH, roofSlopeDeg, hedgeBoundaryGap, neighborSetback,
 } from '../src/constants.js';
 import {
-  buildingFrontZ, insideX0, insideX1, insideZ0, insideZ1, insideD,
+  buildingFrontZ, insideX0, insideX1, insideD,
   firstFloorY, firstWallY, secondY, firstKitchenX, firstKitchenW, firstFamilyX, firstFamilyW,
   stairLowXRunX, stairHighXRunX, stairHighXWallX, familyInnerWallX, familyInnerWallW,
   stairBottomLandingD, gableRise, roofSlopeTan, atticRidgeZ, lotX0, lotZ1,
