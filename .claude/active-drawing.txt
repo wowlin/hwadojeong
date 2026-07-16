@@ -1,0 +1,2 @@
+s1
+현재 활성 작업 도면 = s1(1층+다락 구조). 부재 편집은 s1 모듈(src/s1/floor1·attic·roof·deck·plan·stair.js)과 공유 모듈(src/site.js·labels·openings·fixtures 등)에서만: s1 좌표(buildingW·buildingBackZ·firstFloorY·secondWallY…)와 s1 그룹(firstFloorObjects·firstOutletObjects·roofObjects·footprintObjects…)으로만 추가한다. s2(3층) 모듈(src/s2/*.js)·s2 좌표(s2W·s2X0·s2BackZ·s2FrontZ·S2_STAIR…)·s2*Objects 그룹은 절대 건드리지 마라. 도면이 바뀌면 첫 줄(도면 id)과 이 고지문(2행 이하 — 훅이 이 부분을 읽는다)을 함께 고친다.

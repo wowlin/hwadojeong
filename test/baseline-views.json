@@ -3,10 +3,10 @@
   "bStair+bLift": "db1932f8ba945d6cc29c9f57b1dd9464",
   "bF1Wall+bF2Wall+bF3Wall": "9debb35b5cbbb833201ba150e817e58c",
   "bF3Roof+bF3Solar": "93ee4dcb3534dd8574f6aa46691d978a",
-  "bF1Foundation+bF1Floor+bF1Sink+bF1Stove": "e115f8b8170e3e169479bef76246756c",
+  "bF1Foundation+bF1Floor+bF1Sink+bF1Stove": "130fbb7c7149d6e956d36267aa617d96",
   "tabS1": "53177ad31b19e6359f0843c697193c10",
-  "tabS1+bFirstWall+bFirstOutlet+bFirstCeiling": "a4f5730ef7e32c9251bac4a0c56af4ad",
-  "tabS1+bRoof+bSolar+bLoft+bAtticExtWall+bAtticInnerWall": "ff1121fb11d12ace29440a944faf826b",
-  "tabS1+bDeck+bFolding+bSunRoof+bFrame": "302d1fea8a03974b828cfd962abbec94",
-  "tabS1+bMatFull+bS1Stair+bBath+bFirstFloorFinish+bHedge+bFence": "03db40e61b855fdea8ba3254bcf9ca8a"
+  "tabS1+bFirstWall+bFirstOutlet+bFirstCeiling": "47c13aa5c53c2443671ccbc649ec2d1f",
+  "tabS1+bRoof+bSolar+bLoft+bAtticExtWall+bAtticInnerWall": "dce1d4a4d2e669ea5195fcfb481710ab",
+  "tabS1+bDeck+bFolding+bSunRoof+bFrame": "4d2d4c907876da969396cbc9ad10fbdd",
+  "tabS1+bMatFull+bS1Stair+bBath+bFirstFloorFinish+bHedge+bFence": "14ab1537a8b30063415085ebe7f8520d"
 }

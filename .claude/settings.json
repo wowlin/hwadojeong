@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/aine/work/three-house/scripts/no-geosil.sh",
+            "statusMessage": "금지어 '거실' 차단"
+          },
+          {
+            "type": "command",
+            "command": "/Users/aine/work/three-house/scripts/lint-gate.sh",
+            "statusMessage": "코드 품질(eslint) 게이트"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=/Users/aine/work/three-house/.claude/active-drawing.txt; if [ -f \"$f\" ]; then tail -n +2 \"$f\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"UserPromptSubmit\",additionalContext:(\"[활성 도면 강제 고지] \"+.)}}'; fi",
+            "statusMessage": "활성 작업 도면 고지"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in */src/*.js) d=$(git -C /Users/aine/work/three-house diff -- \"$f\"); if echo \"$d\" | grep -q '\\bcolor\\b'; then echo \"$d\" | jq -Rs '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:(\"색 변경 감지 — 전체 diff:\\n\"+.)}}'; else s=$(echo \"$d\" | diffstat -C 2>/dev/null || echo \"$d\" | head -3); echo \"$s\" | jq -Rs --arg f \"$f\" '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:($f+\" diffstat:\\n\"+.)}}'; fi ;; esac",
+            "statusMessage": "src/ 모델 코드 diff 확인"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "harness@harness-marketplace": true
+  }
+}
