@@ -3,9 +3,9 @@
 import * as THREE from 'three';
 import { scene } from '../scene.js';
 import { materials } from '../materials.js';
-import { box, fmtDim, captureInto } from '../primitives.js';
+import { box, captureInto } from '../primitives.js';
 import { label } from '../labels.js';
-import { chairFrameMat, toiletAtBack } from '../fixtures.js';
+import { chairFrameMat, toiletAtBack, fridge311AtBack } from '../fixtures.js';
 import { interiorDoorW, interiorDoorH } from '../constants.js';
 import { s2Geo, s2F2, s2WallInner, s2Floor2SlabT, s2Floor3SlabT, s2F2AcZ0 } from './constants.js';
 import { s2Floor2Objects } from '../groups.js';
@@ -98,22 +98,8 @@ captureInto(s2Floor2Objects, () => {
   const bdgZ1 = zB0 - 0.20, bdgZ0 = bdgZ1 - bdgD;
   box({ x: inX0, z: bdgZ0, w: bdgW, d: bdgD, y: levels[1], h: bdgH, mat: materials.sinkCabinet });
   label(`이불장 ${bdgW.toFixed(1)}×${bdgD.toFixed(1)}m`, inX0 + bdgW / 2, levels[1] + bdgH + 0.3, bdgZ0 + bdgD / 2, 'furniture');
-  // 안방 한문형 냉장고 — 1층 기존 냉장고와 동일(311L, 0.545×0.689×1.70). 화장실 앞벽 왼쪽 끝(안방 외벽 高X 코너)에 등 붙임. 문=방(低Z)쪽.
-  {
-    const rW = 0.545, rD = 0.689, rH = 1.70;                  // 폭(X, 화장실벽 따라)·깊이(Z, 방쪽 돌출)·높이
-    const rBackZ = zB0 - 0.20;                                // 화장실 앞벽 방(低Z)쪽 면
-    const rFrontZ = rBackZ - rD;                              // 냉장고 앞면 z
-    const rx0 = inX1 - rW;                                    // 안방 외벽(高X)에 밀착
-    box({ x: rx0, z: rFrontZ, w: rW, d: rD, y: levels[1], h: rH, mat: materials.fridge });   // 본체
-    // 문(2도어 상부냉동) — 문 면=방(低Z)쪽, 경첩=안방 외벽(高X)쪽, 손잡이=주방(低X)쪽 → 문은 방 안으로 열림
-    const rdt = 0.02, rfzH = rH * 0.30;
-    box({ x: rx0 + 0.005, z: rFrontZ - rdt, w: rW - 0.01, d: rdt, y: levels[1] + rH - rfzH, h: rfzH - 0.01, mat: materials.fridgeDoor });   // 상부 냉동실 문
-    box({ x: rx0 + 0.005, z: rFrontZ - rdt, w: rW - 0.01, d: rdt, y: levels[1] + 0.01, h: rH - rfzH - 0.02, mat: materials.fridgeDoor });   // 하부 냉장실 문
-    const rhx = rx0 + 0.07;                                   // 손잡이 x(주방 低X = 경첩 반대편)
-    box({ x: rhx, z: rFrontZ - rdt - 0.03, w: 0.04, d: 0.03, y: levels[1] + rH - rfzH - 0.42, h: 0.4, mat: materials.guard });   // 하부 문 손잡이
-    box({ x: rhx, z: rFrontZ - rdt - 0.03, w: 0.04, d: 0.03, y: levels[1] + rH - rfzH + 0.05, h: 0.28, mat: materials.guard });  // 상부 문 손잡이
-    label(`한문형 냉장고 311L · ${fmtDim(rW)}×${fmtDim(rD)}`, rx0 + rW / 2, levels[1] + rH + 0.15, rFrontZ + rD / 2, 'furniture');
-  }
+    // 안방 한문형 냉장고 — 1층 기존 냉장고와 동일(311L). 화장실 앞벽 왼쪽 끝(안방 외벽 高X 코너)에 등 붙임. 문=방(低Z)쪽.
+    fridge311AtBack({ x0: inX1 - 0.545, backZ: zB0 - 0.20, y: levels[1] });   // fixtures 1벌(#12) — 문은 방 안으로 열림(경첩 안방 외벽쪽·손잡이 주방쪽)
   // 벽걸이 냉난방기(위니아 11평형 MRW11HSF, 실내기 1003×310×222) — 냉장고 위 왼쪽 벽(안방 외벽 高X)에 천장 가까이. 뒤(분리벽쪽)에 맞춰 앞(-Z)으로 뻗음. 토출 -X(실내).
   {
     const acLen = 1.003, acH = 0.310, acD = 0.222;

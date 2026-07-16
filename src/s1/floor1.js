@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
 import { label, planYDim, room, roomText } from '../labels.js';
-import { ceilingFan, outlet } from '../fixtures.js';
+import { ceilingFan, outlet, fridge311AtBack } from '../fixtures.js';
 import { rearSlider, frontAwningSash, sideRearSlider, sideEntryDoor } from '../openings.js';
 import {
   buildingW, buildingD, buildingBackZ, exteriorWall, interiorWall, firstWallHeight,
@@ -192,19 +192,7 @@ captureInto(interiorObjects, () => {
 });
 // 한문형 냉장고(311L, 0.545×0.689×1.70) — s2 것과 동일. 싱크대 끝(高X)과 계단 사이 뒤 외벽에 등붙임. 문=주방(低Z)쪽. '실내' 토글.
 captureInto(interiorObjects, () => {
-  const rW = fridgeW, rD = 0.689, rH = 1.70;                  // 폭(X, 공유)·깊이(Z, 앞으로 돌출)·높이
-  const rBackZ = insideZ1;                                    // 뒤 외벽 안쪽면 등붙임
-  const rFrontZ = rBackZ - rD;                                // 냉장고 앞면 z(주방쪽 -Z)
-  const rx0 = fridgeCx - rW / 2;                              // 싱크대~계단 사이 가운데(공유 중심서 역산)
-  box({ x: rx0, z: rFrontZ, w: rW, d: rD, y: firstFloorY, h: rH, mat: materials.fridge });   // 본체
-  // 문(2도어 상부냉동) — 문 면=주방(低Z)쪽, 경첩=계단(高X)쪽, 손잡이=싱크대(低X)쪽 → 문은 주방으로 열림
-  const rdt = 0.02, rfzH = rH * 0.30;
-  box({ x: rx0 + 0.005, z: rFrontZ - rdt, w: rW - 0.01, d: rdt, y: firstFloorY + rH - rfzH, h: rfzH - 0.01, mat: materials.fridgeDoor });   // 상부 냉동실 문
-  box({ x: rx0 + 0.005, z: rFrontZ - rdt, w: rW - 0.01, d: rdt, y: firstFloorY + 0.01, h: rH - rfzH - 0.02, mat: materials.fridgeDoor });   // 하부 냉장실 문
-  const rhx = rx0 + 0.07;                                     // 손잡이 x(싱크대 低X = 경첩 반대편)
-  box({ x: rhx, z: rFrontZ - rdt - 0.03, w: 0.04, d: 0.03, y: firstFloorY + rH - rfzH - 0.42, h: 0.4, mat: materials.guard });   // 하부 문 손잡이
-  box({ x: rhx, z: rFrontZ - rdt - 0.03, w: 0.04, d: 0.03, y: firstFloorY + rH - rfzH + 0.05, h: 0.28, mat: materials.guard });  // 상부 문 손잡이
-  label(`한문형 냉장고 311L · ${fmtDim(rW)}×${fmtDim(rD)}`, rx0 + rW / 2, firstFloorY + rH + 0.15, rFrontZ + rD / 2, 'furniture');
+  fridge311AtBack({ x0: fridgeCx - fridgeW / 2, backZ: insideZ1, y: firstFloorY });   // fixtures 1벌(#12) — 문은 주방으로 열림(경첩 계단쪽·손잡이 싱크대쪽)
 });
 box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
 // '계단 앞' 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거) — 여기선 색면만.

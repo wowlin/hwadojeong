@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { scene } from './scene.js';
 import { materials } from './materials.js';
 import { groundTopY, deckFinishT } from './constants.js';
-import { box, addGeometryEdges } from './primitives.js';
+import { box, addGeometryEdges, fmtDim } from './primitives.js';
 import { label } from './labels.js';
 
 // 캠핑 가구 재질 — 반고 햄프턴 DLX 캠핑의자 프레임(책상 의자도 공유)
@@ -213,4 +213,19 @@ export function pillowAt(cx, z, y) {
 export function toiletAtBack(x1, z1, fy) {
   box({ x: x1 - 0.64, z: z1 - 0.1, w: 0.44, d: 0.1, y: fy, h: 0.5, mat: materials.toilet });    // 물탱크
   box({ x: x1 - 0.62, z: z1 - 0.55, w: 0.4, d: 0.45, y: fy, h: 0.34, mat: materials.toilet });  // 양변기
+}
+
+// 한문형 냉장고 311L 1벌(#12·#18) — 뒤벽(+Z)에 등 붙이고 문이 앞(-Z)으로 열리는 배치(s1 1층 주방·s2 2층 안방 공용).
+// (s2 1층 주방 것은 좌벽(X축) 등붙임 배치라 별도 — 축이 달라 통일하지 않음.)
+export function fridge311AtBack({ x0, backZ, y }) {
+  const rW = 0.545, rD = 0.689, rH = 1.70;                    // 폭(X)·깊이(Z, 앞으로 돌출)·높이 — LG 311L 실제 제원
+  const rFrontZ = backZ - rD;                                 // 냉장고 앞면 z(-Z쪽)
+  box({ x: x0, z: rFrontZ, w: rW, d: rD, y, h: rH, mat: materials.fridge });   // 본체
+  const rdt = 0.02, rfzH = rH * 0.30;                         // 문짝 두께·상부 냉동실 비율(2도어 상부냉동)
+  box({ x: x0 + 0.005, z: rFrontZ - rdt, w: rW - 0.01, d: rdt, y: y + rH - rfzH, h: rfzH - 0.01, mat: materials.fridgeDoor });   // 상부 냉동실 문
+  box({ x: x0 + 0.005, z: rFrontZ - rdt, w: rW - 0.01, d: rdt, y: y + 0.01, h: rH - rfzH - 0.02, mat: materials.fridgeDoor });   // 하부 냉장실 문
+  const rhx = x0 + 0.07;                                      // 손잡이 x(경첩 반대편 低X)
+  box({ x: rhx, z: rFrontZ - rdt - 0.03, w: 0.04, d: 0.03, y: y + rH - rfzH - 0.42, h: 0.4, mat: materials.guard });    // 하부 문 손잡이
+  box({ x: rhx, z: rFrontZ - rdt - 0.03, w: 0.04, d: 0.03, y: y + rH - rfzH + 0.05, h: 0.28, mat: materials.guard });   // 상부 문 손잡이
+  label(`한문형 냉장고 311L · ${fmtDim(rW)}×${fmtDim(rD)}`, x0 + rW / 2, y + rH + 0.15, rFrontZ + rD / 2, 'furniture');
 }
