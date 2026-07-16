@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto } from '../primitives.js';
 import { label, planYDim, roomText } from '../labels.js';
-import { ceilingFan, outlet, fridge311AtBack } from '../fixtures.js';
+import { ceilingFan, outlet, fridge311AtBack, waterHeater15U } from '../fixtures.js';
 import { rearSlider, frontAwningSash, sideRearSlider, sideEntryDoor } from '../openings.js';
 import {
   buildingW, buildingD, buildingBackZ, exteriorWall, interiorWall, firstWallHeight,
@@ -177,7 +177,20 @@ captureInto(firstCeilingObjects, () => captureInto(firstCeilingGroundObjects, ()
   label('에어컨 실외기', esX + esW / 2, groundTopY + esH + 0.28, esZ + 0.2, 'mep');
 }));
 captureInto(interiorObjects, () => {   // 주방 싱크대 — '실내' 토글
-  box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY, h: kitchenSinkH, mat: materials.sinkCabinet });
+  // 하부장 — 안에 전기온수기가 있어 앞이 보이는 캐비닛으로: 측판·뒤판·바닥판 + 반투명 문짝(s2 싱크 하부장과 같은 구성)
+  const pt = 0.02;                                                   // 판재 두께
+  const skX1 = kitchenSinkX + kitchenSinkW, skZ1 = kitchenSinkZ + kitchenSinkD;   // 하부장 高X 끝·뒷면(뒤 외벽 안쪽면)
+  box({ x: kitchenSinkX, z: kitchenSinkZ, w: pt, d: kitchenSinkD, y: firstFloorY, h: kitchenSinkH, mat: materials.sinkCabinet });        // 저X 측판
+  box({ x: skX1 - pt, z: kitchenSinkZ, w: pt, d: kitchenSinkD, y: firstFloorY, h: kitchenSinkH, mat: materials.sinkCabinet });           // 高X 측판
+  box({ x: kitchenSinkX, z: skZ1 - pt, w: kitchenSinkW, d: pt, y: firstFloorY, h: kitchenSinkH, mat: materials.sinkCabinet });           // 뒤판(뒤 외벽쪽)
+  box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY, h: pt, mat: materials.sinkCabinet });        // 바닥판
+  // 문짝 — 폭 kitchenSinkW를 표준 짝으로 등분. 전부 닫힘·반투명이라 속의 전기온수기가 비쳐 보인다
+  const leafN = 4, leafPitch = kitchenSinkW / leafN, leafW = leafPitch - 0.01;
+  const doorY = firstFloorY + pt, doorH = kitchenSinkH - pt - 0.01;
+  for (let i = 0; i < leafN; i++)
+    box({ x: kitchenSinkX + i * leafPitch + 0.005, z: kitchenSinkZ - pt, w: leafW, d: pt, y: doorY, h: doorH, mat: materials.cabinetDoor });   // 문짝(반투명)
+  // 전기온수기 — fixtures 1벌(#12·esw560_15u). s2 주방과 같은 기종. 하부장 안 저X 끝, 전용 콘센트(뒤 외벽) 곁
+  waterHeater15U({ x: kitchenSinkX + 0.08, z: kitchenSinkZ + 0.12, y: firstFloorY + pt, axis: 'x' });
   box({ x: kitchenSinkX, z: kitchenSinkZ, w: kitchenSinkW, d: kitchenSinkD, y: firstFloorY + kitchenSinkH, h: 0.05, mat: materials.counter });
   box({ x: kitchenSinkX + 0.62, z: kitchenSinkZ + 0.16, w: 0.72, d: 0.32, y: firstFloorY + kitchenSinkH + 0.05, h: 0.04, mat: materials.sinkBasin });
   box({ x: kitchenSinkX + 1.03, z: kitchenSinkZ + 0.08, w: 0.08, d: 0.08, y: firstFloorY + kitchenSinkH + 0.09, h: 0.24, mat: materials.entryFrame });

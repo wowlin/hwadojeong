@@ -9,6 +9,7 @@ import {
   hedgeThickness, zincFinishT, roofSlopeDeg,
 } from './constants.js';
 import { lotX0, lotZ1, stairLowXRunX, stairHighXRunX } from './layout.js';
+import { esw560_15u } from './fixtures.js';
 import {
   S2_STAIR, s2W, s2D, s2BackZ, s2WallT, _wBase, F3, roofY, s2Geo,
   s2RoofPitch, s2RoofEaveOver, s2RoofSideOver, s2SnowGuardT, s2Solar,
@@ -117,9 +118,12 @@ export const NOTES = {
   },
   s2Sink: { title: '주방', body: [
     '［전기온수기］',
-    '· 경동나비엔 ESW560-30U (30리터)',
-    '· 싱크대 아래 설치',
-    '· 전용 콘센트(고전력·마젠타) — 하부장 안 낮은 높이',
+    `· 모델    경동나비엔 ${esw560_15u.model}`,
+    `· 용량    ${esw560_15u.capL} 리터 (상향식 언더싱크)`,
+    `· 크기    ${mm(esw560_15u.w)}×${mm(esw560_15u.h)}×${mm(esw560_15u.d)} mm (가로×높이×깊이)`,
+    '· 설치    싱크대 하부장 안 — s1 주방과 같은 기종',
+    '· 문     반투명 — 닫아도 온수기가 비쳐 보임',
+    '· 콘센트  전용(고전력·마젠타) — 하부장 안 낮은 높이',
     '',
     '［인덕션］',
     '· 직결(하드와이어) — 콘센트 아님',

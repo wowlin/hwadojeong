@@ -5,7 +5,7 @@ import { scene } from '../scene.js';
 import { materials } from '../materials.js';
 import { box, fmtDim, captureInto, railCylinder } from '../primitives.js';
 import { label } from '../labels.js';
-import { campingChair, ceilingFan, ceilingLight, coveLight, outlet, woodTable, fridge311 } from '../fixtures.js';
+import { campingChair, ceilingFan, ceilingLight, coveLight, outlet, woodTable, fridge311, waterHeater15U } from '../fixtures.js';
 import { groundTopY, matFoundationH } from '../constants.js';
 import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, roofY, s2RidgeZ, s2RoofUnderY,
@@ -80,7 +80,7 @@ captureInto(s2SinkObjects, () => {
       box({ x: skX, z: z0, w: CD, d: cw, y: fTop, h: CH, mat: materials.sinkCabinet });          // 하부장(통짜)
       box({ x: skX, z: z0, w: CD, d: cw, y: cY, h: ctop, mat: materials.counter }); return;      // 상판(통판)
     }
-    // 싱크 하부장 — 안에 전기온수기(ESW560-30U)가 있어 앞이 보이는 캐비닛으로: 측판·뒤판·바닥판 + 두 짝 문(온수기 쪽 짝은 열린 상태·J-⑥)
+    // 싱크 하부장 — 안에 전기온수기가 있어 앞이 보이는 캐비닛으로: 측판·뒤판·바닥판 + 두 짝 문(반투명 — 닫힌 짝 너머로도 온수기가 비쳐 보임. 온수기 쪽 짝은 열린 상태·J-⑥)
     const pt = 0.02;                                                                              // 판재 두께
     box({ x: skX, z: z0, w: CD, d: pt, y: fTop, h: CH, mat: materials.sinkCabinet });             // 앞(低z) 측판
     box({ x: skX, z: z0 + cw - pt, w: CD, d: pt, y: fTop, h: CH, mat: materials.sinkCabinet });   // 뒤(高z) 측판
@@ -88,26 +88,18 @@ captureInto(s2SinkObjects, () => {
     box({ x: skX, z: z0, w: CD, d: cw, y: fTop, h: pt, mat: materials.sinkCabinet });             // 바닥판
     // 두 짝 문(각 cw/2) — 앞(低z) 짝은 닫힘, 뒤(高z) 짝은 바깥 경첩에서 105° 열려 온수기가 보임
     const leafL = cw / 2 - 0.01, doorY = fTop + pt, doorH = CH - pt - 0.01;
-    box({ x: skX - pt, z: z0 + 0.005, w: pt, d: leafL, y: doorY, h: doorH, mat: materials.sinkCabinet });          // 닫힌 짝(앞)
+    box({ x: skX - pt, z: z0 + 0.005, w: pt, d: leafL, y: doorY, h: doorH, mat: materials.cabinetDoor });          // 닫힌 짝(앞) — 반투명
     box({ x: skX - pt - 0.03, z: cabCz - 0.06, w: 0.03, d: 0.03, y: fTop + CH * 0.55, h: 0.1, mat: materials.handle });   // 닫힌 짝 손잡이(중앙쪽)
     {   // 열린 짝 — 경첩 = 뒤(高z) 바깥 모서리, 주방(-X)쪽으로 젖힘
       const ang = 105 * Math.PI / 180;
       const hx = skX, hz = z0 + cw - 0.005;                                                       // 경첩점
       const ex = hx - Math.sin(ang) * leafL, ez = hz - Math.cos(ang) * leafL;                     // 문 끝점
-      const m = box({ x: (hx + ex) / 2 - leafL / 2, z: (hz + ez) / 2 - pt / 2, w: leafL, d: pt, y: doorY, h: doorH, mat: materials.sinkCabinet });
+      const m = box({ x: (hx + ex) / 2 - leafL / 2, z: (hz + ez) / 2 - pt / 2, w: leafL, d: pt, y: doorY, h: doorH, mat: materials.cabinetDoor });
       m.rotation.y = Math.atan2(-(ez - hz), ex - hx);
       box({ x: ex + 0.02, z: ez - 0.06, w: 0.03, d: 0.03, y: fTop + CH * 0.55, h: 0.1, mat: materials.handle });   // 열린 짝 손잡이(문 끝)
     }
-    // 전기온수기 경동나비엔 ESW560-30U — 실측 440(가로)×440(높이)×420(깊이)mm, 30L 상향식 언더싱크(바닥 거치·스테인리스)
-    const hwD = 0.42, hwW = 0.44, hwH = 0.44;                                                     // X깊이·Z가로·높이(실제 제원)
-    const hwZ0 = cabCz + 0.06, hwX0 = skX + 0.12;                                                 // 열린 문 짝(뒤 절반) 안쪽·전용 콘센트(본체 옆) 곁
-    box({ x: hwX0, z: hwZ0, w: hwD, d: hwW, y: fTop + pt, h: hwH, mat: materials.fridge });       // 본체(스테인리스)
-    for (const nz of [hwZ0 + hwW / 2 - 0.09, hwZ0 + hwW / 2 + 0.06]) {                            // 상향식 급수·출수 니플 2개(윗면)
-      const nip = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.07, 10), materials.guard);
-      nip.position.set(hwX0 + hwD / 2, fTop + pt + hwH + 0.035, nz + 0.015);
-      scene.add(nip);   // captureInto가 s2SinkObjects로 자동 수집
-    }
-    label('전기온수기 30L (ESW560-30U)', skX - 0.4, fTop + 0.55, hwZ0 + hwW / 2, 'mep');
+    // 전기온수기 — fixtures 1벌(#12·esw560_15u). s1 주방과 같은 기종. 열린 문 짝(뒤 절반) 안쪽·전용 콘센트(본체 옆) 곁에 앉힘
+    waterHeater15U({ x: skX + 0.12, z: cabCz + 0.06, y: fTop + pt, axis: 'z' });
     const bw = 0.95, bd = 0.454;                             // 백조 대형 사각볼 950×454 (길이=Z, 깊이=X)
     const bz0 = cabCz - bw / 2, bz1 = cabCz + bw / 2, bx0 = skX + (CD - bd) / 2, bx1 = bx0 + bd;
     box({ x: skX, z: z0, w: bx0 - skX, d: cw, y: cY, h: ctop, mat: materials.counter });         // 상판 안쪽
@@ -185,8 +177,8 @@ captureInto(s2Wall1Objects, () => {
   inOutlet(cWall, fTop + 1.1);
   inOutlet(f2Cz, fTop + 1.85);
   inOutlet(frCz, fTop + 1.85);
-  // 싱크볼 아래 30L 전기온수기 전용 콘센트 — 고전력(주황). 하부장 안 측벽, 온수기 본체 옆·낮은 높이(바닥+0.4m)
-  const inHeatOutlet = (cz, oy) => outlet(inXL, cz, oy, '-X', 'h');   // 고전력(주황) — fixtures.outlet 1벌
+  // 싱크볼 아래 전기온수기 전용 콘센트 — 고전력(마젠타). 하부장 안 측벽, 온수기 본체 옆·낮은 높이
+  const inHeatOutlet = (cz, oy) => outlet(inXL, cz, oy, '-X', 'h');   // 고전력(마젠타) — fixtures.outlet 1벌
 
   inHeatOutlet(cSink + 0.5, fTop + 0.4);
   // 인덕션 전원 — 직결(하드와이어). 콘센트 아님 → 소켓 없는 정션박스(전선 인출구)로만 표시. 고전력(주황).
