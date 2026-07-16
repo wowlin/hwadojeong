@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const manifestPath = resolve(root, 'tests/baseline-views.json');
+const manifestPath = resolve(root, 'test/baseline-views.json');
 const update = process.argv.includes('--update');
 
 // 캡처할 화면 = 클릭 시퀀스(깨끗한 새 로드에서 순서대로 클릭). 이름은 id를 +로 연결.

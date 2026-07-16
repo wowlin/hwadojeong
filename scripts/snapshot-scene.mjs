@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const baselinePath = resolve(root, 'tests/baseline-scene.json');
+const baselinePath = resolve(root, 'test/baseline-scene.json');
 const update = process.argv.includes('--update');
 
 const port = 5198;

@@ -4,19 +4,13 @@ node_modules/
 # 빌드 결과물
 dist/
 
-# 캡처/생성 산출물
-screenshot.png
-shot*.png
+# 캡처/생성 산출물(일회성 렌더 확인) — 저장소에 남기지 않는다
+/*.png
 scratchpad/
 
 # OS / 에디터
 .DS_Store
 *.log
 
-# 로컬 도구 설정
+# 로컬 도구 설정 — .claude/(하네스 구성물) 버전관리 편입 여부는 사용자 결정 대기(REFACTOR-PLAN §5-10)
 .claude/
-scratch-render-check.png
-shot.png
-diag-*.png
-.claude/repeat-count.txt
-.claude/repeat-req.txt
