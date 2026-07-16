@@ -167,7 +167,7 @@ export const NOTES = {
     ].join('\n') };
   },
   get s2Floor2() {                                         // 2층 — 화장실·앞방 크기. 그리기 실좌표(s2Geo)·모듈 상수서 자동 계산
-    const { inX0, inX1, inZ0, inZ1, wF, far2 } = s2Geo;      // 그리기가 실제로 쓴 좌표(단일 출처)
+    const { inX0, inX1, inZ0, inZ1, wF } = s2Geo;            // 그리기가 실제로 쓴 좌표(단일 출처)
     const { wcFaceX } = s2Geo;                                    // 화장실 低X 안쪽면 — 그리기 실좌표(s2Geo) 단일 출처(재계산 사본 제거)
     const bathW = inX1 - wcFaceX, bathD = wF;                // 화장실 실사용: 화장실벽 안쪽~안방 외벽 · 분리벽 안쪽~뒤벽
     const roomW = inX1 - inX0, roomD = (inZ1 - inZ0) - wF - s2WallInner;   // 앞방: 분리벽 앞 전체(전폭 × 앞 외벽~분리벽)
