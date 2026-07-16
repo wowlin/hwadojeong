@@ -18,6 +18,7 @@ import {
 export let deckRoofBcrArea;   // 포치(데크 지붕) 건축면적 — buildDeck()에서 산출, 설계 메모(대지 개요)가 읽음
 
 export const s1DeckFurn = {};   // 데크 가구 실측값을 설계메모로 노출(단일 출처) — 썬룸(withFurniture)에서 채움
+export const deckSideWin = {};  // 측면 폴딩창 실측(z 범위·짝폭·지붕면 함수) — 화목난로 카세트가 공유(단일 출처, J-④)
 
 // 1층 주방 앞 썬룸 — 지붕 길이(전면 돌출) 4m. 지붕 = 오리지널징크(불투명).
 //  · 데크 상단(집 바닥 높이)에서 시작, 앞단(최저) 기둥, 건물쪽은 1층 높이에 부착
@@ -189,6 +190,8 @@ function 썬룸({ roofLowX, roofW, withFurniture = true, nDeckTables = 3, withWa
     const az0 = pzF + tube / 2, az1 = pzB - tube / 2;         // 앞·뒤 기둥 안쪽면(측면 개구)
     const nWin = 8;                                           // 등폭·8짝 고정
     const wpw = (az1 - az0) / nWin, wStep = wpw * Math.cos(ang), wFD = wpw * Math.sin(ang);   // 짝폭·뒤로 전진/밖으로 접힘깊이
+    // 측면창 실측을 난로 카세트와 공유 — 짝 경계·썬룸 지붕면을 재계산하지 않게(단일 출처, J-④)
+    Object.assign(deckSideWin, { z0: az0, z1: az1, paneW: wpw, roofYAt: (z) => yAtWall + (yAtFront - yAtWall) * ((z - wallZ) / (frontZ - wallZ)) });
     for (const [sx, outSign] of [[px0, -1], [px1, 1]]) {      // 우측(주방쪽·밖=−X)·좌측(안방쪽·밖=+X)
       box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: winSy, h: 0.08, mat: fdFrame });        // 하부 레일(프라이버시 벽 위)
       box({ x: sx - 0.05, z: az0, w: 0.1, d: az1 - az0, y: hy - 0.08, h: 0.08, mat: fdFrame });    // 상부 레일(프레임 상단보 밑)
@@ -335,11 +338,8 @@ export function buildDeckStoveCassette() {
 // 썬룸 화목난로(캠핑용) — 측면 폴딩 "앞에서 3번째 짝"의 하부만 불연패널(연통홀), 상부는 기존 폴딩 유리 유지.
 {
   const deckTop = deckSurfaceY;                           // 데크 밟는 표면(단일 출처) — 난로·카세트를 데크 위에 얹음
-  const fWallZ = buildingFrontZ;                          // buildingFrontZ (집 벽쪽 끝)
-  const roofRun = Math.sqrt(4.0 * 4.0 - 0.2 * 0.2);       // 썬룸 수평투영(폴딩 내부값과 동일)
-  const fFrontZ = (buildingFrontZ - roofRun) + 0.2;       // 폴딩 앞단(≈-4.50)
-  const panelZ = (fWallZ - fFrontZ) / 6;                  // 측면 한 짝 폭(Z) — (fWallZ−fFrontZ)/6
-  const stZ = fFrontZ + 2.5 * panelZ;                    // 앞에서 3번째 짝 '중앙'
+  const { z0: sw0, paneW: panelZ, roofYAt } = deckSideWin;   // 측면 폴딩 8짝 실측(썬룸이 채움) — 옛 6짝 폭 재계산 잔재 정정(J-④)
+  const stZ = sw0 + 2.5 * panelZ;                         // 앞에서 3번째 짝 '중앙'(실제 짝 경계와 정렬)
   const stX = 0.45;
   const splitH = 0.55;                                   // 분할선 높이(2등분 아님 — 연통 위로만)
   const flueY = deckTop + 0.30;                          // 연통 = 데크 바닥 + 30cm
@@ -353,22 +353,15 @@ export function buildDeckStoveCassette() {
     box({ x: -0.09, z: a, w: 0.05, d: 0.035, y: deckTop, h: splitH, mat: materials.entryFrame });           // 앞측 세로 프레임
     box({ x: -0.09, z: b - 0.035, w: 0.05, d: 0.035, y: deckTop, h: splitH, mat: materials.entryFrame });   // 뒤측 세로 프레임(독립)
   };
-  const z4 = fFrontZ + 3.5 * panelZ;     // 앞에서 4번째 짝 중앙
+  const z4 = sw0 + 3.5 * panelZ;         // 앞에서 4번째 짝 중앙
   drawCassette(stZ);                     // 3번째(현재 겨울=연통홀)
   drawCassette(z4);                      // 4번째(추가, 솔리드 — 연통 없음, 독립 착탈)
   box({ x: stX, z: stZ, w: 0.42, d: 0.42, y: deckTop, h: 0.5, mat: materials.openingEdge });                    // 화목난로
   box({ x: stX - 0.03, z: stZ - 0.24, w: 0.34, d: 0.02, y: deckTop + 0.12, h: 0.24, mat: materials.guard });    // 난로 도어
   const flueH = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.8, 14), materials.guard);
   flueH.rotation.z = Math.PI / 2; flueH.position.set(0.1, flueY, stZ); flueH.castShadow = true; scene.add(flueH);
-  // 연통 수직부 — 윗끝이 그 위치(z=stZ)의 썬룸 지붕면보다 1m 위로 오게 길이 산정.
-  // 지붕면 높이는 썬룸 물매 파라미터(targetWallPostH / targetFrontPostH / beam)를 동일하게 재현.
-  const _beamDrop = 0.04, _beamH = 0.12, _frameInset = 0.2, _slope = 4.0;
-  const yAtWall = firstFloorY + 2.8 + _beamDrop + _beamH;
-  const targetGlassAtFront = firstFloorY + 2.6 + _beamDrop + _beamH;
-  let yAtFront = targetGlassAtFront;
-  for (let i = 0; i < 40; i += 1) { const d = yAtWall - yAtFront; const run = Math.sqrt(_slope * _slope - d * d); yAtFront = targetGlassAtFront - _frameInset * d / run; }
-  const roofFrontEdgeZ = buildingFrontZ - roofRun;
-  const roofYatStZ = yAtWall + (yAtFront - yAtWall) * ((stZ - buildingFrontZ) / (roofFrontEdgeZ - buildingFrontZ));
+  // 연통 수직부 — 윗끝이 그 위치(z=stZ)의 썬룸 지붕면보다 1m 위로 오게 길이 산정(지붕면 = 썬룸 실측 함수, 재현 계산 제거).
+  const roofYatStZ = roofYAt(stZ);
   const flueBottom = flueY - 0.05;                         // 기존 하단(수평 연통 연결부)
   const flueTopTarget = roofYatStZ + 1.0;                  // 썬룸 지붕면 +1m
   const flueVLen = flueTopTarget - flueBottom;
