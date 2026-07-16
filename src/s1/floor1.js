@@ -21,7 +21,7 @@ import {
   kitchenSinkX, kitchenSinkZ, kitchenCounterY, frontCornerDimX, frontCornerDimZ, firstCeilingY,
 } from '../layout.js';
 import {
-  firstFloorFinishObjects, firstWallObjects, firstDimObjects, firstFloorObjects,
+  firstFloorFinishObjects, firstWallObjects, firstDimObjects,
   bathObjects, interiorObjects, firstCeilingObjects, firstOutletObjects,
 } from '../groups.js';
 
@@ -136,7 +136,6 @@ captureInto(firstDimObjects, () => {
   firstBathDimLabel = label(roomText('화장실', bcW, bcD), bcX + bcW / 2, ly, bcZ + bcD / 2, 'room');
 });
 
-const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 직전까지가 1층 그룹
 
 // 1F measured plan. Dimensions are in meters within the buildingW x buildingD footprint.
 //   1층 층고·벽 두께 (제원)
@@ -150,10 +149,10 @@ const _firstFloorStart = scene.children.length;   // 여기부터 다락 빌드 
 // 높이 치수 라벨은 세로 치수 막대(frontCornerDim*)가 있는 평면 왼쪽(도로 쪽, 높은 X) 뒤쪽
 // 모서리 바깥에 나란히 붙여, 치수 막대와 라벨이 같은 모서리에 모이게 한다.
 
-// 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지 = floorFinishH+firstWallHeight
-planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`);
+// 1층 높이는 바닥재(20cm)를 포함 — 기초 상단(바닥재 하단)부터 천장까지. '외벽' 토글 소속(J-③ 재배치 — 벽 높이 치수).
+captureInto(firstWallObjects, () => planYDim(frontCornerDimX, frontCornerDimZ, foundationTopY, firstWallY + firstWallHeight, `1층 높이 ${fmtDim((firstWallY + firstWallHeight) - foundationTopY)}m`));
 
-room({ x: firstKitchenX, z: insideZ0, w: firstKitchenW, d: firstKitchenD, y: firstFloorY + floorOverlayLift, mat: materials.kitchen });   // 색면만 — 주방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
+// (주방 색면 삭제 — 계단 화면의 방 색면 1벌과 중복·버튼 없는 유령 그룹 소속이라 영구 비표시였음. J-③·#22)
 // 주방 벽걸이 에어컨·냉장고 제원 — 콘센트 자리('콘센트' 토글)도 이 값을 그대로 공유(단일 출처).
 const acW = 0.85, acD = 0.22, acZ = insideZ0 + 0.2, acY = firstFloorY + firstWallHeight - 0.45;   // 에어컨 폭(Z)·깊이(X)·앞끝 z·설치 y
 const fridgeW = 0.545;                                                      // 냉장고 폭(X)
@@ -196,9 +195,7 @@ captureInto(interiorObjects, () => {
 captureInto(interiorObjects, () => {
   fridge311AtBack({ x0: fridgeCx - fridgeW / 2, backZ: insideZ1, y: firstFloorY });   // fixtures 1벌(#12) — 문은 주방으로 열림(경첩 계단쪽·손잡이 싱크대쪽)
 });
-box({ x: stairLowXRunX, z: insideZ0, w: stairHighXWallX - stairLowXRunX, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
-// '계단 앞' 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거) — 여기선 색면만.
-box({ x: stairLowXRunX - interiorWall, z: insideZ0, w: interiorWall, d: stairBottomLandingD, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stairFront, cast: false });
+// (계단앞 색면·띠 삭제 — '바닥' 토글의 계단앞 색면이 담당, 유령 그룹 소속 영구 비표시 잔재. J-③)
 // '화장실' 토글 = 기구 3개(세면대·변기·온수기) + 185cm 사람. 바닥칠·안목치수는 '바닥+계단'(계단실) 화면에서 표시(중복 제거).
 captureInto(bathObjects, () => {
   const wcCenterX = stairBathX + interiorWall + (stairBathW - interiorWall) / 2;   // 화장실 안목(계단쪽 내벽 뺀 실바닥) X 중앙
@@ -227,8 +224,8 @@ captureInto(bathObjects, () => {
   }
   // (화장실 185cm 사람 모형 제거)
 });
-// 계단하부 WC 배기구 — '화장실' 토글(기구 3개)에서 분리해 1층 그룹으로 수집. 무창 WC 기계환기: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기.
-{
+// 계단하부 WC 배기구 — '화장실' 토글 소속(J-③ 재배치 — 유령 그룹에 묶여 영구 비표시였음). 무창 WC 기계환기: 천장 배기팬 + 덕트로 뒤쪽 외벽에서 외부 환기캡으로 배기.
+captureInto(bathObjects, () => {
   const ventX = stairBathX + stairBathW / 2;
   // WC 천장은 계단 밑 경사면 → 뒤쪽 실사용 천장선은 바닥+약 1.3m(벽 절반). 배기팬은 그 천장선 바로 아래(WC 실내 공기 안)여야 실제로 배기됨.
   const capY = firstFloorY + 1.08;
@@ -237,9 +234,9 @@ captureInto(bathObjects, () => {
   box({ x: ventX - 0.13, z: buildingBackZ, w: 0.26, d: 0.05, y: capY, h: 0.22, mat: materials.entryFrame });          // 뒤 외벽 외부 환기캡(방수 후드)
   box({ x: ventX - 0.14, z: buildingBackZ + 0.03, w: 0.28, d: 0.06, y: capY - 0.03, h: 0.05, mat: materials.entryFrame });  // 하단 빗물막이 립
   label('화장실 배기구', ventX, capY + 0.34, buildingBackZ + 0.28, 'mep');
-}
-box({ x: stairLowXRunX, z: stairOpeningStart, w: stairHighXWallX - stairLowXRunX, d: insideZ1 - stairOpeningStart, y: firstFloorY + floorOverlayLift - floorSurfaceH, h: floorSurfaceH, mat: materials.stair, cast: false });
-room({ x: firstFamilyX, z: insideZ0, w: firstFamilyW, d: firstFamilyD, y: firstFloorY + floorOverlayLift, mat: materials.bed });   // 색면만 — 안방 크기 라벨은 '바닥' 토글이 단독 표시(중복 제거)
+})
+// (계단실 색면 삭제 — '바닥' 토글의 계단실 색면이 담당. J-③)
+// (안방 색면 삭제 — 주방 색면과 같은 이유. J-③·#22)
 
 // (1층 외벽·정면 현관문은 단일출처 firstWallObjects 블록에서 그림 — 옛 중복 '1F walls' 블록 제거)
 // 안방 포켓도어(문짝+개구)는 벽과 같은 '계단' 그룹에서 단일 출처로 그림 → buildStairWalls()의 familyInnerWallObjects 블록. 여기선 안 그림.
@@ -294,12 +291,11 @@ captureInto(firstOutletObjects, () => {
 
 // (1층 전동커튼 레일 제거 — 외벽 창·문이 정면 현관문만 남아 커튼레일 대상 없음)
 
-{ const _sep = new Set([...bathObjects, ...interiorObjects, ...firstFloorFinishObjects, ...firstCeilingObjects, ...firstOutletObjects]); firstFloorObjects.push(...scene.children.slice(_firstFloorStart).filter((o) => !_sep.has(o))); }   // 1층 골조·실내 그룹 확정(화장실·실내가구·천장기기·콘센트는 각 그룹으로 분리 — 콘센트 이중 소속이 [콘센트] 버튼을 무효화하던 J-① 수리)
 }
 
 // 외부 부동수전·1층 실링팬 — 1층 골조/천장 그룹에 뒤늦게 합류(원본 scene 순서 보존을 위해 별도 호출).
 export function buildFloor1Fixtures() {
-  captureInto(firstFloorObjects, () => {   // 외부설비 → 1층 그룹(§2-3: 인덱스 캡처를 captureInto로 전환)
+  captureInto(firstWallObjects, () => {   // 외부 부동수전 → '외벽' 토글(J-③ 재배치 — 벽 부착 설비)
 
 // 안방 왼쪽(도로측, 높은 X) 외벽에 외부 부동수전(동파방지 벽붙이형)
 {

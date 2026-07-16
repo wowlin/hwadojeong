@@ -22,7 +22,6 @@ export const view = {
   firstWall: false,     // 1층 외벽('1층' 그룹 '외벽' 버튼)
   firstOutlet: false,   // 1층 콘센트('1층' 그룹 '콘센트' 버튼)
   atticExtWall: false,  // 다락 외벽('다락' 그룹 '외벽' 버튼)
-  firstRoom: false,   // 1층 골조·실내
   bath: false,        // 화장실
   loft: false,        // 실제 다락 바닥(슬래브·방)
   atticInnerWall: false, // 다락 내벽

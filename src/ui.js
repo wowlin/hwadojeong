@@ -8,7 +8,7 @@ import { firstStairRoomLabel, firstBathDimLabel, firstBathClearFill } from './s1
 import { groundTopY, matFoundationH } from './constants.js';
 import { foundationTopY, lotX0, lotX1, lotZ0, lotZ1 } from './layout.js';
 import {
-  firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, firstFloorObjects, bathObjects, interiorObjects,
+  firstFloorFinishObjects, firstCeilingObjects, deckFloorObjects, bathObjects, interiorObjects,
   firstWallObjects, firstOutletObjects, firstDimObjects, secondFloorObjects, atticExtWallObjects, atticInnerWallObjects,
   roofObjects, solarObjects, deckObjects, 썬룸FrameObjects, 썬룸RoofObjects, foldingObjects, extrasObjects,
   hedgeObjects, fenceObjects, matFoundationFullObjects, footprintObjects, dimObjects,
@@ -32,7 +32,6 @@ const PARTS = [
   { key: 'firstWall',    arrays: [firstWallObjects] },        // 1층 외벽('1층' 그룹 '외벽')
   { key: 'firstOutlet',  arrays: [firstOutletObjects] },      // 1층 콘센트('1층' 그룹 '콘센트')
   { key: 'atticExtWall', arrays: [atticExtWallObjects] },     // 다락 외벽('다락' 그룹 '외벽')
-  { key: 'firstRoom',  arrays: [firstFloorObjects] },
   { key: 'bath',       arrays: [bathObjects] },
   { key: 'loft',       arrays: [secondFloorObjects] },        // 실제 다락 바닥(슬래브·방)
   { key: 'atticInnerWall', arrays: [atticInnerWallObjects] }, // 다락 내벽(칸막이·문·입구벽)
