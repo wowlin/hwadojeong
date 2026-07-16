@@ -158,53 +158,51 @@ test('⑬ 데크 계단틀 — 데크와 동일 출처(deckFootprints[0])로 정
     '데크 계단틀 블록이 deckFootprints[0]를 좌표 출처로 참조해야 한다(데크와 동일 정렬)');
 });
 
-test('⑭ 작업 도면 격리 — S2(3층) 영역에서 s1(1층+다락) 그룹에 그리는 사고 차단', () => {
+// groups.js의 export 그룹명 전수 추출 — ⑭⑮가 유령 이름 없이 실물 그룹 전체를 감시(파일 경계 기반).
+function allGroupNames() {
+  const g = readFileSync(resolve(root, 'src/groups.js'), 'utf8');
+  return [...g.matchAll(/export const (\w+) =/g)].map((m) => m[1]);
+}
+function srcFiles(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) srcFiles(p, out);
+    else if (name.endsWith('.js')) out.push(p);
+  }
+  return out;
+}
+
+test('⑭ 작업 도면 격리 — src/s2/ 파일은 s2*Objects 그룹에만 그린다(파일 경계 강제)', () => {
   // 사고 방지: s2(3층) 작업 중 s1(1층+다락) 그룹에 부재를 그리면, 두 좌표값이 겹쳐(x=8.5·뒤벽 z=3.3)
   //   에러 없이 s1 도면에 조용히 그려진다 → s2 화면엔 안 보이는데 "추가됐다"고 착각. (부동수전 사고가 이 경우)
-  // main.js의 "S2 영역 시작"~"S2 영역 끝" 배너 사이(=3층 전용 구역)에서 s1 전용 그룹에
-  //   captureInto()/​.push 하는 코드가 나오면 실패시킨다. s2 부재는 s2*Objects로만 그려야 한다.
-  const src = readFileSync(mainJs, 'utf8');
-  const begin = src.indexOf('▼▼▼  S2 영역 시작');
-  const end = src.indexOf('▲▲▲  S2 영역 끝');
-  assert.ok(begin > 0 && end > begin, 'main.js에 "S2 영역 시작"·"S2 영역 끝" 경계 배너가 있어야 함(작업 도면 격리 기준)');
-  const s2Zone = src.slice(begin, end);
-  // s1(1층+다락) 전용 그룹 — S2 구역에서 이들에 그리면 사고. (s2*Objects·공유 그룹은 허용)
-  const s1Groups = [
-    'firstFloorObjects', 'firstFloorFinishObjects', 'bathObjects', 'firstWallObjects', 'firstDimObjects',
-    'secondFloorObjects', 'roofObjects', 'footprintObjects', 'dimObjects', 'planObjects',
-    'stairObjects', 'stairCoreObjects', 'stairWallObjects', 'kitchenInnerWallObjects', 'familyInnerWallObjects',
-    'outletObjects', 'atticOutletObjects',
-  ];
+  // 분할 후 격리 기준 = 파일 경계: src/s2/*.js에서 s2*가 아닌 그룹에 captureInto()/.push 하면 실패.
+  //   감시 목록은 groups.js 실물 export 전수(유령 그룹명 없음·누락 없음).
+  const nonS2 = allGroupNames().filter((g) => !g.startsWith('s2'));
   const bad = [];
-  for (const g of s1Groups) {
-    if (new RegExp(`captureInto\\(\\s*${g}\\b`).test(s2Zone) || new RegExp(`\\b${g}\\.push\\b`).test(s2Zone)) bad.push(g);
+  for (const file of srcFiles(resolve(root, 'src/s2'))) {
+    const src = readFileSync(file, 'utf8');
+    for (const g of nonS2) {
+      if (new RegExp(`captureInto\\(\\s*${g}\\b`).test(src) || new RegExp(`\\b${g}\\.push\\b`).test(src)) bad.push(`${file.split('/src/')[1]}:${g}`);
+    }
   }
-  if (/\bcaptureSecond\s*\(/.test(s2Zone)) bad.push('captureSecond(다락 캡처)');
   assert.equal(bad.length, 0,
-    `S2(3층) 영역에서 s1(1층+다락) 그룹에 그림: ${bad.join(', ')} — s2*Objects로 바꾸거나, s1 부재라면 "S2 영역 끝" 배너 밖으로 옮길 것`);
+    `src/s2/ 파일이 s1·공유 그룹에 그림: ${bad.join(', ')} — s2*Objects로 바꾸거나, s1 부재라면 src/s1/·공유 모듈로 옮길 것`);
 });
 
-test('⑮ 작업 도면 격리(역방향) — s2(3층) 부재는 S2 영역 안에만 그린다', () => {
-  // ⑭의 짝: s2 부재(s2*Objects)를 S2 영역 밖에 그리면, s2 작업이 파일 곳곳에 흩어져
-  //   다시 s1과 헷갈리는 원인이 된다. s2 그룹에 그리는 코드는 반드시 배너 안에만 있어야 한다.
-  //   (groups.js import·applyVisibility의 가시성 순회는 push/captureInto가 아니라 걸리지 않음)
-  const src = readFileSync(mainJs, 'utf8');
-  const begin = src.indexOf('▼▼▼  S2 영역 시작');
-  const end = src.indexOf('▲▲▲  S2 영역 끝');
-  assert.ok(begin > 0 && end > begin, 'main.js에 S2 영역 경계 배너가 있어야 함');
-  const outside = src.slice(0, begin) + src.slice(end);   // S2 영역 밖 전체
-  const s2Groups = [
-    's2FootprintObjects', 's2FoundationObjects', 's2DimObjects', 's2Wall1Objects', 's2Wall2Objects', 's2Wall3Objects',
-    's2Stair2Objects', 's2StairLowA', 's2StairMidA', 's2StairLowB', 's2StairMidB', 's2StairUpB',
-    's2Floor1Objects', 's2Floor2Objects', 's2Floor3Objects', 's2Roof3Objects', 's2Solar3Objects',
-    's2FurnitureObjects', 's2SinkObjects', 's2StoveObjects', 's2Fan1Objects', 's2Fan2Objects',
-  ];
+test('⑮ 작업 도면 격리(역방향) — s2*Objects 그룹은 src/s2/ 파일 안에서만 그린다', () => {
+  // ⑭의 짝: s2 부재(s2*Objects)를 src/s2/ 밖에서 그리면 s2 작업이 파일 곳곳에 흩어져 s1과 헷갈리는 원인.
+  //   (groups.js의 배열 정의·applyVisibility의 가시성 순회는 push/captureInto가 아니라 걸리지 않음)
+  const s2Groups = allGroupNames().filter((g) => g.startsWith('s2'));
   const bad = [];
-  for (const g of s2Groups) {
-    if (new RegExp(`captureInto\\(\\s*${g}\\b`).test(outside) || new RegExp(`\\b${g}\\.push\\b`).test(outside)) bad.push(g);
+  for (const file of srcFiles(resolve(root, 'src'))) {
+    if (file.includes('/src/s2/') || file.endsWith('/groups.js')) continue;
+    const src = readFileSync(file, 'utf8');
+    for (const g of s2Groups) {
+      if (new RegExp(`captureInto\\(\\s*${g}\\b`).test(src) || new RegExp(`\\b${g}\\.push\\b`).test(src)) bad.push(`${file.split('/src/')[1]}:${g}`);
+    }
   }
   assert.equal(bad.length, 0,
-    `S2 영역 밖에서 s2(3층) 그룹에 그림: ${bad.join(', ')} — "S2 영역 시작"~"끝" 배너 안으로 옮길 것`);
+    `src/s2/ 밖에서 s2(3층) 그룹에 그림: ${bad.join(', ')} — src/s2/ 모듈로 옮길 것`);
 });
 
 test('⑯ 메모 숫자 = 코드 연동 — NOTES 안 물리 치수(m·mm·㎡)는 하드코딩 금지, ${} 보간만', () => {
