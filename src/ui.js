@@ -16,7 +16,7 @@ import {
   s2Wall1Objects, s2Wall2Objects, s2Wall3Objects, s2Ecu3Objects, s2Stair2Objects,
   s2StairLowA, s2StairMidA, s2StairLowB, s2StairMidB, s2StairUpB,
   s2Floor1Objects, s2Floor2Objects, s2Floor3Objects, s2LiftObjects, s2Roof3Objects, s2Solar3Objects,
-  s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Fan1Objects, s2Fan2Objects, siteBaseObjects,
+  s2Fan1Objects, s2Fan2Objects, siteBaseObjects,
   deckStairFrameObjects, stairObjects, stairCoreObjects, stairInnerWallObjects, kitchenInnerWallObjects, familyInnerWallObjects,
 } from './groups.js';
 
@@ -48,15 +48,12 @@ const PARTS = [
   { key: 's2Wall2', arrays: [s2Wall2Objects] },
   { key: 's2Wall3', arrays: [s2Wall3Objects] },
   { key: 's2Ecu3', arrays: [s2Ecu3Objects] },
-  { key: 's2Floor1', arrays: [s2Floor1Objects] },
+  { key: 's2Floor1', arrays: [s2Floor1Objects] },   // 1층 바닥 + 식탁·의자·주방(싱크대)·화목난로 합침
   { key: 's2Floor2', arrays: [s2Floor2Objects] },
   { key: 's2Floor3', arrays: [s2Floor3Objects] },
   { key: 's2Lift', arrays: [s2LiftObjects] },
   { key: 's2Roof3', arrays: [s2Roof3Objects] },
   { key: 's2Solar3', arrays: [s2Solar3Objects] },
-  { key: 's2Furniture', arrays: [s2FurnitureObjects] },
-  { key: 's2Sink', arrays: [s2SinkObjects] },
-  { key: 's2Stove', arrays: [s2StoveObjects] },
   { key: 's2Fan1', arrays: [s2Fan1Objects] },
   { key: 's2Fan2', arrays: [s2Fan2Objects] },
 ];
@@ -107,7 +104,7 @@ export function applyVisibility() {
   }
   // 층별 라벨 정리 — 윗층 바닥이 표시되면 아래층의 비치수 라벨(방·가구·설비·개구부)은 숨겨 겹쳐 보임 방지. 치수 라벨은 유지.
   { const hideNonDim = (arrs) => { for (const arr of arrs) for (const item of arr) if (item.userData && item.userData.labelGroup && item.userData.labelGroup !== 'dim') item.visible = false; };
-    if (!isPlan && view.s2Floor2) hideNonDim([s2Floor1Objects, s2SinkObjects, s2StoveObjects, s2FurnitureObjects, s2StairLowA]);   // 2층 바닥 표시 → 1층 비치수 라벨 숨김
+    if (!isPlan && view.s2Floor2) hideNonDim([s2Floor1Objects, s2StairLowA]);   // 2층 바닥 표시 → 1층 비치수 라벨 숨김(식탁·주방·난로는 s2Floor1Objects에 포함)
     if (!isPlan && view.s2Floor3) hideNonDim([s2Floor2Objects]);                                                                  // 3층 바닥 표시 → 2층 비치수 라벨 숨김
   }
   syncSegButtons();   // 계단/바닥 버튼 행 active 상태 동기화
@@ -121,7 +118,7 @@ function syncSegButtons() {
   setActive('bHedge', view.hedge); setActive('bFence', view.fence);
   // '1층' 그룹 버튼 — 구조 섹션의 같은 부품을 공유 토글(active 동기화)
   setActive('bF1Foundation', view.s2Foundation); setActive('bF1Floor', view.s2Floor1); setActive('bF1Wall', view.s2Wall1);
-  setActive('bF1Furniture', view.s2Furniture); setActive('bF1Sink', view.s2Sink); setActive('bF1Stove', view.s2Stove); setActive('bF1Fan', view.s2Fan1);
+  setActive('bF1Fan', view.s2Fan1);
   setActive('bF2Floor', view.s2Floor2); setActive('bF2Wall', view.s2Wall2); setActive('bF2Fan', view.s2Fan2);
   setActive('bF3Floor', view.s2Floor3); setActive('bF3Wall', view.s2Wall3); setActive('bF3Ecu', view.s2Ecu3);
   setActive('bF3Roof', view.s2Roof3); setActive('bF3Solar', view.s2Solar3);
@@ -176,7 +173,7 @@ const SEG_KEYS = {                              // 버튼 id → 제어하는 vi
   bHedge: ['hedge'], bFence: ['fence'],
   bStair: ['s2Stair'], bLift: ['s2Lift'],
   bF1Foundation: ['s2Foundation'], bF1Floor: ['s2Floor1'], bF1Wall: ['s2Wall1'],
-  bF1Furniture: ['s2Furniture'], bF1Sink: ['s2Sink'], bF1Stove: ['s2Stove'], bF1Fan: ['s2Fan1'],
+  bF1Fan: ['s2Fan1'],
   bF2Floor: ['s2Floor2'], bF2Wall: ['s2Wall2'], bF2Fan: ['s2Fan2'],
   bF3Floor: ['s2Floor3'], bF3Wall: ['s2Wall3'], bF3Ecu: ['s2Ecu3'],
   bF3Roof: ['s2Roof3'], bF3Solar: ['s2Solar3'],
@@ -233,9 +230,6 @@ bindSegButton('bFence', () => { view.fence = !view.fence; });
 // '1층' 그룹 버튼 — 구조 섹션의 같은 부품(기초·1층바닥·1>2층계단·식탁·주방·난로)을 공유 토글
 bindSegButton('bF1Foundation', () => { view.s2Foundation = !view.s2Foundation; });
 bindSegButton('bF1Floor', () => { view.s2Floor1 = !view.s2Floor1; });
-bindSegButton('bF1Furniture', () => { view.s2Furniture = !view.s2Furniture; });
-bindSegButton('bF1Sink', () => { view.s2Sink = !view.s2Sink; });
-bindSegButton('bF1Stove', () => { view.s2Stove = !view.s2Stove; });
 bindSegButton('bF1Fan', () => { view.s2Fan1 = !view.s2Fan1; });
 bindSegButton('bF2Floor', () => { view.s2Floor2 = !view.s2Floor2; });
 bindSegButton('bF2Fan', () => { view.s2Fan2 = !view.s2Fan2; });

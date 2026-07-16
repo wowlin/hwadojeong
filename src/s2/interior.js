@@ -11,10 +11,10 @@ import {
   S2_STAIR, s2W, s2X0, s2BackZ, s2WallT, s2FrontZ, roofY, s2RidgeZ, s2RoofUnderY,
   s2F1Top, s2Ceil1Y, s2Ceil2Y, s2FdColT, s2RGap, s2LGap,
 } from './constants.js';
-import { s2FurnitureObjects, s2SinkObjects, s2StoveObjects, s2Wall1Objects, s2Fan1Objects, s2Fan2Objects } from '../groups.js';
+import { s2Floor1Objects, s2Wall1Objects, s2Fan1Objects, s2Fan2Objects } from '../groups.js';
 
 export function buildS2Interior() {
-// ── s2 1층 가구(식탁·의자) — '테이블·의자' 토글(구조 섹션) ─────────────────────────
+// ── s2 1층 가구(식탁·의자) — '바닥' 토글(1층 바닥에 통합) ─────────────────────────
 // 식탁 3개(윗판 110×72cm·높이 0.72)를 좌우(x)로 이어 옆으로 길게(약 3.3m). 의자=반고 햄프턴 DLX(campingChair,
 //  폭~0.6·깊이~0.55·좌고 0.42 — 실제 햄프턴 DLX 폭 60·좌고 45와 부합). 앞·뒤 긴 변에 테이블당 1개씩 여유있게.
 {
@@ -39,9 +39,9 @@ export function buildS2Interior() {
   const zx0 = (cxs[0] - TW / 2) - endGap, zx1 = (cxs[cxs.length - 1] + TW / 2) + endGap;
   const zz0 = (cz0 - chairBack) - aisle, zz1 = (cz0 + chairBack) + aisle;
   box({ x: zx0, z: zz0, w: zx1 - zx0, d: zz1 - zz0, y: fTop + 0.004, h: 0.012, mat: materials.clearZone, cast: false });
-  // 식탁·의자·이동공간까지가 '테이블·의자' 토글. 오른쪽 예약 구획(화목난로)은 아래에서 별도 토글로 분리.
-  s2FurnitureObjects.push(...scene.children.slice(_furnStart));
-  // 오른쪽(低x) 벽쪽 1m 예약 공간(붉은색) = 화목난로 자리 — '난로' 버튼 토글. 깊이=이동공간과 동일.
+  // 식탁·의자·이동공간. 오른쪽 예약 구획(화목난로)은 아래 블록 — 셋 다 '바닥' 토글로 함께 나온다.
+  s2Floor1Objects.push(...scene.children.slice(_furnStart));
+  // 오른쪽(低x) 벽쪽 1m 예약 공간(붉은색) = 화목난로 자리 — '바닥' 토글. 깊이=이동공간과 동일.
   const _stoveStart = scene.children.length;
   box({ x: s2X0 + s2WallT, z: zz0, w: reserveW, d: zz1 - zz0, y: fTop + 0.005, h: 0.012, mat: materials.leftZone, cast: false });
   // 화목난로 본체 + 연통 — 예약공간 주방쪽 외벽 구석(계단실 입구쪽)에 두고, 연통을 그 구석으로 곧게 3층까지 올린 뒤
@@ -63,12 +63,12 @@ export function buildS2Interior() {
     railCylinder([flueX, flueTopIn, flueZ], [wallOutX, flueTopIn, flueZ], flueR);                // ② 주방쪽 박공 끝벽 관통(수평)
     railCylinder([wallOutX, flueTopIn, flueZ], [wallOutX, flueTopOut, flueZ], flueR);            // ③ 외부 수직 — 지붕 옆으로
   }
-  s2StoveObjects.push(...scene.children.slice(_stoveStart));
+  s2Floor1Objects.push(...scene.children.slice(_stoveStart));
 }
 
-// ── s2 1층 싱크대(주방) — '싱크대' 토글(구조 섹션) ─────────────────────────────────
+// ── s2 1층 싱크대(주방) — '바닥' 토글(1층 바닥에 통합) ─────────────────────────────
 // 싱크 하부장 1.2m(백조 대형 사각볼 950×454 수용) + 양옆 표준 0.6m. 총 2.4m, 왼쪽(高x) 벽 따라 세로(Z)로, 뒤(高z) 코너 밀착.
-captureInto(s2SinkObjects, () => {
+captureInto(s2Floor1Objects, () => {
   const fTop = s2F1Top;          // 1층 바닥 표면(층참 윗면) — 단일 출처
   const inXL = s2X0 + s2W - s2WallT;                          // 좌(高x) 외벽 안쪽 면
   const inZB = s2BackZ - s2WallT;                            // 뒤(高z) 외벽 안쪽 면
@@ -139,7 +139,7 @@ captureInto(s2SinkObjects, () => {
     new THREE.MeshLambertMaterial({ color: 0xbcc6cf, transparent: true, opacity: 0.32, depthWrite: false }),
   );
   fridgeGhost.position.set(inXL - F2DEP / 2, fTop + F2H / 2, f2Cz);
-  scene.add(fridgeGhost);   // captureInto가 s2SinkObjects로 자동 수집
+  scene.add(fridgeGhost);   // captureInto가 s2Floor1Objects로 자동 수집
   // 양문(2짝) 표시 — 뒤=왼쪽벽(高x) 밀착, 문 면=주방쪽(低x) → 문은 주방쪽으로 열림. Z중앙서 좌우 분할.
   const f2Face = inXL - F2DEP, f2dt = 0.03, f2hw = F2W / 2 - 0.02;
   const f2DoorMat = new THREE.MeshLambertMaterial({ color: 0x8aa0b0, transparent: true, opacity: 0.55, depthWrite: false });
@@ -152,10 +152,10 @@ captureInto(s2SinkObjects, () => {
   const f2dr = F2W / 2 - 0.01;   // 문짝 폭(=스윙 반경)
   const swL = new THREE.Mesh(new THREE.CylinderGeometry(f2dr, f2dr, 0.02, 24, 1, false, -Math.PI / 2, Math.PI / 2), f2SwMat);
   swL.position.set(f2Face, fTop + 0.02, f2Cz - F2W / 2);   // 경첩=低z 모서리 · -X(열림)~+Z(닫힘) 사분면
-  scene.add(swL);   // captureInto가 s2SinkObjects로 자동 수집
+  scene.add(swL);   // captureInto가 s2Floor1Objects로 자동 수집
   const swR = new THREE.Mesh(new THREE.CylinderGeometry(f2dr, f2dr, 0.02, 24, 1, false, Math.PI, Math.PI / 2), f2SwMat);
   swR.position.set(f2Face, fTop + 0.02, f2Cz + F2W / 2);   // 경첩=高z 모서리 · -Z(닫힘)~-X(열림) 사분면
-  scene.add(swR);   // captureInto가 s2SinkObjects로 자동 수집
+  scene.add(swR);   // captureInto가 s2Floor1Objects로 자동 수집
   label(`양문형 냉장고 예정 ${fmtDim(F2W)}×${fmtDim(F2DEP)}m`, inXL - F2DEP / 2, fTop + F2H + 0.15, f2Cz, 'furniture');
 });
 

@@ -20,7 +20,7 @@ const VIEWS = [
   ['bStair', 'bLift'],
   ['bF1Wall', 'bF2Wall', 'bF3Wall'],
   ['bF3Roof', 'bF3Solar'],
-  ['bF1Foundation', 'bF1Floor', 'bF1Sink', 'bF1Stove'],
+  ['bF1Foundation', 'bF1Floor'],   // '바닥'이 식탁·주방(싱크대)·난로를 포함(버튼 3개 제거·통합)
   ['tabS1'],
   ['tabS1', 'bFirstWall', 'bFirstOutlet', 'bFirstCeiling'],
   ['tabS1', 'bRoof', 'bSolar', 'bLoft', 'bAtticExtWall', 'bAtticInnerWall'],

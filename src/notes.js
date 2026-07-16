@@ -114,21 +114,20 @@ export const NOTES = {
       `· 단높이   ${fmtDim(rRis)} m`,
       `· 디딤    ${fmtDim(s2RearStair.tread)} m`,
       '· 마감    포세린 타일',
+      '',
+      '［주방 전기온수기］',
+      `· 모델    경동나비엔 ${esw560_15u.model}`,
+      `· 용량    ${esw560_15u.capL} 리터 (상향식 언더싱크)`,
+      `· 크기    ${mm(esw560_15u.w)}×${mm(esw560_15u.h)}×${mm(esw560_15u.d)} mm (가로×높이×깊이)`,
+      '· 설치    싱크대 하부장 안 — s1 주방과 같은 기종',
+      '· 문     반투명 — 닫아도 온수기가 비쳐 보임',
+      '· 콘센트  전용(고전력·마젠타) — 하부장 안 낮은 높이',
+      '',
+      '［주방 인덕션］',
+      '· 직결(하드와이어) — 콘센트 아님',
+      '· 전선 인출구(정션박스·보라) — 싱크 옆 하부장 안',
     ].join('\n') };
   },
-  s2Sink: { title: '주방', body: [
-    '［전기온수기］',
-    `· 모델    경동나비엔 ${esw560_15u.model}`,
-    `· 용량    ${esw560_15u.capL} 리터 (상향식 언더싱크)`,
-    `· 크기    ${mm(esw560_15u.w)}×${mm(esw560_15u.h)}×${mm(esw560_15u.d)} mm (가로×높이×깊이)`,
-    '· 설치    싱크대 하부장 안 — s1 주방과 같은 기종',
-    '· 문     반투명 — 닫아도 온수기가 비쳐 보임',
-    '· 콘센트  전용(고전력·마젠타) — 하부장 안 낮은 높이',
-    '',
-    '［인덕션］',
-    '· 직결(하드와이어) — 콘센트 아님',
-    '· 전선 인출구(정션박스·보라) — 싱크 옆 하부장 안',
-  ].join('\n') },
   get s2Stair() {                                          // 계단 사양 + 1층 계단참 아래 옷장 — 모두 계단 상수서 자동 계산
     const { T, R, W, g, tTh, floorH, nosing, rTh, usTh, nUpper, landingSteps } = S2_STAIR;
     const wF = 2 * W + g;                                  // 계단참 깊이(두 런 + 틈)
@@ -282,7 +281,7 @@ export const NOTES = {
     ].join('\n') };
   },
 };
-const NOTE_ORDER = ['stair', 'roof', 'deck', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Sink', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];   // NOTES에 실제 있는 키만(죽은 키 13개 제거 — 새 메모 추가 시 여기와 NOTES 둘 다)
+const NOTE_ORDER = ['stair', 'roof', 'deck', 'hedge', 'fence', 's2Foundation', 's2Floor1', 's2Stair', 's2Lift', 's2Floor2', 's2Floor3', 's2Wall3', 's2Roof3', 's2Solar3'];   // NOTES에 실제 있는 키만(죽은 키 13개 제거 — 새 메모 추가 시 여기와 NOTES 둘 다)
 export function updateNotes(currentScheme) {
   const body = document.querySelector('#noteBody');
   if (!body) return;
